@@ -1,5 +1,7 @@
 # agent-native-monorepo
 
+![ci](https://img.shields.io/github/actions/workflow/status/maxathy/agent-native-monorepo/ci.yml?branch=main)
+
 > A production-grade chassis for stateful LangGraph agents, purpose-built for multi-agent development workflows.
 
 A Yarn 4 monorepo containing a NestJS 11 microservice that runs a LangGraph state machine with a **Three-Brain memory architecture**: per-run Working Memory, session-scoped Episodic Memory (Postgres + Drizzle ORM), and long-term Semantic Memory combining a Neo4j 5 knowledge graph with pgvector dense embeddings. This project demonstrates the intersection of senior monorepo engineering and production agentic systems: it is an extraction of production patterns from a proprietary platform, sanitized for public consumption.
