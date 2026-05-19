@@ -1,6 +1,6 @@
 # agent-native-monorepo
 
-![ci](https://img.shields.io/github/actions/workflow/status/maxathy/agent-native-monorepo/ci.yml?branch=main)
+![ci](https://img.shields.io/github/actions/workflow/status/maxmillienjr/agent-native-monorepo/ci.yml?branch=main)
 
 > A production-grade chassis for stateful LangGraph agents, purpose-built for multi-agent development workflows.
 
