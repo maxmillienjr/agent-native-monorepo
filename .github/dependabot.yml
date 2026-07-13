@@ -1,0 +1,52 @@
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+    open-pull-requests-limit: 5
+    groups:
+      # OTel ships its packages in lockstep; a partial bump splits the
+      # API/SDK versions and breaks the tracer at runtime, not at build.
+      opentelemetry:
+        patterns:
+          - '@opentelemetry/*'
+      langchain:
+        patterns:
+          - '@langchain/*'
+          - 'langchain'
+          - 'langsmith'
+      dev-dependencies:
+        dependency-type: development
+        update-types:
+          - minor
+          - patch
+      production:
+        dependency-type: production
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+    groups:
+      actions:
+        patterns:
+          - '*'
+
+  - package-ecosystem: docker
+    directories:
+      - /apps/console
+      - /apps/agent-service
+      - /apps/gateway
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
