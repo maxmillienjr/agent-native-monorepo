@@ -1,0 +1,54 @@
+name: Security
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1' # Weekly on Mondays at 06:00 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24.x'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      # The pull_request trigger catches an advisory a PR introduces. The
+      # schedule is what catches an advisory published against dependencies
+      # that never changed, which is how 20 of them accumulated here unseen.
+      #
+      # This also guards the scoped `vitest/vite` and `vite-node/vite`
+      # resolutions in package.json. Yarn's parent/child resolutions only bind
+      # when the child is a direct dependency of the parent, and when they stop
+      # matching they are ignored silently: install still exits 0. Without this
+      # job, a dropped pin looks exactly like a passing build.
+      #
+      # The three ignores are all GHSA-q7rr-3cgh-j5r3, the Prometheus exporter
+      # crash reported against @opentelemetry/sdk-node (1120252),
+      # auto-instrumentations-node (1120251) and exporter-prometheus (1120253).
+      # The exporter is never instantiated in this repo, it is only bundled
+      # inside sdk-node, so there is no endpoint to crash. Fixing it means
+      # 0.57 -> 0.220, a multi-major migration owed its own PR.
+      #
+      # These are advisory IDs, not a package glob: a NEW OpenTelemetry
+      # advisory carries a new ID and will still fail this job. Delete the
+      # ignores once the OTel migration lands.
+      - name: Audit for high/critical vulnerabilities
+        run: |
+          yarn npm audit --all --recursive --severity high \
+            --ignore 1120251 \
+            --ignore 1120252 \
+            --ignore 1120253
