@@ -16,7 +16,7 @@
     "@repo/agent-contracts": "workspace:*",
     "@repo/telemetry": "workspace:*",
     "express": "^5.1.0",
-    "http-proxy-middleware": "^3.0.0"
+    "http-proxy-middleware": "^3.0.7"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
