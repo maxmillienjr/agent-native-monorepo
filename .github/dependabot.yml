@@ -41,11 +41,27 @@ updates:
         patterns:
           - '*'
 
+  # One block per image rather than a `directories` list. Both forms are
+  # documented, but a dependabot.yml cannot be validated until it is on the
+  # default branch, and a config that fails to parse fails silently, which is
+  # the exact rot this file exists to prevent. `directory` is the form with no
+  # ambiguity, and the semantics are identical.
   - package-ecosystem: docker
-    directories:
-      - /apps/console
-      - /apps/agent-service
-      - /apps/gateway
+    directory: /apps/console
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+
+  - package-ecosystem: docker
+    directory: /apps/agent-service
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+
+  - package-ecosystem: docker
+    directory: /apps/gateway
     schedule:
       interval: weekly
       day: monday
