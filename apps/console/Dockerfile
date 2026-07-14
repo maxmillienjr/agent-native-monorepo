@@ -18,7 +18,6 @@ RUN yarn install --immutable
 
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/packages/*/node_modules ./packages/
 COPY . .
 RUN yarn turbo build --filter=@repo/console
 
