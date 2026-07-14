@@ -18,9 +18,7 @@ Step-by-step guides for common development tasks in this monorepo.
    return tracer.startActiveSpan('agent.node.<name>', async (span) => {
      try {
        // node logic
-       return {
-         /* partial state updates */
-       };
+       return {/* partial state updates */};
      } finally {
        span.end();
      }
