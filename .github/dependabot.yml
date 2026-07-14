@@ -8,6 +8,14 @@ updates:
       day: monday
       time: '06:00'
     open-pull-requests-limit: 5
+    ignore:
+      # Majors are framework migrations (Angular, zod, vitest), not routine
+      # patching. Left to Dependabot they sit open and fail CI indefinitely.
+      # Do them deliberately: unignore the one package, migrate, re-ignore.
+      # Dependabot alerts still fire, so a CVE stays visible either way.
+      - dependency-name: '*'
+        update-types:
+          - 'version-update:semver-major'
     groups:
       # OTel ships its packages in lockstep; a partial bump splits the
       # API/SDK versions and breaks the tracer at runtime, not at build.
