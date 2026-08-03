@@ -20,8 +20,8 @@
     "clean": "turbo clean"
   },
   "devDependencies": {
-    "prettier": "^3.9.5",
-    "turbo": "^2.10.5"
+    "prettier": "^3.9.6",
+    "turbo": "^2.10.7"
   },
   "resolutions": {
     "@grpc/grpc-js": "^1.14.4",
