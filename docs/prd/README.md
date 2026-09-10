@@ -21,11 +21,16 @@ request. `yarn lint:docs` fails CI when a PRD's status disagrees with its row be
 **The agent is measured, but not yet gated.** `yarn eval` runs n trials per task and reports
 `pass@k` and `pass^k`, and every number names the axes that produced it. Measured
 2026-08-29 — model `stub` / memory `live`, 5 trials x 2 tasks: 50%, with `memory-recall-001`
-at 5/5 and `tool-use-001` at 0/5 because the agent never reaches for the one tool it has. On
-model `live` / memory `live`, one trial of `memory-recall-001` passed all eleven graders.
-`tool-use-001` has never run on the live model axis: the free-tier quota is 20 requests and a
-5x2 suite needs about forty. What none of this is yet is a merge gate — P1-C wires evaluation
-into a pipeline, P1-D decides which failures should block.
+at 5/5 and `tool-use-001` at 0/5. That 0/5 is the stub axis's ceiling and not the agent's
+score: `runs.service.ts:190` returns `null` from `selectTool` for every input, so a task
+graded on making a tool call cannot pass there. On model `live` / memory `live`, one trial of
+`memory-recall-001` passed all eleven graders, and one trial of `tool-use-001` on 2026-09-10
+passed on three `web-search` selections with well-formed queries. One trial is not a pass
+rate, and a 5x2 live suite needs about forty `generateContent` calls against a 20-request
+free-tier quota, which is why it has not been run. P1-G makes a task declare the axes it is
+meaningful on, so the rate stops averaging the agent together with the fixture. What none of
+this is yet is a merge gate — P1-C wires evaluation into a pipeline, P1-D decides which
+failures should block.
 
 **Memory and model are independent axes, and neither falls back.** `GOOGLE_API_KEY` selects
 the model half; `DATABASE_URL` and `NEO4J_URI` select the memory half. Configured but
@@ -83,14 +88,15 @@ that `.github/workflows/agent-eval.yml` runs `yarn turbo test:eval`, which resol
 single integration suite in `packages/memory-core` that never invokes the agent — P1-C owns
 replacing it.
 
-| ID                             | Title                                                         | Size | Status      |
-| ------------------------------ | ------------------------------------------------------------- | ---- | ----------- |
-| [P1-A](P1-A-eval-harness.md)   | `packages/eval-harness` — evaluation as a first-class package | L    | shipped     |
-| [P1-B](P1-B-agent-cassette.md) | `packages/agent-cassette` — decision-level record and replay  | L    | in-progress |
-| P1-C                           | Tiered evaluation pipeline replacing the nightly stub         | M    | draft       |
-| P1-D                           | Statistical regression gate with paired bootstrap             | M    | draft       |
-| P1-E                           | Model-drift canary against pinned and floating model ids      | S    | draft       |
-| P1-F                           | Cost, latency, and step budgets as CI assertions              | S    | draft       |
+| ID                                     | Title                                                         | Size | Status      |
+| -------------------------------------- | ------------------------------------------------------------- | ---- | ----------- |
+| [P1-A](P1-A-eval-harness.md)           | `packages/eval-harness` — evaluation as a first-class package | L    | shipped     |
+| [P1-B](P1-B-agent-cassette.md)         | `packages/agent-cassette` — decision-level record and replay  | L    | in-progress |
+| P1-C                                   | Tiered evaluation pipeline replacing the nightly stub         | M    | draft       |
+| P1-D                                   | Statistical regression gate with paired bootstrap             | M    | draft       |
+| P1-E                                   | Model-drift canary against pinned and floating model ids      | S    | draft       |
+| P1-F                                   | Cost, latency, and step budgets as CI assertions              | S    | draft       |
+| [P1-G](P1-G-task-axis-requirements.md) | Task-level axis requirements for the evaluation suite         | S    | draft       |
 
 ## Tier 2 — Make the architecture real
 
@@ -136,9 +142,10 @@ provider actually operates under. Uses synthetic data only.
 The dependency spine, not a schedule:
 
 ```
-P0-A ──▶ P2-A ──┬──▶ P1-A ──▶ P1-B ──▶ P1-C ──┬──▶ P1-D
-                │                              ├──▶ P1-E
-                │                              └──▶ P1-F
+P0-A ──▶ P2-A ──┬──▶ P1-A ──┬──▶ P1-B ──▶ P1-C ──┬──▶ P1-D
+                │           │                       ├──▶ P1-E
+                │           │                       └──▶ P1-F
+                │           └──▶ P1-G
                 ├──▶ P2-B
                 ├──▶ P3-B
                 └──▶ P4-C
