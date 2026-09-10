@@ -30,6 +30,12 @@ export class CypherNeo4jReader implements Neo4jReader {
           // this list and pgvector's describe the same kind of thing and RRF
           // has one universe to fuse over. `*0..n` lets a fact attached
           // directly to a seed count; the MENTIONS hop puts it at distance 1.
+          //
+          // contentHash is the tiebreaker because score is not one: every fact
+          // at the same hop distance gets the identical `1.0 / (1.0 + distance)`
+          // and `ORDER BY score DESC` alone leaves the rest to the store. It is
+          // unique — the :Fact(contentHash) constraint says so — so the order is
+          // total, and it is the same key pgvector's reader and rrfMerge use.
           const result = await session.run(
             `MATCH path = (seed:Concept)-[:RELATES_TO*0..${Math.min(hopDepth, 3)}]-(related:Concept)
                           <-[:MENTIONS]-(f:Fact)
@@ -40,7 +46,7 @@ export class CypherNeo4jReader implements Neo4jReader {
                     f.episodeId AS episodeId,
                     distance,
                     1.0 / (1.0 + distance) AS score
-             ORDER BY score DESC
+             ORDER BY score DESC, contentHash
              LIMIT 50`,
             { seedIds: seedEntityIds },
           );
