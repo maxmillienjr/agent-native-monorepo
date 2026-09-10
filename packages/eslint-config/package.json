@@ -5,8 +5,8 @@
   "type": "module",
   "main": "index.js",
   "dependencies": {
-    "@typescript-eslint/eslint-plugin": "^8.69.0",
-    "@typescript-eslint/parser": "^8.69.0",
+    "@typescript-eslint/eslint-plugin": "^8.70.0",
+    "@typescript-eslint/parser": "^8.70.0",
     "eslint": "^9.39.5",
     "eslint-plugin-import": "^2.31.0"
   }
