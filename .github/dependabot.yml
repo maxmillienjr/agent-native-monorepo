@@ -60,6 +60,13 @@ updates:
       interval: monthly
       day: monday
       time: '06:00'
+    ignore:
+      # Same rule as the npm block above, for the same reason. A base-image
+      # major is a runtime migration: the README, all five workflows and the
+      # image have to move together, and only the image is in this diff.
+      - dependency-name: '*'
+        update-types:
+          - 'version-update:semver-major'
 
   - package-ecosystem: docker
     directory: /apps/agent-service
@@ -67,6 +74,10 @@ updates:
       interval: monthly
       day: monday
       time: '06:00'
+    ignore:
+      - dependency-name: '*'
+        update-types:
+          - 'version-update:semver-major'
 
   - package-ecosystem: docker
     directory: /apps/gateway
@@ -74,3 +85,7 @@ updates:
       interval: monthly
       day: monday
       time: '06:00'
+    ignore:
+      - dependency-name: '*'
+        update-types:
+          - 'version-update:semver-major'
