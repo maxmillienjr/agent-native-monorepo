@@ -44,6 +44,13 @@ updates:
       interval: monthly
       day: monday
       time: '06:00'
+    ignore:
+      # Same rule as the npm block above. This one is not hypothetical: #33
+      # landed actions/upload-artifact v5 -> v7 in the `actions` group, a major
+      # across two releases, and the group hid it behind a single-update title.
+      - dependency-name: '*'
+        update-types:
+          - 'version-update:semver-major'
     groups:
       actions:
         patterns:
