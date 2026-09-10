@@ -43,18 +43,26 @@ export class PgPgvectorReader implements PgvectorReader {
         const scoped = scope.sessionId !== undefined && scope.crossSession !== true;
         span.setAttribute('crossSession', !scoped);
 
+        // content_hash is the secondary sort key in both variants, and both is
+        // the point — the two strings differ only in the WHERE clause, so a
+        // tiebreaker added to one of them is a tiebreaker the other silently
+        // lacks. Cosine distance is not a total order over this table: the eval
+        // harness seeds every fact in a task with one vector, and identical
+        // vectors are at identical distance from any query. content_hash is the
+        // primary key, so ordering on it after the distance is total, and it is
+        // the key the Neo4j reader breaks its own tie on and rrfMerge fuses on.
         const result = await this.pool.query(
           scoped
             ? `SELECT content_hash, text, episode_id,
                       1 - (embedding <=> $1::vector) AS score
                FROM semantic_facts
                WHERE session_id = $3
-               ORDER BY embedding <=> $1::vector
+               ORDER BY embedding <=> $1::vector, content_hash
                LIMIT $2`
             : `SELECT content_hash, text, episode_id,
                       1 - (embedding <=> $1::vector) AS score
                FROM semantic_facts
-               ORDER BY embedding <=> $1::vector
+               ORDER BY embedding <=> $1::vector, content_hash
                LIMIT $2`,
           scoped ? [toSql(queryEmbedding), topK, scope.sessionId] : [toSql(queryEmbedding), topK],
         );
