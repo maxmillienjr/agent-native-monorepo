@@ -63,10 +63,15 @@ nightly; `eval` is local-only until P1-C wires it into a pipeline.
   `yarn turbo test:eval` across every workspace, so declaring one there silently makes the
   nightly job run the trial suite on whatever axes that runner happens to have. P1-C owns
   that switch.
-- **A turbo task that runs trials declares `GOOGLE_API_KEY` in its `env` array.** Turbo runs
-  in `envMode: strict` — the 2.x default — so a task receives only the variables it names.
-  Without the declaration every trial runs the canned model set, the suite reports on
-  canned strings, and it looks identical to one that is working.
+- **A Turbo task declares every variable its process reads.** Turbo runs in
+  `envMode: strict` — the 2.x default — so a task receives only the variables its `env`
+  array names, and an undeclared one arrives as `undefined` with nothing said. The damage
+  is not uniform. Without `GOOGLE_API_KEY` every trial runs the canned model set, the suite
+  reports on canned strings, and it looks identical to one that is working. `EVAL_TRIALS`
+  and `EVAL_OUTPUT_DIR` fail quieter and still cost: both were documented as working knobs
+  for as long as they were absent from the list, so `EVAL_TRIALS=1 yarn eval` ran five
+  trials. Check the `env` array against what the script actually reads, not against the one
+  variable that broke last time.
 - **E2E runs against the compose stack, not the dev server.** Bring it up with
   `docker compose --profile full up -d --build --wait`, then run the suite with
   `E2E_BASE_URL=http://localhost:8080`. Without that variable Playwright boots the Vite dev
