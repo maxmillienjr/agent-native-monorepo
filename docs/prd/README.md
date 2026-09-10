@@ -2,7 +2,7 @@
 
 ## Where things stand
 
-_Last updated 2026-08-30. If this section is more than a few weeks stale, trust the code
+_Last updated 2026-09-10. If this section is more than a few weeks stale, trust the code
 over it and update it._
 
 **Four PRDs are shipped and the system they describe is running.** The service answers
@@ -33,11 +33,13 @@ unreachable exits 1 in about a second naming the cause. Selecting no-op writers 
 configured database is missing was the defect P2-A existed to remove, and it is not a
 reachable runtime path. A clone with no `.env` still serves both quickstart curls.
 
-**[P1-B](P1-B-agent-cassette.md) is accepted and is the work in progress.** It records the
-model's decisions at the `ModelDeps` seam and replays them, which is what makes a
-pull-request evaluation tier affordable — without it P1-C has a live tier nobody leaves
+**[P1-B](P1-B-agent-cassette.md) is in-progress, tracked in [#45](https://github.com/maxmillienjr/agent-native-monorepo/issues/45).**
+It records the model's decisions at the `ModelDeps` seam and replays them, which is what makes
+a pull-request evaluation tier affordable — without it P1-C has a live tier nobody leaves
 switched on, or a stub tier that measures nothing. Accepting it endorsed four judgement calls
-recorded in the PRD; reversing one is an edit to a criterion, not a reopen.
+recorded in the PRD; reversing one is an edit to a criterion, not a reopen. Its determinism
+prerequisite landed first: both semantic retrievers now break a tied score on the content
+hash, because an untied order reaches `plan`'s prompt and a cassette is keyed on that prompt.
 
 **Where the detail lives.** Each PRD carries its own risks, its divergences from the design
 that was reviewed, and — where a shipped record turned out to be wrong — the correction that
@@ -81,14 +83,14 @@ that `.github/workflows/agent-eval.yml` runs `yarn turbo test:eval`, which resol
 single integration suite in `packages/memory-core` that never invokes the agent — P1-C owns
 replacing it.
 
-| ID                             | Title                                                         | Size | Status   |
-| ------------------------------ | ------------------------------------------------------------- | ---- | -------- |
-| [P1-A](P1-A-eval-harness.md)   | `packages/eval-harness` — evaluation as a first-class package | L    | shipped  |
-| [P1-B](P1-B-agent-cassette.md) | `packages/agent-cassette` — decision-level record and replay  | L    | accepted |
-| P1-C                           | Tiered evaluation pipeline replacing the nightly stub         | M    | draft    |
-| P1-D                           | Statistical regression gate with paired bootstrap             | M    | draft    |
-| P1-E                           | Model-drift canary against pinned and floating model ids      | S    | draft    |
-| P1-F                           | Cost, latency, and step budgets as CI assertions              | S    | draft    |
+| ID                             | Title                                                         | Size | Status      |
+| ------------------------------ | ------------------------------------------------------------- | ---- | ----------- |
+| [P1-A](P1-A-eval-harness.md)   | `packages/eval-harness` — evaluation as a first-class package | L    | shipped     |
+| [P1-B](P1-B-agent-cassette.md) | `packages/agent-cassette` — decision-level record and replay  | L    | in-progress |
+| P1-C                           | Tiered evaluation pipeline replacing the nightly stub         | M    | draft       |
+| P1-D                           | Statistical regression gate with paired bootstrap             | M    | draft       |
+| P1-E                           | Model-drift canary against pinned and floating model ids      | S    | draft       |
+| P1-F                           | Cost, latency, and step budgets as CI assertions              | S    | draft       |
 
 ## Tier 2 — Make the architecture real
 

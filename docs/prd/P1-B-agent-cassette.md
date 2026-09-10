@@ -2,11 +2,11 @@
 id: P1-B
 title: packages/agent-cassette — decision-level record and replay
 tier: 1
-status: accepted
+status: in-progress
 size: L
 depends_on: [P1-A]
 blocks: [P1-C]
-issue: null
+issue: 45
 superseded_by: null
 ---
 
@@ -400,7 +400,7 @@ apps/agent-service/src/eval/
       says the count it used.
 - [ ] `loadSuite` still loads exactly two tasks with the cassette directory present —
       a regression test, because `dataset.ts:125` reads every `.json` in that directory.
-- [ ] `expandFromSeeds` and `searchByCosine` each order by a unique secondary key, and an
+- [x] `expandFromSeeds` and `searchByCosine` each order by a unique secondary key, and an
       integration test asserts the graph query returns the same order across three
       delete-and-reseed cycles — the sequence that produced three different orders before
       the change.
