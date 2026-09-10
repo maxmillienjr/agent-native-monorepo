@@ -72,6 +72,21 @@ nightly; `eval` is local-only until P1-C wires it into a pipeline.
   for as long as they were absent from the list, so `EVAL_TRIALS=1 yarn eval` ran five
   trials. Check the `env` array against what the script actually reads, not against the one
   variable that broke last time.
+- **Integration needs the stores exported, and says nothing when they are not.** Bring the
+  infrastructure up with `docker compose up -d --wait` — no `--profile full`, the suite
+  talks to Postgres and Neo4j directly — and export `DATABASE_URL`, `NEO4J_URI`,
+  `NEO4J_USER` and `NEO4J_PASSWORD` to match `docker-compose.yml`. With any of the first two
+  absent, `test/integration-env.ts` skips every suite so a laptop with no Docker is not a
+  crash, and `yarn turbo test:integration` then reports 27 skipped tests and exits 0. That
+  is a pass by shape and a no-op by content. `REQUIRE_INTEGRATION_ENV=1` turns the skip into
+  a failure naming each missing variable; the nightly `test:eval` script sets it, and it is
+  the flag to reach for whenever a green integration run needs to mean something.
+- **A retriever's `ORDER BY` needs a unique secondary key.** Both semantic readers produce
+  ties by construction — `expandFromSeeds` scores on hop distance, and the eval harness
+  seeds every fact in a task with one vector — and an untied order is decided by whatever
+  order the store holds rows in, which changes across a delete-and-reseed. That order
+  reaches `plan`'s prompt through `rrfMerge` and `retrievedContext`, so it is an input to
+  the agent and not a presentation detail. Both readers break the tie on the content hash.
 - **E2E runs against the compose stack, not the dev server.** Bring it up with
   `docker compose --profile full up -d --build --wait`, then run the suite with
   `E2E_BASE_URL=http://localhost:8080`. Without that variable Playwright boots the Vite dev
