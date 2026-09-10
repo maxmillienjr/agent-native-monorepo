@@ -6,8 +6,12 @@
 
 A Yarn 4 monorepo containing a NestJS 11 microservice that runs a LangGraph state machine designed around a **Three-Brain memory architecture**: per-run Working Memory, session-scoped Episodic Memory (Postgres + Drizzle ORM), and long-term Semantic Memory combining a Neo4j 5 knowledge graph with pgvector dense embeddings. This project demonstrates the intersection of senior monorepo engineering and production agentic systems: it is an extraction of production patterns from a proprietary platform, sanitized for public consumption.
 
-> **What is wired, and what is not.** The graph runs and the working-memory tier is live;
-> the episodic and semantic adapters are tested but not yet constructed by the service.
+> **What is wired, and what is not.** All three memory tiers are live: `MemoryModule`
+> constructs the adapters and `RunsService` injects them, so a run reads from and writes to
+> Postgres, Neo4j and pgvector when `DATABASE_URL` and `NEO4J_URI` are set. What this
+> repository cannot claim is a gate — `packages/eval-harness` measures the agent and
+> `yarn eval` reports the numbers, but no evaluation blocks a merge. P1-C wires evaluation
+> into a pipeline, P1-D decides which failures should block.
 > [`docs/STATUS.md`](docs/STATUS.md) is the per-capability matrix, and it is the file to
 > trust when this README and the code disagree.
 
@@ -78,10 +82,12 @@ It exists to demonstrate architectural thinking in two domains that rarely overl
 2. **Production agentic systems** — LangGraph state machines, hybrid symbolic + dense memory retrieval via Neo4j and pgvector, OpenTelemetry instrumentation at the graph-node level.
 
 Both lists are wired into the request path. `MemoryModule` constructs the adapters and
-`RunsService` injects them, so a run reads from and writes to Neo4j and pgvector when
-`DATABASE_URL` and `NEO4J_URI` are set, and runs against a stub dependency set when they
-are not. What the repository still lacks is a measurement that the agent behaves — that is
-P1-A. See [`docs/STATUS.md`](docs/STATUS.md) before quoting this section back at the code.
+`RunsService` injects them, so a run reads from and writes to Postgres, Neo4j and pgvector
+when `DATABASE_URL` and `NEO4J_URI` are set, and runs against a stub dependency set when
+they are not. The agent is measured, too — `yarn eval` runs live trials and reports `pass@k`
+and `pass^k`. What the repository still lacks is a gate on those numbers: P1-C wires
+evaluation into a pipeline, P1-D decides which failures should block. See
+[`docs/STATUS.md`](docs/STATUS.md) before quoting this section back at the code.
 
 The agent's domain logic is intentionally trivial (a single system prompt: _"You are a helpful research assistant."_). The value is in the chassis — how the pieces connect, how memory is structured, how observability is wired, and how the monorepo scales.
 
@@ -156,7 +162,7 @@ docker compose --profile full up --build
 
 ## Three-Brain Memory
 
-The memory system is designed as three tiers with distinct scopes, persistence strategies, and access patterns. Working Memory is live. The other two are implemented in `packages/memory-core`, covered by integration tests against real Postgres and Neo4j, and not yet constructed by `apps/agent-service` — the service passes the graph a no-op writer and an empty retriever. Per-capability detail is in [`docs/STATUS.md`](docs/STATUS.md); the wiring is P2-A.
+The memory system is three tiers with distinct scopes, persistence strategies, and access patterns, and all three are live. Working Memory is in-process. The other two are implemented in `packages/memory-core`, covered by integration tests against real Postgres and Neo4j, and constructed by `apps/agent-service`: `MemoryModule` builds the pool, the driver, the four adapters and the retrieval facade, and `RunsService` injects them by token. A run reads from and writes to Postgres, Neo4j and pgvector when `DATABASE_URL` and `NEO4J_URI` are set, and runs against a deterministic stub dependency set when they are not — memory and model are independent axes, and neither falls back. Per-capability detail is in [`docs/STATUS.md`](docs/STATUS.md).
 
 ### Working Memory
 

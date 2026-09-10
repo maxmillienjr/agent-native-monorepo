@@ -40,7 +40,15 @@
     "eval": {
       "dependsOn": ["build"],
       "cache": false,
-      "env": ["GOOGLE_API_KEY", "DATABASE_URL", "NEO4J_URI", "NEO4J_USER", "NEO4J_PASSWORD"]
+      "env": [
+        "GOOGLE_API_KEY",
+        "DATABASE_URL",
+        "NEO4J_URI",
+        "NEO4J_USER",
+        "NEO4J_PASSWORD",
+        "EVAL_TRIALS",
+        "EVAL_OUTPUT_DIR"
+      ]
     },
     "clean": {
       "cache": false

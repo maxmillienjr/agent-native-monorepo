@@ -213,6 +213,79 @@ if (existsSync(statusPath)) {
   }
 }
 
+// --- One Node major across the README, the workflows and the images -------
+// docs/STATUS.md asserts these three agree, but that row is the one row citing no
+// `file.ts:NN`, so the check above had nothing to resolve and nothing to rot. A
+// Dependabot base-image bump then moved the Dockerfiles alone, every gate stayed on
+// the old major, and the row went quietly false. Read the major off each surface
+// instead of trusting a sentence about them.
+const nodeSurfaces = [];
+
+const readmePath = join(root, 'README.md');
+if (existsSync(readmePath)) {
+  readFileSync(readmePath, 'utf-8')
+    .split('\n')
+    .forEach((line, i) => {
+      const m = /^-\s+Node\.js\s+(\d+)\./.exec(line);
+      if (m) nodeSurfaces.push({ where: `README.md:${i + 1}`, major: m[1] });
+    });
+}
+
+const workflowDir = join(root, '.github', 'workflows');
+if (existsSync(workflowDir)) {
+  for (const file of readdirSync(workflowDir).filter((f) => /\.ya?ml$/.test(f))) {
+    readFileSync(join(workflowDir, file), 'utf-8')
+      .split('\n')
+      .forEach((line, i) => {
+        const where = `.github/workflows/${file}:${i + 1}`;
+        // The matrix list first: ci.yml feeds it to `node-version` as an
+        // expression, so the literal is only ever in the list.
+        const list = /^\s*node:\s*\[([^\]]+)\]/.exec(line);
+        if (list) {
+          for (const [, major] of list[1].matchAll(/(\d+)\.[\dx]/g))
+            nodeSurfaces.push({ where, major });
+          return;
+        }
+        const direct = /node-version:\s*['"]?(\d+)\./.exec(line);
+        if (direct) nodeSurfaces.push({ where, major: direct[1] });
+      });
+  }
+}
+
+const appsDir = join(root, 'apps');
+if (existsSync(appsDir)) {
+  for (const app of readdirSync(appsDir)) {
+    const dockerfile = join(appsDir, app, 'Dockerfile');
+    if (!existsSync(dockerfile)) continue;
+    readFileSync(dockerfile, 'utf-8')
+      .split('\n')
+      .forEach((line, i) => {
+        // Node base images only — the console's runner stage is `FROM nginx:alpine`.
+        const m = /^FROM\s+node:(\d+)[.-]/.exec(line);
+        if (m) nodeSurfaces.push({ where: `apps/${app}/Dockerfile:${i + 1}`, major: m[1] });
+      });
+  }
+}
+
+if (nodeSurfaces.length === 0) {
+  fail('node version', 'found none in README.md, .github/workflows or apps/*/Dockerfile');
+} else {
+  const counts = new Map();
+  for (const { major } of nodeSurfaces) counts.set(major, (counts.get(major) ?? 0) + 1);
+  if (counts.size > 1) {
+    // Name every surface that disagrees, not the first one found: the fix is to
+    // move all of them to one major, which needs the whole list up front.
+    const [expected] = [...counts].sort((a, b) => b[1] - a[1])[0];
+    for (const { where, major } of nodeSurfaces) {
+      if (major !== expected)
+        fail(
+          where,
+          `declares Node ${major}, but ${counts.get(expected)} other surface(s) use ${expected}`,
+        );
+    }
+  }
+}
+
 // --- Report ---------------------------------------------------------------
 if (errors.length) {
   console.error(`\ndocs lint failed with ${errors.length} problem(s):\n`);

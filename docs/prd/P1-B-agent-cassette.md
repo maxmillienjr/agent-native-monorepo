@@ -447,7 +447,7 @@ apps/agent-service/src/eval/
   `EMBEDDING_DIMENSIONS`, the package stops being liftable and starts being a second place
   the eval types live. The header carries `embeddingDimensions` as data for exactly this
   reason.
-- **Sizing.** `M` assumes the determinism prerequisite is the only surprise. P0-A's lesson
+- **Sizing.** `L` assumes the determinism prerequisite is the only surprise. P0-A's lesson
   is that a defect found by reading is one defect and the count is known only after the
   thing runs — and the two facts in the Problem section that were found by running rather
   than reading, the stripped `EVAL_TRIALS` and the unstable Cypher ordering, are both
