@@ -172,6 +172,21 @@ describe('a replayed report', () => {
     expect(parsed.replay).toEqual(replayedReport.replay);
   });
 
+  it('reads pass^k against the k it was actually run at', () => {
+    // The suite asked for two and the cassettes allowed one. The header saying
+    // two would make `pass^k` on a single replayed trial look like reliability
+    // over two, which is the whole misreading the cap exists to prevent.
+    const capped: SuiteReport = {
+      ...replayedReport,
+      tasks: [{ ...replayedReport.tasks[0]!, trials: [trial(0, true)], trialsPerTask: 1 }],
+    };
+
+    expect(renderMarkdownSummary(capped)).toContain(
+      "**1 trial(s) per task**, capped below the suite's 2",
+    );
+    expect(renderMarkdownSummary(replayedReport)).toContain('**2 trial(s) per task**');
+  });
+
   it('prints when and against what the set was recorded, beside the axis line', () => {
     const markdown = renderMarkdownSummary(replayedReport);
     const axisLine = markdown.split('\n').findIndex((line) => line.startsWith('**Axes:**'));
