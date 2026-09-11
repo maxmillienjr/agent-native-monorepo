@@ -2,8 +2,10 @@ import { assertAxesSatisfy, skippedTasks } from './axes.js';
 import { ModelGrader } from './graders/model.js';
 import type {
   AgentHarness,
+  Axes,
   Grader,
   GraderResult,
+  ReplayProvenance,
   Suite,
   SuiteReport,
   Task,
@@ -16,6 +18,15 @@ export interface EvalHarnessOptions<TOutcome> {
   readonly suite: Suite<TOutcome>;
   /** Called once per finished trial. The runner writes no output of its own. */
   readonly onTrial?: (trial: Trial<TOutcome>) => void;
+  /**
+   * Which recording is serving this run, on the `replay` axis.
+   *
+   * It arrives as data rather than through `AgentHarness` because the cassette
+   * set is a set of files the caller already had to open to wire the replay up,
+   * and adding a method to the adapter interface for a value it would only pass
+   * through is a change every implementor pays for.
+   */
+  readonly replay?: ReplayProvenance;
 }
 
 async function runGraders<TOutcome>(
@@ -33,8 +44,22 @@ async function runGraders<TOutcome>(
   return results;
 }
 
+/**
+ * How many trials this task gets: the suite's figure, or the task's own where
+ * it asked for fewer.
+ *
+ * Only downwards. A task that could raise the suite's k would let one file
+ * decide what the whole run costs, and the reason a task carries the field at
+ * all is a shortage — of cassettes — rather than an appetite.
+ */
+export function trialsFor<TOutcome>(task: Task<TOutcome>, suite: Suite<TOutcome>): number {
+  const capped = Math.min(suite.trialsPerTask, task.trialsPerTask ?? suite.trialsPerTask);
+  return Math.max(0, capped);
+}
+
 function summarize<TOutcome>(
   task: Task<TOutcome>,
+  trialsPerTask: number,
   trials: readonly Trial<TOutcome>[],
 ): TaskReport<TOutcome> {
   const perGraderPassRate: Record<string, number> = {};
@@ -50,6 +75,7 @@ function summarize<TOutcome>(
     taskId: task.id,
     description: task.description,
     trials,
+    trialsPerTask,
     // Capability: at least one of k trials passed.
     passAtK: trials.some((trial) => trial.passed),
     // Reliability: all k passed. It decays as p^k, which is the point — it is
@@ -73,6 +99,7 @@ export class EvalHarness<TOutcome> {
   async run(): Promise<SuiteReport<TOutcome>> {
     const { agent, suite } = this.options;
     const axes = agent.axes();
+    assertReplayProvenance(axes, this.options.replay);
     const startedAt = new Date().toISOString();
 
     // Which tasks this run cannot measure anything with. Unlike the grader
@@ -97,8 +124,9 @@ export class EvalHarness<TOutcome> {
 
     for (const task of running) {
       const trials: Trial<TOutcome>[] = [];
+      const trialsPerTask = trialsFor(task, suite);
 
-      for (let index = 0; index < suite.trialsPerTask; index++) {
+      for (let index = 0; index < trialsPerTask; index++) {
         await agent.reset(task);
         const transcript = await agent.run(task);
         const outcome = await agent.captureOutcome(task, transcript);
@@ -117,7 +145,7 @@ export class EvalHarness<TOutcome> {
         this.options.onTrial?.(trial);
       }
 
-      taskReports.push(summarize(task, trials));
+      taskReports.push(summarize(task, trialsPerTask, trials));
     }
 
     // Only the tasks that ran contribute trials, so the rate is already over
@@ -132,6 +160,7 @@ export class EvalHarness<TOutcome> {
       finishedAt: new Date().toISOString(),
       axes,
       trialsPerTask: suite.trialsPerTask,
+      ...(this.options.replay === undefined ? {} : { replay: this.options.replay }),
       tasks: taskReports,
       passRate:
         allTrials.length === 0
@@ -140,6 +169,30 @@ export class EvalHarness<TOutcome> {
       skipped,
       uncalibratedGraders: uncalibrated(running),
     };
+  }
+}
+
+/**
+ * The two halves of "a replayed number says which recording produced it".
+ *
+ * Both directions are refused before a trial runs. A `replay` axis with no
+ * provenance publishes a frozen sample with nothing to date it against, and a
+ * provenance block on a run that was not replaying attributes a live number to
+ * a cassette set — the second is the worse of the two, and the cheaper to write
+ * by accident.
+ */
+function assertReplayProvenance(axes: Axes, replay: ReplayProvenance | undefined): void {
+  if (axes.model === 'replay' && replay === undefined) {
+    throw new Error(
+      'the model axis is `replay` and no cassette provenance was given: a replayed ' +
+        'rate has to name the set it came out of, or it cannot be told from a live one',
+    );
+  }
+  if (axes.model !== 'replay' && replay !== undefined) {
+    throw new Error(
+      `cassette provenance was given on model axis \`${axes.model}\`: a number this run ` +
+        'earned would be attributed to a recording that did not produce it',
+    );
   }
 }
 

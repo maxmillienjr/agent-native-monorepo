@@ -5,7 +5,7 @@
 _Last updated 2026-09-10. If this section is more than a few weeks stale, trust the code
 over it and update it._
 
-**Five PRDs are shipped and the system they describe is running.** The service answers
+**Six PRDs are shipped and the system they describe is running.** The service answers
 `POST /runs` and `POST /runs/stream`; `memory-core` is constructed by the app rather than
 sitting beside it; the graph compiles with a checkpointer and a retry policy on every node
 that performs I/O; and `packages/eval-harness` measures the result. Verified against live
@@ -13,7 +13,7 @@ stores from an empty database: one run leaves episodic rows, `:Concept` and `:Fa
 `semantic_facts` rows and checkpoints under the runId its own response returned.
 
 **`docs/STATUS.md` is the authority on any capability sentence, including the ones above.**
-Seventeen rows, each with a status, a file and a line — fourteen `implemented`, one
+Eighteen rows, each with a status, a file and a line — fifteen `implemented`, one
 `planned`, one `stubbed`, one `removed`, none `broken`. The rule that keeps it true is in
 `.context/conventions.md`: a change that moves a row moves it there in the same pull
 request. `yarn lint:docs` fails CI when a PRD's status disagrees with its row below.
@@ -42,17 +42,22 @@ unreachable exits 1 in about a second naming the cause. Selecting no-op writers 
 configured database is missing was the defect P2-A existed to remove, and it is not a
 reachable runtime path. A clone with no `.env` still serves both quickstart curls.
 
-**[P1-B](P1-B-agent-cassette.md) is in-progress, tracked in [#45](https://github.com/maxmillienjr/agent-native-monorepo/issues/45).**
+**[P1-B](P1-B-agent-cassette.md) has shipped**, tracked in [#45](https://github.com/maxmillienjr/agent-native-monorepo/issues/45).
 It records the model's decisions at the `ModelDeps` seam and replays them, which is what makes
 a pull-request evaluation tier affordable — without it P1-C has a live tier nobody leaves
-switched on, or a stub tier that measures nothing. Accepting it endorsed four judgement calls
-recorded in the PRD; reversing one is an edit to a criterion, not a reopen. Its determinism
-prerequisite landed first: both semantic retrievers now break a tied score on the content
-hash, because an untied order reaches `plan`'s prompt and a cassette is keyed on that prompt.
-`packages/agent-cassette` has landed next to it — the format, the request hash, the vector
-codec, the recorder and the player, with unit tests. Nothing is wired to it yet: no cassette
-has been recorded, `detectAxes` still returns `live` or `stub`, and `ModelAxis`'s new
-`'replay'` value has no producer until the wiring does.
+switched on, or a stub tier that measures nothing. Its determinism prerequisite landed first:
+both semantic retrievers break a tied score on the content hash, because an untied order
+reaches `plan`'s prompt and a cassette is keyed on that prompt. The set was recorded after
+that fix, on 2026-09-10 at `021c6f2` — one trial of each task, on model `live` / memory
+`live`, for eight `generateContent` calls — and that recording run passed every grader on
+both tasks. `EVAL_CASSETTE_MODE=replay yarn eval` reproduces all twenty-one grader results in
+two seconds against the recording's eighty-three, makes no request to
+`generativelanguage.googleapis.com`, and two consecutive replays produce an identical report.
+Read the number for what it is: a replayed `pass^k` is a frozen sample of that recording, it
+cannot catch the model getting worse (P1-E) or the client breaking (ADR 0005 names that
+defect class), and a task runs at most as many trials as it has cassettes so that one
+recording is never averaged with itself. What this is not yet is a CI tier — P1-C owns
+that.
 
 **Where the detail lives.** Each PRD carries its own risks, its divergences from the design
 that was reviewed, and — where a shipped record turned out to be wrong — the correction that
@@ -96,15 +101,15 @@ that `.github/workflows/agent-eval.yml` runs `yarn turbo test:eval`, which resol
 single integration suite in `packages/memory-core` that never invokes the agent — P1-C owns
 replacing it.
 
-| ID                                     | Title                                                         | Size | Status      |
-| -------------------------------------- | ------------------------------------------------------------- | ---- | ----------- |
-| [P1-A](P1-A-eval-harness.md)           | `packages/eval-harness` — evaluation as a first-class package | L    | shipped     |
-| [P1-B](P1-B-agent-cassette.md)         | `packages/agent-cassette` — decision-level record and replay  | L    | in-progress |
-| P1-C                                   | Tiered evaluation pipeline replacing the nightly stub         | M    | draft       |
-| P1-D                                   | Statistical regression gate with paired bootstrap             | M    | draft       |
-| P1-E                                   | Model-drift canary against pinned and floating model ids      | S    | draft       |
-| P1-F                                   | Cost, latency, and step budgets as CI assertions              | S    | draft       |
-| [P1-G](P1-G-task-axis-requirements.md) | Task-level axis requirements for the evaluation suite         | S    | shipped     |
+| ID                                     | Title                                                         | Size | Status  |
+| -------------------------------------- | ------------------------------------------------------------- | ---- | ------- |
+| [P1-A](P1-A-eval-harness.md)           | `packages/eval-harness` — evaluation as a first-class package | L    | shipped |
+| [P1-B](P1-B-agent-cassette.md)         | `packages/agent-cassette` — decision-level record and replay  | L    | shipped |
+| P1-C                                   | Tiered evaluation pipeline replacing the nightly stub         | M    | draft   |
+| P1-D                                   | Statistical regression gate with paired bootstrap             | M    | draft   |
+| P1-E                                   | Model-drift canary against pinned and floating model ids      | S    | draft   |
+| P1-F                                   | Cost, latency, and step budgets as CI assertions              | S    | draft   |
+| [P1-G](P1-G-task-axis-requirements.md) | Task-level axis requirements for the evaluation suite         | S    | shipped |
 
 ## Tier 2 — Make the architecture real
 

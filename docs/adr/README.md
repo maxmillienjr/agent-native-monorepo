@@ -13,3 +13,4 @@ and the answer is not obvious from the code.
 | [0002](0002-neo4j-and-pgvector-rather-than-one-store.md)            | Neo4j and pgvector rather than one store                             | accepted |
 | [0003](0003-payer-domain-with-licensing-and-phi-as-the-boundary.md) | Payer domain in scope, with licensed content and PHI as the boundary | accepted |
 | [0004](0004-one-candidate-universe-for-fusion.md)                   | One candidate universe for rank fusion                               | accepted |
+| [0005](0005-decision-seam-rather-than-transport-for-replay.md)      | Record at the decision seam rather than at the transport             | accepted |

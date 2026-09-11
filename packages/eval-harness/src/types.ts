@@ -231,6 +231,16 @@ export interface Task<TOutcome = Outcome> {
    * skip is reported beside the rate — it does not stop the suite.
    */
   readonly requires?: AxisRequirements;
+  /**
+   * A cap on this task's trials, below `Suite.trialsPerTask`. Raising it is not
+   * possible on purpose: the suite's figure is the ceiling.
+   *
+   * It exists for replay. A task has as many replayable trials as it has
+   * cassettes, and running a suite of five over a set of one would replay one
+   * recording five times and report `pass^k = pass@k` — a single sample
+   * presented as a reliability measurement.
+   */
+  readonly trialsPerTask?: number;
 }
 
 export interface Suite<TOutcome = Outcome> {
@@ -262,6 +272,12 @@ export interface TaskReport<TOutcome = Outcome> {
   readonly taskId: string;
   readonly description: string;
   readonly trials: readonly Trial<TOutcome>[];
+  /**
+   * How many trials this task was run for, which is `Suite.trialsPerTask`
+   * unless the task capped it. Stated rather than left to `trials.length`,
+   * because `pass^k` is only readable next to the k it was computed over.
+   */
+  readonly trialsPerTask: number;
   /** At least one of k trials passed. Capability. */
   readonly passAtK: boolean;
   /** All k trials passed. Reliability — it decays as p^k, which is the point. */
@@ -282,12 +298,38 @@ export interface SkippedTask {
   readonly problems: readonly string[];
 }
 
+/**
+ * Which recording a replayed number came out of.
+ *
+ * A replayed `pass^k` is a property of the cassette set as much as of the code,
+ * and the two things that say whether it still means anything are when the set
+ * was recorded and against which commit. Without them a report from a set
+ * recorded before a prompt edit is indistinguishable from one recorded after.
+ */
+export interface ReplayProvenance {
+  /**
+   * The oldest `recordedAt` in the set. The oldest rather than the newest
+   * because the question the field answers is how stale the set is.
+   */
+  readonly recordedAt: string;
+  /**
+   * The commit the set was recorded at. A set recorded in one run is uniform;
+   * a mixed set lists every sha it holds, comma-separated, rather than picking
+   * one to present as the answer.
+   */
+  readonly gitSha: string;
+  /** How many cassettes this run played. */
+  readonly cassettes: number;
+}
+
 export interface SuiteReport<TOutcome = Outcome> {
   readonly suite: string;
   readonly startedAt: string;
   readonly finishedAt: string;
   readonly axes: Axes;
   readonly trialsPerTask: number;
+  /** Present exactly when `axes.model` is `replay`. The runner enforces both halves. */
+  readonly replay?: ReplayProvenance;
   readonly tasks: readonly TaskReport<TOutcome>[];
   /** Trials passed / trials run — over the tasks that ran, not over `tasks`. */
   readonly passRate: number;

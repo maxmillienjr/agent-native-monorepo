@@ -1,0 +1,593 @@
+{
+  "header": {
+    "formatVersion": 1,
+    "taskId": "memory-recall-001",
+    "trialIndex": 0,
+    "recordedAt": "2026-09-11T01:48:09.269Z",
+    "gitSha": "021c6f2ebaa2dd67be605dee45f6ece08bc733c5",
+    "axes": {
+      "model": "live",
+      "memory": "live"
+    },
+    "chatModel": "gemini-2.5-flash",
+    "embeddingModel": "gemini-embedding-001",
+    "embeddingDimensions": 768
+  },
+  "decisions": [
+    {
+      "seam": "embed",
+      "requestHash": "c1761715f150f4b4fee664a39cc9a4e4a9cb51fdccea758ed3921c25e7263772",
+      "request": {
+        "text": "What are the key components of a stateful agent system?"
+      },
+      "response": {
+        "kind": "vector",
+        "float32Base64": "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"
+      },
+      "latencyMs": 287
+    },
+    {
+      "seam": "plan.callLlm",
+      "requestHash": "4f4aa5436e21bf6d23f2e608e83ab6d1a50089d56dbeb47e68104b090e5c2266",
+      "request": {
+        "systemPrompt": "You are a helpful research assistant.",
+        "userPrompt": "user: What are the key components of a stateful agent system?\n\nRelevant context:\n- [pgvector] Stateful agents maintain context across multiple interactions.\n\nBased on the above, create a plan to address the user's request."
+      },
+      "response": {
+        "kind": "value",
+        "value": {
+          "content": "Here's a plan to address your request regarding the key components of a stateful agent system:\n\n**Plan:**\n\n1.  **Define Stateful Agent:** Start with a brief recap of what a stateful agent is, emphasizing its ability to maintain context across interactions.\n2.  **Identify Core Components:** List the main architectural components that enable statefulness.\n3.  **Elaborate on Each Component:** For each identified component, describe its purpose, its role in maintaining state, and how it contributes to the agent's overall functionality. Where relevant, integrate the concept of `pgvector` for context retrieval.\n\n**Detailed Breakdown of Components:**\n\n1.  **Memory/Context Store:**\n    *   **Purpose:** The central repository where all historical interactions, learned information, user preferences, and observations are stored. This is the literal \"state\" of the agent.\n    *   **Types:**\n        *   **Short-term Memory (Working Memory):** Holds recent conversation turns, temporary variables, or active goals for the current interaction. It's often transient.\n        *   **Long-term Memory:** Stores persistent knowledge, user profiles, past conversations spanning multiple sessions, or factual data. This is where agents build lasting understanding.\n    *   **Relevance of pgvector:** For long-term memory, especially when dealing with large volumes of unstructured text (like chat history, documents, or knowledge bases), `pgvector` (or similar vector databases) is crucial. It allows the agent to store semantic embeddings of information and retrieve contextually relevant pieces through similarity search (often used in Retrieval Augmented Generation - RAG).\n\n2.  **Context Management / Retrieval Mechanism:**\n    *   **Purpose:** The logic that intelligently selects, processes, and synthesizes relevant pieces of information from the Memory Store for the agent's current task or response generation. This prevents overwhelming the agent (e.g., an LLM) with too much raw data.\n    *   **Functions:**\n        *   **Filtering:** Removing irrelevant past interactions.\n        *   **Summarization:** Condensing long conversations or documents into concise summaries.\n        *   **Semantic Search:** Using techniques like vector similarity search (powered by `pgvector`) to find information semantically related to the current input, even if the exact keywords aren't present.\n        *   **Prompt Construction:** Assembling the retrieved context along with the new input into a coherent prompt for the Agent Core.\n\n3.  **Agent Core / Reasoning Engine:**\n    *   **Purpose:** The \"brain\" of the agent. It receives new inputs, integrates them with the retrieved and managed context, and makes decisions on what to do or say next.\n    *   **Modern Implementations:** Often powered by Large Language Models (LLMs) that can understand, reason, and generate human-like text based on the provided context.\n    *   **Role in Statefulness:** Uses the current state (new input + retrieved context) to produce a state-aware output. It's where the \"understanding\" of the context happens.\n\n4.  **Input/Output Interface (with Tooling):**\n    *   **Purpose:** How the agent perceives the world and acts within it.\n    *   **Input:** Receives new information (e.g., user queries, sensor data, external events).\n    *   **Output:** Delivers responses (text, speech) or performs actions (e.g., calling an API, updating a database, sending an email).\n    *   **Tooling:** Mechanisms that allow the agent to interact with external systems or perform specific functions beyond just generating text (e.g., calculator, weather API, booking system). The agent decides *when* to use a tool based on its current state and goal.\n\n5.  **State Persistence Layer:**\n    *   **Purpose:** Ensures that the agent's long-term memory is durable and accessible across sessions, system restarts, or extended periods of inactivity. This is the underlying storage technology for the Memory Store.\n    *   **Technologies:** Databases (SQL like PostgreSQL with `pgvector` for embeddings, NoSQL like MongoDB for flexible document storage), file systems, or specialized vector databases. This layer guarantees that \"forgetting\" doesn't happen unless explicitly designed.\n\nBy detailing these components, the answer will comprehensively explain how a stateful agent system is structured and functions.",
+          "tokenCounts": {
+            "prompt": 58,
+            "completion": 922
+          }
+        }
+      },
+      "tokenCounts": {
+        "prompt": 58,
+        "completion": 922
+      },
+      "latencyMs": 11221
+    },
+    {
+      "seam": "act.selectTool",
+      "requestHash": "d66ca0050403f49199b2821a02972763757c67aa78a4217f33223cde209b8a78",
+      "request": {
+        "plan": "Here's a plan to address your request regarding the key components of a stateful agent system:\n\n**Plan:**\n\n1.  **Define Stateful Agent:** Start with a brief recap of what a stateful agent is, emphasizing its ability to maintain context across interactions.\n2.  **Identify Core Components:** List the main architectural components that enable statefulness.\n3.  **Elaborate on Each Component:** For each identified component, describe its purpose, its role in maintaining state, and how it contributes to the agent's overall functionality. Where relevant, integrate the concept of `pgvector` for context retrieval.\n\n**Detailed Breakdown of Components:**\n\n1.  **Memory/Context Store:**\n    *   **Purpose:** The central repository where all historical interactions, learned information, user preferences, and observations are stored. This is the literal \"state\" of the agent.\n    *   **Types:**\n        *   **Short-term Memory (Working Memory):** Holds recent conversation turns, temporary variables, or active goals for the current interaction. It's often transient.\n        *   **Long-term Memory:** Stores persistent knowledge, user profiles, past conversations spanning multiple sessions, or factual data. This is where agents build lasting understanding.\n    *   **Relevance of pgvector:** For long-term memory, especially when dealing with large volumes of unstructured text (like chat history, documents, or knowledge bases), `pgvector` (or similar vector databases) is crucial. It allows the agent to store semantic embeddings of information and retrieve contextually relevant pieces through similarity search (often used in Retrieval Augmented Generation - RAG).\n\n2.  **Context Management / Retrieval Mechanism:**\n    *   **Purpose:** The logic that intelligently selects, processes, and synthesizes relevant pieces of information from the Memory Store for the agent's current task or response generation. This prevents overwhelming the agent (e.g., an LLM) with too much raw data.\n    *   **Functions:**\n        *   **Filtering:** Removing irrelevant past interactions.\n        *   **Summarization:** Condensing long conversations or documents into concise summaries.\n        *   **Semantic Search:** Using techniques like vector similarity search (powered by `pgvector`) to find information semantically related to the current input, even if the exact keywords aren't present.\n        *   **Prompt Construction:** Assembling the retrieved context along with the new input into a coherent prompt for the Agent Core.\n\n3.  **Agent Core / Reasoning Engine:**\n    *   **Purpose:** The \"brain\" of the agent. It receives new inputs, integrates them with the retrieved and managed context, and makes decisions on what to do or say next.\n    *   **Modern Implementations:** Often powered by Large Language Models (LLMs) that can understand, reason, and generate human-like text based on the provided context.\n    *   **Role in Statefulness:** Uses the current state (new input + retrieved context) to produce a state-aware output. It's where the \"understanding\" of the context happens.\n\n4.  **Input/Output Interface (with Tooling):**\n    *   **Purpose:** How the agent perceives the world and acts within it.\n    *   **Input:** Receives new information (e.g., user queries, sensor data, external events).\n    *   **Output:** Delivers responses (text, speech) or performs actions (e.g., calling an API, updating a database, sending an email).\n    *   **Tooling:** Mechanisms that allow the agent to interact with external systems or perform specific functions beyond just generating text (e.g., calculator, weather API, booking system). The agent decides *when* to use a tool based on its current state and goal.\n\n5.  **State Persistence Layer:**\n    *   **Purpose:** Ensures that the agent's long-term memory is durable and accessible across sessions, system restarts, or extended periods of inactivity. This is the underlying storage technology for the Memory Store.\n    *   **Technologies:** Databases (SQL like PostgreSQL with `pgvector` for embeddings, NoSQL like MongoDB for flexible document storage), file systems, or specialized vector databases. This layer guarantees that \"forgetting\" doesn't happen unless explicitly designed.\n\nBy detailing these components, the answer will comprehensively explain how a stateful agent system is structured and functions.",
+        "toolNames": [
+          "web-search"
+        ]
+      },
+      "response": {
+        "kind": "value",
+        "value": null
+      },
+      "latencyMs": 884
+    },
+    {
+      "seam": "distill.extractEntities",
+      "requestHash": "095a28f2b61dfd70bc2fd6bfc81eed1f3f7f6c9ae982b8e888f9368b82065120",
+      "request": {
+        "context": "user: What are the key components of a stateful agent system?\nassistant: Here's a plan to address your request regarding the key components of a stateful agent system:\n\n**Plan:**\n\n1.  **Define Stateful Agent:** Start with a brief recap of what a stateful agent is, emphasizing its ability to maintain context across interactions.\n2.  **Identify Core Components:** List the main architectural components that enable statefulness.\n3.  **Elaborate on Each Component:** For each identified component, describe its purpose, its role in maintaining state, and how it contributes to the agent's overall functionality. Where relevant, integrate the concept of `pgvector` for context retrieval.\n\n**Detailed Breakdown of Components:**\n\n1.  **Memory/Context Store:**\n    *   **Purpose:** The central repository where all historical interactions, learned information, user preferences, and observations are stored. This is the literal \"state\" of the agent.\n    *   **Types:**\n        *   **Short-term Memory (Working Memory):** Holds recent conversation turns, temporary variables, or active goals for the current interaction. It's often transient.\n        *   **Long-term Memory:** Stores persistent knowledge, user profiles, past conversations spanning multiple sessions, or factual data. This is where agents build lasting understanding.\n    *   **Relevance of pgvector:** For long-term memory, especially when dealing with large volumes of unstructured text (like chat history, documents, or knowledge bases), `pgvector` (or similar vector databases) is crucial. It allows the agent to store semantic embeddings of information and retrieve contextually relevant pieces through similarity search (often used in Retrieval Augmented Generation - RAG).\n\n2.  **Context Management / Retrieval Mechanism:**\n    *   **Purpose:** The logic that intelligently selects, processes, and synthesizes relevant pieces of information from the Memory Store for the agent's current task or response generation. This prevents overwhelming the agent (e.g., an LLM) with too much raw data.\n    *   **Functions:**\n        *   **Filtering:** Removing irrelevant past interactions.\n        *   **Summarization:** Condensing long conversations or documents into concise summaries.\n        *   **Semantic Search:** Using techniques like vector similarity search (powered by `pgvector`) to find information semantically related to the current input, even if the exact keywords aren't present.\n        *   **Prompt Construction:** Assembling the retrieved context along with the new input into a coherent prompt for the Agent Core.\n\n3.  **Agent Core / Reasoning Engine:**\n    *   **Purpose:** The \"brain\" of the agent. It receives new inputs, integrates them with the retrieved and managed context, and makes decisions on what to do or say next.\n    *   **Modern Implementations:** Often powered by Large Language Models (LLMs) that can understand, reason, and generate human-like text based on the provided context.\n    *   **Role in Statefulness:** Uses the current state (new input + retrieved context) to produce a state-aware output. It's where the \"understanding\" of the context happens.\n\n4.  **Input/Output Interface (with Tooling):**\n    *   **Purpose:** How the agent perceives the world and acts within it.\n    *   **Input:** Receives new information (e.g., user queries, sensor data, external events).\n    *   **Output:** Delivers responses (text, speech) or performs actions (e.g., calling an API, updating a database, sending an email).\n    *   **Tooling:** Mechanisms that allow the agent to interact with external systems or perform specific functions beyond just generating text (e.g., calculator, weather API, booking system). The agent decides *when* to use a tool based on its current state and goal.\n\n5.  **State Persistence Layer:**\n    *   **Purpose:** Ensures that the agent's long-term memory is durable and accessible across sessions, system restarts, or extended periods of inactivity. This is the underlying storage technology for the Memory Store.\n    *   **Technologies:** Databases (SQL like PostgreSQL with `pgvector` for embeddings, NoSQL like MongoDB for flexible document storage), file systems, or specialized vector databases. This layer guarantees that \"forgetting\" doesn't happen unless explicitly designed.\n\nBy detailing these components, the answer will comprehensively explain how a stateful agent system is structured and functions."
+      },
+      "response": {
+        "kind": "value",
+        "value": {
+          "entities": [
+            {
+              "id": "sys_stateful_agent",
+              "label": "Stateful Agent System",
+              "description": "An agent system that maintains context across interactions."
+            },
+            {
+              "id": "comp_memory_context_store",
+              "label": "Memory/Context Store",
+              "description": "The central repository where all historical interactions, learned information, user preferences, and observations are stored, representing the literal 'state' of the agent."
+            },
+            {
+              "id": "type_short_term_memory",
+              "label": "Short-term Memory (Working Memory)",
+              "description": "Holds recent conversation turns, temporary variables, or active goals for the current interaction. It's often transient."
+            },
+            {
+              "id": "type_long_term_memory",
+              "label": "Long-term Memory",
+              "description": "Stores persistent knowledge, user profiles, past conversations spanning multiple sessions, or factual data, where agents build lasting understanding."
+            },
+            {
+              "id": "tech_pgvector",
+              "label": "pgvector",
+              "description": "A vector database extension for PostgreSQL, crucial for storing semantic embeddings and performing similarity search for context retrieval."
+            },
+            {
+              "id": "comp_context_mgmt_retrieval",
+              "label": "Context Management / Retrieval Mechanism",
+              "description": "The logic that intelligently selects, processes, and synthesizes relevant pieces of information from the Memory Store for the agent's current task or response generation."
+            },
+            {
+              "id": "func_filtering",
+              "label": "Filtering",
+              "description": "A function of context management that removes irrelevant past interactions."
+            },
+            {
+              "id": "func_summarization",
+              "label": "Summarization",
+              "description": "A function of context management that condenses long conversations or documents into concise summaries."
+            },
+            {
+              "id": "func_semantic_search",
+              "label": "Semantic Search",
+              "description": "A function of context management that uses techniques like vector similarity search to find semantically related information."
+            },
+            {
+              "id": "func_prompt_construction",
+              "label": "Prompt Construction",
+              "description": "A function of context management that assembles retrieved context along with new input into a coherent prompt for the Agent Core."
+            },
+            {
+              "id": "comp_agent_core",
+              "label": "Agent Core / Reasoning Engine",
+              "description": "The 'brain' of the agent that receives new inputs, integrates them with retrieved context, and makes decisions on what to do or say next."
+            },
+            {
+              "id": "tech_llms",
+              "label": "Large Language Models (LLMs)",
+              "description": "Modern implementations that often power the Agent Core, capable of understanding, reasoning, and generating human-like text."
+            },
+            {
+              "id": "comp_io_interface",
+              "label": "Input/Output Interface",
+              "description": "How the agent perceives the world and acts within it, handling inputs and delivering outputs."
+            },
+            {
+              "id": "comp_tooling",
+              "label": "Tooling",
+              "description": "Mechanisms that allow the agent to interact with external systems or perform specific functions beyond just generating text (e.g., calculator, API calls)."
+            },
+            {
+              "id": "comp_state_persistence",
+              "label": "State Persistence Layer",
+              "description": "Ensures that the agent's long-term memory is durable and accessible across sessions, system restarts, or extended periods of inactivity."
+            },
+            {
+              "id": "tech_databases",
+              "label": "Databases",
+              "description": "General category of technologies used by the State Persistence Layer."
+            },
+            {
+              "id": "type_sql_db",
+              "label": "SQL Database",
+              "description": "A type of database technology (e.g., PostgreSQL) for structured data storage."
+            },
+            {
+              "id": "tech_postgresql",
+              "label": "PostgreSQL",
+              "description": "An example of a SQL database, which can be extended with pgvector for embeddings."
+            },
+            {
+              "id": "type_nosql_db",
+              "label": "NoSQL Database",
+              "description": "A type of database technology (e.g., MongoDB) for flexible document storage."
+            },
+            {
+              "id": "tech_mongodb",
+              "label": "MongoDB",
+              "description": "An example of a NoSQL database for flexible document storage."
+            },
+            {
+              "id": "tech_file_systems",
+              "label": "File Systems",
+              "description": "A technology used by the State Persistence Layer for storing data."
+            },
+            {
+              "id": "tech_specialized_vector_dbs",
+              "label": "Specialized Vector Databases",
+              "description": "Technologies specifically designed for storing and querying vector embeddings."
+            },
+            {
+              "id": "concept_semantic_embeddings",
+              "label": "Semantic Embeddings",
+              "description": "Vector representations of information that capture semantic meaning, used in context retrieval."
+            },
+            {
+              "id": "concept_similarity_search",
+              "label": "Similarity Search",
+              "description": "A technique to find data points (vectors) that are semantically similar to a query, often used in Retrieval Augmented Generation (RAG)."
+            },
+            {
+              "id": "concept_rag",
+              "label": "Retrieval Augmented Generation (RAG)",
+              "description": "A paradigm where models retrieve relevant information from a knowledge base to augment their generation process."
+            }
+          ],
+          "relationships": [
+            {
+              "fromId": "sys_stateful_agent",
+              "toId": "comp_memory_context_store",
+              "type": "has component",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "comp_memory_context_store",
+              "toId": "type_short_term_memory",
+              "type": "has type",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "comp_memory_context_store",
+              "toId": "type_long_term_memory",
+              "type": "has type",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "type_long_term_memory",
+              "toId": "tech_pgvector",
+              "type": "uses",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "tech_pgvector",
+              "toId": "concept_semantic_embeddings",
+              "type": "enables",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "tech_pgvector",
+              "toId": "concept_similarity_search",
+              "type": "enables",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "concept_similarity_search",
+              "toId": "concept_rag",
+              "type": "is used in",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "sys_stateful_agent",
+              "toId": "comp_context_mgmt_retrieval",
+              "type": "has component",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "comp_context_mgmt_retrieval",
+              "toId": "comp_memory_context_store",
+              "type": "accesses",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "comp_context_mgmt_retrieval",
+              "toId": "func_filtering",
+              "type": "performs function",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "comp_context_mgmt_retrieval",
+              "toId": "func_summarization",
+              "type": "performs function",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "comp_context_mgmt_retrieval",
+              "toId": "func_semantic_search",
+              "type": "performs function",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "func_semantic_search",
+              "toId": "tech_pgvector",
+              "type": "powered by",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "comp_context_mgmt_retrieval",
+              "toId": "func_prompt_construction",
+              "type": "performs function",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "sys_stateful_agent",
+              "toId": "comp_agent_core",
+              "type": "has component",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "comp_agent_core",
+              "toId": "comp_context_mgmt_retrieval",
+              "type": "uses context from",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "comp_agent_core",
+              "toId": "tech_llms",
+              "type": "is often powered by",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "sys_stateful_agent",
+              "toId": "comp_io_interface",
+              "type": "has component",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "comp_io_interface",
+              "toId": "comp_tooling",
+              "type": "includes",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "sys_stateful_agent",
+              "toId": "comp_state_persistence",
+              "type": "has component",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "comp_state_persistence",
+              "toId": "type_long_term_memory",
+              "type": "stores",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "comp_state_persistence",
+              "toId": "tech_databases",
+              "type": "uses technology",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "tech_databases",
+              "toId": "type_sql_db",
+              "type": "has type",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "type_sql_db",
+              "toId": "tech_postgresql",
+              "type": "example",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "tech_postgresql",
+              "toId": "tech_pgvector",
+              "type": "can include",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "tech_databases",
+              "toId": "type_nosql_db",
+              "type": "has type",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "type_nosql_db",
+              "toId": "tech_mongodb",
+              "type": "example",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "comp_state_persistence",
+              "toId": "tech_file_systems",
+              "type": "uses technology",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "comp_state_persistence",
+              "toId": "tech_specialized_vector_dbs",
+              "type": "uses technology",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "comp_agent_core",
+              "toId": "comp_io_interface",
+              "type": "receives input via",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "comp_agent_core",
+              "toId": "comp_io_interface",
+              "type": "sends output via",
+              "confidence": 0.9
+            }
+          ],
+          "facts": [
+            {
+              "text": "A stateful agent emphasizes its ability to maintain context across interactions."
+            },
+            {
+              "text": "The Memory/Context Store is the central repository where all historical interactions, learned information, user preferences, and observations are stored, representing the literal 'state' of the agent."
+            },
+            {
+              "text": "Short-term Memory holds recent conversation turns, temporary variables, or active goals for the current interaction and is often transient."
+            },
+            {
+              "text": "Long-term Memory stores persistent knowledge, user profiles, past conversations spanning multiple sessions, or factual data, enabling agents to build lasting understanding."
+            },
+            {
+              "text": "pgvector is crucial for context retrieval in long-term memory, especially when dealing with large volumes of unstructured text, through semantic embeddings and similarity search."
+            },
+            {
+              "text": "The Context Management / Retrieval Mechanism prevents overwhelming the agent (e.g., an LLM) with too much raw data by intelligently selecting and processing relevant information."
+            },
+            {
+              "text": "Prompt Construction involves assembling the retrieved context along with new input into a coherent prompt for the Agent Core."
+            },
+            {
+              "text": "The Agent Core is the 'brain' of the agent, receiving new inputs, integrating them with retrieved context, and making decisions on what to do or say next."
+            },
+            {
+              "text": "Large Language Models (LLMs) often power the Agent Core, enabling it to understand, reason, and generate human-like text based on provided context."
+            },
+            {
+              "text": "The Agent Core uses the current state (new input + retrieved context) to produce a state-aware output, where the 'understanding' of the context happens."
+            },
+            {
+              "text": "The Input/Output Interface is how the agent perceives the world (receives new information like user queries or sensor data) and acts within it (delivers responses or performs actions)."
+            },
+            {
+              "text": "Tooling provides mechanisms for the agent to interact with external systems or perform specific functions beyond text generation, with the agent deciding when to use a tool based on its current state and goal."
+            },
+            {
+              "text": "The State Persistence Layer ensures that the agent's long-term memory is durable and accessible across sessions, system restarts, or extended periods of inactivity, guaranteeing that 'forgetting' doesn't happen unless explicitly designed."
+            }
+          ]
+        }
+      },
+      "latencyMs": 25391
+    },
+    {
+      "seam": "embed",
+      "requestHash": "c1749c307668c756bfffda2efe3c77d0a1eac32548bd13c4963f0d35a623897a",
+      "request": {
+        "text": "A stateful agent emphasizes its ability to maintain context across interactions."
+      },
+      "response": {
+        "kind": "vector",
+        "float32Base64": "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"
+      },
+      "latencyMs": 193
+    },
+    {
+      "seam": "embed",
+      "requestHash": "925de7741bfbbe77bb532cedff097c8ecfdae058be0cfb3721809216ce91734f",
+      "request": {
+        "text": "The Memory/Context Store is the central repository where all historical interactions, learned information, user preferences, and observations are stored, representing the literal 'state' of the agent."
+      },
+      "response": {
+        "kind": "vector",
+        "float32Base64": "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"
+      },
+      "latencyMs": 165
+    },
+    {
+      "seam": "embed",
+      "requestHash": "f55aa737faf251ab2a9dfd9fa9d381fb3349e9a88c794487cdec9ae6eb4d853f",
+      "request": {
+        "text": "Short-term Memory holds recent conversation turns, temporary variables, or active goals for the current interaction and is often transient."
+      },
+      "response": {
+        "kind": "vector",
+        "float32Base64": "bbqZvJSc6zzVn7g8jzn2vXqENb1hXGe9KrD5u8xp1btaez88haGKO+2EDLyKxgi9iOLOvCK+g7ptlVs+ByurPUnvNzskcEw9E7AtPVWvjL2PtbE8X+MrPFPG2bwbrJC8tXmxvM8H27zaYgM9ACGlPADfZz2uM9a8YVtfO7R6yjyUh547q8S2Ovh9jjvoeIU8FxQtPW8jHL0xsBK94tD9OvFGK7y/zYi8yWawvKfvGL0RGra8RpnsPMigl7w4CcG8xRvEPBzY7z25K+a89U+MPDdQBztqBIi+tJCJvCR1B72Q1nE8sy8qvPYnmToj6u283On2uhjfMjpgtfK8B0owvYqNLrvbCAe8vJWmvPn3WDxcfXK9LGoXPHoIkrw8gwG9B0YMPB53B71xsHu8of5vvSQaVD31oOe7s8KNvKxX5jxZoLY8/Cs1O4bgsjzxjVs8LkqPPP8byDr3+p08lxaSPEZ9njzK/Qq8gcarvJleEzxASrc8QsZYPLD5VTxobLc8NlycvGpjHT0kIv67lBMyvS/CUbx3v1C9g59BPPheDT1m3iQ9xx6IvVzWjryyAhe9q2TnOH4jMz3kqoQ7zv2oO3BzKL3ECRc9XNiiubUdib5Qui49SQ07vbbVCr35xjs9JSnzvMPLVD1sdCS85Nk6Pauz/Tysi7287pQUPQ6JHDti2zI8FA2tPF1Ajb00e5Y8X7DNvLdwmTsY30O8NUu9PNXx9bwCyKY7tIJjvRD6krzOMwa83dyHPaYDAz05Wy47ERYPO0ZD7zoDI348AKY8PS6gGz3ghV+9IkOrvBnD+7zOEpU7GWyaOxdqNDwqeZO9+7uAvOkUrrvmCPG8JYHHO6RHR7xZpgC91p5HPQb4ID3d2GY8MeFLPBpVW7r/UC69D9tcPaw8gzzeFlI8JTJXvbZLrTz0jIK915oYPT5nj7xGxUo9uIiBvWiOvrxAwni9k0ptO7oxcztn3O47w4hJPQzQBzzYmAO8NMQQPUdx3TnlHpq8ImsqvJkwAzxZWqG9WWPNvPAvnbyO/u261kiLvLnmq7zEVIU8AWYYPYge3Dz0suA8w5D8POZI5DwIxJ27sQ3IPNHl2Lzk2nK866kYvB3Im7wmJEm85X38uxsY/7tZo5G8TcLBu9Mh/jylzGK7pV8mvdwwljv35hI9/IsNverRrTwAZD88Wa+VPNsWsLsipXM8NawSPYr2Sb0qgQq8RDojuusBDz1pr2M8ZMmCO9t2obxXiBk8FoAePV1LnTy1uu27nwrvOwkpxjwm7dM8AuAguwD1GTylh0W9AVtZPScJoz18W/C8KkM/PMISm7zJAhY86J3nPAOC3ry+QPK68giwPDQ4tDsKpgq9IVcmvCf49DsjnM88udKnPMHTNj2Qkwu9js2ZOwYzJL29Wim8oTP5PIYQkLymzIg73firugwu/byl3e282JZVuroeJbo5FLs8DQKGvIO5JDsSEHa8O9jkvT7/P7zJ0rc8qdnLPNTdrbxE32i7Im5GPfWAvLwSG5w8uQ2PPTd9qLzWwWi8sQaku2HDIbyfl449yYI3PGrnODy24GE8BysTvUXCOb1N+gw75RGyPPBWTTzezea71QgwPG4YB7ymwkW9hNi7PSzHsLyJ2H28tnDCO66SkD1taLO7WRBHu69dEbwRDUo8+s2AvK0DRL3lxso8Sdsgu5eNgb2YRRi9MogKvaU6/rs6DiE9x2LuvPIVMDrwapw8CwWYvArT/bwhGnU75mRvu4p/AT1jHFq9teveuxxIlLxQIYM9RW0BPK01Ar2K6eq8BTw0PJnoTjyBVAo7j+VQPCXVuLxp5728VXk0PKKO17wC6AW8Xdy1PJ93WLyQhOE844Ppu1cu9bwxVTa8jeylPEADGT1wzpC87B9avVf5fj3DMH080QSSvIlziDxOlCI9Oto+veAqFD0MKJy7OcgVvInX3jy7Y4q8hAAevMFjQTxvww+99r3bPO33Rrzsaia9iLl3vPxfabzr47+7vWAIvG8fXbyFAWQ8Z8ONvOKaBj0d6CK8G/0xPd/BNr1xr6c7oiQKvUsiYj2j1Tw9gqlhPFWrA7zbfJ272TAHvAoLAT16n2680oXJO7KkAL0Vb2A7u1igugxkxjwxMHC88f/iPKNIvTyzNaG87/vlPIMqyzwrcdY8QLQbvHc2pTwXdQy9vOI9O6mVfzu21jO8AuwEPUDlbz2cEkK8RCLvPBY/KTxsO2I8SBoMPbgsFbx4sqM8bGynvDxMCbrhjmS86MHcPMal3zsmWW+8ys/7u/JSH7woOVc8QNe2O0S7I71eOi28uxZeu4+VzzlsH628kHaMu6UopzyU4i483ua7PC7ZGLs7Uio9qf5yO8paXDtTU3O8YVW2vOILaLvdwRW9CVO8vDwfo73m+ZI81ypiPZ4GRj0iefe7iiKBvEDzA7zH75I70XYSvYsT5zzl87u8fHGaPK0p37wTB3g7GYAyO1vHOj1wN408RVflu1xGNr3Hyxe93YxPPFrcAz0ugSu7KYTWPFK68Dy0pyu9XrdevVl1DT0kECq9ihjsvKjoyjzSg888g2svOtKaULwSl5Q8os5SvXhOxDyj86M9keLEPLXbbTw4lcs7I3P+PDTp7TyTkYW8uNYQvQwKKL3Y/hI8Z1hYvXBdgTyEUwy8XAhtPKGSIz19pQY89LoSPfN5QL0gKZs6kQZKvbmw7DwoLx29b1PuvLDVvjx13iA7VyGCvMxSqbzmgeu62upUPYTSDb0lUXY820g/POGi7jwzWFc9W547PS9LDL0gD+S7o+QOPIe7gj0F1hk74/HOvITL1Lu048K8Q/2vPBQQCLtb24O80BnXuI7dczvXSum8NE+vuzu6tbwNmmc6PVpDPdZubj29UEQ9x/TLuj1AB70BdRq8tQc5vYl1yTyFfka+/ngpOqiKp7yoUBO9mpkEvKFhkju91/28FhvUvAuhhTxZ+Zu8NMXHPBFd3Ts/Yua7ef7ruyjLFr1xzmc8Ax7svM4ii7xZ9oy83F3Fu2YNCLtGRSQ93m26ucICLbwSSfa8DqWTvJvI6jx4Efu77czOPFGiMr1G3MW8W7KsvFwcjjv4cqc8NfZwPVrizbufF/U8GFZiPIz37Lzirdy55jqZPFpSvztHp7O8aYsqvUW83DzVM3Y9MFU6PbhzCzvZtnu8xEM8PcK1Dbx7IZe8AxLpu2c+jbsnJ+S87Zo1PK2f7ruzrBO9/4IQvQI4tzxkljq9zHoAO6AYgzxkmi890UqrPNSVLb3wG/S7hbfCPCvqtLxxCIW8CHAjvTsncjtxVjA8qu6PPf07r7s/X5Y7d3YXvUSvOz0sss48rSvYO4K5iDw2w5O80ukVvkvvSr2hUIK8Bz6tu/e+rTypjP870ojyvMQhqzvZgHu8ykRqvCgUjb3iryo8O7Rivd9wrjxxV4k7+Y7Wu13vBD2Q65W7dgAsvUrukr0zkdM8F68+vDW+Bj3J4zC91+TAvHcDGj1AEly9iWSGvLevgz2IFzu9DXSLvNUHaL5q/G+8UPPXvPVAaz2/2EU67CNxvPPUETw+6KY8La8qPU4tJr1ljd07zGJTvWFlRL26A5q8QSaaPNExPj7y8B+8h2Muu7eZqb1Iy4+8bLtjvI6BArwbozy9MiDruz85n7xZq3I8Y4lrPCR08TtZrY28ZrPnPGxvlDurAKQ6wraSPFN8BjyxECy8PQaBPJheo7uEbbO9fsW0vMI3lrytsBA9/DVsPXed9jvjCaC8QgL5O0qhi7zkUrc7DV4cuz+5lrzsQ3e8wqHxug7GvL1xvqO8fxXLvHGfgLvLWMe6+2aDPIu+Fz0r2lo840G0PFewf7z4VoW851EfvJIrPTxO8pO58OS5vCyypzyYLB09dXxCvRih1TzXIYy9zF2APG6LHjwiKko860IiPSOG+7wBUj09f9UePCmgfDx9AgK8MjwPPBQiITzsLpi8XKzyPI7o+zrnfZm72M0cvagfIT3bYr081FGsPPgOlTzqIxI64RsiPY1CDbxfTag88gR0utTs1DwaTUg8JCdsvE7T8Tzs1wO92qPOvDZ9Fj2Q1hu9qrxKu47wBz1Cp1q8IsPxuz0dpDynypS8"
+      },
+      "latencyMs": 184
+    },
+    {
+      "seam": "embed",
+      "requestHash": "4dba703fd0e3fec62932fa9eb2c62d6d747266591f5a2a29cbeca8df90a3b858",
+      "request": {
+        "text": "Long-term Memory stores persistent knowledge, user profiles, past conversations spanning multiple sessions, or factual data, enabling agents to build lasting understanding."
+      },
+      "response": {
+        "kind": "vector",
+        "float32Base64": "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"
+      },
+      "latencyMs": 228
+    },
+    {
+      "seam": "embed",
+      "requestHash": "8d69acba864b96b8401114b3f0b8fd18e0d09108086ccf6c6ff5b9e7e1630d6f",
+      "request": {
+        "text": "pgvector is crucial for context retrieval in long-term memory, especially when dealing with large volumes of unstructured text, through semantic embeddings and similarity search."
+      },
+      "response": {
+        "kind": "vector",
+        "float32Base64": "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"
+      },
+      "latencyMs": 228
+    },
+    {
+      "seam": "embed",
+      "requestHash": "b59acce71e8140203c1c2b06cda092d42ff09850556cf8034b781fd7a63b734e",
+      "request": {
+        "text": "The Context Management / Retrieval Mechanism prevents overwhelming the agent (e.g., an LLM) with too much raw data by intelligently selecting and processing relevant information."
+      },
+      "response": {
+        "kind": "vector",
+        "float32Base64": "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"
+      },
+      "latencyMs": 231
+    },
+    {
+      "seam": "embed",
+      "requestHash": "8b092e118c73e1d7487ee5ab5b0921836d36903f1750560d663a981b4906dcd3",
+      "request": {
+        "text": "Prompt Construction involves assembling the retrieved context along with new input into a coherent prompt for the Agent Core."
+      },
+      "response": {
+        "kind": "vector",
+        "float32Base64": "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"
+      },
+      "latencyMs": 228
+    },
+    {
+      "seam": "embed",
+      "requestHash": "17720d4a1371056cd5ec92d53c847f2dc9441514acbbe5aafc3343b40641420f",
+      "request": {
+        "text": "The Agent Core is the 'brain' of the agent, receiving new inputs, integrating them with retrieved context, and making decisions on what to do or say next."
+      },
+      "response": {
+        "kind": "vector",
+        "float32Base64": "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"
+      },
+      "latencyMs": 230
+    },
+    {
+      "seam": "embed",
+      "requestHash": "b012328c2341d659e899616e80475266e627c341e2034b64ed7969ae3a495089",
+      "request": {
+        "text": "Large Language Models (LLMs) often power the Agent Core, enabling it to understand, reason, and generate human-like text based on provided context."
+      },
+      "response": {
+        "kind": "vector",
+        "float32Base64": "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"
+      },
+      "latencyMs": 227
+    },
+    {
+      "seam": "embed",
+      "requestHash": "fcfb68703c20af2a5c63d52c12b23876f9493caff3a6f544b90cc22a16eb6323",
+      "request": {
+        "text": "The Agent Core uses the current state (new input + retrieved context) to produce a state-aware output, where the 'understanding' of the context happens."
+      },
+      "response": {
+        "kind": "vector",
+        "float32Base64": "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"
+      },
+      "latencyMs": 231
+    },
+    {
+      "seam": "embed",
+      "requestHash": "5c5bb82e7880e022ae7ba5951cfcaa7618c22db82c5ac72623712b3db0dba9f6",
+      "request": {
+        "text": "The Input/Output Interface is how the agent perceives the world (receives new information like user queries or sensor data) and acts within it (delivers responses or performs actions)."
+      },
+      "response": {
+        "kind": "vector",
+        "float32Base64": "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"
+      },
+      "latencyMs": 229
+    },
+    {
+      "seam": "embed",
+      "requestHash": "30ce878229ae7d1efa1746e702f56d4192e895aa92fdf3f8defc10e44c59440e",
+      "request": {
+        "text": "Tooling provides mechanisms for the agent to interact with external systems or perform specific functions beyond text generation, with the agent deciding when to use a tool based on its current state and goal."
+      },
+      "response": {
+        "kind": "vector",
+        "float32Base64": "TPC0O3DPRD2aLnm6DzkAvhuy4bzbqaC7b8QUPODwIz0SZ4S71K8nO1lwH71Gr5i8T40DvbIeZzwQdE0+0uw2PVqN8jxJh4e8vb+JPBIjjLzb0l68uFIWvAqlEL1mVEa95YS3PHqMhLwNvyQ9lV/8O5LFQz3YTJC7pLSnO+wy6Dw6QuY73UGYPEUti7vO4AQ9tpcOPUmv3bzrwtc8zx0PPTfEW7yrJrS7Nn+cvBaxuzyYrVE9GqA1PEMkAT0ltwy9P3rmu/w5KTyLL1y8e+aRPKqg/Dx32IS+pbyQPIOiqrwZr5w61km3PKjxsTygxRM92TNXu62uEz3Km7c7BZtNvYqsYL3xcvO8OD4KO03oA70JUNa8BuQzvHMdgjw/ZF068oJuO+Fv3rsRgW88WktUvRvQNbzSZNo80SSavFjPsTzWdd48KjhGvTBLo7zQYI678dV7PHyNA72T1wk8PUXAPFg4ET1XbPk8iJH2PM+5czyDRFA9PDxYPerwzLy8yQq9s9j4vIhHBj3AMnG8pS1JugTp5jyyVRW9qObEvGTEgzxqFLg80LtJvR+j2jsQJow9KNmWvGGjnjxxWuA8trtvvJFCb71jhk06040dPLHdZb7hqWU8rLOkvFQGkLzGoKg7wzBfvawP5Dz0sbK86Co+PXStHDur96q8IoDxPOP9GLxIhUK9bUGvPMChdr1RVA+9UmXIvMDTBrz/fCM7lZIIPd5HfTvZQDw9KkycvAFrvLubIuO7aHaqPdoKHjyCtto78KUKvGC1Fr2/0kq9lvGvPDntfrvF5rm9SPgLPKaoUbzRziW9V5wSvXztgj2F4yO9U4McPAQ4czy6PeM7b0j3PHCXgzxE80W9BErKPFYuSDvtHyq86pVpOpQPn7ye9My8ACBCOzDFST32CvO84mOgPDuYT7uhYx+9rEnVOT73dD21duM8DmPCvEvKBzx40im98Zbeu9X39zwvjfi6BI1uPGv3bjwcy3G64qynvNjyUjw0dsE81Y1JvOt5D73c+AK8C4z6vKCoVDxHJu08LmQDvbxckL1UEho8IXPSvGSdKD01edA7PlggOwMrTTye3z29qjY8vBqtf7tnkae60Sz4vFbzMjycif+8ucTIOh3eXbyiiJi84E8PvWQ/FTxsaY48jV5vO6S2JTxboDm8+6ITvWT9MD3z3Uo8QGpXPLAcxzyTqRi9s3eWPBLm2bz/qXa8t7QlvYM8GrzuV728FBMAPUGtMDwc1qG8qzyEunkmFDyUgMy83qNrPBjNzzshaA09MhhTvJtHajvmEoE6SSo7PaqsEj174gO9/60nOxNVkLyi4pq8LCLVPKCag7wSOAQ9+QBnvMenGz3k3Yy88ePjOyzoOzx4Sq08X+jbvBFPB72YZWC8OJPYu4R0Nb0hXrm84MofvcMMKzxWQNA82Hmbu/DyXTpw48O8I8NcPOP+Ij0lRTU8ZHVzOiEeJT3Q5ow84jKIvUJujD0eVvY8w4vHu50cDjwubRG8ebzkPCrCJbzCyyg85dAPPTuvm7yD9iC9Xf5au9GbDTuS2rA8oNkyPady+LyRs4S62/Q4PEUuib0EXiS9M38ZPH6ZnzwRycE8eg09PRwqgbqGJZ47NnbGPbc4YDxACzS8YzfsPC6MQT2N2te7fLn7vAe1mbz59Wq8+9/ZvElAKb1lnoY8wZ53Oz+OMr10lH289g/kuqFbHL3Gxou8sY4JvcWM+zui/0I8XmETOS2j77xJdp28fkP1PIDACLpSzTY7gjwIvSin4rvQmGg9qgervdKpDzzGIQw93nMnPdf4ubxvtbC8bIzaPHThkLvLjvO8TEiMvBuM+zvdr0g4X2CIPXEpAD3nHKK6zbcKu6vo3LwwK6c7FtsSPKizcboJOxG94VqPvTOlhT11TLg7R7QEPRHNWT1ia5k7TWUzOnv+CD1qqTK9TLeZPNVidDwl6D6976kMPaxZfj07Bhi8VtOVPWUkALyrP287qMzIvIfJKLyGDCm9e7SCPDvb4Ly+uVs8sif2vBaelDxxDx297t2QPOjPBL0Z9m672sZ/vQum2buZKmM9WKHNPPY5xjx+Ps08XX8fvCPZlTwCUie9XhxQuu+BzDygSAG9DQY/PDqUOT1jVLW85sBWPJvNmbyETBc9guQXPI8GhTyRCZi85lpAvLXktb29B/A8tWmVvGnRejr9NIO8QXA2Pe91BT2f5Is830ffPLQThDybBnK9Y6k3PA2jZzwIvvO7WWuoPMtgDTy6YQy7bmxePe6FoDz99pG7HK5UvOLDUjyhsbO8psDUPCsYab0UiIG8G1ZKu76igbseS2e7cJxZu1A4Arzr/Ta9IS82vR01orzDvku73G4APTNHwTsLGzy7Y+YzPDeGHLylk6u6hb0UvDsnKb3TS7c8UYsvPaivuDx/GtW7sn4VvLMpALxlihG8N1xGOwsOOz3Puge8qa8CPUxBFDyemI88XNTeumJ5LDpVFDa850Clvalshbyy5Ua9qxY5PSHwRj2QnhC9gADEO2MVjT17jR68yk3TvHfknLsuNAu9/G0TPZoT1DuG0CA9Wmz0u2jZG71g5ew8//Evvce/L70qZqM8MZMRvXtt67wh6JQ8sU9PvLmcUTyQG5s8jNJ1Ok36IbxbUlG9KFESvWuLBj0gdg29RkbKvEIkmrtJ9ma8kR/Eu2jbFL24SlA9UsH4O1Fe97vAcU+9jXRzO6z2bryxfYq88iG1vPVuBztCtTW9yUTAPN9kQTxJ4wS9/ow5PCP9DLtgWDs8rGwFOppGLDzKf9C7cYsQvbk1nTy5Ifu8p2AcPJwHRj355a48Vq+PPHtdej0Fhgq8zmb5PNWQrjy45Ik7yaGFvPM6eLxZLgU9OsV3PW47lrteIAU9yx4VPNSA77vmIDA81gEaO2fOvTzFq1m+0L3MOx0LULz+UJm81QnZvCbFtTxc5tK8BQoTvRhes7vocoG6f/GBPMmwrztQKUk983LiO5S1GLwJTqG714/APEIsKbw4hxY9/n0EvRmruz3uDC68WiUQPIbkETvryKc8lB/WvB8tJT1e/u666QtEPSTl07ysDHk7gSyQPEPEc7wMCW27HByHPYIOA7xHAZk9S9dFvAv8v7v1I0A95kuovLRgDLzsj/S6WCAJvSi0sbysVD27BlpNvFz7rbvTrXE9YbsRPZYusb0/Gr+7S1mcu0nYIbz9puk6F1q9u/0JHL0L4Yu88ToBvOD4GrzMpOk6czxxvDuuuDwxF7U88h8UugM9mDyPA+o8CkQtvGwUQDxAikQ7t1W/u1S/GLwmDrU8vm55PF2vATw0yho59J8cujyDgD0na3o84c3IPOhMgr2wWJq8Xen9vS7r9TsEJlI9EsoQvYAInzs7Z+K8rWS1PGC027sRg1O84fjcvIwbiLzlnL08wN8jvTaMfL32ZwI9PCENPEyLSjwdNvc8/r5tOSmmHb0KLk68oygoPfQclD2txYa9D86BvOJEsjyB85m84+A5PWVCIr2+Z9G8f3dHvChxfr6H33C7sjkrva9QBj2IfWM9wSRhO7gmkDz0vIA85w4rPctmjL3rbDs9pAZ/vI3s3booH906ztimvCvKUz6I/5G8FUKvOkAuHj06jPK8AGmHvEyvybzjdiu9YBVYPI3d/jxYmh+88AZAPfUaMr2q6Uc88hu3PLyVyDxU+Zk7ZzAJPW+Afbz4Bzg9TeoiPFjJ+jyt1ny9MWXdvG8LQbwUDA493EUFPelVpzrzD928+ugNPOiUF7xlboW9z1AAvLVSMjybRtK8X9jyvB4uFL7R6cO7h8TlOjv+Rj1j0wg9Wf2fvIYcsDxKchE8usl7PauHGT1yk5e805fXPFzElbwCp3C8jUzZOrgs+TzGBhA97pQ0u3W1rjzDlgg8qai8vN5AHjyUEG89EmmSu1YnLL342Ms8p7RyvPvjET3Ny/m88xumPLvoMzxVGYk8/IPTu/eMlLtDK9s7/l+EvEXfCL1Ztse7Km2zPDf5zDzv/9o8S7dsvBZjyDsl97Q872ZSPXax4LyTIBc9G1YavVoJEDx7x3o5oG4nvbhPKj1ZOE69MfCJvNZYCz2ONxs8NMeuvBp6+jxu52K9"
+      },
+      "latencyMs": 235
+    },
+    {
+      "seam": "embed",
+      "requestHash": "b92a80c304b7d96b3aec8afc4a18eb7ac80341c08c411dd1d4e7852dbf324910",
+      "request": {
+        "text": "The State Persistence Layer ensures that the agent's long-term memory is durable and accessible across sessions, system restarts, or extended periods of inactivity, guaranteeing that 'forgetting' doesn't happen unless explicitly designed."
+      },
+      "response": {
+        "kind": "vector",
+        "float32Base64": "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"
+      },
+      "latencyMs": 234
+    }
+  ]
+}

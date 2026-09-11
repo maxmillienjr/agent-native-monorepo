@@ -67,11 +67,13 @@ nightly; `eval` is local-only until P1-C wires it into a pipeline.
   `envMode: strict` — the 2.x default — so a task receives only the variables its `env`
   array names, and an undeclared one arrives as `undefined` with nothing said. The damage
   is not uniform. Without `GOOGLE_API_KEY` every trial runs the canned model set, the suite
-  reports on canned strings, and it looks identical to one that is working. `EVAL_TRIALS`
-  and `EVAL_OUTPUT_DIR` fail quieter and still cost: both were documented as working knobs
-  for as long as they were absent from the list, so `EVAL_TRIALS=1 yarn eval` ran five
-  trials. Check the `env` array against what the script actually reads, not against the one
-  variable that broke last time.
+  reports on canned strings, and it looks identical to one that is working. `EVAL_TRIALS`,
+  `EVAL_OUTPUT_DIR` and `EVAL_CASSETTE_MODE` fail quieter and still cost: the first two were
+  documented as working knobs for as long as they were absent from the list, so
+  `EVAL_TRIALS=1 yarn eval` ran five trials. A stripped `EVAL_CASSETTE_MODE` is the
+  expensive one — a run that was asked to replay for nothing goes live instead. Check the
+  `env` array against what the script actually reads, not against the one variable that
+  broke last time.
 - **A task declares the axes it is meaningful on, and a skipped task is visible beside the
   rate.** A grader says what it needs in `requires` and the suite refuses when that is
   unmet; a task says the same thing in the `requires` block of its file and is **skipped**
@@ -96,6 +98,26 @@ nightly; `eval` is local-only until P1-C wires it into a pipeline.
   is a pass by shape and a no-op by content. `REQUIRE_INTEGRATION_ENV=1` turns the skip into
   a failure naming each missing variable; the nightly `test:eval` script sets it, and it is
   the flag to reach for whenever a green integration run needs to mean something.
+- **A cassette is recorded against a commit, a prompt and a model, and replays nothing
+  else.** `EVAL_CASSETTE_MODE=record` writes one cassette per trial to
+  `packages/eval-harness/datasets/memory-recall/cassettes/<taskId>.trial-<n>.json`, holding
+  the decisions the run made at the five `ModelDeps` seams and the tool call — not HTTP
+  traffic. `EVAL_CASSETTE_MODE=replay` serves them back with no model client in the process
+  at all, on a memory axis that stays live: the stores are still reset, re-seeded and read
+  by the outcome graders, because a replayed store read would leave those graders nothing
+  real to assert against. Recording is refused off the live model axis by the header
+  schema's two literals — a recording of the canned stub set is schema-valid, replays
+  cleanly and measures nothing.
+  **Re-record when any of these moves:** a prompt string (`plan.node.ts`,
+  `extraction.ts`, the `selectTool` instruction in `runs.service.ts`), the request a seam
+  sends, the chat or embedding model id, the embedding width, the tool registry, or a
+  graph change that alters which decisions a run makes. The first four are mechanical —
+  the request hash moves, every replay misses, and `CassetteMissError` prints the diff. The
+  cost is real and it falls on prompt changes, which are common here; the alternative,
+  keying on a normalized shape, serves the old answer to the new prompt and calls it a
+  pass. Re-recording needs a live key and about eight `generateContent` calls against a
+  20-request daily free tier, so it is a deliberate act rather than a step in a loop. ADR
+  0005 records the seam choice and what replay stops measuring.
 - **A retriever's `ORDER BY` needs a unique secondary key.** Both semantic readers produce
   ties by construction — `expandFromSeeds` scores on hop distance, and the eval harness
   seeds every fact in a task with one vector — and an untied order is decided by whatever

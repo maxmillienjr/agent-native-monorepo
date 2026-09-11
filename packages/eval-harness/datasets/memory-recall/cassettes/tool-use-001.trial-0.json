@@ -1,0 +1,467 @@
+{
+  "header": {
+    "formatVersion": 1,
+    "taskId": "tool-use-001",
+    "trialIndex": 0,
+    "recordedAt": "2026-09-11T01:48:51.022Z",
+    "gitSha": "021c6f2ebaa2dd67be605dee45f6ece08bc733c5",
+    "axes": {
+      "model": "live",
+      "memory": "live"
+    },
+    "chatModel": "gemini-2.5-flash",
+    "embeddingModel": "gemini-embedding-001",
+    "embeddingDimensions": 768
+  },
+  "decisions": [
+    {
+      "seam": "embed",
+      "requestHash": "b170a997f5acc817a59a450afd8456f6f1ef4aecc249f06ce46b8b319f001fa6",
+      "request": {
+        "text": "Search for what changed in the most recent LangGraph release and summarize it."
+      },
+      "response": {
+        "kind": "vector",
+        "float32Base64": "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"
+      },
+      "latencyMs": 314
+    },
+    {
+      "seam": "plan.callLlm",
+      "requestHash": "b63a24ed57726271562ad285d4ca6093a92a905ca6cb3661d382e0f9536e739a",
+      "request": {
+        "systemPrompt": "You are a helpful research assistant.",
+        "userPrompt": "user: Search for what changed in the most recent LangGraph release and summarize it.\n\nRelevant context:\n- [pgvector] An agent may call a tool when the answer is not already in memory.\n\nBased on the above, create a plan to address the user's request."
+      },
+      "response": {
+        "kind": "value",
+        "value": {
+          "content": "Here's a plan to address your request:\n\n1.  **Identify the Most Recent LangGraph Release:**\n    *   Check the official LangGraph GitHub repository's \"Releases\" section.\n    *   Alternatively, consult the LangGraph documentation or PyPI page for the latest version.\n\n2.  **Locate Release Notes/Changelog for that Release:**\n    *   Navigate to the specific release notes page or changelog entry corresponding to the most recent version identified in step 1.\n\n3.  **Extract Key Changes:**\n    *   Read through the release notes, identifying:\n        *   New features\n        *   Significant improvements or enhancements\n        *   Major bug fixes\n        *   Performance optimizations\n        *   Any breaking changes or deprecations\n        *   Updates to examples or documentation\n\n4.  **Summarize the Changes:**\n    *   Compile the extracted information into a concise summary, highlighting the most important updates.\n    *   Use bullet points or a structured paragraph format for readability.",
+          "tokenCounts": {
+            "prompt": 68,
+            "completion": 217
+          }
+        }
+      },
+      "tokenCounts": {
+        "prompt": 68,
+        "completion": 217
+      },
+      "latencyMs": 4138
+    },
+    {
+      "seam": "act.selectTool",
+      "requestHash": "2a2445dc0dabb29d794f82e64e6f2bd4676ac867b8ce90a29b084cc490021659",
+      "request": {
+        "plan": "Here's a plan to address your request:\n\n1.  **Identify the Most Recent LangGraph Release:**\n    *   Check the official LangGraph GitHub repository's \"Releases\" section.\n    *   Alternatively, consult the LangGraph documentation or PyPI page for the latest version.\n\n2.  **Locate Release Notes/Changelog for that Release:**\n    *   Navigate to the specific release notes page or changelog entry corresponding to the most recent version identified in step 1.\n\n3.  **Extract Key Changes:**\n    *   Read through the release notes, identifying:\n        *   New features\n        *   Significant improvements or enhancements\n        *   Major bug fixes\n        *   Performance optimizations\n        *   Any breaking changes or deprecations\n        *   Updates to examples or documentation\n\n4.  **Summarize the Changes:**\n    *   Compile the extracted information into a concise summary, highlighting the most important updates.\n    *   Use bullet points or a structured paragraph format for readability.",
+        "toolNames": [
+          "web-search"
+        ]
+      },
+      "response": {
+        "kind": "value",
+        "value": {
+          "toolName": "web-search",
+          "input": {
+            "query": "LangGraph latest release notes"
+          }
+        }
+      },
+      "latencyMs": 1102
+    },
+    {
+      "seam": "act.tool",
+      "label": "web-search",
+      "requestHash": "762a0c59c186585bc0a79ca83d397cff68514751fa6d9030fb6ee27153cdd7d3",
+      "request": {
+        "query": "LangGraph latest release notes"
+      },
+      "response": {
+        "kind": "value",
+        "value": {
+          "results": [
+            "Result for: {\"query\":\"LangGraph latest release notes\"}"
+          ]
+        }
+      },
+      "latencyMs": 1
+    },
+    {
+      "seam": "act.selectTool",
+      "requestHash": "2a2445dc0dabb29d794f82e64e6f2bd4676ac867b8ce90a29b084cc490021659",
+      "request": {
+        "plan": "Here's a plan to address your request:\n\n1.  **Identify the Most Recent LangGraph Release:**\n    *   Check the official LangGraph GitHub repository's \"Releases\" section.\n    *   Alternatively, consult the LangGraph documentation or PyPI page for the latest version.\n\n2.  **Locate Release Notes/Changelog for that Release:**\n    *   Navigate to the specific release notes page or changelog entry corresponding to the most recent version identified in step 1.\n\n3.  **Extract Key Changes:**\n    *   Read through the release notes, identifying:\n        *   New features\n        *   Significant improvements or enhancements\n        *   Major bug fixes\n        *   Performance optimizations\n        *   Any breaking changes or deprecations\n        *   Updates to examples or documentation\n\n4.  **Summarize the Changes:**\n    *   Compile the extracted information into a concise summary, highlighting the most important updates.\n    *   Use bullet points or a structured paragraph format for readability.",
+        "toolNames": [
+          "web-search"
+        ]
+      },
+      "response": {
+        "kind": "value",
+        "value": {
+          "toolName": "web-search",
+          "input": {
+            "query": "LangGraph latest release notes"
+          }
+        }
+      },
+      "latencyMs": 1236
+    },
+    {
+      "seam": "act.tool",
+      "label": "web-search",
+      "requestHash": "762a0c59c186585bc0a79ca83d397cff68514751fa6d9030fb6ee27153cdd7d3",
+      "request": {
+        "query": "LangGraph latest release notes"
+      },
+      "response": {
+        "kind": "value",
+        "value": {
+          "results": [
+            "Result for: {\"query\":\"LangGraph latest release notes\"}"
+          ]
+        }
+      },
+      "latencyMs": 0
+    },
+    {
+      "seam": "act.selectTool",
+      "requestHash": "2a2445dc0dabb29d794f82e64e6f2bd4676ac867b8ce90a29b084cc490021659",
+      "request": {
+        "plan": "Here's a plan to address your request:\n\n1.  **Identify the Most Recent LangGraph Release:**\n    *   Check the official LangGraph GitHub repository's \"Releases\" section.\n    *   Alternatively, consult the LangGraph documentation or PyPI page for the latest version.\n\n2.  **Locate Release Notes/Changelog for that Release:**\n    *   Navigate to the specific release notes page or changelog entry corresponding to the most recent version identified in step 1.\n\n3.  **Extract Key Changes:**\n    *   Read through the release notes, identifying:\n        *   New features\n        *   Significant improvements or enhancements\n        *   Major bug fixes\n        *   Performance optimizations\n        *   Any breaking changes or deprecations\n        *   Updates to examples or documentation\n\n4.  **Summarize the Changes:**\n    *   Compile the extracted information into a concise summary, highlighting the most important updates.\n    *   Use bullet points or a structured paragraph format for readability.",
+        "toolNames": [
+          "web-search"
+        ]
+      },
+      "response": {
+        "kind": "value",
+        "value": {
+          "toolName": "web-search",
+          "input": {
+            "query": "LangGraph latest release"
+          }
+        }
+      },
+      "latencyMs": 23094
+    },
+    {
+      "seam": "act.tool",
+      "label": "web-search",
+      "requestHash": "338ef8495597630eef0202066969421b7fff02478b929872eefaf7031d823517",
+      "request": {
+        "query": "LangGraph latest release"
+      },
+      "response": {
+        "kind": "value",
+        "value": {
+          "results": [
+            "Result for: {\"query\":\"LangGraph latest release\"}"
+          ]
+        }
+      },
+      "latencyMs": 0
+    },
+    {
+      "seam": "distill.extractEntities",
+      "requestHash": "ea87d209620bc383f2a8c5ef3ffad54472391a4b86ed326c6120a7b3745b7700",
+      "request": {
+        "context": "user: Search for what changed in the most recent LangGraph release and summarize it.\nassistant: Here's a plan to address your request:\n\n1.  **Identify the Most Recent LangGraph Release:**\n    *   Check the official LangGraph GitHub repository's \"Releases\" section.\n    *   Alternatively, consult the LangGraph documentation or PyPI page for the latest version.\n\n2.  **Locate Release Notes/Changelog for that Release:**\n    *   Navigate to the specific release notes page or changelog entry corresponding to the most recent version identified in step 1.\n\n3.  **Extract Key Changes:**\n    *   Read through the release notes, identifying:\n        *   New features\n        *   Significant improvements or enhancements\n        *   Major bug fixes\n        *   Performance optimizations\n        *   Any breaking changes or deprecations\n        *   Updates to examples or documentation\n\n4.  **Summarize the Changes:**\n    *   Compile the extracted information into a concise summary, highlighting the most important updates.\n    *   Use bullet points or a structured paragraph format for readability."
+      },
+      "response": {
+        "kind": "value",
+        "value": {
+          "entities": [
+            {
+              "id": "langgraph",
+              "label": "LangGraph",
+              "description": "A library or framework for building language agent graphs."
+            },
+            {
+              "id": "github_repository",
+              "label": "GitHub Repository",
+              "description": "A version control repository hosted on GitHub."
+            },
+            {
+              "id": "releases_section",
+              "label": "Releases Section",
+              "description": "A specific part of a GitHub repository where official software releases are announced."
+            },
+            {
+              "id": "langgraph_documentation",
+              "label": "LangGraph Documentation",
+              "description": "Official instructional or explanatory material for LangGraph."
+            },
+            {
+              "id": "pypi_page",
+              "label": "PyPI Page",
+              "description": "The page for a package on the Python Package Index (PyPI)."
+            },
+            {
+              "id": "release_notes",
+              "label": "Release Notes",
+              "description": "Documents accompanying a software release, detailing new features, bug fixes, and other changes."
+            },
+            {
+              "id": "changelog",
+              "label": "Changelog",
+              "description": "A file or record of all chronological, noteworthy changes to a project."
+            },
+            {
+              "id": "new_features",
+              "label": "New Features",
+              "description": "Brand new functionalities added to a software release."
+            },
+            {
+              "id": "improvements",
+              "label": "Improvements",
+              "description": "Enhancements or upgrades to existing functionalities."
+            },
+            {
+              "id": "bug_fixes",
+              "label": "Bug Fixes",
+              "description": "Corrections made to software errors or defects."
+            },
+            {
+              "id": "performance_optimizations",
+              "label": "Performance Optimizations",
+              "description": "Changes made to improve the speed or efficiency of the software."
+            },
+            {
+              "id": "breaking_changes",
+              "label": "Breaking Changes",
+              "description": "Changes that might cause existing code or integrations to stop working."
+            },
+            {
+              "id": "deprecations",
+              "label": "Deprecations",
+              "description": "Features or methods that are marked for removal in future releases."
+            },
+            {
+              "id": "examples",
+              "label": "Examples",
+              "description": "Illustrative code or usage demonstrations."
+            },
+            {
+              "id": "summary",
+              "label": "Summary",
+              "description": "A concise overview of information."
+            },
+            {
+              "id": "plan",
+              "label": "Plan",
+              "description": "A detailed proposal for doing or achieving something."
+            }
+          ],
+          "relationships": [
+            {
+              "fromId": "releases_section",
+              "toId": "github_repository",
+              "type": "PART_OF",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "langgraph_documentation",
+              "toId": "langgraph",
+              "type": "BELONGS_TO",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "pypi_page",
+              "toId": "langgraph",
+              "type": "FOR_PRODUCT",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "release_notes",
+              "toId": "new_features",
+              "type": "CONTAINS",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "release_notes",
+              "toId": "improvements",
+              "type": "CONTAINS",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "release_notes",
+              "toId": "bug_fixes",
+              "type": "CONTAINS",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "release_notes",
+              "toId": "performance_optimizations",
+              "type": "CONTAINS",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "release_notes",
+              "toId": "breaking_changes",
+              "type": "CONTAINS",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "release_notes",
+              "toId": "deprecations",
+              "type": "CONTAINS",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "release_notes",
+              "toId": "examples",
+              "type": "CONTAINS_UPDATES_TO",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "release_notes",
+              "toId": "langgraph_documentation",
+              "type": "CONTAINS_UPDATES_TO",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "changelog",
+              "toId": "new_features",
+              "type": "CONTAINS",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "changelog",
+              "toId": "improvements",
+              "type": "CONTAINS",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "changelog",
+              "toId": "bug_fixes",
+              "type": "CONTAINS",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "changelog",
+              "toId": "performance_optimizations",
+              "type": "CONTAINS",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "changelog",
+              "toId": "breaking_changes",
+              "type": "CONTAINS",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "changelog",
+              "toId": "deprecations",
+              "type": "CONTAINS",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "changelog",
+              "toId": "examples",
+              "type": "CONTAINS_UPDATES_TO",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "changelog",
+              "toId": "langgraph_documentation",
+              "type": "CONTAINS_UPDATES_TO",
+              "confidence": 0.9
+            }
+          ],
+          "facts": [
+            {
+              "text": "The plan involves identifying the most recent LangGraph release."
+            },
+            {
+              "text": "The plan suggests checking the official LangGraph GitHub repository's 'Releases' section."
+            },
+            {
+              "text": "The plan suggests consulting the LangGraph documentation or PyPI page for the latest version."
+            },
+            {
+              "text": "The plan involves locating release notes or changelog for the identified release."
+            },
+            {
+              "text": "The plan involves extracting key changes such as new features, improvements, bug fixes, performance optimizations, breaking changes, deprecations, and updates to examples or documentation."
+            },
+            {
+              "text": "The plan involves summarizing the extracted changes into a concise overview."
+            }
+          ]
+        }
+      },
+      "latencyMs": 9289
+    },
+    {
+      "seam": "embed",
+      "requestHash": "794261a20409c70723a864a98f8add5f3f065050dbe1ae38b607066bdf654cb0",
+      "request": {
+        "text": "The plan involves identifying the most recent LangGraph release."
+      },
+      "response": {
+        "kind": "vector",
+        "float32Base64": "ZahLvduWYT34lkK9CEoCvvyJMbxtRCo9sCrxO22/uTuLdSy8ZC/YvH7qPTw30tO8/Z44PCBngjwS5W4+GYP7u8gElbsfvMo82Zx9u5Czzrw/FvK8Joi3PPSUI7ylkki9GobTPL9qLboGPyw9jrITPIHroD2pYkw6vk8RvS7lBTxh4Wg8g4CKO+qSCT15gSo9+v6bvIB3ULyn+YY7x5yFOx3Wjry1WZ49BHEjPA/1b73ozes8+8CRPE/fq7y7Tua8k1jbvHx8yTwTohK9bI/QvIAhfb3b7oK+ch9BPXwPvL0j/vS8te4UPd13Rj16Oxs9VLYEvYGwHT3PRXy9c5lEvOneAz35jR298fCzOl1l0LxuU6U8B6EqvfZTM73V2Ac956rdvDYvqDl3i7K8AxBlvRoaljzCxDm9L2nLPZKqiz3pZ9C6ypb4vPX0vbwuOj29OBwkPJvjO7yBzKA7s+TUvDAfMr1Doyu77QYWPA5cKT2CzyA9GG/mu/wZjzy3Ap08Pk3gvOwsZLz6pXy85aFvPHVlA7zuP4S8x1LdvF2F2DwpMjm8c6ogu/UCazzh5a48nhLZOxK8Fz31+Bq851+OPBRT+LyTgW46pPIQuz6ZhL4pUFI8XKqPvOPvRr2zyoa7/LMgvLYNmrw2Bb+8A6OpPF7W0jzOoQu9AtVBvGvZNzvNZp68muSLvCoHA729RPi8jZisvPUJubwgWYm9v4VnvayJI7sQm7U8rXvXO40Vg7xzk508JfAsPViZwzxwMW68K4XYOyTNSrze9Ji8hlHSu4+mJD0Gipa9hA/7PF5qFTwPIns693NnvCPnYjkBeDO9oo2QveJsuzxh06g8BBCqPBnp97thPpK8G/RUPahUC7063uU7XjYiPXex5bu2sqk8EBKfO7JbND3lcDs9brR0vSukEryJ17Q6+SVSPHg0kDzElDe7b56Hu8/tT7wFxje98tMbvASICD2IuNI8YWxZPF9MTbxXJ8O8xelVvFuDjDwPmKI8FXZZPM4J8TtHKFy9+mAjPR00Rry0B6i80Aw3PHepEry1x6G7gN0GupHNBj2MZxy8of9TvWKJeTx/Kj+8c+EVPGO8xjw4ddQ87mUjPOu7+DwSPt+4b70Ju39yj7tNVFa8diqUvPnp6zzLfnC8XK8GPEhXvjs7wS48SHaBvPLT7zvgmTW8QkQDPKBQYj3GUYa84acEPY9z4LzZsGG82TJxvfnzxTyDG4u8pGIIPc8eLLzbxUi7ZPL8PPpuqjoxhQK9b2VXPZujeD2P86w6812ivE9YTjwfhbW8rao5PYpQ+zy/dhu9R2g/uUI1hbw/J7C6ub44PWAB0zxzKqM8x8NnvCz+pzo4hiI8eP7SvCOyGbysb448SbA+u27BWzqECIi6GeAhO3wACr2bfQi9aUI1PCGhBzyHxWs8UJKvvDRK3ryFAYa7I7gBPKnhLz1jUVQ8LYKLO7+4wjzp2WQ8g0MhvjRsoDxuV5A7ZcwqvTXy3jzy4PC8ggSMO9VakLwM/668wNLbO3BoALwc2h68BKXoOwxj3LxXIgY9R8vUPLX6ej0Ssn48hesWvHHTKb1J8yE8fvygPLOAAb0K8Cg9BtSvukx5CT3QxLc8WaCJPUHd3jyPPhK9X28bPS2WMT3DABO9moEpOqhpo7wnBwW8Mv/2vFHhEb0HwyW8camvvA/2ST1f+Ji9tIMsvON2dTu02tG7ahDOvEKxG704YRS8Xv1bvO54Ab2cgxg9vp5hOmnvMzwxKla9z2ufvKGAvTySZg090urYvKi89DtWAYI8/TgjvVUZ2rwxp1a8Wg3sPDdpMb3DQPM8RoQkvNIhsrpgso68tV0EPbeQ9Tu9twE88Zh/O+aEy7ysR427O4h3vCNbtzyNQ9S87KpAveXstjz5FY4700CZOsGhbD1J9QO9q0z2u6b1Z7wXx486GLrzu7Ixpjygqq28h8M5PaCa/jxfYXu8BCkqvPUopry43ji67056PSIcoLx0GlK8hg0Wvc3I8Lzp8B09wfSjvPSQij105gi91SIIPU7ZAb0zUmG8IS3ePHScLLy8rCI7b6zFu1LMsDs/JMu8JkmBvPAbCDw2Xoq8e3GIPIPhsbz+v7E7KcaePC7I/rzclIo7DFNbvNWKlDsilR887eQPvTpfTz0c8g495ibVPGo2Qb1YZga9bF7OPGNNx7wEvQG9NIMVPZL92DyPiWu8iCHfPORX9boBgni8Em0IvBjxlzzLUB89G97yPOWICj08pTq8FXv7uzAzIbxSb7a8Y/Ylve2AFL1HMWY71t9MvAp33jy7uPC89AGnPHCOgr0sQg29KijKvBXqOr0BYg+9iWBZuxV5A7wEyxo86DdAPM6/N70d9+M7xWqLupskObxZR2G9uo8OvT3Eqb1UtFo96VZbPfTyH70yb388gsiKPNEexzyHjry7r8IXvfh3hDzDS/C8+GgEPf73u7wYDvq8w9vTvAI0zbsJS388OvcyvWBtHL2SlM+8MP5ru46PyTyJC648YoKJPCfhHzyL1Ko82nYRvWz5ZbwdJS+8/CZ/PCqHczwxx4g80su8vLqFvbwq5WE9ztfivEpYDT2c41E9CS9jO0OMFTxDvKE82/WMO+rBVbvM1x09pC64usqX+7sK3U+8qUyPPVBdDTxAjoe6CVZHvNW14zxvUHk9DYZJu7n19jxj2PE8aQtLPAmGkLw6rg48H1EUPbzkKz0/ftI7iM5vPGMwzLviUj08i4yMvGN9tTxoARY7CF73OmrGqTtrs9M84susPBzsj73rSwS9t9VrvapGqzr1oLi62BGpu+axwDo44As9Dq22O5VK0bvHizK9TgM0PTKnALxy9Pc8LWXAu07Q3rwRxA49aT56vJcBFL3YEDg6Jw8AvS8eF7vvLT860g04vUT6HD288km+5vQEvBziQjuXGyI97RZ4vAb0tbz4UPW7el3mu2jS4zvOUda836MvvWhsqbwTL/k6jtd5PTYiPjxpKfy8Vvaou96OK7wHjCg9uQpEvIEqDj1DuiU9EwRjOwLJMDzdaL+8jWewO+UxLD1OXxw8Q2wIPCLS0jvboWO9muBRvOgTYDxuehI9Txr7PCu/Zjwiicc8JMmOPCcPNbu0OiS9oZhBPAELxTwFYwU9Vupnu3MlFb1Zx9q6Fou2OjMEKztJbwA70H3ZPDRkmbx+iWw6jp4mvTIFOryOPyG8Aq3gvKqyBr2IeR09cWrBu0QNpDy3d9+5t2iOvDwv/bsvA5M6Sg07vZl5fjkXTgw8ximBPTOsJL2YlFW8vAvTPGxeWr3iRRk8nKyjPGCnOb2WjOk8YXfIuidAdzsswqe7DZmWvGqwk7w5wXq8Un/9vQcTsTylOoS8peSOPNywKTvIb4K8D5b/u6hoTLsX9rA8Berqux1BTbxH1ZE8P5HYO7J1k7p9q1a8RWagPPvcGb3OsYE9XdwVPMLYmLqI17+4u3wnOwMhgzw28Iy8pVtMvX8ElD1p+Ge9l+pVvD/qHryosP+8LhnFu/UMbr5lKcU8xg34PF7+pbuXvBU6PH2rvNMjHL1DX48824f1O/efULxeb988TVrhvCpGrrwVSdE72ALiO/NzbT6VBJ86Y76bPMWtfDwguIw87R5jOxAwX71mfKy8W7CyvCTnWr2FhV65kzcmPO/m8rzRmqI8L58aPS6cxDxPlQM9QQCKPLgZgryU7Vk9uzNRPIZcB70CZRS9Ot2XvJFS4Ton7vU71HOAPbxt/bxA4bu8KK8XvZ8twbyT00e9gHFXvdt9ejvLJVK9krqavC3i773/IZy8mbv0vNlMoryFqE08KfGxvCc4NTxCzy893mpqPSTqHTzc6Qc8B5eePM1TqjzBydU7enoGvLWpiz26pZi8FND9PHUzWTzmtDu8OonQPCeQRLwa02a7qV42vd6/QzuesyE88ev6PAW/sbxPuZI8UnSKPQE81Dx9BCC8CYtAPOiubzxOLf68tYXmPJJymjw2+CK8Nj7AvCXO1bwpMco8eKAsvI+ghLwWkYO82sKCvCIAi7tuV4W8pPwPvDoIk7zEiiq8bDBYvR2hD7upyCC92FaaOx3WMD0FveA8C5XDu06D4jyHasm8"
+      },
+      "latencyMs": 158
+    },
+    {
+      "seam": "embed",
+      "requestHash": "2d79f40e19c2069c1f774b6615e6a1f40e74d2eda16f7d6b4b12b5a894f19b2a",
+      "request": {
+        "text": "The plan suggests checking the official LangGraph GitHub repository's 'Releases' section."
+      },
+      "response": {
+        "kind": "vector",
+        "float32Base64": "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"
+      },
+      "latencyMs": 165
+    },
+    {
+      "seam": "embed",
+      "requestHash": "46b7dc2b0e2f3e442cff88feb9cbc04204ad62f4b912655bd9a7d98f1e8d974f",
+      "request": {
+        "text": "The plan suggests consulting the LangGraph documentation or PyPI page for the latest version."
+      },
+      "response": {
+        "kind": "vector",
+        "float32Base64": "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"
+      },
+      "latencyMs": 174
+    },
+    {
+      "seam": "embed",
+      "requestHash": "b6e3dacf147b0171bad28fb4211868e84c06ffa006d5d10a1e6407d4c54a88b0",
+      "request": {
+        "text": "The plan involves locating release notes or changelog for the identified release."
+      },
+      "response": {
+        "kind": "vector",
+        "float32Base64": "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"
+      },
+      "latencyMs": 162
+    },
+    {
+      "seam": "embed",
+      "requestHash": "d518b5204e43a96d9c83a75233a2a43256de7c6e9c4589a7fdf4e6a149190fc8",
+      "request": {
+        "text": "The plan involves extracting key changes such as new features, improvements, bug fixes, performance optimizations, breaking changes, deprecations, and updates to examples or documentation."
+      },
+      "response": {
+        "kind": "vector",
+        "float32Base64": "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"
+      },
+      "latencyMs": 172
+    },
+    {
+      "seam": "embed",
+      "requestHash": "53f2723f07bdcd6a6c7def74d7ad1b479d5e147c70802d671e5d3959994a7ee0",
+      "request": {
+        "text": "The plan involves summarizing the extracted changes into a concise overview."
+      },
+      "response": {
+        "kind": "vector",
+        "float32Base64": "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"
+      },
+      "latencyMs": 164
+    }
+  ]
+}

@@ -19,7 +19,9 @@ NEO4J_URI=bolt://localhost:7687 \
 exercises the same `MemoryModule` providers, the same model axis and the same checkpointer
 a request would. Reports land in `apps/agent-service/eval-results/` — `eval-report.json`,
 `eval-report.xml` (JUnit) and `eval-summary.md` — or wherever `EVAL_OUTPUT_DIR` points.
-`EVAL_TRIALS` overrides the five trials per task.
+`EVAL_TRIALS` overrides the five trials per task, and `EVAL_CASSETTE_MODE` is `record` or
+`replay` — see below. All three are declared on `turbo.json`'s `eval` task, without which
+strict env mode strips them.
 
 This package deliberately declares **no `test:eval` script**. `agent-eval.yml` runs
 `yarn turbo test:eval` across every workspace, so declaring one here would silently make
@@ -58,7 +60,10 @@ passes assertions the real system fails.
 
 - **Model.** `RunsService` picks live Gemini dependencies when `GOOGLE_API_KEY` is set and a
   canned set otherwise. Turbo runs in `envMode: strict`, so `turbo.json`'s `eval` task has
-  to declare that variable or every trial silently runs on canned strings.
+  to declare that variable or every trial silently runs on canned strings. There is a third
+  value: `EVAL_CASSETTE_MODE=replay` serves every decision from a recorded cassette and the
+  axis reads `replay`, which is a value of its own rather than a disguise for `live` —
+  a replayed number is a frozen sample, not a measurement of the model.
 - **Memory.** `MemoryModule` resolves every adapter to `null` when `DATABASE_URL` and
   `NEO4J_URI` are absent, and `RunsService` substitutes no-op writers. Those stubs are
   load-bearing — a clone with no `.env` has to serve the quickstart curls — so the harness
@@ -126,10 +131,32 @@ verification, and this key's free-tier quota for `gemini-2.5-flash` `generateCon
 requests — a 5×2 suite needs roughly forty. The number above is therefore not the suite's
 live pass rate, and is not presented as one.
 
+## Recording and replaying a trial
+
+```bash
+EVAL_CASSETTE_MODE=record EVAL_TRIALS=1 yarn eval   # live model axis, writes cassettes
+EVAL_CASSETTE_MODE=replay yarn eval                 # no model call at all
+```
+
+A cassette records the decisions a trial made at the five `ModelDeps` seams — not HTTP
+traffic; ADR 0005 argues the seam choice and names what it stops measuring. They live in
+`datasets/memory-recall/cassettes/`, one file per trial, and the subdirectory matters:
+`loadSuite` parses every `.json` in the dataset directory as a task spec.
+
+Under replay the memory axis stays live — the stores are reset, re-seeded and read by the
+outcome graders exactly as in a live run — and a task runs at most as many trials as it has
+cassettes. Replaying one cassette five times would report `pass^k = pass@k` and present a
+single sample as a reliability measurement. Every report names the set's `recordedAt` and
+`gitSha`, because a replayed rate is a property of the recording as much as of the code.
+
+`.context/conventions.md` lists what invalidates a set. The short version: a prompt edit
+moves the request hash, every replay misses, and `CassetteMissError` prints the diff.
+
 ## What this package does not do
 
-- **Zero-cost replay.** Every trial is a real model call. P1-B makes the pull-request path
-  free.
+- **Reading a cassette.** This package resolves their paths and counts them; it never opens
+  one. `@repo/agent-cassette` is the format, and its only runtime dependency is `zod` —
+  importing it here for a type would end that.
 - **CI.** P1-C owns the tiered pipeline and retiring `memory-core`'s `test:eval` alias.
 - **Statistical gating.** `yarn eval` exits non-zero on any failing trial; deciding which
   failures should block a merge is P1-D.

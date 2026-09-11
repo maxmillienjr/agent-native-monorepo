@@ -4,6 +4,25 @@ const tick = (value: boolean): string => (value ? '✅' : '❌');
 const percent = (value: number): string => `${(value * 100).toFixed(0)}%`;
 
 /**
+ * The k the trials were actually run at.
+ *
+ * The suite's figure alone is a lie the moment a task caps itself below it, which
+ * is what every replayed task does — and `pass^k` read against the wrong k is the
+ * misreading the cap exists to prevent.
+ */
+function describeTrials(report: SuiteReport<unknown>): string {
+  const counts = report.tasks.map((task) => task.trialsPerTask);
+  if (counts.length === 0 || counts.every((count) => count === report.trialsPerTask)) {
+    return `**${report.trialsPerTask} trial(s) per task**`;
+  }
+
+  const low = Math.min(...counts);
+  const high = Math.max(...counts);
+  const spread = low === high ? `${low}` : `${low}–${high}`;
+  return `**${spread} trial(s) per task**, capped below the suite's ${report.trialsPerTask}`;
+}
+
+/**
  * A GitHub job-summary Markdown table.
  *
  * The axes line is first and is not optional. A suite run on the stub model set
@@ -25,10 +44,23 @@ export function renderMarkdownSummary(report: SuiteReport<unknown>): string {
     `## Eval — ${report.suite}`,
     '',
     `**Axes:** model \`${report.axes.model}\`, memory \`${report.axes.memory}\` · ` +
-      `**${report.trialsPerTask} trial(s) per task** · ` +
+      `${describeTrials(report)} · ` +
       `**overall pass rate ${percent(report.passRate)}**` +
       (report.skipped.length > 0 ? ` over ${ranCount} of ${taskCount} tasks` : ''),
   ];
+
+  // Beside the axis line rather than at the foot of the page: on the replay
+  // axis the rate is a property of the recording as much as of the code, and a
+  // reader who reaches the number without reaching the date of the set has no
+  // way to tell a regression from a cassette recorded before a prompt edit.
+  if (report.replay !== undefined) {
+    lines.push(
+      '',
+      `**Replayed from ${report.replay.cassettes} cassette(s)** recorded ` +
+        `\`${report.replay.recordedAt}\` at \`${report.replay.gitSha}\`. ` +
+        'A replayed `pass^k` is a frozen sample, not a reliability measurement.',
+    );
+  }
 
   if (report.skipped.length > 0) {
     lines.push(

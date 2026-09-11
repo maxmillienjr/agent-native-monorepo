@@ -2,7 +2,7 @@
 id: P1-B
 title: packages/agent-cassette — decision-level record and replay
 tier: 1
-status: in-progress
+status: shipped
 size: L
 depends_on: [P1-A]
 blocks: [P1-C]
@@ -368,51 +368,133 @@ apps/agent-service/src/eval/
       `yarn workspaces list`. Its only runtime dependency is `zod`.
 - [x] `Seam`, `CassetteSchema`, `Deck`, `CassetteRecorder`, `CassettePlayer` and
       `CassetteMissError` are exported from the package root.
-- [ ] `EVAL_CASSETTE_MODE=record yarn eval` on model `live` / memory `live` writes one
+- [x] `EVAL_CASSETTE_MODE=record yarn eval` on model `live` / memory `live` writes one
       cassette per trial, schema-valid against `CassetteSchema`, and the suite's own
-      reports are unchanged in shape.
-- [ ] Both tasks in `datasets/memory-recall/` have at least one committed cassette recorded
+      reports are unchanged in shape. Verified 2026-09-10: `EVAL_CASSETTE_MODE=record
+EVAL_TRIALS=1 yarn eval` wrote two cassettes, and the three reports carry the same
+      keys they did on the stub run beside a new `replay` block that a recording run does
+      not set.
+- [x] Both tasks in `datasets/memory-recall/` have at least one committed cassette recorded
       on the live model axis. The five-trial set is **not** required: recording it needs
       about forty `generateContent` calls against a 20-request free-tier quota, and P1-C
-      owns the pipeline that would run it.
-- [ ] `EVAL_CASSETTE_MODE=replay yarn eval` with `GOOGLE_API_KEY` **unset** reproduces the
-      recorded trials' per-grader results exactly, on memory `live`.
-- [ ] A replayed run makes no request to `generativelanguage.googleapis.com`, asserted at
-      runtime by the `undici:request:create` subscription, not by inspecting a bill.
-- [ ] Two consecutive replays of the same cassette set produce identical `eval-report.json`
-      after masking `startedAt`, `finishedAt`, `runId` and `latencyMs`.
+      owns the pipeline that would run it. One trial of each, recorded 2026-09-10 at
+      `021c6f2` for eight `generateContent` and twenty-one `embedContent` calls; the
+      recording run itself passed every grader on both tasks.
+- [x] `EVAL_CASSETTE_MODE=replay yarn eval` with `GOOGLE_API_KEY` **unset** reproduces the
+      recorded trials' per-grader results exactly, on memory `live`. Verified 2026-09-10:
+      all twenty-one grader results identical to the recording run's, in 2s against the
+      recording's 83s. Run with `GOOGLE_API_KEY=` rather than unset, because `run-eval.ts`
+      loads the repository root `.env` and unsetting the shell variable does not reach it —
+      `detectAxes` and `getDeps` both treat an empty value as absent.
+- [x] A replayed run makes no request to `generativelanguage.googleapis.com`, asserted at
+      runtime by the `undici:request:create` subscription, not by inspecting a bill. Both
+      replay runs reported none. The subscription is itself unit-tested by publishing on
+      the channel, because an empty violation list is also what a watcher subscribed to the
+      wrong channel name produces.
+- [x] Two consecutive replays of the same cassette set produce identical `eval-report.json`
+      after masking `startedAt`, `finishedAt`, `runId` and `latencyMs` — **and the run id
+      where `episodic_row_written` interpolates it into its explanation string**, which the
+      four named fields do not cover and which the criterion did not anticipate. With that
+      one substitution the two reports are byte-identical; without it they differ in
+      exactly those two strings and nowhere else.
 - [x] A miss throws `CassetteMissError` naming the seam, the request hash, and a diff of
       the recorded request against the actual one. Unit-tested.
 - [x] Replay refuses, with one unit test each: a header whose `axes.model` is not `live`; a
       `chatModel`, `embeddingModel` or `embeddingDimensions` that differs from the running
       configuration; a `formatVersion` that is not `1`.
-- [ ] Recording refuses when `detectAxes().model !== 'live'`.
+- [x] Recording refuses when `detectAxes().model !== 'live'`. Verified by running
+      `GOOGLE_API_KEY= EVAL_CASSETTE_MODE=record yarn eval`: it fails before the first
+      trial with `cassette recording refused: model=stub memory=live is not a live run`.
 - [x] A cassette in which one seam's first entry is an error and its second is a success
       replays as two attempts, reproducing the `IO_RETRY` retry. Unit-tested against a
       synthetic cassette.
-- [ ] No committed cassette contains a string matching `AIza[0-9A-Za-z_-]{35}`, asserted by
-      a unit test that walks the cassette directory.
-- [ ] Recorded vectors round-trip through base64 float32 with equality, and a recorded
-      trial's cassette is under 128 KB.
-- [ ] `ModelAxis` includes `'replay'`; `SuiteReport` carries the cassette set's
-      `recordedAt` and `gitSha`; the Markdown summary prints them beside the axis line.
-- [ ] A task runs at most as many trials as it has cassettes under replay, and the report
-      says the count it used.
-- [ ] `loadSuite` still loads exactly two tasks with the cassette directory present —
+- [x] No committed cassette contains a string matching `AIza[0-9A-Za-z_-]{35}`, asserted by
+      a unit test that walks the cassette directory. The test also refuses an empty
+      directory, which is what it would otherwise have kept passing over.
+- [x] Recorded vectors round-trip through base64 float32 with equality, and a recorded
+      trial's cassette is under 128 KB. Asserted over the committed files: 93.9 KB and
+      48.3 KB, and every recorded vector re-encodes to the bytes in the file.
+- [x] `ModelAxis` includes `'replay'`; `SuiteReport` carries the cassette set's
+      `recordedAt` and `gitSha`; the Markdown summary prints them beside the axis line, the
+      JUnit properties carry them on the same test suite as the `pass^k` they qualify, and
+      the runner refuses both a replay with no provenance and provenance on a run that was
+      not replaying.
+- [x] A task runs at most as many trials as it has cassettes under replay, and the report
+      says the count it used. The replay runs above were `EVAL_TRIALS` at its default of
+      five and one trial per task, with `TaskReport.trialsPerTask` reading 1 beside the
+      suite's 5.
+- [x] `loadSuite` still loads exactly two tasks with the cassette directory present —
       a regression test, because `dataset.ts:125` reads every `.json` in that directory.
+      Asserted twice: against the shipped dataset, and against a temporary one holding two
+      task files and a `cassettes/` full of `.json`.
 - [x] `expandFromSeeds` and `searchByCosine` each order by a unique secondary key, and an
       integration test asserts the graph query returns the same order across three
       delete-and-reseed cycles — the sequence that produced three different orders before
       the change.
-- [ ] `turbo.json`'s `eval` task declares `EVAL_CASSETTE_MODE`, `EVAL_TRIALS` and
-      `EVAL_OUTPUT_DIR`, confirmed by the same probe that found them missing:
-      `EVAL_TRIALS=1 yarn eval` runs one trial per task.
-- [ ] `docs/adr/0005-*.md` records the decision seam over the transport, is listed in the
-      ADR index, and names the defect class replay makes invisible.
-- [ ] `docs/STATUS.md` gains a row for zero-cost replay, and `.context/conventions.md` says
-      what a cassette is recorded against and when it must be re-recorded.
-- [ ] The package README states which axes each committed cassette was recorded on and that
+- [x] `turbo.json`'s `eval` task declares `EVAL_CASSETTE_MODE`, `EVAL_TRIALS` and
+      `EVAL_OUTPUT_DIR`, confirmed by the same probe that found them missing — the `eval`
+      script replaced with `node -p` reported all three present — and by
+      `EVAL_TRIALS=1 yarn eval` running one trial per task.
+- [x] `docs/adr/0005-*.md` records the decision seam over the transport, is listed in the
+      ADR index, and names the defect class replay makes invisible: everything between the
+      wire and the value a seam returns — `parseExtraction`, `l2Normalize`, the
+      `embedContent` response check — because the recorded value is the parsed one.
+- [x] `docs/STATUS.md` gains a row for zero-cost replay (row 18), and
+      `.context/conventions.md` says what a cassette is recorded against and the list of
+      changes that force a re-record.
+- [x] The package README states which axes each committed cassette was recorded on and that
       a replayed `pass^k` is a frozen sample, not a reliability measurement.
+
+## What shipped, and where it diverged from the design
+
+Measured 2026-09-10, memory `live` throughout:
+
+| Run                | Axis     | Result                     | Wall clock |
+| ------------------ | -------- | -------------------------- | ---------- |
+| recording, 1 x 2   | `live`   | 100%, every grader on both | 83s        |
+| replay of that set | `replay` | identical, all 21 results  | 2s         |
+| replay again       | `replay` | byte-identical report      | 2s         |
+
+Eight `generateContent` and twenty-one `embedContent` calls bought the set. The
+per-task split is worth recording because the Problem section's arithmetic was
+built on the first task only: `memory-recall-001` costs three and fourteen,
+`tool-use-001` costs **five** and seven, because its `act` node loops over three
+`web-search` selections and each iteration is another `selectTool` call. A
+five-trial set is therefore forty `generateContent` calls, not thirty.
+
+Three places where the implementation is not what the Design section describes,
+each deliberate:
+
+- **The axis is built lazily when a decorator is installed.** The design says the
+  replay decorator "ignores its argument", which makes "no Gemini client is
+  constructed" true only while `GOOGLE_API_KEY` happens to be absent — the axis
+  switch would have run first. `getDeps` now hands the decorator a `ModelDeps`
+  that constructs the real one on first use, so ignoring the argument is what
+  makes the claim structural. A unit test counts chat-client constructions on
+  both paths, because a client that is constructed and never used makes no
+  request either and proves nothing about the next change.
+- **The provenance reaches the report through `EvalHarnessOptions`, not through
+  `AgentHarness`.** The design says `SuiteReport` gains a `replay` block and does
+  not say how it gets there. The cassette headers are files the wiring has
+  already opened, and widening the adapter interface for a value it would only
+  pass through makes every implementor pay for one adapter's bookkeeping. The
+  runner refuses both halves of the lie instead: a `replay` axis with no
+  provenance, and provenance on a run that was not replaying.
+- **The trial index is counted in `AgentServiceHarness`, off `reset`.** Same
+  reasoning, and the runner's fixed order — reset, run, capture, grade — is what
+  makes counting resets the same as counting trials.
+
+The open question the design left is closed: `cassette-deps.test.ts` runs the same
+task twice through a recorder and asserts the request hashes match, so the premise
+that no recorded request depends on the `runId` is established by running rather
+than by reading five call sites.
+
+One thing the criteria did not anticipate. Two consecutive replays are identical
+after masking `startedAt`, `finishedAt`, `runId` and `latencyMs` **and** the run
+id where `episodic_row_written` interpolates it into its explanation string. The
+four named fields do not cover a uuid inside a grader's prose, and a future
+comparison that masks only those four will see a false difference in exactly two
+strings. P1-D, which compares reports against a baseline, inherits that.
 
 ## Risks and open questions
 

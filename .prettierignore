@@ -4,3 +4,7 @@ node_modules/
 .turbo/
 coverage/
 *.lock
+
+# Recorded cassettes. They are artifacts of a live run, not source: reformatting
+# one edits a recording, and `yarn format` must not be a way to do that casually.
+packages/eval-harness/datasets/*/cassettes/

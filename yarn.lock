@@ -2867,7 +2867,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@repo/agent-cassette@workspace:packages/agent-cassette":
+"@repo/agent-cassette@workspace:*, @repo/agent-cassette@workspace:packages/agent-cassette":
   version: 0.0.0-use.local
   resolution: "@repo/agent-cassette@workspace:packages/agent-cassette"
   dependencies:
@@ -2910,6 +2910,7 @@ __metadata:
     "@opentelemetry/auto-instrumentations-node": "npm:^0.80.0"
     "@opentelemetry/context-async-hooks": "npm:^2.11.0"
     "@opentelemetry/sdk-trace-base": "npm:^2.11.0"
+    "@repo/agent-cassette": "workspace:*"
     "@repo/agent-contracts": "workspace:*"
     "@repo/eslint-config": "workspace:*"
     "@repo/eval-harness": "workspace:*"
