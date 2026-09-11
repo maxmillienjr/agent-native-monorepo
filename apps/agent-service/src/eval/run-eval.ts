@@ -68,6 +68,17 @@ async function main(): Promise<void> {
         }),
     }).run();
 
+    // On the console as well as in the three files. A task that left the run is
+    // the one thing a reader scanning stdout for the pass rate has to see, and
+    // the rate is higher precisely because the task is missing from it.
+    for (const skipped of report.skipped) {
+      logger.warn({
+        msg: 'eval.task.skipped',
+        task: skipped.taskId,
+        problems: skipped.problems,
+      });
+    }
+
     mkdirSync(outputDir, { recursive: true });
     writeFileSync(resolve(outputDir, 'eval-report.json'), renderJsonReport(report));
     writeFileSync(resolve(outputDir, 'eval-report.xml'), renderJUnitReport(report));
@@ -77,6 +88,8 @@ async function main(): Promise<void> {
       msg: 'eval.done',
       axes: describeAxes(report.axes),
       passRate: report.passRate,
+      tasksRun: report.tasks.length,
+      tasksSkipped: report.skipped.map((skipped) => skipped.taskId),
       outputDir,
     });
 
