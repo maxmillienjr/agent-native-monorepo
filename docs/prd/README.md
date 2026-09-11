@@ -45,6 +45,10 @@ switched on, or a stub tier that measures nothing. Accepting it endorsed four ju
 recorded in the PRD; reversing one is an edit to a criterion, not a reopen. Its determinism
 prerequisite landed first: both semantic retrievers now break a tied score on the content
 hash, because an untied order reaches `plan`'s prompt and a cassette is keyed on that prompt.
+`packages/agent-cassette` has landed next to it — the format, the request hash, the vector
+codec, the recorder and the player, with unit tests. Nothing is wired to it yet: no cassette
+has been recorded, `detectAxes` still returns `live` or `stub`, and `ModelAxis`'s new
+`'replay'` value has no producer until the wiring does.
 
 **Where the detail lives.** Each PRD carries its own risks, its divergences from the design
 that was reviewed, and — where a shipped record turned out to be wrong — the correction that

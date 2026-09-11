@@ -364,9 +364,9 @@ apps/agent-service/src/eval/
 
 ## Acceptance criteria
 
-- [ ] `packages/agent-cassette` exists, builds, typechecks, lints, and is listed by
+- [x] `packages/agent-cassette` exists, builds, typechecks, lints, and is listed by
       `yarn workspaces list`. Its only runtime dependency is `zod`.
-- [ ] `Seam`, `CassetteSchema`, `Deck`, `CassetteRecorder`, `CassettePlayer` and
+- [x] `Seam`, `CassetteSchema`, `Deck`, `CassetteRecorder`, `CassettePlayer` and
       `CassetteMissError` are exported from the package root.
 - [ ] `EVAL_CASSETTE_MODE=record yarn eval` on model `live` / memory `live` writes one
       cassette per trial, schema-valid against `CassetteSchema`, and the suite's own
@@ -381,13 +381,13 @@ apps/agent-service/src/eval/
       runtime by the `undici:request:create` subscription, not by inspecting a bill.
 - [ ] Two consecutive replays of the same cassette set produce identical `eval-report.json`
       after masking `startedAt`, `finishedAt`, `runId` and `latencyMs`.
-- [ ] A miss throws `CassetteMissError` naming the seam, the request hash, and a diff of
+- [x] A miss throws `CassetteMissError` naming the seam, the request hash, and a diff of
       the recorded request against the actual one. Unit-tested.
-- [ ] Replay refuses, with one unit test each: a header whose `axes.model` is not `live`; a
+- [x] Replay refuses, with one unit test each: a header whose `axes.model` is not `live`; a
       `chatModel`, `embeddingModel` or `embeddingDimensions` that differs from the running
       configuration; a `formatVersion` that is not `1`.
 - [ ] Recording refuses when `detectAxes().model !== 'live'`.
-- [ ] A cassette in which one seam's first entry is an error and its second is a success
+- [x] A cassette in which one seam's first entry is an error and its second is a success
       replays as two attempts, reproducing the `IO_RETRY` retry. Unit-tested against a
       synthetic cassette.
 - [ ] No committed cassette contains a string matching `AIza[0-9A-Za-z_-]{35}`, asserted by
