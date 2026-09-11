@@ -70,21 +70,36 @@ workflow for you; the steps below are the tool-agnostic version.
    ├── src/
    │   └── index.ts
    ├── package.json
-   └── tsconfig.json
+   ├── tsconfig.json
+   ├── eslint.config.js
+   └── vitest.config.ts
    ```
-2. Set `package.json`:
+2. Set `package.json`. Every existing package matches this shape, and the two easy
+   omissions both fail quietly: `module` is `NodeNext`, so leaving `"type": "module"` out
+   emits CommonJS into a repository where every other workspace is ESM, and leaving the
+   `lint` script out means `yarn turbo lint` runs no task for the package and still reports
+   success.
    ```json
    {
      "name": "@repo/<name>",
      "private": true,
      "version": "0.0.0",
+     "type": "module",
      "main": "dist/index.js",
      "types": "dist/index.d.ts",
      "scripts": {
        "build": "tsc --build",
        "clean": "rm -rf dist *.tsbuildinfo",
        "typecheck": "tsc --noEmit",
+       "lint": "eslint src/",
        "test:unit": "vitest run"
+     },
+     "devDependencies": {
+       "@repo/eslint-config": "workspace:*",
+       "@repo/tsconfig": "workspace:*",
+       "eslint": "^9.39.5",
+       "typescript": "^5.7.0",
+       "vitest": "^4.1.11"
      }
    }
    ```
@@ -96,8 +111,12 @@ workflow for you; the steps below are the tool-agnostic version.
      "include": ["src"]
    }
    ```
-4. The package is auto-discovered by the `"workspaces": ["packages/*"]` glob.
-5. Run `yarn install` to link, then `yarn turbo build` to verify.
+4. `eslint.config.js` is one line — `export { default } from '@repo/eslint-config';` — and
+   `vitest.config.ts` sets `test.include` to `['src/**/*.test.ts']`, because unit tests are
+   co-located with their source.
+5. The package is auto-discovered by the `"workspaces": ["packages/*"]` glob.
+6. Run `yarn install` to link, then `yarn turbo build` to verify. `yarn workspaces list` is
+   what confirms the glob picked it up.
 
 ## Add a New Memory Adapter
 
