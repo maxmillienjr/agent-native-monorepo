@@ -1,7 +1,26 @@
 import { describe, it, expect } from 'vitest';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { EVAL_DATASETS_DIR, loadMemoryRecallSuite, loadSuite, taskFromSpec } from './dataset.js';
+import {
+  EVAL_DATASETS_DIR,
+  TaskSpecSchema,
+  loadMemoryRecallSuite,
+  loadSuite,
+  taskFromSpec,
+} from './dataset.js';
+import { skippedTasks } from './axes.js';
+
+const minimalSpec = {
+  id: 'minimal',
+  description: 'only one assertion',
+  retrievalPath: 'vector',
+  input: {
+    sessionId: '550e8400-e29b-41d4-a716-446655440000',
+    messages: [{ role: 'user', content: 'hello' }],
+  },
+  expectedOutcome: 'success',
+  assertions: { outcomeMustBe: 'success' },
+};
 
 describe('the shipped dataset', () => {
   it('resolves its directory from the package rather than a path literal', () => {
@@ -55,6 +74,46 @@ describe('the shipped dataset', () => {
     // memory-recall-001 reports the same metric without gating on it.
     const task = loadMemoryRecallSuite().tasks.find((t) => t.id === 'tool-use-001')!;
     expect(task.graders.map((g) => g.name)).toContain('tool_trajectory_recall');
+  });
+
+  it('declares the axes tool-use-001 is meaningful on, as a set', () => {
+    // A set rather than `live` alone, so P1-B's replay axis needs no edit here.
+    const task = loadMemoryRecallSuite().tasks.find((t) => t.id === 'tool-use-001')!;
+    expect(task.requires).toEqual({ model: ['live', 'replay'] });
+  });
+
+  it('leaves a task that declared nothing without a requirement', () => {
+    const task = loadMemoryRecallSuite().tasks.find((t) => t.id === 'memory-recall-001')!;
+    expect(task.requires).toBeUndefined();
+  });
+
+  it('skips nothing in the shipped suite once both axes are live', () => {
+    // The decision under test is the skip, and it is a function of the axes
+    // alone — so it is checkable here rather than by spending a live suite's
+    // worth of quota. Whether the tasks then *pass* on that axis is a different
+    // claim and belongs to a live run, which P1-C owns.
+    expect(skippedTasks(loadMemoryRecallSuite().tasks, { model: 'live', memory: 'live' })).toEqual(
+      [],
+    );
+  });
+
+  it('parses a scalar requirement as well as a set', () => {
+    const spec = TaskSpecSchema.parse({
+      ...minimalSpec,
+      requires: { model: 'live', memory: 'live' },
+    });
+    expect(spec.requires).toEqual({ model: 'live', memory: 'live' });
+  });
+
+  it('rejects an axis value that is not a member of its union', () => {
+    // The failure this prevents: a typo read as "no requirement", and the task
+    // silently running on the axis it said it could not use.
+    expect(() =>
+      TaskSpecSchema.parse({ ...minimalSpec, requires: { model: 'cassette' } }),
+    ).toThrow();
+    expect(() =>
+      TaskSpecSchema.parse({ ...minimalSpec, requires: { memory: ['live', 'partial'] } }),
+    ).toThrow();
   });
 
   it('builds no grader for an assertion the task does not declare', () => {

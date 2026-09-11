@@ -2,7 +2,8 @@
   "id": "tool-use-001",
   "description": "A question the agent cannot answer from memory, with one tool available",
   "retrievalPath": "vector",
-  "notes": "The task the first one does not cover: whether the agent reaches for the tool it has. `act` asks the model to pick a tool or return null, and the run is graded on tool_trajectory_recall — the reference names web-search and the trial has to make that call and have it succeed. Nothing is rigged: the tool is registered, the question is one no seeded fact answers, and the prompt says a tool may be selected. Retrieval is still the vector path, for the same reason memory-recall-001 is: the seed writes no :Fact, so expandFromSeeds has nothing to return.",
+  "requires": { "model": ["live", "replay"] },
+  "notes": "The task the first one does not cover: whether the agent reaches for the tool it has. `act` asks the model to pick a tool or return null, and the run is graded on tool_trajectory_recall — the reference names web-search and the trial has to make that call and have it succeed. Nothing is rigged: the tool is registered, the question is one no seeded fact answers, and the prompt says a tool may be selected. Retrieval is still the vector path, for the same reason memory-recall-001 is: the seed writes no :Fact, so expandFromSeeds has nothing to return. `requires` names the axes on which that grading means anything: the stub model's selectTool returns null for every input, so a 0 scored there is a property of the fixture rather than of the agent, and the harness skips the task instead of averaging it in. It is a set rather than `live` alone so a replayed run — P1-B — needs no edit here.",
   "input": {
     "sessionId": "550e8400-e29b-41d4-a716-4466554400b0",
     "messages": [
