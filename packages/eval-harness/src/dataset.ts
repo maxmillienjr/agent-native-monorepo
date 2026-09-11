@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
@@ -26,6 +26,66 @@ import { trajectoryGraders } from './graders/trajectory.js';
  * same trick `memory-core`'s migration folder uses.
  */
 export const EVAL_DATASETS_DIR = fileURLToPath(new URL('../datasets', import.meta.url));
+
+/** The one dataset shipped with the package. Spelled once, for the same reason. */
+export const MEMORY_RECALL_DATASET_DIR = join(EVAL_DATASETS_DIR, 'memory-recall');
+
+/**
+ * Where a dataset's cassettes live.
+ *
+ * The subdirectory is not decoration. `loadSuite` below reads every `.json` in
+ * the dataset directory and parses each as a task spec, so a cassette dropped
+ * beside a task file makes the whole suite throw on a Zod error. `readdirSync`
+ * is not recursive and `cassettes` does not end in `.json`, so a subdirectory
+ * is skipped.
+ */
+export function cassettesDir(datasetDir: string): string {
+  return join(datasetDir, 'cassettes');
+}
+
+export function cassettePath(datasetDir: string, taskId: string, trialIndex: number): string {
+  return join(cassettesDir(datasetDir), `${taskId}.trial-${trialIndex}.json`);
+}
+
+/**
+ * How many trials of a task can actually be replayed.
+ *
+ * Counted from trial 0 and stopping at the first gap, rather than counting
+ * files: the runner plays trial `i` of a task from the cassette named
+ * `trial-i`, so a set holding trials 0 and 2 can serve exactly one trial. A
+ * plain count would say two and miss on the second.
+ *
+ * This is also the whole of what `@repo/eval-harness` knows about a cassette.
+ * It does not read one, does not parse one, and does not import
+ * `@repo/agent-cassette` — that package's single runtime dependency is `zod`
+ * and a convenience import here is how that would stop being true.
+ */
+export function countCassettes(datasetDir: string, taskId: string): number {
+  let count = 0;
+  while (existsSync(cassettePath(datasetDir, taskId, count))) count += 1;
+  return count;
+}
+
+/**
+ * Caps every task in a suite at the number of cassettes it has.
+ *
+ * Replaying one cassette five times reproduces one recorded trial five times:
+ * `pass^k` would equal `pass@k` by construction and a single sample would be
+ * presented as a reliability measurement. The cap makes k the truth about the
+ * set rather than a number inherited from the live suite.
+ */
+export function capTrialsToCassettes<TOutcome>(
+  suite: Suite<TOutcome>,
+  datasetDir: string,
+): Suite<TOutcome> {
+  return {
+    ...suite,
+    tasks: suite.tasks.map((task) => ({
+      ...task,
+      trialsPerTask: countCassettes(datasetDir, task.id),
+    })),
+  };
+}
 
 /**
  * The task file format, superseding `run-fixture-001.json` while preserving it.
@@ -157,5 +217,5 @@ export function loadSuite(
 
 /** The dataset shipped with this package. */
 export function loadMemoryRecallSuite(trialsPerTask = 5): Suite<MemoryOutcome> {
-  return loadSuite('memory-recall', join(EVAL_DATASETS_DIR, 'memory-recall'), trialsPerTask);
+  return loadSuite('memory-recall', MEMORY_RECALL_DATASET_DIR, trialsPerTask);
 }

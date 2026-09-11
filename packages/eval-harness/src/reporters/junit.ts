@@ -50,8 +50,18 @@ export function renderJUnitReport(report: SuiteReport<unknown>): string {
       `    <properties>`,
       `      <property name="pass@k" value="${task.passAtK}"/>`,
       `      <property name="pass^k" value="${task.passHatK}"/>`,
+      `      <property name="trials_per_task" value="${task.trialsPerTask}"/>`,
       `      <property name="model_axis" value="${report.axes.model}"/>`,
       `      <property name="memory_axis" value="${report.axes.memory}"/>`,
+      // `pass^k` is read off the failure count against k, so on the replay axis
+      // the properties that date the recording belong on the same element as
+      // the number they qualify — a CI report is read one test suite at a time.
+      ...(report.replay === undefined
+        ? []
+        : [
+            `      <property name="cassettes_recorded_at" value="${escapeXml(report.replay.recordedAt)}"/>`,
+            `      <property name="cassettes_git_sha" value="${escapeXml(report.replay.gitSha)}"/>`,
+          ]),
       `    </properties>`,
     );
 

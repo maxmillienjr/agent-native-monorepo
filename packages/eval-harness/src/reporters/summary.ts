@@ -30,6 +30,19 @@ export function renderMarkdownSummary(report: SuiteReport<unknown>): string {
       (report.skipped.length > 0 ? ` over ${ranCount} of ${taskCount} tasks` : ''),
   ];
 
+  // Beside the axis line rather than at the foot of the page: on the replay
+  // axis the rate is a property of the recording as much as of the code, and a
+  // reader who reaches the number without reaching the date of the set has no
+  // way to tell a regression from a cassette recorded before a prompt edit.
+  if (report.replay !== undefined) {
+    lines.push(
+      '',
+      `**Replayed from ${report.replay.cassettes} cassette(s)** recorded ` +
+        `\`${report.replay.recordedAt}\` at \`${report.replay.gitSha}\`. ` +
+        'A replayed `pass^k` is a frozen sample, not a reliability measurement.',
+    );
+  }
+
   if (report.skipped.length > 0) {
     lines.push(
       '',

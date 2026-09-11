@@ -237,3 +237,118 @@ describe('EvalHarness', () => {
     await expect(harness.run()).rejects.toThrow(/no explanation/);
   });
 });
+
+describe('the per-task trial cap', () => {
+  const replayAxes: Axes = { model: 'replay', memory: 'live' };
+  const provenance = {
+    recordedAt: '2026-09-10T00:00:00.000Z',
+    gitSha: 'a'.repeat(40),
+    cassettes: 1,
+  };
+
+  it('runs a task as many times as it asked for, when it asked for fewer', async () => {
+    const log: string[] = [];
+    const report = await new EvalHarness<FakeOutcome>({
+      agent: fakeAgent(replayAxes, [{ wrote: true }], log),
+      suite: {
+        name: 's',
+        tasks: [task([alwaysPasses], { trialsPerTask: 1 })],
+        trialsPerTask: 5,
+      },
+      replay: provenance,
+    }).run();
+
+    expect(log).toEqual(['reset', 'run', 'capture']);
+    expect(report.tasks[0]!.trials).toHaveLength(1);
+  });
+
+  it('reports the count it used, not the suite’s', async () => {
+    const report = await new EvalHarness<FakeOutcome>({
+      agent: fakeAgent(replayAxes, [{ wrote: true }], []),
+      suite: {
+        name: 's',
+        tasks: [task([alwaysPasses], { trialsPerTask: 1 })],
+        trialsPerTask: 5,
+      },
+      replay: provenance,
+    }).run();
+
+    // `pass^k` over one trial is `pass@k` over one trial, and the only thing on
+    // the page that says so is the k beside it.
+    expect(report.tasks[0]!.trialsPerTask).toBe(1);
+    expect(report.trialsPerTask).toBe(5);
+  });
+
+  it('cannot raise the suite’s figure, only lower it', async () => {
+    const report = await new EvalHarness<FakeOutcome>({
+      agent: fakeAgent(liveAxes, [{ wrote: true }], []),
+      suite: {
+        name: 's',
+        tasks: [task([alwaysPasses], { trialsPerTask: 9 })],
+        trialsPerTask: 2,
+      },
+    }).run();
+
+    expect(report.tasks[0]!.trialsPerTask).toBe(2);
+    expect(report.tasks[0]!.trials).toHaveLength(2);
+  });
+
+  it('leaves a task that capped nothing on the suite’s figure', async () => {
+    const report = await new EvalHarness<FakeOutcome>({
+      agent: fakeAgent(liveAxes, [{ wrote: true }, { wrote: true }], []),
+      suite: { name: 's', tasks: [task([alwaysPasses])], trialsPerTask: 2 },
+    }).run();
+
+    expect(report.tasks[0]!.trialsPerTask).toBe(2);
+  });
+});
+
+describe('replay provenance', () => {
+  const replayAxes: Axes = { model: 'replay', memory: 'live' };
+  const provenance = {
+    recordedAt: '2026-09-10T00:00:00.000Z',
+    gitSha: 'b'.repeat(40),
+    cassettes: 2,
+  };
+
+  it('travels into the report, so a replayed rate names the set behind it', async () => {
+    const report = await new EvalHarness<FakeOutcome>({
+      agent: fakeAgent(replayAxes, [{ wrote: true }], []),
+      suite: { name: 's', tasks: [task([alwaysPasses])], trialsPerTask: 1 },
+      replay: provenance,
+    }).run();
+
+    expect(report.replay).toEqual(provenance);
+  });
+
+  it('refuses to replay without it, before a single trial runs', async () => {
+    const log: string[] = [];
+    const harness = new EvalHarness<FakeOutcome>({
+      agent: fakeAgent(replayAxes, [{ wrote: true }], log),
+      suite: { name: 's', tasks: [task([alwaysPasses])], trialsPerTask: 1 },
+    });
+
+    await expect(harness.run()).rejects.toThrow(/no cassette provenance/);
+    expect(log).toEqual([]);
+  });
+
+  it('refuses to attribute a live run to a cassette set', async () => {
+    const harness = new EvalHarness<FakeOutcome>({
+      agent: fakeAgent(liveAxes, [{ wrote: true }], []),
+      suite: { name: 's', tasks: [task([alwaysPasses])], trialsPerTask: 1 },
+      replay: provenance,
+    });
+
+    await expect(harness.run()).rejects.toThrow(/model axis `live`/);
+  });
+
+  it('leaves the block off a report that did not replay', async () => {
+    const report = await new EvalHarness<FakeOutcome>({
+      agent: fakeAgent(liveAxes, [{ wrote: true }], []),
+      suite: { name: 's', tasks: [task([alwaysPasses])], trialsPerTask: 1 },
+    }).run();
+
+    expect(report.replay).toBeUndefined();
+    expect(Object.keys(report)).not.toContain('replay');
+  });
+});

@@ -44,6 +44,7 @@ const report: SuiteReport = {
       taskId: 'memory-recall-001',
       description: 'a task',
       trials: [trial(0, true), trial(1, false)],
+      trialsPerTask: 2,
       passAtK: true,
       passHatK: false,
       perGraderPassRate: { episodic_row_written: 0.5 },
@@ -151,5 +152,52 @@ describe('renderMarkdownSummary', () => {
 
   it('reports each grader’s pass rate', () => {
     expect(renderMarkdownSummary(report)).toContain('| `episodic_row_written` | 50% |');
+  });
+});
+
+/** The replay axis: the same suite, served from a recorded set. */
+const replayedReport: SuiteReport = {
+  ...report,
+  axes: { model: 'replay', memory: 'live' },
+  replay: {
+    recordedAt: '2026-09-10T12:00:00.000Z',
+    gitSha: '3b696d5c0ffee1234567890abcdef1234567890a',
+    cassettes: 2,
+  },
+};
+
+describe('a replayed report', () => {
+  it('carries the set’s provenance through the JSON reporter', () => {
+    const parsed = JSON.parse(renderJsonReport(replayedReport)) as SuiteReport;
+    expect(parsed.replay).toEqual(replayedReport.replay);
+  });
+
+  it('prints when and against what the set was recorded, beside the axis line', () => {
+    const markdown = renderMarkdownSummary(replayedReport);
+    const axisLine = markdown.split('\n').findIndex((line) => line.startsWith('**Axes:**'));
+    const replayLine = markdown.split('\n').findIndex((line) => line.startsWith('**Replayed'));
+
+    expect(replayLine).toBe(axisLine + 2);
+    expect(markdown).toContain('2026-09-10T12:00:00.000Z');
+    expect(markdown).toContain('3b696d5c0ffee1234567890abcdef1234567890a');
+    // The sentence a reader has to leave with: the number is a property of the
+    // recording as much as of the code.
+    expect(markdown).toContain('frozen sample');
+  });
+
+  it('says nothing about a recording on a run that was not replaying', () => {
+    expect(renderMarkdownSummary(report)).not.toContain('Replayed');
+    expect(renderJUnitReport(report)).not.toContain('cassettes_recorded_at');
+  });
+
+  it('puts the provenance on the same test suite as the pass^k it qualifies', () => {
+    const xml = renderJUnitReport(replayedReport);
+    expect(xml).toContain(
+      '<property name="cassettes_recorded_at" value="2026-09-10T12:00:00.000Z"/>',
+    );
+    expect(xml).toContain(
+      '<property name="cassettes_git_sha" value="3b696d5c0ffee1234567890abcdef1234567890a"/>',
+    );
+    expect(xml).toContain('<property name="trials_per_task" value="2"/>');
   });
 });

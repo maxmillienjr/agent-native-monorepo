@@ -1,9 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import { existsSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
   EVAL_DATASETS_DIR,
+  MEMORY_RECALL_DATASET_DIR,
   TaskSpecSchema,
+  capTrialsToCassettes,
+  cassettePath,
+  cassettesDir,
+  countCassettes,
   loadMemoryRecallSuite,
   loadSuite,
   taskFromSpec,
@@ -135,5 +141,84 @@ describe('the shipped dataset', () => {
 
   it('refuses a dataset directory with no task files in it', () => {
     expect(() => loadSuite('empty', EVAL_DATASETS_DIR)).toThrow(/loaded no tasks/);
+  });
+});
+
+describe('the cassette directory', () => {
+  /** A dataset directory with two task files and a `cassettes/` beside them. */
+  function fixture(cassettes: string[]): string {
+    const dir = mkdtempSync(join(tmpdir(), 'eval-dataset-'));
+    for (const id of ['memory-recall-001', 'tool-use-001']) {
+      writeFileSync(join(dir, `${id}.json`), JSON.stringify({ ...minimalSpec, id }));
+    }
+    mkdirSync(cassettesDir(dir));
+    for (const name of cassettes) {
+      writeFileSync(join(cassettesDir(dir), name), '{"header":{},"decisions":[]}');
+    }
+    return dir;
+  }
+
+  it('is skipped by loadSuite, which is the whole reason it is a subdirectory', () => {
+    // `loadSuite` reads every `.json` in the dataset directory and parses each
+    // as a task spec. A cassette dropped beside a task file would not load as
+    // one extra task — it would make the suite throw on a Zod error and no
+    // trial would run at all.
+    const dir = fixture(['memory-recall-001.trial-0.json', 'tool-use-001.trial-0.json']);
+    try {
+      const suite = loadSuite('fixture', dir);
+      expect(suite.tasks.map((task) => task.id)).toEqual(['memory-recall-001', 'tool-use-001']);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('spells the cassette path in one place', () => {
+    expect(cassettePath('/d', 'memory-recall-001', 0)).toBe(
+      join('/d', 'cassettes', 'memory-recall-001.trial-0.json'),
+    );
+  });
+
+  it('counts a task’s replayable trials from trial 0, stopping at the first gap', () => {
+    // The runner plays trial `i` from the cassette named `trial-i`, so a set
+    // holding 0 and 2 can serve exactly one trial. A plain file count would say
+    // two and miss on the second.
+    const dir = fixture([
+      'memory-recall-001.trial-0.json',
+      'memory-recall-001.trial-2.json',
+      'tool-use-001.trial-0.json',
+      'tool-use-001.trial-1.json',
+    ]);
+    try {
+      expect(countCassettes(dir, 'memory-recall-001')).toBe(1);
+      expect(countCassettes(dir, 'tool-use-001')).toBe(2);
+      expect(countCassettes(dir, 'no-such-task')).toBe(0);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('caps every task at the number of cassettes it has', () => {
+    // Replaying one cassette five times reproduces one recorded trial five
+    // times: `pass^k` would equal `pass@k` by construction.
+    const dir = fixture(['memory-recall-001.trial-0.json']);
+    try {
+      const capped = capTrialsToCassettes(loadSuite('fixture', dir, 5), dir);
+      expect(capped.trialsPerTask).toBe(5);
+      expect(capped.tasks.map((task) => [task.id, task.trialsPerTask])).toEqual([
+        ['memory-recall-001', 1],
+        ['tool-use-001', 0],
+      ]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('leaves the shipped suite at exactly two tasks', () => {
+    // The regression the subdirectory exists to prevent, asserted against the
+    // real dataset rather than a fixture of it.
+    expect(loadMemoryRecallSuite().tasks).toHaveLength(2);
+    expect(cassettesDir(MEMORY_RECALL_DATASET_DIR)).toBe(
+      join(MEMORY_RECALL_DATASET_DIR, 'cassettes'),
+    );
   });
 });

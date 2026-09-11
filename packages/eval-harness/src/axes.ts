@@ -8,6 +8,36 @@ import type {
 } from './types.js';
 
 /**
+ * What `EVAL_CASSETTE_MODE` was set to.
+ *
+ * `off` is the unset case and is not a synonym for "no cassettes exist": it
+ * means this run neither records nor replays.
+ */
+export type CassetteMode = 'off' | 'record' | 'replay';
+
+/**
+ * Reads `EVAL_CASSETTE_MODE`, refusing anything that is not one of the two
+ * modes.
+ *
+ * A typo is the failure worth spending a throw on. `EVAL_CASSETTE_MODE=relay`
+ * read permissively would be `off`, which means a run that was asked to cost
+ * nothing spends the whole free-tier quota instead — and says nothing, because
+ * a live run is exactly what a live run looks like.
+ */
+export function readCassetteMode(env: NodeJS.ProcessEnv = process.env): CassetteMode {
+  const raw = (env['EVAL_CASSETTE_MODE'] ?? '').trim();
+
+  if (raw === '') return 'off';
+  if (raw === 'record' || raw === 'replay') return raw;
+
+  throw new Error(
+    `EVAL_CASSETTE_MODE is \`${raw}\`, which is neither \`record\` nor \`replay\`. ` +
+      'Refusing rather than reading it as unset: a run that was meant to replay and ' +
+      'quietly went live spends the quota the mode exists to save.',
+  );
+}
+
+/**
  * Reads the two axes from the environment, using exactly the variables the
  * service switches on.
  *
@@ -18,13 +48,20 @@ import type {
  * silently runs the canned model set — the suite reports on canned strings and
  * looks identical to one that is working. `turbo.json`'s `eval` task declares
  * it; `detectAxes` is what makes the consequence visible if it is ever dropped.
+ *
+ * `EVAL_CASSETTE_MODE` is the third variable, and only one of its two values is
+ * an axis. `replay` *is* the model axis: the trial is served from a recorded
+ * cassette and no model client is constructed. `record` is not — recording is a
+ * live run that keeps a copy, so the axis stays whatever the key made it, which
+ * is what puts `CassetteRecorder`'s refusal in reach when there is no key.
  */
 export function detectAxes(env: NodeJS.ProcessEnv = process.env): Axes {
   const hasKey = (env['GOOGLE_API_KEY'] ?? '') !== '';
   const hasStores = (env['DATABASE_URL'] ?? '') !== '' && (env['NEO4J_URI'] ?? '') !== '';
+  const replaying = readCassetteMode(env) === 'replay';
 
   return {
-    model: hasKey ? 'live' : 'stub',
+    model: replaying ? 'replay' : hasKey ? 'live' : 'stub',
     memory: hasStores ? 'live' : 'unconfigured',
   };
 }

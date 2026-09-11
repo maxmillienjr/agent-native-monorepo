@@ -21,6 +21,7 @@ export {
   type Message,
   type ModelAxis,
   type Outcome,
+  type ReplayProvenance,
   type Score,
   type SkippedTask,
   type SpanRecord,
@@ -42,10 +43,12 @@ export type { MemoryOutcome } from './outcome.js';
 export {
   detectAxes,
   describeAxes,
+  readCassetteMode,
   assertAxesSatisfy,
   skippedTasks,
   unmetRequirements,
   AxisRequirementError,
+  type CassetteMode,
 } from './axes.js';
 
 // Graders.
@@ -81,9 +84,14 @@ export {
 // Dataset format and loader.
 export {
   EVAL_DATASETS_DIR,
+  MEMORY_RECALL_DATASET_DIR,
   TaskSpecSchema,
   type TaskSpec,
   buildGraders,
+  capTrialsToCassettes,
+  cassettePath,
+  cassettesDir,
+  countCassettes,
   taskFromSpec,
   loadTaskSpec,
   loadSuite,
@@ -94,7 +102,7 @@ export {
 export { fixtureEmbedding } from './fixture-embedding.js';
 
 // Runner.
-export { EvalHarness, type EvalHarnessOptions } from './harness.js';
+export { EvalHarness, trialsFor, type EvalHarnessOptions } from './harness.js';
 
 // Reporters.
 export { renderJsonReport } from './reporters/json.js';

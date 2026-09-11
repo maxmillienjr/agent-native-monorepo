@@ -4,6 +4,7 @@ import {
   AxisRequirementError,
   describeAxes,
   detectAxes,
+  readCassetteMode,
   skippedTasks,
   unmetRequirements,
 } from './axes.js';
@@ -38,10 +39,41 @@ describe('detectAxes', () => {
     expect(detectAxes({ DATABASE_URL: 'postgres://x', NEO4J_URI: 'bolt://x' }).memory).toBe('live');
   });
 
+  it('reads the replay axis from EVAL_CASSETTE_MODE, key or no key', () => {
+    // Replay *is* the model axis: the trial is served from a recorded cassette
+    // and the wiring constructs no model client, so a key lying around in the
+    // environment must not turn it back into a live run.
+    expect(detectAxes({ EVAL_CASSETTE_MODE: 'replay' }).model).toBe('replay');
+    expect(detectAxes({ EVAL_CASSETTE_MODE: 'replay', GOOGLE_API_KEY: 'k' }).model).toBe('replay');
+  });
+
+  it('leaves the axis alone while recording, because recording is a live run', () => {
+    // This is what puts `CassetteRecorder`'s refusal in reach: record with no
+    // key and the axis is `stub`, which the recorder will not write.
+    expect(detectAxes({ EVAL_CASSETTE_MODE: 'record', GOOGLE_API_KEY: 'k' }).model).toBe('live');
+    expect(detectAxes({ EVAL_CASSETTE_MODE: 'record' }).model).toBe('stub');
+  });
+
   it('describes both axes in one line', () => {
     expect(describeAxes({ model: 'live', memory: 'unconfigured' })).toBe(
       'model=live memory=unconfigured',
     );
+  });
+});
+
+describe('readCassetteMode', () => {
+  it('reads an unset variable as off, and the two modes as themselves', () => {
+    expect(readCassetteMode({})).toBe('off');
+    expect(readCassetteMode({ EVAL_CASSETTE_MODE: '' })).toBe('off');
+    expect(readCassetteMode({ EVAL_CASSETTE_MODE: ' record ' })).toBe('record');
+    expect(readCassetteMode({ EVAL_CASSETTE_MODE: 'replay' })).toBe('replay');
+  });
+
+  it('refuses a typo rather than reading it as off', () => {
+    // Read permissively, `relay` is a run that was meant to cost nothing and
+    // instead spends the whole free-tier quota — and looks exactly like a live
+    // run while it does it.
+    expect(() => readCassetteMode({ EVAL_CASSETTE_MODE: 'relay' })).toThrow(/neither/);
   });
 });
 
