@@ -26,7 +26,21 @@ import { OutcomeSchema, type Message } from '@repo/shared-types';
  * to serve the quickstart curls — so the harness cannot remove them. What it
  * can do is refuse to report a number earned against them.
  */
-export type ModelAxis = 'live' | 'stub';
+/**
+ * `replay` is vocabulary, and nothing produces it yet.
+ *
+ * A replayed trial is served from a recorded cassette by
+ * `@repo/agent-cassette`, and it is a third value rather than a disguise for
+ * `live` because a replayed `pass^k` is a frozen sample: it reproduces the
+ * recorded run exactly, catches a change in the graph, the prompts' effect on
+ * branching, the memory writes and the graders, and cannot catch the model
+ * getting worse or the client breaking.
+ *
+ * `detectAxes` does not return it and will not until P1-B's wiring lands. A
+ * producer that ran ahead of the wiring would label a live run as replayed,
+ * which is the class of quiet lie the axes exist to prevent.
+ */
+export type ModelAxis = 'live' | 'stub' | 'replay';
 export type MemoryAxis = 'live' | 'unconfigured';
 
 export interface Axes {
