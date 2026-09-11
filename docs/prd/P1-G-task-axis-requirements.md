@@ -2,11 +2,11 @@
 id: P1-G
 title: Task-level axis requirements for the evaluation suite
 tier: 1
-status: draft
+status: shipped
 size: S
 depends_on: [P1-A]
 blocks: []
-issue: null
+issue: 49
 superseded_by: null
 ---
 
@@ -162,29 +162,60 @@ tasks that were not run and what each needed.
 
 ## Acceptance criteria
 
-- [ ] `AxisRequirements` accepts a scalar or an array on both axes, and every grader that
+- [x] `AxisRequirements` accepts a scalar or an array on both axes, and every grader that
       declares a scalar today is unchanged. Unit test for both forms, on both axes.
-- [ ] `Task.requires` exists and `TaskSpecSchema` parses a `requires` object from the task
+- [x] `Task.requires` exists and `TaskSpecSchema` parses a `requires` object from the task
       JSON, rejecting an axis value that is not a member of its union.
-- [ ] `tool-use-001.json` declares `"requires": { "model": ["live", "replay"] }`.
-- [ ] On model `stub` / memory `live`, `yarn eval` runs `memory-recall-001`, does not run
+- [x] `tool-use-001.json` declares `"requires": { "model": ["live", "replay"] }`.
+- [x] On model `stub` / memory `live`, `yarn eval` runs `memory-recall-001`, does not run
       `tool-use-001`, and exits 0.
-- [ ] That run's `eval-report.json` carries `skipped` naming `tool-use-001`, with a reason
+- [x] That run's `eval-report.json` carries `skipped` naming `tool-use-001`, with a reason
       that states both the axis the run had and the set the task needed — the stub model
       axis against `live` or `replay`.
-- [ ] `eval-summary.md` from that run names the skipped task and its reason next to the pass
+- [x] `eval-summary.md` from that run names the skipped task and its reason next to the pass
       rate. A reader cannot see the rate without seeing the exclusion.
-- [ ] The JUnit XML reports the skipped task as a skipped test case, not as a pass and not
+- [x] The JUnit XML reports the skipped task as a skipped test case, not as a pass and not
       as an absence.
-- [ ] `passRate` on that run is computed over the tasks that ran: the report's trial count
+- [x] `passRate` on that run is computed over the tasks that ran: the report's trial count
       equals `trialsPerTask` multiplied by the number of tasks not skipped.
-- [ ] An unmet **grader** requirement still throws `AxisRequirementError` before the first
+- [x] An unmet **grader** requirement still throws `AxisRequirementError` before the first
       trial. Existing behaviour, asserted by the existing test, unchanged.
-- [ ] On model `live` / memory `live`, both tasks run and neither is skipped.
-- [ ] `docs/STATUS.md` row 17 states that the 5×2 stub-axis measurement included a task the
+- [ ] On model `live` / memory `live`, both tasks run and neither is skipped. **Not
+      verified by a run, and P1-C owns running it.** A 5 × 2 live suite costs roughly forty
+      `generateContent` calls against a 20-request free-tier quota that was already part
+      spent on the day this shipped, and the risks section below says the same thing about
+      the live-axis evidence this PRD rests on. What is verified without spending quota is
+      the decision the criterion is about: the skip is a function of the axes alone, and
+      `dataset.test.ts` asserts that `skippedTasks` returns nothing for the shipped suite on
+      model `live` / memory `live`. Whether both tasks then _pass_ there is a different
+      claim, and no criterion here makes it.
+- [x] `docs/STATUS.md` row 17 states that the 5×2 stub-axis measurement included a task the
       stub axis cannot pass, and what the number is once that task is excluded.
-- [ ] `.context/conventions.md` says a task declares the axes it is meaningful on, and that
+- [x] `.context/conventions.md` says a task declares the axes it is meaningful on, and that
       a skipped task must be visible beside any rate computed without it.
+
+## What shipped
+
+The mechanism is `unmetRequirements` (`axes.ts:43`), which tests membership rather than
+equality, so a scalar and a set read the same way and every existing grader is untouched.
+`assertAxesSatisfy` (`axes.ts:75`) keeps refusing the suite for a grader; `skippedTasks`
+(`axes.ts:100`) collects the tasks to drop, and the harness computes it before the grader
+check so a skipped task's graders cannot take the run down with them — one task's declared
+requirement should not cost the suite the other task's measurement.
+
+Measured on model `stub` / memory `live`, 5 trials per task, on 2026-09-10:
+
+|                | Before                                      | After                                |
+| -------------- | ------------------------------------------- | ------------------------------------ |
+| `passRate`     | 50% over 10 trials                          | 100% over 5 trials                   |
+| Tasks run      | `memory-recall-001` 5/5, `tool-use-001` 0/5 | `memory-recall-001` 5/5              |
+| `tool-use-001` | counted as five failures                    | skipped, reported in all three files |
+| Exit code      | 1                                           | 0                                    |
+
+The 50% and the 100% are the same agent. The difference is the denominator, which is why
+the exclusion is printed between the rate and the table in `eval-summary.md`, emitted as a
+`<skipped/>` case in the JUnit XML, and carried as `skipped` in `eval-report.json` — and
+why `docs/STATUS.md` row 17 keeps both numbers rather than replacing the unflattering one.
 
 ## Risks and open questions
 
