@@ -52,17 +52,78 @@ export interface TracedRun {
   readonly extraction: AgentState['extraction'];
 }
 
+/**
+ * The chat model, named once.
+ *
+ * A cassette header records it and the player refuses a set recorded against a
+ * different one, so the string has to be readable from outside this class —
+ * a second spelling of it in the eval wiring would make that check pass while
+ * being wrong.
+ */
+export const CHAT_MODEL = 'gemini-2.5-flash';
+
 /** The model half of a dependency set: everything that costs a model call. */
-interface ModelDeps {
+export interface ModelDeps {
   plan: PlanNodeDeps;
   act: ActNodeDeps;
   distill: DistillNodeDeps;
   embed: (text: string) => Promise<number[]>;
 }
 
+/**
+ * The tool registry, which is the one thing in `ModelDeps` that costs no model
+ * call.
+ *
+ * It is built here rather than twice inside the two axis branches because a
+ * replayed dependency set needs the same registry the recorded run had: the
+ * `act.selectTool` request carries the tool names, so a replay whose tool list
+ * differs from the recording's misses on the hash before it gets anywhere near
+ * a tool.
+ *
+ * The one registered tool is a pure function. A registry that holds tools which
+ * change the world needs reversibility tiers before a cassette of one is safe,
+ * and that is P4-C's.
+ */
+export function defaultTools(): ActNodeDeps['tools'] {
+  return [
+    {
+      name: 'web-search',
+      execute: async (input) => ({ results: [`Result for: ${JSON.stringify(input)}`] }),
+    },
+  ];
+}
+
+/**
+ * A `ModelDeps` that constructs its real one on first use.
+ *
+ * It exists so that `getDeps` can hand a decorator the dependency set it is
+ * decorating without having built it. The replay decorator ignores its
+ * argument and returns a set built entirely from the cassette, so nothing here
+ * is ever called on that path — and "replay constructs no Gemini client" stays
+ * structural even when a key happens to be present in the environment, rather
+ * than being a consequence of the key being absent.
+ */
+function lazyModelDeps(create: () => ModelDeps): ModelDeps {
+  let built: ModelDeps | undefined;
+  const deps = (): ModelDeps => (built ??= create());
+
+  return {
+    plan: { callLlm: (system, user) => deps().plan.callLlm(system, user) },
+    act: {
+      get tools() {
+        return deps().act.tools;
+      },
+      selectTool: (plan, tools) => deps().act.selectTool(plan, tools),
+    },
+    distill: { extractEntities: (context) => deps().distill.extractEntities(context) },
+    embed: (text) => deps().embed(text),
+  };
+}
+
 @Injectable()
 export class RunsService {
   private graphDeps: GraphDeps | undefined;
+  private decorateModel: ((deps: ModelDeps) => ModelDeps) | undefined;
 
   // Tokens are explicit: these are interfaces with no runtime value to infer,
   // and the dev path runs through tsx, where esbuild emits no decorator
@@ -80,6 +141,21 @@ export class RunsService {
   }
 
   /**
+   * Wraps the model half of the dependency set. The service does not learn what
+   * a cassette is.
+   *
+   * It sits alongside `setDeps` and does not overlap with it: `setDeps`
+   * replaces the whole set and is what the service spec uses, while this
+   * decorates one half of a set the service still assembles — so the memory
+   * half, the checkpointer and the retrieval facade stay exactly as a request
+   * would have them. An evaluation that composed its own memory would measure a
+   * system nobody deploys.
+   */
+  setModelDecorator(decorate: (deps: ModelDeps) => ModelDeps): void {
+    this.decorateModel = decorate;
+  }
+
+  /**
    * Model availability and database availability are independent axes.
    *
    * This used to switch the whole dependency set on `GOOGLE_API_KEY`, so a
@@ -90,9 +166,17 @@ export class RunsService {
   private getDeps(): GraphDeps {
     if (this.graphDeps) return this.graphDeps;
 
-    const model = process.env['GOOGLE_API_KEY']
-      ? this.createGeminiModelDeps(process.env['GOOGLE_API_KEY'])
-      : this.createStubModelDeps();
+    const apiKey = process.env['GOOGLE_API_KEY'];
+    const axis = (): ModelDeps =>
+      apiKey ? this.createGeminiModelDeps(apiKey) : this.createStubModelDeps();
+
+    // Between the axis switch and the assembly below, so the decorator reaches
+    // the model half and nothing else. Undecorated, the axis is built here and
+    // the path is the one a request takes; decorated, it is built lazily and a
+    // decorator that ignores its argument — which is what replay does — never
+    // causes a model client to exist at all.
+    const model =
+      this.decorateModel === undefined ? axis() : this.decorateModel(lazyModelDeps(axis));
 
     return {
       ...model,
@@ -114,8 +198,8 @@ export class RunsService {
     // `responseMimeType: application/json`, which is what stops it wrapping a
     // JSON answer in a ```json fence. `plan` wants prose and must not have it;
     // the two callers that parse a response must.
-    const prose = new ChatGoogleGenerativeAI({ model: 'gemini-2.5-flash', apiKey });
-    const json = new ChatGoogleGenerativeAI({ model: 'gemini-2.5-flash', apiKey, json: true });
+    const prose = new ChatGoogleGenerativeAI({ model: CHAT_MODEL, apiKey });
+    const json = new ChatGoogleGenerativeAI({ model: CHAT_MODEL, apiKey, json: true });
 
     const callWith =
       (llm: ChatGoogleGenerativeAI) => async (systemPrompt: string, userPrompt: string) => {
@@ -139,12 +223,7 @@ export class RunsService {
     return {
       plan: { callLlm },
       act: {
-        tools: [
-          {
-            name: 'web-search',
-            execute: async (input) => ({ results: [`Result for: ${JSON.stringify(input)}`] }),
-          },
-        ],
+        tools: defaultTools(),
         selectTool: async (plan, tools) => {
           const toolNames = tools.map((t) => t.name).join(', ');
           const response = await callJson(
@@ -181,12 +260,7 @@ export class RunsService {
         }),
       },
       act: {
-        tools: [
-          {
-            name: 'web-search',
-            execute: async (input) => ({ results: [`Result for: ${JSON.stringify(input)}`] }),
-          },
-        ],
+        tools: defaultTools(),
         selectTool: async () => null, // Stub: no tool needed
       },
       distill: {
