@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { assertAxesSatisfy, AxisRequirementError, describeAxes, detectAxes } from './axes.js';
+import {
+  assertAxesSatisfy,
+  AxisRequirementError,
+  describeAxes,
+  detectAxes,
+  unmetRequirements,
+} from './axes.js';
 import type { Grader } from './types.js';
 
 const grader = (name: string, requires?: Grader['requires']): Grader<never> => ({
@@ -38,6 +44,46 @@ describe('detectAxes', () => {
   });
 });
 
+describe('unmetRequirements', () => {
+  const stub = { model: 'stub', memory: 'unconfigured' } as const;
+  const live = { model: 'live', memory: 'live' } as const;
+
+  it('accepts a scalar on either axis, which is what every grader declares today', () => {
+    expect(unmetRequirements({ model: 'live' }, live)).toEqual([]);
+    expect(unmetRequirements({ memory: 'live' }, live)).toEqual([]);
+    expect(unmetRequirements({ model: 'live' }, stub)).toEqual([
+      'model axis is `stub`, needs `live`',
+    ]);
+    expect(unmetRequirements({ memory: 'live' }, stub)).toEqual([
+      'memory axis is `unconfigured`, needs `live`',
+    ]);
+  });
+
+  it('accepts a set on either axis, and tests membership rather than equality', () => {
+    // The case the scalar form cannot express: a requirement satisfied by any
+    // axis able to call a model is satisfied by `live` and by `replay`.
+    expect(unmetRequirements({ model: ['live', 'replay'] }, live)).toEqual([]);
+    expect(unmetRequirements({ model: ['live', 'replay'] }, { ...stub, model: 'replay' })).toEqual(
+      [],
+    );
+    expect(unmetRequirements({ memory: ['live', 'unconfigured'] }, stub)).toEqual([]);
+  });
+
+  it('names the run’s axis and the whole acceptable set in one sentence', () => {
+    expect(unmetRequirements({ model: ['live', 'replay'] }, stub)).toEqual([
+      'model axis is `stub`, needs one of `live`, `replay`',
+    ]);
+  });
+
+  it('reports both axes when both are unmet', () => {
+    expect(unmetRequirements({ model: ['live'], memory: 'live' }, stub)).toHaveLength(2);
+  });
+
+  it('treats an axis with no requirement as satisfied', () => {
+    expect(unmetRequirements({}, stub)).toEqual([]);
+  });
+});
+
 describe('assertAxesSatisfy', () => {
   const live = { model: 'live', memory: 'live' } as const;
   const unconfigured = { model: 'stub', memory: 'unconfigured' } as const;
@@ -68,6 +114,15 @@ describe('assertAxesSatisfy', () => {
       expect((error as AxisRequirementError).message).toContain('episodic_row_written');
       expect((error as AxisRequirementError).message).toContain('answer_is_grounded');
     }
+  });
+
+  it('reads a set on a grader the same way it reads a scalar', () => {
+    expect(() =>
+      assertAxesSatisfy([grader('replayable', { model: ['live', 'replay'] })], live),
+    ).not.toThrow();
+    expect(() =>
+      assertAxesSatisfy([grader('replayable', { model: ['live', 'replay'] })], unconfigured),
+    ).toThrow(AxisRequirementError);
   });
 
   it('lets everything through once both axes are live', () => {

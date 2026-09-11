@@ -40,19 +40,46 @@ import { OutcomeSchema, type Message } from '@repo/shared-types';
  * producer that ran ahead of the wiring would label a live run as replayed,
  * which is the class of quiet lie the axes exist to prevent.
  */
-export type ModelAxis = 'live' | 'stub' | 'replay';
-export type MemoryAxis = 'live' | 'unconfigured';
+export const ModelAxisSchema = z.enum(['live', 'stub', 'replay']);
+export type ModelAxis = z.infer<typeof ModelAxisSchema>;
+
+export const MemoryAxisSchema = z.enum(['live', 'unconfigured']);
+export type MemoryAxis = z.infer<typeof MemoryAxisSchema>;
 
 export interface Axes {
   readonly model: ModelAxis;
   readonly memory: MemoryAxis;
 }
 
+/**
+ * One axis' worth of requirement: a single value, or a set of acceptable ones.
+ *
+ * The set is not decoration. A task that needs "an axis that can select a tool"
+ * is satisfied by `live` and by `replay`, and pinning it to `live` would refuse
+ * it on exactly the axis P1-B exists to make affordable. A scalar stays legal
+ * and means the same thing it did, so every grader declaring one is unchanged.
+ */
+export type AxisRequirement<T> = T | readonly T[];
+
 /** What a grader needs to be meaningful. Unmet requirements stop the suite. */
 export interface AxisRequirements {
-  readonly model?: ModelAxis;
-  readonly memory?: MemoryAxis;
+  readonly model?: AxisRequirement<ModelAxis>;
+  readonly memory?: AxisRequirement<MemoryAxis>;
 }
+
+/**
+ * The parser for a `requires` block read from a file.
+ *
+ * Typed against the interface above so the two cannot drift: a value outside
+ * the axis union is rejected at load time rather than read as "no requirement".
+ */
+const axisRequirement = <T extends z.ZodTypeAny>(axis: T): z.ZodUnion<[T, z.ZodArray<T>]> =>
+  z.union([axis, z.array(axis).min(1)]);
+
+export const AxisRequirementsSchema: z.ZodType<AxisRequirements> = z.object({
+  model: axisRequirement(ModelAxisSchema).optional(),
+  memory: axisRequirement(MemoryAxisSchema).optional(),
+});
 
 // --- Transcript ------------------------------------------------------------
 
