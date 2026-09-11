@@ -47,7 +47,8 @@
         "NEO4J_USER",
         "NEO4J_PASSWORD",
         "EVAL_TRIALS",
-        "EVAL_OUTPUT_DIR"
+        "EVAL_OUTPUT_DIR",
+        "EVAL_CASSETTE_MODE"
       ]
     },
     "clean": {

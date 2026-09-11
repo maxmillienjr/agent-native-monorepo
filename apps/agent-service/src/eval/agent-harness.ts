@@ -20,7 +20,8 @@ import {
 } from '@repo/eval-harness';
 import { AppModule } from '../app.module.js';
 import { PG_POOL, NEO4J_DRIVER } from '../memory/memory.tokens.js';
-import { RunsService } from '../runs/runs.service.js';
+import { RunsService, type TracedRun } from '../runs/runs.service.js';
+import { recordingModelDeps, replayModelDeps, type TrialDecks } from './cassette-deps.js';
 
 /**
  * The adapter between `packages/eval-harness` and this service.
@@ -47,12 +48,40 @@ export class AgentServiceHarness implements AgentHarness<MemoryOutcome> {
    */
   private readonly extractionByRun = new Map<string, string[]>();
 
+  /**
+   * Which trial of each task is next, so the right cassette is opened.
+   *
+   * It is counted here rather than passed in because `AgentHarness.run(task)`
+   * takes no index and widening that interface would make every implementor pay
+   * for one adapter's bookkeeping. `reset(task)` is called exactly once before
+   * every trial — the runner's fixed order is reset, run, capture, grade — so
+   * counting resets counts trials.
+   */
+  private readonly trialIndexByTask = new Map<string, number>();
+
   constructor(
     private readonly context: INestApplicationContext,
     private readonly runs: RunsService,
     private readonly inspector: MemoryInspector,
     private readonly seeds: SeedManager,
-  ) {}
+    private readonly decks?: TrialDecks,
+  ) {
+    // Installed once, reading the deck the current trial opened. The service
+    // learns that its model half can be decorated and nothing else; replay
+    // ignores `live` entirely, which is why no model client is constructed on
+    // that path.
+    if (decks !== undefined) {
+      this.runs.setModelDecorator((live) =>
+        this.deck === undefined
+          ? live
+          : this.deck.mode === 'replay'
+            ? replayModelDeps(this.deck)
+            : recordingModelDeps(live, this.deck),
+      );
+    }
+  }
+
+  private deck: ReturnType<TrialDecks['open']> | undefined;
 
   axes(): Axes {
     return detectAxes();
@@ -76,6 +105,10 @@ export class AgentServiceHarness implements AgentHarness<MemoryOutcome> {
   async reset(task: Task<MemoryOutcome>): Promise<void> {
     const sessionId = (task.input as { sessionId: string }).sessionId;
 
+    const trialIndex = (this.trialIndexByTask.get(task.id) ?? -1) + 1;
+    this.trialIndexByTask.set(task.id, trialIndex);
+    this.deck = this.decks?.open(task.id, trialIndex);
+
     await this.seeds.restoreToSeed({
       sessionId,
       conceptIds: task.seeds.neo4j.map((concept) => concept.id),
@@ -91,10 +124,7 @@ export class AgentServiceHarness implements AgentHarness<MemoryOutcome> {
 
   async run(task: Task<MemoryOutcome>): Promise<Transcript> {
     const startedAt = Date.now();
-    const traced = await this.runs.executeTraced({
-      body: task.input,
-      correlationId: `eval-${randomUUID()}`,
-    });
+    const traced = await this.tracedRun(task);
     const latencyMs = Date.now() - startedAt;
 
     this.extractionByRun.set(
@@ -125,6 +155,29 @@ export class AgentServiceHarness implements AgentHarness<MemoryOutcome> {
       outcome: traced.response.outcome,
       latencyMs,
     };
+  }
+
+  /**
+   * The run itself, wrapped so the trial's deck is always finished.
+   *
+   * `completed` rather than "we reached the finally": a cassette written from a
+   * crashed run replays a run that never happened, and a replay that ended
+   * early has recorded decisions left over — which the deck reports only when
+   * the trial was supposed to have consumed them.
+   */
+  private async tracedRun(task: Task<MemoryOutcome>): Promise<TracedRun> {
+    let completed = false;
+    try {
+      const traced = await this.runs.executeTraced({
+        body: task.input,
+        correlationId: `eval-${randomUUID()}`,
+      });
+      completed = true;
+      return traced;
+    } finally {
+      await this.decks?.close(completed);
+      this.deck = undefined;
+    }
   }
 
   async captureOutcome(_task: Task<MemoryOutcome>, transcript: Transcript): Promise<MemoryOutcome> {
@@ -162,7 +215,7 @@ export class AgentServiceHarness implements AgentHarness<MemoryOutcome> {
  * misconfigured memory axis is a configuration mistake whose message is the
  * whole point.
  */
-export async function createAgentServiceHarness(): Promise<AgentServiceHarness> {
+export async function createAgentServiceHarness(decks?: TrialDecks): Promise<AgentServiceHarness> {
   const context = await NestFactory.createApplicationContext(AppModule, {
     abortOnError: false,
     logger: false,
@@ -185,5 +238,6 @@ export async function createAgentServiceHarness(): Promise<AgentServiceHarness> 
     context.get(RunsService),
     new PgNeo4jMemoryInspector(pool, driver),
     new PgNeo4jSeedManager(pool, driver),
+    decks,
   );
 }
