@@ -72,6 +72,21 @@ nightly; `eval` is local-only until P1-C wires it into a pipeline.
   for as long as they were absent from the list, so `EVAL_TRIALS=1 yarn eval` ran five
   trials. Check the `env` array against what the script actually reads, not against the one
   variable that broke last time.
+- **A task declares the axes it is meaningful on, and a skipped task is visible beside the
+  rate.** A grader says what it needs in `requires` and the suite refuses when that is
+  unmet; a task says the same thing in the `requires` block of its file and is **skipped**
+  instead. The asymmetry is deliberate: refusing the whole suite because one task wants a
+  key would make `yarn eval` unusable on a clone with no `.env`, which is the ergonomics
+  the quickstart depends on. Either axis takes a single value or a set, so `tool-use-001`
+  declaring `{ "model": ["live", "replay"] }` does not refuse the replay axis. The half that
+  needs watching is arithmetic: a skipped task contributes no trials, so `passRate` rises
+  because the denominator shrank. `tool-use-001` on the stub axis is the worked example —
+  50% over two tasks becomes 100% over one. A rate that moved for that reason is only
+  honest while the exclusion travels with it, so `SuiteReport.skipped` names every skipped
+  task and what it needed, and all three reporters print it: the JSON carries it, the JUnit
+  XML emits a `<skipped/>` case rather than a pass or an absence, and the Markdown summary
+  prints it between the rate and the table. Never report a rate computed over fewer tasks
+  without the list of what was left out.
 - **Integration needs the stores exported, and says nothing when they are not.** Bring the
   infrastructure up with `docker compose up -d --wait` — no `--profile full`, the suite
   talks to Postgres and Neo4j directly — and export `DATABASE_URL`, `NEO4J_URI`,

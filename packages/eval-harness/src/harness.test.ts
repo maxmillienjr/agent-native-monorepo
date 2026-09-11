@@ -55,13 +55,23 @@ const wroteSomething: Grader<FakeOutcome> = {
   }),
 };
 
-function task(graders: Grader<FakeOutcome>[]): Task<FakeOutcome> {
+const alwaysPasses: Grader<FakeOutcome> = {
+  name: 'always_passes',
+  kind: 'code',
+  grade: async () => ({ value: 1, label: 'pass' }),
+};
+
+function task(
+  graders: Grader<FakeOutcome>[],
+  overrides: Partial<Task<FakeOutcome>> = {},
+): Task<FakeOutcome> {
   return {
     id: 'memory-recall-001',
     description: 'a task',
     input: {},
     seeds: { neo4j: [], relationships: [], pgvector: [] },
     graders,
+    ...overrides,
   };
 }
 
@@ -115,6 +125,81 @@ describe('EvalHarness', () => {
     // Not one model call, not one database write, and — the point — not one
     // reported pass earned against the no-op writers.
     expect(log).toEqual([]);
+  });
+
+  it('skips a task whose axis requirement is unmet instead of refusing the suite', async () => {
+    const log: string[] = [];
+    const report = await new EvalHarness<FakeOutcome>({
+      agent: fakeAgent({ model: 'stub', memory: 'live' }, [{ wrote: true }, { wrote: true }], log),
+      suite: {
+        name: 's',
+        tasks: [
+          task([wroteSomething]),
+          task([alwaysPasses], { id: 'tool-use-001', requires: { model: ['live', 'replay'] } }),
+        ],
+        trialsPerTask: 2,
+      },
+    }).run();
+
+    // The suite still ran. Refusing it because one task wants an axis would
+    // make `yarn eval` unusable on a clone with no `.env`.
+    expect(report.tasks.map((t) => t.taskId)).toEqual(['memory-recall-001']);
+    expect(report.skipped).toEqual([
+      {
+        taskId: 'tool-use-001',
+        problems: ['model axis is `stub`, needs one of `live`, `replay`'],
+      },
+    ]);
+    // Not one trial spent on the task that could not be measured.
+    expect(log).toEqual(['reset', 'run', 'capture', 'reset', 'run', 'capture']);
+  });
+
+  it('computes passRate over the tasks that ran, and says which did not', async () => {
+    // The trap: the skipped task contributed the failures, so the rate goes up.
+    // A rate that rose because the denominator shrank is only honest while the
+    // exclusion travels with it, which is what `skipped` is for.
+    const report = await new EvalHarness<FakeOutcome>({
+      agent: fakeAgent({ model: 'stub', memory: 'live' }, [{ wrote: true }, { wrote: true }], []),
+      suite: {
+        name: 's',
+        tasks: [
+          task([wroteSomething]),
+          task([alwaysPasses], { id: 'tool-use-001', requires: { model: 'live' } }),
+        ],
+        trialsPerTask: 2,
+      },
+    }).run();
+
+    expect(report.passRate).toBe(1);
+    expect(report.skipped).toHaveLength(1);
+    // trialsPerTask × tasks that were not skipped.
+    expect(report.tasks.flatMap((t) => t.trials)).toHaveLength(2);
+  });
+
+  it('runs every task when the axes meet what each declared', async () => {
+    const report = await new EvalHarness<FakeOutcome>({
+      agent: fakeAgent(liveAxes, [{ wrote: true }, { wrote: true }], []),
+      suite: {
+        name: 's',
+        tasks: [
+          task([wroteSomething]),
+          task([alwaysPasses], { id: 'tool-use-001', requires: { model: ['live', 'replay'] } }),
+        ],
+        trialsPerTask: 1,
+      },
+    }).run();
+
+    expect(report.skipped).toEqual([]);
+    expect(report.tasks).toHaveLength(2);
+  });
+
+  it('reports no skips when nothing declared a requirement', async () => {
+    const report = await new EvalHarness<FakeOutcome>({
+      agent: fakeAgent(liveAxes, [{ wrote: true }], []),
+      suite: { name: 's', tasks: [task([wroteSomething])], trialsPerTask: 1 },
+    }).run();
+
+    expect(report.skipped).toEqual([]);
   });
 
   it('names an uncalibrated judge in the report', async () => {

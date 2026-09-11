@@ -50,7 +50,22 @@ const report: SuiteReport = {
     },
   ],
   passRate: 0.5,
+  skipped: [],
   uncalibratedGraders: ['answer_is_grounded'],
+};
+
+/** The stub-axis shape: one task ran, one was not measurable here. */
+const reportWithSkip: SuiteReport = {
+  ...report,
+  axes: { model: 'stub', memory: 'live' },
+  tasks: [{ ...report.tasks[0]!, trials: [trial(0, true), trial(1, true)], passHatK: true }],
+  passRate: 1,
+  skipped: [
+    {
+      taskId: 'tool-use-001',
+      problems: ['model axis is `stub`, needs one of `live`, `replay`'],
+    },
+  ],
 };
 
 describe('renderJsonReport', () => {
@@ -58,16 +73,38 @@ describe('renderJsonReport', () => {
     const parsed = JSON.parse(renderJsonReport(report)) as SuiteReport;
     expect(parsed).toEqual(report);
   });
+
+  it('carries the skipped tasks and their reasons, so the denominator is reconstructable', () => {
+    const parsed = JSON.parse(renderJsonReport(reportWithSkip)) as SuiteReport;
+    expect(parsed.skipped).toEqual([
+      {
+        taskId: 'tool-use-001',
+        problems: ['model axis is `stub`, needs one of `live`, `replay`'],
+      },
+    ]);
+  });
 });
 
 describe('renderJUnitReport', () => {
   it('emits one test case per trial, so failures read as pass^k', () => {
     const xml = renderJUnitReport(report);
-    expect(xml).toContain('<testsuites name="memory-recall" tests="2" failures="1">');
+    expect(xml).toContain('<testsuites name="memory-recall" tests="2" failures="1" skipped="0">');
     expect(xml).toContain('<testcase name="memory-recall-001 trial 1"/>');
     expect(xml).toContain('<testcase name="memory-recall-001 trial 2">');
     expect(xml).toContain('<property name="pass@k" value="true"/>');
     expect(xml).toContain('<property name="memory_axis" value="live"/>');
+  });
+
+  it('emits a skipped task as a skipped case, not as a pass and not as an absence', () => {
+    const xml = renderJUnitReport(reportWithSkip);
+    expect(xml).toContain('<testsuites name="memory-recall" tests="3" failures="0" skipped="1">');
+    expect(xml).toContain('<testsuite name="tool-use-001" tests="1" failures="0" skipped="1">');
+    expect(xml).toContain('<testcase name="tool-use-001 (not run)">');
+    expect(xml).toContain(
+      '<skipped message="model axis is `stub`, needs one of `live`, `replay`"/>',
+    );
+    // Not a pass: no self-closing case for it.
+    expect(xml).not.toContain('<testcase name="tool-use-001 (not run)"/>');
   });
 
   it('escapes a failure message rather than emitting invalid XML', () => {
@@ -89,6 +126,27 @@ describe('renderMarkdownSummary', () => {
     expect(renderMarkdownSummary(report)).toContain(
       '**Uncalibrated judges:** `answer_is_grounded`',
     );
+  });
+
+  it('cannot show the rate without showing what was left out of it', () => {
+    const markdown = renderMarkdownSummary(reportWithSkip);
+    const rate = markdown.indexOf('overall pass rate 100%');
+    const exclusion = markdown.indexOf('Not run on these axes');
+
+    expect(markdown).toContain('overall pass rate 100%** over 1 of 2 tasks');
+    expect(markdown).toContain(
+      '> - `tool-use-001` — model axis is `stub`, needs one of `live`, `replay`',
+    );
+    // Above the table, and below nothing: the reader meets it on the way past.
+    expect(exclusion).toBeGreaterThan(rate);
+    expect(exclusion).toBeLessThan(markdown.indexOf('| Task |'));
+    // And in the table too, so the list of tasks is not quietly one short.
+    expect(markdown).toContain('| `tool-use-001` | ⏭️ skipped | ⏭️ skipped | not run |');
+  });
+
+  it('says nothing about skips when there were none', () => {
+    expect(renderMarkdownSummary(report)).not.toContain('Not run on these axes');
+    expect(renderMarkdownSummary(report)).toContain('overall pass rate 50%**\n');
   });
 
   it('reports each grader’s pass rate', () => {

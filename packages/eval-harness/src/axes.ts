@@ -1,4 +1,11 @@
-import type { Axes, AxisRequirements, Grader } from './types.js';
+import type {
+  Axes,
+  AxisRequirement,
+  AxisRequirements,
+  Grader,
+  SkippedTask,
+  Task,
+} from './types.js';
 
 /**
  * Reads the two axes from the environment, using exactly the variables the
@@ -26,13 +33,27 @@ export function describeAxes(axes: Axes): string {
   return `model=${axes.model} memory=${axes.memory}`;
 }
 
-function unmet(requirements: AxisRequirements, axes: Axes): string[] {
+const accepted = <T>(requirement: AxisRequirement<T>): readonly T[] =>
+  Array.isArray(requirement) ? requirement : [requirement as T];
+
+/** `` `live` `` for a scalar, ``one of `live`, `replay` `` for a set. */
+function describeRequirement<T>(requirement: AxisRequirement<T>): string {
+  const values = accepted(requirement).map((value) => `\`${String(value)}\``);
+  return values.length === 1 ? values[0]! : `one of ${values.join(', ')}`;
+}
+
+/**
+ * Every axis the run does not satisfy, phrased so the reason survives on its
+ * own: each problem names the axis the run is on *and* what was acceptable.
+ * A skip recorded as "unmet requirement" and nothing else is unreviewable.
+ */
+export function unmetRequirements(requirements: AxisRequirements, axes: Axes): string[] {
   const problems: string[] = [];
-  if (requirements.model !== undefined && requirements.model !== axes.model) {
-    problems.push(`model axis is \`${axes.model}\`, needs \`${requirements.model}\``);
-  }
-  if (requirements.memory !== undefined && requirements.memory !== axes.memory) {
-    problems.push(`memory axis is \`${axes.memory}\`, needs \`${requirements.memory}\``);
+  for (const axis of ['model', 'memory'] as const) {
+    const requirement = requirements[axis];
+    if (requirement === undefined) continue;
+    if (accepted<string>(requirement).includes(axes[axis])) continue;
+    problems.push(`${axis} axis is \`${axes[axis]}\`, needs ${describeRequirement(requirement)}`);
   }
   return problems;
 }
@@ -61,10 +82,37 @@ export function assertAxesSatisfy(graders: readonly Grader<never>[], axes: Axes)
 
   for (const grader of graders) {
     if (!grader.requires) continue;
-    for (const problem of unmet(grader.requires, axes)) {
+    for (const problem of unmetRequirements(grader.requires, axes)) {
       problems.push(`grader \`${grader.name}\`: ${problem}`);
     }
   }
 
   if (problems.length > 0) throw new AxisRequirementError(problems);
+}
+
+/**
+ * The tasks this run cannot measure anything with, and why.
+ *
+ * A task is skipped where a grader refuses, and the asymmetry is deliberate. An
+ * unmet grader requirement means the suite would report a number earned against
+ * a no-op — there is no honest partial answer, so it refuses. An unmet task
+ * requirement only means one scenario is not measurable here; refusing the whole
+ * suite for it would make `yarn eval` unusable on a clone with no `.env`, which
+ * is the ergonomics the quickstart depends on. The cost of skipping is that a
+ * rate can quietly improve, which is why the skip is carried in the report and
+ * printed by all three reporters rather than being left implicit.
+ */
+export function skippedTasks<TOutcome>(
+  tasks: readonly Task<TOutcome>[],
+  axes: Axes,
+): SkippedTask[] {
+  const skipped: SkippedTask[] = [];
+
+  for (const task of tasks) {
+    if (!task.requires) continue;
+    const problems = unmetRequirements(task.requires, axes);
+    if (problems.length > 0) skipped.push({ taskId: task.id, problems });
+  }
+
+  return skipped;
 }

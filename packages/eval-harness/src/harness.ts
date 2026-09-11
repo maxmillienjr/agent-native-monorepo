@@ -1,4 +1,4 @@
-import { assertAxesSatisfy } from './axes.js';
+import { assertAxesSatisfy, skippedTasks } from './axes.js';
 import { ModelGrader } from './graders/model.js';
 import type {
   AgentHarness,
@@ -75,15 +75,27 @@ export class EvalHarness<TOutcome> {
     const axes = agent.axes();
     const startedAt = new Date().toISOString();
 
+    // Which tasks this run cannot measure anything with. Unlike the grader
+    // check below it does not throw: the tasks it names are dropped from the
+    // run and travel to every reporter as `skipped`.
+    const skipped = skippedTasks(suite.tasks, axes);
+    const skippedIds = new Set(skipped.map((entry) => entry.taskId));
+    const running = suite.tasks.filter((task) => !skippedIds.has(task.id));
+
     // Before any trial, so an unmeetable requirement costs no model calls and
     // no database writes. Every unmet requirement is reported, not the first.
-    for (const task of suite.tasks) {
+    //
+    // Over the tasks that will run, not over every task: a grader belonging to
+    // a skipped task never grades anything, and refusing the suite on its
+    // behalf would let one task's declared requirement take the whole run down
+    // with it — the ergonomics the skip exists to protect.
+    for (const task of running) {
       assertAxesSatisfy(task.graders as readonly Grader<never>[], axes);
     }
 
     const taskReports: TaskReport<TOutcome>[] = [];
 
-    for (const task of suite.tasks) {
+    for (const task of running) {
       const trials: Trial<TOutcome>[] = [];
 
       for (let index = 0; index < suite.trialsPerTask; index++) {
@@ -108,6 +120,10 @@ export class EvalHarness<TOutcome> {
       taskReports.push(summarize(task, trials));
     }
 
+    // Only the tasks that ran contribute trials, so the rate is already over
+    // the tasks that ran. That is the half of the change that flatters: on the
+    // stub axis it turns a misleading 50% into a 100% that is true of a smaller
+    // question. `skipped` below is what keeps the smaller question visible.
     const allTrials = taskReports.flatMap((report) => report.trials);
 
     return {
@@ -121,7 +137,8 @@ export class EvalHarness<TOutcome> {
         allTrials.length === 0
           ? 0
           : allTrials.filter((trial) => trial.passed).length / allTrials.length,
-      uncalibratedGraders: uncalibrated(suite),
+      skipped,
+      uncalibratedGraders: uncalibrated(running),
     };
   }
 }
@@ -131,9 +148,9 @@ export class EvalHarness<TOutcome> {
  * true-negative rate, and reporting its verdicts without saying so presents a
  * guess as a measurement.
  */
-function uncalibrated<TOutcome>(suite: Suite<TOutcome>): string[] {
+function uncalibrated<TOutcome>(tasks: readonly Task<TOutcome>[]): string[] {
   const names = new Set<string>();
-  for (const task of suite.tasks) {
+  for (const task of tasks) {
     for (const grader of task.graders) {
       if (grader instanceof ModelGrader && grader.calibrationReport === undefined) {
         names.add(grader.name);

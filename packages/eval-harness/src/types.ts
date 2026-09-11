@@ -40,19 +40,53 @@ import { OutcomeSchema, type Message } from '@repo/shared-types';
  * producer that ran ahead of the wiring would label a live run as replayed,
  * which is the class of quiet lie the axes exist to prevent.
  */
-export type ModelAxis = 'live' | 'stub' | 'replay';
-export type MemoryAxis = 'live' | 'unconfigured';
+export const ModelAxisSchema = z.enum(['live', 'stub', 'replay']);
+export type ModelAxis = z.infer<typeof ModelAxisSchema>;
+
+export const MemoryAxisSchema = z.enum(['live', 'unconfigured']);
+export type MemoryAxis = z.infer<typeof MemoryAxisSchema>;
 
 export interface Axes {
   readonly model: ModelAxis;
   readonly memory: MemoryAxis;
 }
 
-/** What a grader needs to be meaningful. Unmet requirements stop the suite. */
+/**
+ * One axis' worth of requirement: a single value, or a set of acceptable ones.
+ *
+ * The set is not decoration. A task that needs "an axis that can select a tool"
+ * is satisfied by `live` and by `replay`, and pinning it to `live` would refuse
+ * it on exactly the axis P1-B exists to make affordable. A scalar stays legal
+ * and means the same thing it did, so every grader declaring one is unchanged.
+ */
+export type AxisRequirement<T> = T | readonly T[];
+
+/**
+ * What a grader or a task needs to be meaningful.
+ *
+ * The two are read the same way and acted on differently: an unmet grader
+ * requirement stops the suite, an unmet task requirement removes that task from
+ * the run and is reported. `axes.ts` carries the argument for the asymmetry.
+ */
 export interface AxisRequirements {
-  readonly model?: ModelAxis;
-  readonly memory?: MemoryAxis;
+  readonly model?: AxisRequirement<ModelAxis>;
+  readonly memory?: AxisRequirement<MemoryAxis>;
 }
+
+/**
+ * The parser for the `requires` block of a task file.
+ *
+ * Typed against the interface above so the two cannot drift: a value outside
+ * the axis union is rejected at load time rather than read as "no requirement"
+ * and silently running a task on an axis it declared it could not use.
+ */
+const axisRequirement = <T extends z.ZodTypeAny>(axis: T): z.ZodUnion<[T, z.ZodArray<T>]> =>
+  z.union([axis, z.array(axis).min(1)]);
+
+export const AxisRequirementsSchema: z.ZodType<AxisRequirements> = z.object({
+  model: axisRequirement(ModelAxisSchema).optional(),
+  memory: axisRequirement(MemoryAxisSchema).optional(),
+});
 
 // --- Transcript ------------------------------------------------------------
 
@@ -192,6 +226,11 @@ export interface Task<TOutcome = Outcome> {
   readonly input: unknown;
   readonly seeds: TaskSeeds;
   readonly graders: readonly Grader<TOutcome>[];
+  /**
+   * Axes this task is meaningful on. Unmet, the task is skipped and the
+   * skip is reported beside the rate — it does not stop the suite.
+   */
+  readonly requires?: AxisRequirements;
 }
 
 export interface Suite<TOutcome = Outcome> {
@@ -231,6 +270,18 @@ export interface TaskReport<TOutcome = Outcome> {
   readonly perGraderPassRate: Readonly<Record<string, number>>;
 }
 
+/**
+ * A task that was not run, and what it needed.
+ *
+ * It exists so the exclusion travels with the number. A skipped task
+ * contributes no trials, so dropping it from the denominator without saying so
+ * turns a misleading rate into a flattering one, which is worse.
+ */
+export interface SkippedTask {
+  readonly taskId: string;
+  readonly problems: readonly string[];
+}
+
 export interface SuiteReport<TOutcome = Outcome> {
   readonly suite: string;
   readonly startedAt: string;
@@ -238,8 +289,10 @@ export interface SuiteReport<TOutcome = Outcome> {
   readonly axes: Axes;
   readonly trialsPerTask: number;
   readonly tasks: readonly TaskReport<TOutcome>[];
-  /** Trials passed / trials run, across the whole suite. */
+  /** Trials passed / trials run — over the tasks that ran, not over `tasks`. */
   readonly passRate: number;
+  /** Tasks excluded from the run, and therefore from `passRate`. */
+  readonly skipped: readonly SkippedTask[];
   /** Graders whose judgements have no calibration set behind them. */
   readonly uncalibratedGraders: readonly string[];
 }

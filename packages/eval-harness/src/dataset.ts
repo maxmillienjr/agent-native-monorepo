@@ -2,7 +2,14 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
-import { OutcomeSchema, TaskSeedsSchema, type Grader, type Suite, type Task } from './types.js';
+import {
+  AxisRequirementsSchema,
+  OutcomeSchema,
+  TaskSeedsSchema,
+  type Grader,
+  type Suite,
+  type Task,
+} from './types.js';
 import type { MemoryOutcome } from './outcome.js';
 import {
   outcomeMustBe,
@@ -42,6 +49,16 @@ export const TaskSpecSchema = z.object({
     messages: z.array(z.object({ role: z.string(), content: z.string() })).min(1),
     config: z.record(z.unknown()).optional(),
   }),
+  /**
+   * The axes this task is meaningful on, scalar or set per axis.
+   *
+   * It lives in the task file rather than in code because it is a property of
+   * the scenario: `tool-use-001` is graded on `tool_trajectory_recall`, and the
+   * stub model's `selectTool` returns `null` for every input, so its score on
+   * that axis is a fact about the fixture and not about the agent. A reviewer
+   * reads the declaration next to the assertion it qualifies.
+   */
+  requires: AxisRequirementsSchema.optional(),
   expectedSeeds: TaskSeedsSchema.default({ neo4j: [], relationships: [], pgvector: [] }),
   expectedOutcome: OutcomeSchema,
   assertions: z.object({
@@ -102,6 +119,7 @@ export function taskFromSpec(spec: TaskSpec): Task<MemoryOutcome> {
     input: spec.input,
     seeds: spec.expectedSeeds,
     graders: buildGraders(spec),
+    ...(spec.requires === undefined ? {} : { requires: spec.requires }),
   };
 }
 

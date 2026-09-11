@@ -5,7 +5,7 @@
 _Last updated 2026-09-10. If this section is more than a few weeks stale, trust the code
 over it and update it._
 
-**Four PRDs are shipped and the system they describe is running.** The service answers
+**Five PRDs are shipped and the system they describe is running.** The service answers
 `POST /runs` and `POST /runs/stream`; `memory-core` is constructed by the app rather than
 sitting beside it; the graph compiles with a checkpointer and a retry policy on every node
 that performs I/O; and `packages/eval-harness` measures the result. Verified against live
@@ -27,10 +27,14 @@ graded on making a tool call cannot pass there. On model `live` / memory `live`,
 `memory-recall-001` passed all eleven graders, and one trial of `tool-use-001` on 2026-09-10
 passed on three `web-search` selections with well-formed queries. One trial is not a pass
 rate, and a 5x2 live suite needs about forty `generateContent` calls against a 20-request
-free-tier quota, which is why it has not been run. P1-G makes a task declare the axes it is
-meaningful on, so the rate stops averaging the agent together with the fixture. What none of
-this is yet is a merge gate — P1-C wires evaluation into a pipeline, P1-D decides which
-failures should block.
+free-tier quota, which is why it has not been run. **[P1-G](P1-G-task-axis-requirements.md)
+has shipped**, so `tool-use-001` declares the axes it is meaningful on and the stub axis
+skips it rather than averaging the agent together with the fixture: the same command on the
+same axis now reports 100% over 5 trials x 1 task, re-measured 2026-09-10. That is a
+denominator change and not an improvement, which is why both numbers stay in
+`docs/STATUS.md` row 17 and why the skipped task is printed beside the rate in all three
+reports. What none of this is yet is a merge gate — P1-C wires evaluation into a pipeline,
+P1-D decides which failures should block.
 
 **Memory and model are independent axes, and neither falls back.** `GOOGLE_API_KEY` selects
 the model half; `DATABASE_URL` and `NEO4J_URI` select the memory half. Configured but
@@ -100,7 +104,7 @@ replacing it.
 | P1-D                                   | Statistical regression gate with paired bootstrap             | M    | draft       |
 | P1-E                                   | Model-drift canary against pinned and floating model ids      | S    | draft       |
 | P1-F                                   | Cost, latency, and step budgets as CI assertions              | S    | draft       |
-| [P1-G](P1-G-task-axis-requirements.md) | Task-level axis requirements for the evaluation suite         | S    | draft       |
+| [P1-G](P1-G-task-axis-requirements.md) | Task-level axis requirements for the evaluation suite         | S    | shipped     |
 
 ## Tier 2 — Make the architecture real
 
