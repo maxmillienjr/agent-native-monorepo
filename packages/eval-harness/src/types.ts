@@ -61,17 +61,24 @@ export interface Axes {
  */
 export type AxisRequirement<T> = T | readonly T[];
 
-/** What a grader needs to be meaningful. Unmet requirements stop the suite. */
+/**
+ * What a grader or a task needs to be meaningful.
+ *
+ * The two are read the same way and acted on differently: an unmet grader
+ * requirement stops the suite, an unmet task requirement removes that task from
+ * the run and is reported. `axes.ts` carries the argument for the asymmetry.
+ */
 export interface AxisRequirements {
   readonly model?: AxisRequirement<ModelAxis>;
   readonly memory?: AxisRequirement<MemoryAxis>;
 }
 
 /**
- * The parser for a `requires` block read from a file.
+ * The parser for the `requires` block of a task file.
  *
  * Typed against the interface above so the two cannot drift: a value outside
- * the axis union is rejected at load time rather than read as "no requirement".
+ * the axis union is rejected at load time rather than read as "no requirement"
+ * and silently running a task on an axis it declared it could not use.
  */
 const axisRequirement = <T extends z.ZodTypeAny>(axis: T): z.ZodUnion<[T, z.ZodArray<T>]> =>
   z.union([axis, z.array(axis).min(1)]);
@@ -219,6 +226,11 @@ export interface Task<TOutcome = Outcome> {
   readonly input: unknown;
   readonly seeds: TaskSeeds;
   readonly graders: readonly Grader<TOutcome>[];
+  /**
+   * Axes this task is meaningful on. Unmet, the task is skipped and the
+   * skip is reported beside the rate — it does not stop the suite.
+   */
+  readonly requires?: AxisRequirements;
 }
 
 export interface Suite<TOutcome = Outcome> {
@@ -258,6 +270,18 @@ export interface TaskReport<TOutcome = Outcome> {
   readonly perGraderPassRate: Readonly<Record<string, number>>;
 }
 
+/**
+ * A task that was not run, and what it needed.
+ *
+ * It exists so the exclusion travels with the number. A skipped task
+ * contributes no trials, so dropping it from the denominator without saying so
+ * turns a misleading rate into a flattering one, which is worse.
+ */
+export interface SkippedTask {
+  readonly taskId: string;
+  readonly problems: readonly string[];
+}
+
 export interface SuiteReport<TOutcome = Outcome> {
   readonly suite: string;
   readonly startedAt: string;
@@ -265,8 +289,10 @@ export interface SuiteReport<TOutcome = Outcome> {
   readonly axes: Axes;
   readonly trialsPerTask: number;
   readonly tasks: readonly TaskReport<TOutcome>[];
-  /** Trials passed / trials run, across the whole suite. */
+  /** Trials passed / trials run — over the tasks that ran, not over `tasks`. */
   readonly passRate: number;
+  /** Tasks excluded from the run, and therefore from `passRate`. */
+  readonly skipped: readonly SkippedTask[];
   /** Graders whose judgements have no calibration set behind them. */
   readonly uncalibratedGraders: readonly string[];
 }

@@ -4,9 +4,10 @@ import {
   AxisRequirementError,
   describeAxes,
   detectAxes,
+  skippedTasks,
   unmetRequirements,
 } from './axes.js';
-import type { Grader } from './types.js';
+import type { AxisRequirements, Grader, Task } from './types.js';
 
 const grader = (name: string, requires?: Grader['requires']): Grader<never> => ({
   name,
@@ -60,8 +61,8 @@ describe('unmetRequirements', () => {
   });
 
   it('accepts a set on either axis, and tests membership rather than equality', () => {
-    // The case the scalar form cannot express: a requirement satisfied by any
-    // axis able to call a model is satisfied by `live` and by `replay`.
+    // The case the scalar form cannot express: a task that needs any axis able
+    // to call a model is satisfied by `live` and by `replay`.
     expect(unmetRequirements({ model: ['live', 'replay'] }, live)).toEqual([]);
     expect(unmetRequirements({ model: ['live', 'replay'] }, { ...stub, model: 'replay' })).toEqual(
       [],
@@ -81,6 +82,48 @@ describe('unmetRequirements', () => {
 
   it('treats an axis with no requirement as satisfied', () => {
     expect(unmetRequirements({}, stub)).toEqual([]);
+  });
+});
+
+describe('skippedTasks', () => {
+  const stub = { model: 'stub', memory: 'live' } as const;
+
+  const task = (id: string, requires?: AxisRequirements): Task<never> => ({
+    id,
+    description: id,
+    input: {},
+    seeds: { neo4j: [], relationships: [], pgvector: [] },
+    graders: [],
+    ...(requires ? { requires } : {}),
+  });
+
+  it('skips only the tasks whose requirements the run does not meet', () => {
+    expect(
+      skippedTasks(
+        [task('memory-recall-001'), task('tool-use-001', { model: ['live', 'replay'] })],
+        stub,
+      ),
+    ).toEqual([
+      {
+        taskId: 'tool-use-001',
+        problems: ['model axis is `stub`, needs one of `live`, `replay`'],
+      },
+    ]);
+  });
+
+  it('skips nothing once the axis is one the task named', () => {
+    expect(
+      skippedTasks([task('tool-use-001', { model: ['live', 'replay'] })], {
+        model: 'live',
+        memory: 'live',
+      }),
+    ).toEqual([]);
+  });
+
+  it('does not throw, which is the whole difference from the grader check', () => {
+    // A clone with no `.env` has to be able to run `yarn eval` and get a
+    // smaller honest answer, not a refusal.
+    expect(() => skippedTasks([task('t', { model: 'live' })], stub)).not.toThrow();
   });
 });
 
@@ -116,7 +159,7 @@ describe('assertAxesSatisfy', () => {
     }
   });
 
-  it('reads a set on a grader the same way it reads a scalar', () => {
+  it('reads a set on a grader the same way it reads one on a task', () => {
     expect(() =>
       assertAxesSatisfy([grader('replayable', { model: ['live', 'replay'] })], live),
     ).not.toThrow();

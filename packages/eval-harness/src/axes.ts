@@ -1,4 +1,11 @@
-import type { Axes, AxisRequirement, AxisRequirements, Grader } from './types.js';
+import type {
+  Axes,
+  AxisRequirement,
+  AxisRequirements,
+  Grader,
+  SkippedTask,
+  Task,
+} from './types.js';
 
 /**
  * Reads the two axes from the environment, using exactly the variables the
@@ -38,7 +45,7 @@ function describeRequirement<T>(requirement: AxisRequirement<T>): string {
 /**
  * Every axis the run does not satisfy, phrased so the reason survives on its
  * own: each problem names the axis the run is on *and* what was acceptable.
- * A requirement recorded as "unmet" and nothing else is unreviewable.
+ * A skip recorded as "unmet requirement" and nothing else is unreviewable.
  */
 export function unmetRequirements(requirements: AxisRequirements, axes: Axes): string[] {
   const problems: string[] = [];
@@ -81,4 +88,31 @@ export function assertAxesSatisfy(graders: readonly Grader<never>[], axes: Axes)
   }
 
   if (problems.length > 0) throw new AxisRequirementError(problems);
+}
+
+/**
+ * The tasks this run cannot measure anything with, and why.
+ *
+ * A task is skipped where a grader refuses, and the asymmetry is deliberate. An
+ * unmet grader requirement means the suite would report a number earned against
+ * a no-op — there is no honest partial answer, so it refuses. An unmet task
+ * requirement only means one scenario is not measurable here; refusing the whole
+ * suite for it would make `yarn eval` unusable on a clone with no `.env`, which
+ * is the ergonomics the quickstart depends on. The cost of skipping is that a
+ * rate can quietly improve, which is why the skip is carried in the report and
+ * printed by all three reporters rather than being left implicit.
+ */
+export function skippedTasks<TOutcome>(
+  tasks: readonly Task<TOutcome>[],
+  axes: Axes,
+): SkippedTask[] {
+  const skipped: SkippedTask[] = [];
+
+  for (const task of tasks) {
+    if (!task.requires) continue;
+    const problems = unmetRequirements(task.requires, axes);
+    if (problems.length > 0) skipped.push({ taskId: task.id, problems });
+  }
+
+  return skipped;
 }

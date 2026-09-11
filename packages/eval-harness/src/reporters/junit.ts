@@ -23,6 +23,10 @@ function failureMessage(trial: Trial<unknown>): string {
  * acts on is "trial 3 of this task failed" — the grader names are in the
  * failure message. A task's suite therefore has exactly k cases, and the
  * failure count read against k is `pass^k` spelled out.
+ *
+ * A skipped task gets a suite of its own holding one `<skipped/>` case. Not a
+ * pass, which would claim something that was never run, and not an absence,
+ * which would let a task drop out of a CI test report without a trace.
  */
 export function renderJUnitReport(report: SuiteReport<unknown>): string {
   const totalTrials = report.tasks.reduce((sum, task) => sum + task.trials.length, 0);
@@ -33,7 +37,8 @@ export function renderJUnitReport(report: SuiteReport<unknown>): string {
 
   const lines: string[] = [
     '<?xml version="1.0" encoding="UTF-8"?>',
-    `<testsuites name="${escapeXml(report.suite)}" tests="${totalTrials}" failures="${totalFailures}">`,
+    `<testsuites name="${escapeXml(report.suite)}" tests="${totalTrials + report.skipped.length}"` +
+      ` failures="${totalFailures}" skipped="${report.skipped.length}">`,
   ];
 
   for (const task of report.tasks) {
@@ -64,6 +69,16 @@ export function renderJUnitReport(report: SuiteReport<unknown>): string {
     }
 
     lines.push('  </testsuite>');
+  }
+
+  for (const skipped of report.skipped) {
+    lines.push(
+      `  <testsuite name="${escapeXml(skipped.taskId)}" tests="1" failures="0" skipped="1">`,
+      `    <testcase name="${escapeXml(`${skipped.taskId} (not run)`)}">`,
+      `      <skipped message="${escapeXml(skipped.problems.join('; '))}"/>`,
+      `    </testcase>`,
+      '  </testsuite>',
+    );
   }
 
   lines.push('</testsuites>', '');
