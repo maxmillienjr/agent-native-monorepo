@@ -36,8 +36,8 @@ replayable — `IO_RETRY` re-runs a throwing node with the same input, so attemp
 and attempt 2's success are two entries under one hash and replay reproduces both.
 
 Embeddings are stored as base64 float32. Measured over 768 dimensions a vector is 16,345
-bytes as a JSON float array and 4,096 as base64 float32, and a trial makes eighteen
-embedding calls. The precision is not lost twice: `semantic_facts.embedding` is
+bytes as a JSON float array and 4,096 as base64 float32, and the two committed trials make
+fourteen and seven embedding calls. The precision is not lost twice: `semantic_facts.embedding` is
 `vector(768)` and pgvector's `vector` is an array of `float4`, so the database would round
 the same values on the way in.
 
@@ -50,8 +50,15 @@ rather than importing `EVAL_DATASETS_DIR`, for the dependency reason above.
 
 <!-- RECORDED-SET:START -->
 
-No cassette is committed yet. `EVAL_CASSETTE_MODE=record EVAL_TRIALS=1 yarn eval` on the
-live model axis writes one.
+| Cassette                         | Axes                        | Recorded                 | Decisions                                 | Size    |
+| -------------------------------- | --------------------------- | ------------------------ | ----------------------------------------- | ------- |
+| `memory-recall-001.trial-0.json` | model `live`, memory `live` | 2026-09-10, at `021c6f2` | 3 model calls, 14 embeddings              | 93.9 KB |
+| `tool-use-001.trial-0.json`      | model `live`, memory `live` | 2026-09-10, at `021c6f2` | 5 model calls, 3 tool calls, 7 embeddings | 48.3 KB |
+
+One trial of each task, not five. Recording five would cost about forty
+`generateContent` calls against a 20-request daily free tier; P1-C owns the pipeline that
+would want them. The recording run itself passed every grader on both tasks, which is the
+only 1 × 2 live-axis result this repository has.
 
 <!-- RECORDED-SET:END -->
 
