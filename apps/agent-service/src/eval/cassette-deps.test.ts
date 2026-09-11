@@ -8,8 +8,15 @@ import {
   type Cassette,
   type Deck,
 } from '@repo/agent-cassette';
+import { channel } from 'node:diagnostics_channel';
 import { CHAT_MODEL, RunsService, type ModelDeps } from '../runs/runs.service.js';
-import { recordingModelDeps, replayModelDeps, tokenCountsFor } from './cassette-deps.js';
+import {
+  MODEL_HOST,
+  recordingModelDeps,
+  replayModelDeps,
+  tokenCountsFor,
+  watchForModelRequests,
+} from './cassette-deps.js';
 
 /**
  * Every construction of the chat client, counted.
@@ -341,5 +348,44 @@ describe('the decorator seam on RunsService', () => {
     // Two: prose, and the `json: true` instance that stops Gemini fencing a
     // JSON answer.
     expect(geminiConstructions).toEqual([CHAT_MODEL, CHAT_MODEL]);
+  });
+});
+
+/**
+ * The runtime assertion that a replayed run reached no model.
+ *
+ * Tested by publishing on the channel rather than by making a request, because
+ * the only request that would exercise it for real is the one the whole mode
+ * exists to avoid. What is being checked is the half that can silently rot: the
+ * subscription, and which origins it treats as a violation. That the channel
+ * fires at all is undici's contract, and a replayed suite whose watcher
+ * reported nothing because it was subscribed to the wrong name would look
+ * exactly like a working one.
+ */
+describe('the no-live-call watcher', () => {
+  const requests = channel('undici:request:create');
+
+  it('collects a request to the model host and hands it to the caller', () => {
+    const seen: string[] = [];
+    const violations = watchForModelRequests((target) => seen.push(target));
+
+    requests.publish({
+      request: { origin: `https://${MODEL_HOST}`, path: '/v1beta/models/x:generateContent' },
+    });
+
+    expect(violations()).toEqual([`https://${MODEL_HOST}/v1beta/models/x:generateContent`]);
+    expect(seen).toEqual(violations());
+  });
+
+  it('says nothing about the rest of the traffic a trial makes', () => {
+    // Postgres and Neo4j are not undici clients, but an OTLP exporter is, and a
+    // watcher that failed the run on one would make replay unusable with
+    // telemetry switched on.
+    const violations = watchForModelRequests(() => {});
+
+    requests.publish({ request: { origin: 'http://localhost:4318', path: '/v1/traces' } });
+    requests.publish({ request: {} });
+
+    expect(violations()).toEqual([]);
   });
 });

@@ -1,5 +1,4 @@
 import 'reflect-metadata';
-import { subscribe } from 'node:diagnostics_channel';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import {
@@ -23,40 +22,16 @@ import {
 import { createLogger } from '@repo/telemetry';
 import { loadEnvFile } from '../load-env.js';
 import { createAgentServiceHarness } from './agent-harness.js';
-import { gitHead, recordingDecks, replayDecks, type TrialDecks } from './cassette-deps.js';
+import {
+  MODEL_HOST,
+  gitHead,
+  recordingDecks,
+  replayDecks,
+  watchForModelRequests,
+  type TrialDecks,
+} from './cassette-deps.js';
 
 const logger = createLogger('eval');
-
-/** The host a model call goes to. Nothing else in a trial has business reaching it. */
-const MODEL_HOST = 'generativelanguage.googleapis.com';
-
-/**
- * Fails the run if anything reaches the model host.
- *
- * Asserted at runtime rather than by reading the wiring, because "replay never
- * falls through to a live call" is the claim the whole mode rests on and the
- * cheapest way to be wrong about it is a client nobody remembered. `fetch` and
- * the LangChain client both go through undici, so one subscription covers both.
- *
- * The violation is collected rather than thrown: the subscriber runs inside
- * undici's own call stack, where a throw would surface as whatever that request
- * decided to do with it. The run fails at the end, where the message survives.
- */
-function watchForLiveCalls(): () => readonly string[] {
-  const violations: string[] = [];
-
-  subscribe('undici:request:create', (message) => {
-    const request = (message as { request?: { origin?: unknown; path?: unknown } }).request;
-    const origin = String(request?.origin ?? '');
-    if (!origin.includes(MODEL_HOST)) return;
-
-    const target = `${origin}${String(request?.path ?? '')}`;
-    violations.push(target);
-    logger.error({ msg: 'eval.replay.live-call', target });
-  });
-
-  return () => violations;
-}
 
 /**
  * `yarn eval` — runs the suite locally and writes the three reports.
@@ -85,7 +60,10 @@ async function main(): Promise<void> {
   const outputDir = resolve(process.env['EVAL_OUTPUT_DIR'] ?? 'eval-results');
   const axes = detectAxes();
 
-  const liveCalls = mode === 'replay' ? watchForLiveCalls() : () => [];
+  const liveCalls =
+    mode === 'replay'
+      ? watchForModelRequests((target) => logger.error({ msg: 'eval.replay.live-call', target }))
+      : () => [];
   const { suite, decks, replay } = prepare(mode, trials, axes);
 
   const agent = await createAgentServiceHarness(decks);

@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process';
+import { subscribe } from 'node:diagnostics_channel';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { EMBEDDING_DIMENSIONS, EMBEDDING_MODEL } from '@repo/memory-core';
@@ -310,4 +311,39 @@ export function replayDecks(
 
 function key(taskId: string, trialIndex: number): string {
   return `${taskId} ${trialIndex}`;
+}
+
+/** The host a model call goes to. Nothing else in a trial has business reaching it. */
+export const MODEL_HOST = 'generativelanguage.googleapis.com';
+
+/**
+ * Every request that reached the model host, collected.
+ *
+ * Asserted at runtime rather than by reading the wiring, because "replay never
+ * falls through to a live call" is the claim the whole mode rests on and the
+ * cheapest way to be wrong about it is a client nobody remembered. `fetch` and
+ * the LangChain client both go through undici, so one subscription covers both.
+ *
+ * Collected rather than thrown: the subscriber runs inside undici's own call
+ * stack, where a throw surfaces as whatever that request decided to do with it.
+ * The caller fails the run at the end, where the message survives.
+ *
+ * The one thing it cannot see is a request that never connects — the channel
+ * publishes on dispatch — but a request that never connected also made no model
+ * call, so the gap is on the safe side.
+ */
+export function watchForModelRequests(onViolation: (target: string) => void): () => string[] {
+  const violations: string[] = [];
+
+  subscribe('undici:request:create', (message) => {
+    const request = (message as { request?: { origin?: unknown; path?: unknown } }).request;
+    const origin = String(request?.origin ?? '');
+    if (!origin.includes(MODEL_HOST)) return;
+
+    const target = `${origin}${String(request?.path ?? '')}`;
+    violations.push(target);
+    onViolation(target);
+  });
+
+  return () => violations;
 }
