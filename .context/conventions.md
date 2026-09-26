@@ -83,6 +83,11 @@ nightly; `eval` is local-only until P1-C wires it into a pipeline.
   expensive one — a run that was asked to replay for nothing goes live instead. Check the
   `env` array against what the script actually reads, not against the one variable that
   broke last time.
+- **Turbo reduces a failing task's exit code to 1.** A script that exits 2 under
+  `yarn turbo run <task>`, or under a root script that calls Turbo, returns 1 to the
+  caller. This was checked with a probe on 2026-09-26. A distinction that CI needs, such as
+  aborted versus failed, therefore has to be carried in a file the task writes, not in its
+  exit code.
 - **A task declares the axes it is meaningful on, and a skipped task is visible beside the
   rate.** A grader says what it needs in `requires` and the suite refuses when that is
   unmet; a task says the same thing in the `requires` block of its file and is **skipped**
