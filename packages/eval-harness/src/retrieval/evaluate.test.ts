@@ -325,7 +325,12 @@ describe('buildAblationReport', () => {
       recordedAt: '2026-09-26T00:00:00.000Z',
       gitSha: 'a'.repeat(40),
     },
-    vectorPlan: ['Limit', '  ->  Sort', '        ->  Seq Scan on semantic_facts'],
+    vectorPlan: [
+      'Limit',
+      '  ->  Sort',
+      "        Sort Key: ((embedding <=> '[0.1,0.2,0.3]'::vector)), content_hash",
+      '        ->  Seq Scan on semantic_facts',
+    ],
     linkerIds: new Map([
       ['q1', ['about', 'alpha']],
       ['q2', ['via', 'alpha']],
@@ -363,6 +368,9 @@ describe('buildAblationReport', () => {
     expect(markdown).toContain('memory `live`, embeddings `recorded`');
     expect(markdown).toContain(`at \`${'a'.repeat(40)}\``);
     expect(markdown).toContain('sequential scan');
+    // The inlined query vector is elided to its length.
+    expect(markdown).toContain("'[3 values]'::vector");
+    expect(markdown).not.toContain('0.1,0.2');
   });
 
   it('hashes fact text the way the fixture expects', () => {

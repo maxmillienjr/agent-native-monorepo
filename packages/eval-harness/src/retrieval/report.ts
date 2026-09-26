@@ -162,6 +162,18 @@ const COMPARISONS = [
   },
 ] as const;
 
+/**
+ * Replaces an inlined query vector in a plan line with its length. `EXPLAIN`
+ * prints the bound parameter in the sort key, and 768 floats say nothing about
+ * the plan's shape.
+ */
+export function elideVectorLiterals(line: string): string {
+  return line.replace(
+    /'\[([^\]]*)\]'::vector/g,
+    (_, body: string) => `'[${body.split(',').length} values]'::vector`,
+  );
+}
+
 export function buildAblationReport(input: AblationInput): AblationReport {
   const { dataset, conditions, topK } = input;
   const index = queryIndex(dataset);
@@ -261,7 +273,7 @@ export function buildAblationReport(input: AblationInput): AblationReport {
       tieSalts: TIE_SALTS.length,
       margin: DECISION_MARGIN,
     },
-    vectorPlan: input.vectorPlan,
+    vectorPlan: input.vectorPlan.map(elideVectorLiterals),
     vectorPlanUsesIndex: input.vectorPlan.some((line) => /Index Scan using \S*hnsw/i.test(line)),
     linker: {
       queriesWithIds: [...input.linkerIds.values()].filter((ids) => ids.length > 0).length,
@@ -383,7 +395,7 @@ function comparisonsTable(comparisons: readonly Comparison[]): string {
         `${i.mean >= 0 ? '+' : ''}${f3(i.mean)}`,
         `[${f3(i.lower)}, ${f3(i.upper)}]`,
         f3(i.sd),
-        c.pairsToResolve.margin === null ? '—' : String(c.pairsToResolve.margin),
+        c.pairsToResolve.margin === null || i.sd === 0 ? '—' : String(c.pairsToResolve.margin),
         c.outcome === null
           ? 'pending adjudication'
           : `${c.outcome}${c.loss === true ? ' (a loss)' : ''}`,

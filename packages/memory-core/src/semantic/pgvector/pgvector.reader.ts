@@ -113,6 +113,10 @@ export class PgPgvectorReader implements PgvectorReader {
    * Not a hot-path method. It exists so a report can say, from the database
    * rather than from a comment, whether the search is served by the HNSW index
    * or by a sequential scan — ADR 0006 records why it is the latter.
+   *
+   * `COSTS OFF` because the question is the plan's shape. The estimates move
+   * with table statistics, which autovacuum refreshes on its own schedule, so
+   * a plan with costs in it differs between two runs over identical rows.
    */
   async explainSearchByCosine(
     queryEmbedding: number[],
@@ -120,7 +124,7 @@ export class PgPgvectorReader implements PgvectorReader {
     scope: PgvectorSearchScope = {},
   ): Promise<string[]> {
     const [text, params] = cosineSearch(queryEmbedding, topK, scope);
-    const result = await this.pool.query(`EXPLAIN ${text}`, params);
+    const result = await this.pool.query(`EXPLAIN (COSTS OFF) ${text}`, params);
     return result.rows.map((row: { 'QUERY PLAN': string }) => row['QUERY PLAN']);
   }
 }
