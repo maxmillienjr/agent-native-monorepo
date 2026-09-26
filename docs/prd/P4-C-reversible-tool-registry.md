@@ -423,7 +423,10 @@ choices. The agent's choices are checked only on the live and replay axes.
    The draft recommends against it until a real irreversible tool exists. That is P1-G's
    argument for not designing against a guess. _Decided: no endpoint here._ P3-E's
    clinician route is the first HTTP resume surface this repository needs, and it is
-   designed against a real pause.
+   designed against a real pause. _Amended 2026-09-26, at P3-E's review:_ P3-E chose a case
+   table over graph resume, so it is not a graph resume surface. The endpoint is owned by
+   the first PRD that adds a real irreversible tool, and P3-E's reviewer registry, signed
+   approval and locked decide are what that PRD reuses.
 2. **What aborts the loop.** The draft aborts on any failed step, including an invalid input
    and an unknown tool, so a partial sequence of effects is never left standing. The
    alternative aborts only when a tool throws, and lets the model retry after a validation

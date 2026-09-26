@@ -126,7 +126,8 @@ is checkable in thirty seconds by reading one type test.
   it — the thing ADR 0003 calls worse than none. **P3-D** owns the producer, the synthetic
   requests it reads, and the FHIR surface that returns the result.
 - **A clinician endpoint.** `attestAdverseDetermination` is exported and unit-tested; no
-  HTTP route calls it. **P3-D** owns the review surface that does.
+  HTTP route calls it. **P3-E** owns the review surface that does (split from P3-D at
+  review, 2026-09-26).
 - **Proving a human attested.** The types guarantee an adverse determination carries an
   attestation record; they cannot guarantee the record describes a real review by a real
   reviewer. Binding an attestation to an authenticated identity and making it tamper-evident
@@ -236,7 +237,7 @@ is missing".
 Under `moduleResolution: NodeNext` (`packages/tsconfig/base.json`) TypeScript honours it: in
 a scratch package on 2026-09-26, importing `./clinician` resolved and a deep import of
 `dist/clinician.js` failed with TS2307. The map stops the deep import; it does not stop
-`@repo/determination/clinician`, which is public by design because P3-D's review surface
+`@repo/determination/clinician`, which is public by design because P3-E's review surface
 needs it. Declaring or not declaring the dependency in `package.json` does not help either:
 `nodeLinker: node-modules` (`.yarnrc.yml:1`) symlinks every workspace into
 `node_modules/@repo/`, so an undeclared workspace import resolves. The boundary is therefore

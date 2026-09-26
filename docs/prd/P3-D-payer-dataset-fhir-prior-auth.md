@@ -120,7 +120,9 @@ follow-on P3-E (see Risks).
 - **The pended lifecycle.** This covers the clinician review queue, the route that calls
   `attestAdverseDetermination`, `Claim/$inquire`, and the overdue detection a clock implies.
   So a pended `ClaimResponse` from this PRD is terminal as far as the API is concerned. The
-  case is checkpointed under its own thread id so that a successor can resume it.
+  case is checkpointed under its own thread id so that a successor can resume it. _Amended
+  at P3-E's review, 2026-09-26:_ P3-E does not resume the thread. It holds the case in a
+  table, and the checkpoint stays as the audit record P3-B reads.
   **P3-E** owns all of it. P3-A handed the review surface to P3-D
   (`P3-A-clinician-gate.md:127-128`), so the split moves that hand-off, and the index has to
   record it (see Risks).

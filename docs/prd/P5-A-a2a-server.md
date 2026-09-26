@@ -312,7 +312,8 @@ The service holds digests, never tokens. The middleware hashes the presented tok
 compares it with `crypto.timingSafeEqual` against each digest. On a match it attaches the
 principal. On no match, or no header, it answers `401` with
 `WWW-Authenticate: Bearer realm="agent-service"`. It logs the principal and never the
-token. It covers `/runs`, `/runs/stream` and `/a2a/*`, and exempts `GET /health`,
+token. It covers `/runs`, `/runs/stream` and `/a2a/*` — and, amended at P3-E's review on
+2026-09-26, `/fhir/*` and `/review/*` once P3-D and P3-E add them — and exempts `GET /health`,
 `/.well-known/agent-card.json` and `/.well-known/jwks.json` — discovery has to be anonymous.
 
 **Enforced at the service, not the gateway.** The service publishes its port on the host

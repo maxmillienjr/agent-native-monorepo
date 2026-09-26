@@ -2,10 +2,10 @@
 id: P3-E
 title: Clinician review queue, `$inquire` and the decision clock
 tier: 3
-status: draft
+status: accepted
 size: M
 depends_on: [P3-A, P3-D]
-blocks: []
+blocks: [P3-F]
 issue: null
 superseded_by: null
 ---
@@ -596,7 +596,7 @@ case store), the **ledger** axis (P3-C's `LEDGER_DATABASE_URL`) and the **auth**
 
 ## Risks and open questions
 
-**Open questions that change scope.**
+**Open questions, decided at review 2026-09-26.**
 
 1. **Case layer or graph resume.** This draft keeps the graph linear and puts the case in a
    table, for the reasons in Problem. The alternative is P3-D's proposal. A `review` node
@@ -610,19 +610,27 @@ case store), the **ledger** axis (P3-C's `LEDGER_DATABASE_URL`) and the **auth**
    (`P3-D-...md:122-123`) and P4-C's decision that this route is the first HTTP resume
    surface (`P4-C-...md:424-426`). P4-C's resume endpoint returns to unowned. What does
    generalize to P4-C's approval gate is the reviewer registry, the signed approval and the
-   locked decide. **Recommendation: the case layer.**
+   locked decide. **Recommendation: the case layer.** _Decided: the case layer._ The probe
+   found five silent or unsafe resume behaviours and an `any` where P3-A's type check
+   should be, and ADR 0001 names exactly this case as its revisit trigger. P3-D and P4-C
+   are amended in the same change.
 2. **The unconfigured memory axis.** This draft uses a volatile in-process store with a
    `warn`. The alternative is to answer `503` to any referral when memory is unconfigured.
    That changes P3-D's accepted criterion that every bundle returns `queued` on the stub
    axis (`P3-D-...md:664-665`), and it takes review out of the no-database service spec.
+   _Decided: the volatile store with a `warn`_, which is the repository's axis rule: an
+   unconfigured axis runs, a configured and unreachable one exits.
 3. **Dependency edges.** This draft depends on P3-A and P3-D only. The ledger and
    authentication criteria are written to stay open, with owners, until P3-C and P5-A ship.
    The index already decided the ledger is not an edge (`docs/prd/README.md`, Sequencing).
    If review wants the two conditional criteria closed at merge, P3-C and P5-A become
-   `depends_on` edges, and P3-E moves behind P3-B through P3-C.
+   `depends_on` edges, and P3-E moves behind P3-B through P3-C. _Decided: as drafted._ The
+   two criteria stay open with P3-C and P5-A named as owners, and P3-E may ship without
+   them only if both are named in its close-out.
 4. **Appeals as P3-F.** The proposed successor adds a reconsideration lifecycle: filing
    window, 30-day and 72-hour clocks, the non-involved-reviewer check and the forward to the
-   independent entity. Accept it into the index, or record appeals as unowned.
+   independent entity. Accept it into the index, or record appeals as unowned. _Decided:
+   P3-F enters the index as a draft._ Whether it is built is decided when P3-E ships.
 
 **Risks.**
 
