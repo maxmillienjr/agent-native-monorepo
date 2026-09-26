@@ -663,6 +663,13 @@ Where the implementation is not what the Design section describes, each delibera
 - **The Markdown summary prints the commit at its foot.** It sits below the exclusions a
   reader must reach before the table, not beside the axis line. `eval-report.json`
   carries it as `genAiSemconvCommit`, a top-level field beside `axes`.
+- **The live run predates P5-C's client upgrade.** It ran on `@langchain/google-genai`
+  0.2.18. P5-C merged before this did and moved the client to 2.3.2. At 2.3.2,
+  `convertUsageMetadata` still maps `candidatesTokenCount` to `output_tokens` and
+  `totalTokenCount` to `total_tokens`, and the candidate spread still puts `finishReason` in
+  `additional_kwargs`, so the derivation and the wrapper read the same fields. The replay
+  and unit criteria were re-run after the rebase. The live ones were not, because the
+  day's four calls were spent.
 - **The STATUS row cites evidence by name.** The criterion asked for file and line, and
   P4-A replaced line anchors with named ones that `yarn lint:docs` resolves while this was
   in flight.
