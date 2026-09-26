@@ -2,7 +2,7 @@
 id: P4-A
 title: governance/controls.yaml and a CI check for unmapped controls
 tier: 4
-status: in-progress
+status: shipped
 size: M
 depends_on: []
 blocks: []
@@ -339,12 +339,20 @@ against a licensed copy before this PRD moves to `accepted`.
 
 ## Acceptance criteria
 
-- [ ] `governance/controls.yaml` exists, parses under the Zod schema in
+- [x] `governance/controls.yaml` exists, parses under the Zod schema in
       `scripts/lint-controls.mjs`, and carries the eighteen controls in the table above,
-      with the statuses shown.
-- [ ] `yarn lint:docs` runs `lint-controls.mjs` and exits 0 at HEAD of the P4-A pull
+      with the statuses shown. Two review decisions apply: CTL-ACC-01 is `planned` under
+      P5-A, and CTL-DATA-01 is `planned` under P3-D now that P3-D has a file. One row moved
+      because its owner delivered while this was in flight: CTL-EVAL-03 is `implemented` on
+      P1-C's `replay` job. Verified 2026-09-26: `yarn lint:docs` reports 18 controls, 9
+      `implemented`, 1 `procedural`, 8 `planned`, 0 `not-applicable`. The ids match the
+      table, the statuses match it once those three moves are applied, and two titles
+      changed. The next section says why.
+- [x] `yarn lint:docs` runs `lint-controls.mjs` and exits 0 at HEAD of the P4-A pull
       request, and `ci.yml` is unchanged — the gate is the existing `yarn lint:docs` step.
-- [ ] `node --test scripts/` runs one fixture per failure mode, and each exits the
+      `lint-docs.mjs` calls its `lintControls` export in-process, and the pull request's
+      diff against `origin/main` does not touch `ci.yml`.
+- [x] `node --test scripts/` runs one fixture per failure mode, and each exits the
       checker non-zero with a message naming the control and the cause: an `implemented`
       control with only `symbol`/`doc` anchors; a `planned` control with no `owner`; a
       `not-applicable` control with no `rationale`; a `symbol` whose file is untracked; a
@@ -352,28 +360,110 @@ against a licensed copy before this PRD moves to `accepted`.
       `test` title that is `it.skip`; a `ci` job that does not exist; a `ci` `run`
       substring that the job no longer contains; a `ref` absent from its framework's
       `clauses`; an evidence path containing `:NN`; a PRD `controls:` entry naming an
-      unknown id; a `planned` control owned by a `shipped` PRD.
-- [ ] Renaming `skippedTasks` in a scratch branch makes `yarn lint:docs` fail, naming
+      unknown id; a `planned` control owned by a `shipped` PRD. All thirteen are in
+      `scripts/__fixtures__/controls/`, and each test also asserts that its fixture fails
+      with exactly one problem. The command is `node --test 'scripts/*.test.mjs'`; the next
+      section says why.
+- [x] Renaming `skippedTasks` in a scratch branch makes `yarn lint:docs` fail, naming
       `CTL-EVAL-02`. Inserting twenty lines above it does not. This criterion shows that
       the anchors keep resolving when lines move, which the `STATUS.md` check does not.
-- [ ] `governance/CONTROLS.md` is produced by `yarn controls:matrix`, passes
+      Verified 2026-09-26 on the working tree: twenty inserted lines passed; the rename
+      failed with two problems, the `docs/STATUS.md` row 17 anchor and
+      `CTL-EVAL-02: evidence[0] (symbol) does not resolve`. The same property is a
+      committed test on the fixture tree.
+- [x] `governance/CONTROLS.md` is produced by `yarn controls:matrix`, passes
       `yarn format:check`, and `yarn lint:docs` fails when it is edited by hand or when
-      `controls.yaml` changes without regenerating it.
-- [ ] `CONTROLS.md` shows, for each of the six frameworks, the clauses referenced and the
-      number not assessed (for AI RMF 1.0, 72 minus those referenced).
-- [ ] Every `planned` row names a PRD that the index lists and that is not `shipped`.
-- [ ] `docs/STATUS.md` rows 3, 11 and 17 cite lines that hold what the sentence names.
-- [ ] Every evidence cell in `docs/STATUS.md` uses the resolver's anchor forms rather than
+      `controls.yaml` changes without regenerating it. Both failures are fixture tests.
+- [x] `CONTROLS.md` shows, for each of the six frameworks, the clauses referenced and the
+      number not assessed (for AI RMF 1.0, 72 minus those referenced). AI RMF: 15 of 72,
+      57 not assessed.
+- [x] Every `planned` row names a PRD that the index lists and that is not `shipped`. The
+      status rules enforce it, and a fixture fails a row owned by a shipped PRD.
+- [x] `docs/STATUS.md` rows 3, 11 and 17 cite lines that hold what the sentence names.
+      They now cite names, which the next criterion requires: row 3 cites both retry
+      tests by title, row 11 cites `ingressNode`, and row 17 cites
+      `RunsService.createStubModelDeps` and `EvalHarness.run`.
+- [x] Every evidence cell in `docs/STATUS.md` uses the resolver's anchor forms rather than
       `file:line`, and `yarn lint:docs` fails on a fixture row whose symbol, test title or
-      heading no longer resolves.
-- [ ] `CONTROLS.md` states that the ISO/IEC 42001 Annex A identifiers come from a named
-      secondary source and were not checked against the standard's text.
-- [ ] `docs/prd/_TEMPLATE.md` shows the optional `controls:` field.
+      heading no longer resolves. `scripts/__fixtures__/status/STATUS.md` has one row per
+      kind, and `scripts/lint-docs.test.mjs` runs the lint over it.
+- [x] `CONTROLS.md` states that the ISO/IEC 42001 Annex A identifiers come from a named
+      secondary source and were not checked against the standard's text. It names two,
+      ISMS.online and RiskProfs, which agree, and marks every ISO mapping with a dagger.
+- [x] `docs/prd/_TEMPLATE.md` shows the optional `controls:` field.
       `.agents/prd-author.md` says a PRD that delivers a `planned` control lists it there.
       `.agents/reviewer.md` says a change that moves a control updates its row in the same
       pull request. `.context/workflows.md` has an "Add or change a control" entry.
-- [ ] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
-      pass.
+- [x] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
+      pass. So does `yarn turbo test:unit`. Run 2026-09-26 at the head of the pull
+      request.
+
+## What shipped, and where it diverged
+
+The catalogue is eighteen controls against six frameworks: 9 `implemented`, 1
+`procedural`, 8 `planned`, 0 `not-applicable`. The Design section's count of "nine
+`implemented`" was an arithmetic slip, because its own table lists eight. The ninth is
+CTL-EVAL-03. P1-C merged its `replay` job while this was in flight, and the job runs
+`yarn eval` on every pull request, so the row landed `implemented` rather than `planned`.
+Moving CTL-ACC-01 to `planned` under P5-A emptied the `not-applicable` status. P3-D's file landed during
+implementation and lists CTL-DATA-01, so that row is `planned` under P3-D, as the review
+decided. A reviewer still enforces it by hand until P3-D ships, and the row's note says so.
+P3-D's own review split the row: the narrowed CTL-DATA-01 and a new `procedural`
+CTL-DATA-02 are made in P3-D's implementation, not here. The NIST, OWASP and CFR clause
+texts were read from the primary documents and copied into the registry. The ISO Annex A
+titles come from two secondary sources, as decided at review.
+
+At `77e3191`, where implementation started, five `docs/STATUS.md` citations no longer
+held what they named. Three are the ones Problem lists. Row 18 had two more: it cited
+`MODEL_HOST` for the `undici:request:create` subscription in the function below it, and it
+cited a line inside a different test for the one that counts client constructions. P1-C's
+pull request rewrote rows 17 and 18 in flight and corrected theirs by hand. Rows 3 and 11
+were still stale on `main` when this migrated them.
+
+Where the build differs from the Design section:
+
+- **Two control titles were narrowed to what is delivered.** P1-C's `replay` job fails
+  on a failed trial, but it blocks nothing until P1-D makes it a required check, so
+  CTL-EVAL-03 no longer says "can block it". It grades the replay axis, and its note says
+  the live job is skipped until a repository secret exists. P1-F asserts input tokens, output tokens and model calls. It rejects a latency
+  budget, and it leaves a dollar assertion to P1-E, so CTL-COST-01 no longer says "cost,
+  latency and steps". Each row's note names the PRD that owns the remainder.
+- **Every owner now has a file.** Problem said none did. The owners of all eight `planned`
+  rows — P1-F, P2-C, P3-A, P3-C, P3-D, P4-B, P4-C and P5-A — list their control in
+  `controls:`, and the symmetry check enforces it. P1-C lists CTL-EVAL-03, which it
+  delivered. P3-D, P4-B and P4-C were drafted against this PRD and added the field
+  themselves. This pull request added it to the other six. P3-D and P5-A each propose
+  splitting their row, CTL-DATA-01 and CTL-ACC-01. Both PRDs make that split in their own
+  implementation, and each row's note says so.
+- **`symbol` takes `Class.member`.** `docs/STATUS.md` cites methods, such as
+  `RunsService.createStubModelDeps` and `CypherNeo4jWriter.mergeFact`. The owner has to
+  resolve as a declaration, and exactly one line of its body declares the member.
+- **STATUS.md cites evidence inline as `path#name`**, dispatched on the file: a declaration
+  in source, a test title in a test file, a job in a workflow, a heading in Markdown, and a
+  dotted key in JSON. JSON is a fifth kind the catalogue does not use. `turbo.json` and a
+  task file are cited that way. An inline path may be a suffix, as the matrix always wrote
+  it, but it has to match exactly one tracked file. So does a bare path cited without a
+  name. Catalogue paths are exact.
+- **The matrix prints an owner's id, not its status or a link.** Both change when another
+  PRD moves, and either would make the matrix stale in a pull request that never touched a
+  control.
+- **`lint-docs.mjs` runs the controls check in-process**, not chained after it with `&&`.
+  Renaming `skippedTasks` breaks a STATUS row and CTL-EVAL-02 at once, and with `&&` the
+  first failure exited before the second was named. The script is
+  `node scripts/lint-docs.mjs && node --test 'scripts/*.test.mjs'`. `node --test scripts/`
+  does not work on Node 24, which treats a directory argument as a file to run and fails.
+- **The registry holds only mapped clauses, and the lint enforces it**, so the
+  referenced count in each framework section is exact.
+- **Git's environment is stripped before the checker or a test calls git.** Under
+  `git rebase --exec`, an inherited `GIT_DIR` pointed the fixture test's `git init` and
+  `git add` at the enclosing repository. The `git init` set `core.bare = true` in the
+  shared config, and the `git add` staged the fixture copy into the worktree's index. Both
+  were reverted. `gitEnv()` in `scripts/lib/anchors.mjs` drops every `GIT_` variable, and
+  the conventions now say so.
+- **OWASP has published a 2026 LLM list** that renumbers the 2025 one. Every ref keeps its
+  `:2025` suffix, and the registry says a mapping to the 2026 list would be a new id.
+  AI 600-1's size, 213 suggested actions, was counted from the PDF. §164.312's size is 12:
+  five standards and seven implementation specifications.
 
 ## Risks and open questions
 

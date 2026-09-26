@@ -92,6 +92,19 @@ have moved to a repository with no release, so it pins a commit. The replay axis
 inference spans carrying the cassette's recorded usage, marked as replayed, so that the
 pull-request tier can see the budgets P1-F will assert.
 
+**[P4-A](P4-A-controls-as-code.md) has shipped**, tracked in
+[#63](https://github.com/maxmillienjr/agent-native-monorepo/issues/63).
+`governance/controls.yaml` catalogues eighteen controls against NIST AI RMF 1.0, NIST AI
+600-1, ISO/IEC 42001 Annex A, the two OWASP lists and 45 CFR §164.312: nine
+`implemented`, one `procedural`, eight `planned`, none excluded. `yarn lint:docs` resolves
+every piece of evidence by name, checks each `planned` row against the PRD that owns it, and
+fails when the generated `governance/CONTROLS.md` is stale. `docs/STATUS.md` moved onto the
+same resolver. It now has nineteen rows — fifteen `implemented`, two `stubbed`, one
+`planned`, one `removed` — each cited as `path#name` rather than by line, and a `path:NN`
+citation fails the lint. Rows 3 and 11 were still citing lines that no longer held what
+they named when they migrated. A green check
+means the evidence exists, not that it is sufficient, and the matrix says so in its header.
+
 **Where the detail lives.** Each PRD carries its own risks, its divergences from the design
 that was reviewed, and — where a shipped record turned out to be wrong — the correction that
 followed. P2-A is the one to read first: it shipped, was reopened the same day when two of
@@ -170,11 +183,11 @@ provider actually operates under. Uses synthetic data only.
 
 ## Tier 4 — Governance and agent security as code
 
-| ID                                        | Title                                                           | Size | Status      |
-| ----------------------------------------- | --------------------------------------------------------------- | ---- | ----------- |
-| [P4-A](P4-A-controls-as-code.md)          | `governance/controls.yaml` and a CI check for unmapped controls | M    | in-progress |
-| [P4-B](P4-B-memory-poisoning-red-team.md) | Memory-poisoning red team mapped to OWASP Agentic Top 10        | M    | accepted    |
-| [P4-C](P4-C-reversible-tool-registry.md)  | Reversibility-tiered tool registry with saga compensation       | M    | accepted    |
+| ID                                        | Title                                                           | Size | Status   |
+| ----------------------------------------- | --------------------------------------------------------------- | ---- | -------- |
+| [P4-A](P4-A-controls-as-code.md)          | `governance/controls.yaml` and a CI check for unmapped controls | M    | shipped  |
+| [P4-B](P4-B-memory-poisoning-red-team.md) | Memory-poisoning red team mapped to OWASP Agentic Top 10        | M    | accepted |
+| [P4-C](P4-C-reversible-tool-registry.md)  | Reversibility-tiered tool registry with saga compensation       | M    | accepted |
 
 ## Tier 5 — Interoperability
 
