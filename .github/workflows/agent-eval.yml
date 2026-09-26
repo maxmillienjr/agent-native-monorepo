@@ -40,21 +40,26 @@ env:
 
 jobs:
   # The secrets context cannot be read in a job-level `if`, so the live job
-  # cannot skip itself on a missing key. This job reads it for them. The key is
+  # cannot skip itself on a missing key. This job reads it for it. The key is
   # compared inside the expression and never enters a process environment, and
   # nothing is checked out, so no pull-request code runs beside it.
-  live-key:
-    name: Is there a live key
+  gate:
+    name: eval-live-gate
     runs-on: ubuntu-latest
     outputs:
-      present: ${{ steps.probe.outputs.present }}
+      has_key: ${{ steps.probe.outputs.has_key }}
     steps:
       - id: probe
-        run: echo "present=${{ secrets.GOOGLE_API_KEY != '' }}" >> "$GITHUB_OUTPUT"
+        run: echo "has_key=${{ secrets.GOOGLE_API_KEY != '' }}" >> "$GITHUB_OUTPUT"
 
   replay:
-    name: Replay tier
-    needs: live-key
+    # The check's context, which P1-D makes a required check by this name.
+    name: eval-replay
+    needs: gate
+    # Never skipped by a condition, because a skipped job satisfies a required
+    # check. `!cancelled()` is here so that a failed gate, which would otherwise
+    # skip this job, cannot; the summary then says the gate did not report.
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
@@ -107,7 +112,7 @@ jobs:
         if: always()
         env:
           EVENT: ${{ github.event_name }}
-          LIVE_KEY: ${{ needs.live-key.outputs.present }}
+          HAS_KEY: ${{ needs.gate.outputs.has_key }}
         run: |
           if [ -f "$EVAL_OUTPUT_DIR/eval-summary.md" ]; then
             cat "$EVAL_OUTPUT_DIR/eval-summary.md" >> "$GITHUB_STEP_SUMMARY"
@@ -118,10 +123,12 @@ jobs:
           echo >> "$GITHUB_STEP_SUMMARY"
           if [ "$EVENT" != schedule ] && [ "$EVENT" != workflow_dispatch ]; then
             echo "> **Live tier:** not run on \`$EVENT\`. It runs nightly and on dispatch." >> "$GITHUB_STEP_SUMMARY"
-          elif [ "$LIVE_KEY" != true ]; then
-            echo '> **Live tier: did not run.** There is no `GOOGLE_API_KEY` repository secret, so the `live` job was skipped. This replay is a frozen sample and cannot catch the model getting worse or the client breaking.' >> "$GITHUB_STEP_SUMMARY"
+          elif [ "$HAS_KEY" = false ]; then
+            echo '> **Live tier: did not run.** There is no `GOOGLE_API_KEY` repository secret, so the `eval-live` job was skipped. This replay is a frozen sample and cannot catch the model getting worse or the client breaking.' >> "$GITHUB_STEP_SUMMARY"
+          elif [ "$HAS_KEY" != true ]; then
+            echo '> **Live tier: did not run.** The `eval-live-gate` job did not report whether a key exists.' >> "$GITHUB_STEP_SUMMARY"
           else
-            echo '> **Live tier:** see the `live` job in this run.' >> "$GITHUB_STEP_SUMMARY"
+            echo '> **Live tier:** see the `eval-live` job in this run.' >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - uses: actions/upload-artifact@v7
@@ -132,12 +139,12 @@ jobs:
           if-no-files-found: warn
 
   live:
-    name: Live tier
-    needs: live-key
+    name: eval-live
+    needs: gate
     # Skipped, never passed, when there is no key: a green job that measured
     # nothing is the failure REQUIRE_INTEGRATION_ENV was written to stop.
     if: >-
-      needs.live-key.outputs.present == 'true' &&
+      needs.gate.outputs.has_key == 'true' &&
       (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
     # One run at a time: two overlapping runs on one daily quota make it
     # impossible to tell which of them exhausted it.
@@ -188,7 +195,7 @@ jobs:
 
       - run: yarn install --immutable
 
-      # So the cassette artifact holds this run's recordings and nothing else.
+      # So the artifact holds this run's recordings and nothing else.
       # A trial that throws writes no cassette, and a committed file left in
       # its place would be indistinguishable from a fresh one.
       - name: Clear the committed cassettes
@@ -210,16 +217,18 @@ jobs:
             echo 'No summary was written. See the step that failed before `yarn eval`.' >> "$GITHUB_STEP_SUMMARY"
           fi
 
+      # In the same artifact as the reports: the decisions this run made are
+      # what P1-E compares against the committed set.
+      - name: Keep the recorded cassettes with the reports
+        if: always()
+        run: |
+          mkdir -p "$EVAL_OUTPUT_DIR/cassettes"
+          find packages/eval-harness/datasets/memory-recall/cassettes -name '*.json' \
+            -exec cp {} "$EVAL_OUTPUT_DIR/cassettes/" \;
+
       - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: eval-live
           path: ${{ env.EVAL_OUTPUT_DIR }}
-          if-no-files-found: warn
-
-      - uses: actions/upload-artifact@v7
-        if: always()
-        with:
-          name: eval-live-cassettes
-          path: packages/eval-harness/datasets/memory-recall/cassettes/
           if-no-files-found: warn
