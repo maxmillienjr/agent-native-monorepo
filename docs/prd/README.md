@@ -72,6 +72,14 @@ it, so the fix P1-A handed over (retry 429 in `IO_RETRY`) would make things wors
 tier is written conditional on a repository secret, and shows as skipped, never as passed,
 until one exists.
 
+**[P2-B](P2-B-retrieval-ablation.md) is drafted and awaiting review** — the ablation ADR
+0002 has been waiting for. Drafting it found that the deployed graph path is close to
+unreachable: the seed linker deletes `_`, and 34 of the 41 entity ids in the two live
+extractions contain one. The draft therefore measures the store with the linker taken out
+as well as the deployed path, and pre-registers what happens to ADR 0002 under each
+outcome. It also found that the tie-break P1-B added stops the vector query from using its
+HNSW index, a trade ADR 0006 now records.
+
 **Where the detail lives.** Each PRD carries its own risks, its divergences from the design
 that was reviewed, and — where a shipped record turned out to be wrong — the correction that
 followed. P2-A is the one to read first: it shipped, was reopened the same day when two of
@@ -129,11 +137,11 @@ replacing it.
 The three-tier memory model is instantiated and the graph is checkpointed. What remains is
 measuring whether the hybrid premise holds, and saying so in the standard vocabulary.
 
-| ID                               | Title                                                            | Size | Status  |
-| -------------------------------- | ---------------------------------------------------------------- | ---- | ------- |
-| [P2-A](P2-A-wire-memory-core.md) | Wire memory-core into the service; add checkpointing and retry   | L    | shipped |
-| P2-B                             | Hybrid retrieval evaluation and the graph/vector/hybrid ablation | M    | draft   |
-| P2-C                             | OpenTelemetry GenAI semantics, including evaluation events       | M    | draft   |
+| ID                                 | Title                                                            | Size | Status  |
+| ---------------------------------- | ---------------------------------------------------------------- | ---- | ------- |
+| [P2-A](P2-A-wire-memory-core.md)   | Wire memory-core into the service; add checkpointing and retry   | L    | shipped |
+| [P2-B](P2-B-retrieval-ablation.md) | Hybrid retrieval evaluation and the graph/vector/hybrid ablation | L    | draft   |
+| P2-C                               | OpenTelemetry GenAI semantics, including evaluation events       | M    | draft   |
 
 ## Tier 3 — Regulated-domain credibility
 
@@ -168,17 +176,20 @@ provider actually operates under. Uses synthetic data only.
 The dependency spine, not a schedule:
 
 ```
-P0-A ──▶ P2-A ──┬──▶ P1-A ──┬──▶ P1-B ──▶ P1-C ──┬──▶ P1-D
-                │           │                       ├──▶ P1-E
-                │           │                       └──▶ P1-F
+P0-A ──▶ P2-A ──┬──▶ P1-A ──┬──▶ P1-B ──┬──▶ P1-C ──┬──▶ P1-D
+                │           │           │           ├──▶ P1-E
+                │           │           │           └──▶ P1-F
+                │           │           └──▶ P2-B
                 │           └──▶ P1-G
-                ├──▶ P2-B
                 ├──▶ P3-B
                 └──▶ P4-C
 ```
 
-P2-A and P1-A are both shipped, so everything hanging off them is unblocked — including
-P2-B, whose ablation needs both a working retrieval path and a harness to measure it with.
+P2-A, P1-A and P1-B are all shipped, so everything hanging off them is unblocked —
+including P2-B, whose ablation needs a working retrieval path, a harness to measure it
+with, and P1-B's deterministic tie-breaking and float32 vector codec to make the
+measurement reproducible from committed embeddings. It is drawn under P1-B because that is
+the last of its three predecessors; it also depends on P2-A and P1-A directly.
 
 `P0-B`, `P2-C`, `P3-A`, `P3-C`, `P4-A`, `P4-B`, `P5-A`, `P5-B`, and `P5-C` have no hard
 predecessors and can be picked up whenever they are the most valuable next thing. P5-C
