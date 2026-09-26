@@ -2,7 +2,7 @@
 id: P1-F
 title: Cost, latency, and step budgets as CI assertions
 tier: 1
-status: draft
+status: accepted
 size: M
 depends_on: [P1-A, P1-B, P1-C, P2-C]
 blocks: []
@@ -133,7 +133,9 @@ these differences either never fails or fails on noise.
 - **Spending fewer tokens.** Capping thinking with `thinkingBudget`, and giving
   `selectTool` the previous tool output so the `act` loop stops re-asking the same
   question, are changes to the agent. Budgets measure the agent; they do not change it.
-  **No PRD owns either change** — open question 3.
+  **P4-C owns the `act` loop fix**, decided at review (open question 3). Capping thinking
+  is not proposed until the nightly's own figures show thinking dominates output; if they
+  do, that is an amendment to this PRD, made with the numbers in hand.
 - **A step budget other than `modelCalls`.** A tool-call or `act`-iteration ceiling at or
   above `maxSteps` is already enforced by `edges.ts:9`. A ceiling below `maxSteps`
   duplicates `tool_trajectory_precision`, which already measures wasted steps as a quality
@@ -434,7 +436,7 @@ verifies a mapping or a rule, on neither model axis.
 
 ## Risks and open questions
 
-**Open questions.**
+**Open questions, decided at review 2026-09-26.**
 
 1. **Headroom.** 1.5× on input and 2× on output are guesses. Each task has one recorded
    sample, and nothing has measured how much `gemini-2.5-flash`'s output length varies for a
@@ -446,18 +448,24 @@ verifies a mapping or a rule, on neither model axis.
    `Trial.passed` so that P1-D's pass-rate comparison is about quality only. If review
    reverses this, budgets become code graders named `budget_*`, they enter `pass^k`, and
    P1-D inherits the mix. That changes the report shape. It does not change the size.
+   _Decided: beside._ A pass rate that falls because a correct answer got longer would be
+   a quality number measuring cost.
 3. **The `act` loop repeats itself, and no PRD owns the fix.** `tool-use-001` spends two of
    its five calls repeating a request the model has already answered — two of the
    nightly's eight. The fix is to give `selectTool` the previous tool
    output. That is a prompt change, so it forces a re-recording and moves the budgets.
    Folding it into P1-F saves one re-recording and makes this PRD change agent behaviour.
    Keeping it separate needs a PRD that does not exist yet. The draft recommends keeping it
-   separate. Either answer changes scope.
+   separate. Either answer changes scope. _Decided: separate, and owned by P4-C_, whose
+   tool registry is where `selectTool`'s input is redesigned anyway. P1-F sets its budgets
+   on today's baseline, repeats included, and says so beside them; P4-C's re-recording
+   tightens them.
 4. **The seam return types change.** This is what makes `RunResponse.tokenCounts` the
    truth. It touches two node contracts and their fakes in `graph.test.ts`,
    `resume.test.ts` and `spans.test.ts`, and forces the format bump. A side channel would
    avoid all of that and leave the public field counting one call in three. The draft
-   recommends the return-type change.
+   recommends the return-type change. _Decided: the return types change._ A public field
+   that counts one call in three is the kind of claim this repository exists to correct.
 
 **Risks.**
 
