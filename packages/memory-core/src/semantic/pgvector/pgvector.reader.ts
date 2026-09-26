@@ -117,6 +117,13 @@ export class PgPgvectorReader implements PgvectorReader {
    * `COSTS OFF` because the question is the plan's shape. The estimates move
    * with table statistics, which autovacuum refreshes on its own schedule, so
    * a plan with costs in it differs between two runs over identical rows.
+   *
+   * It analyzes the table first for the same reason. Measured on 2026-09-26
+   * over 335 freshly written rows in one session: the same query planned as a
+   * sequential scan before autovacuum's analyze had run and as a `session_id`
+   * bitmap scan after it. Neither uses the HNSW index, but a plan that depends
+   * on whether a background worker has woken up is not something a report can
+   * print as a property of the query.
    */
   async explainSearchByCosine(
     queryEmbedding: number[],
@@ -124,6 +131,7 @@ export class PgPgvectorReader implements PgvectorReader {
     scope: PgvectorSearchScope = {},
   ): Promise<string[]> {
     const [text, params] = cosineSearch(queryEmbedding, topK, scope);
+    await this.pool.query('ANALYZE semantic_facts');
     const result = await this.pool.query(`EXPLAIN (COSTS OFF) ${text}`, params);
     return result.rows.map((row: { 'QUERY PLAN': string }) => row['QUERY PLAN']);
   }

@@ -474,7 +474,7 @@ export function renderAblationMarkdown(report: AblationReport): string {
       `bootstrap ${report.config.bootstrap.resamples} resamples seed ${report.config.bootstrap.seed}, ${report.config.tieSalts} tie salts`,
   );
   out.push(
-    `- **Vector search:** ${report.vectorPlanUsesIndex ? 'served by the HNSW index' : 'a sequential scan — the plan below does not use the HNSW index (ADR 0006), and every latency here is for that scan'}`,
+    `- **Vector search:** ${report.vectorPlanUsesIndex ? 'served by the HNSW index' : 'exact — the plan below does not use the HNSW index (ADR 0006); it scans every row of the session and sorts, and every latency here is for that'}`,
   );
   out.push(
     `- **Seed linker:** produced ids for ${report.linker.queriesWithIds} of ${report.dataset.queries} queries; ` +

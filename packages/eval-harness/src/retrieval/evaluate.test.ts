@@ -367,7 +367,7 @@ describe('buildAblationReport', () => {
     expect(markdown).toContain('f'.repeat(64));
     expect(markdown).toContain('memory `live`, embeddings `recorded`');
     expect(markdown).toContain(`at \`${'a'.repeat(40)}\``);
-    expect(markdown).toContain('sequential scan');
+    expect(markdown).toContain('does not use the HNSW index');
     // The inlined query vector is elided to its length.
     expect(markdown).toContain("'[3 values]'::vector");
     expect(markdown).not.toContain('0.1,0.2');
