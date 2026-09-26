@@ -2,7 +2,7 @@
 id: P1-E
 title: Model-drift canary against pinned and floating model ids
 tier: 1
-status: draft
+status: accepted
 size: M
 depends_on: [P1-A, P1-B, P1-C]
 blocks: []
@@ -419,7 +419,7 @@ two criteria above are removed from this PRD before it is accepted.
 
 ## Risks and open questions
 
-**Open questions that change scope.**
+**Decided at review, 2026-09-26.** The draft's three questions, each with its answer.
 
 1. **Is a `GOOGLE_API_KEY` repository secret added?** This is the owner's decision (P1-C
    decision 1), and this PRD does not assume an answer. **Without one**, the canary is a
@@ -430,16 +430,21 @@ two criteria above are removed from this PRD before it is accepted.
    secret**, rather than handing them on again. It would stop at `in-progress` with every
    offline and local criterion met. The alternative is to split the CI criteria into a
    PRD whose only content is "add the secret", which records the dependency without
-   adding anything.
+   adding anything. _Decided: the draft's proposal stands._ P1-E ships only when the
+   secret exists and the CI criteria are met; until then it stays `in-progress` with its
+   offline and local criteria ticked, and the index says why.
 2. **Is the floating-alias suite run in scope?** The alias points at a different model
    generation (`gemini-3.5-flash` since 2026-05-19, or later), so comparing it with
    `gemini-2.5-flash` is a migration study, not drift detection. The draft keeps it: the
    title promises a floating comparison, and it costs one override, a dispatch input and
    one local run. If review drops it, the floating probe still reports what the alias
-   resolves to.
+   resolves to. _Decided: kept_, as a dispatch-only run that the schedule never spends
+   quota on, and reported as a migration comparison rather than as drift.
 3. **Should a pinned `changed` go red?** The draft says yes (see Design). The cost is a red
    scheduled job, which notifies the user who last edited the cron line and blocks
-   nothing. The alternative is a notice. A notice is also what nobody reads.
+   nothing. The alternative is a notice. A notice is also what nobody reads. _Decided:
+   red._ The job's summary names what changed, and the way back to green is a committed
+   baseline update, so every acknowledged change is in `git log`.
 
 **Risks.**
 
