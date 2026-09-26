@@ -15,6 +15,18 @@ function isClientError(error: unknown): boolean {
 }
 
 /**
+ * Detects a replay that asked a cassette for a decision it does not hold.
+ *
+ * A miss consumes nothing, so attempts two and three ask the same deck the same
+ * question and miss again; retrying one only delays the diff the error carries
+ * by the length of the backoff. Matched on `name` rather than the class so that
+ * graph code does not import the cassette package.
+ */
+function isCassetteMiss(error: unknown): boolean {
+  return error instanceof Error && error.name === 'CassetteMissError';
+}
+
+/**
  * Applied to every node that performs I/O.
  *
  * Note what this requires of those nodes: a `retryPolicy` only ever fires on a
@@ -29,5 +41,6 @@ export const IO_RETRY: RetryPolicy = {
   initialInterval: 200,
   backoffFactor: 2,
   jitter: true,
-  retryOn: (error: unknown) => !(error instanceof z.ZodError) && !isClientError(error),
+  retryOn: (error: unknown) =>
+    !(error instanceof z.ZodError) && !isClientError(error) && !isCassetteMiss(error),
 };
