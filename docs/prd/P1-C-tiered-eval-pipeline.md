@@ -2,11 +2,11 @@
 id: P1-C
 title: Tiered evaluation pipeline replacing the nightly stub
 tier: 1
-status: accepted
+status: in-progress
 size: M
 depends_on: [P1-A, P1-B]
 blocks: [P1-D, P1-E, P1-F]
-issue: null
+issue: 56
 superseded_by: null
 ---
 
