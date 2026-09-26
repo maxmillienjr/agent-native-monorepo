@@ -14,3 +14,4 @@ and the answer is not obvious from the code.
 | [0003](0003-payer-domain-with-licensing-and-phi-as-the-boundary.md) | Payer domain in scope, with licensed content and PHI as the boundary | accepted |
 | [0004](0004-one-candidate-universe-for-fusion.md)                   | One candidate universe for rank fusion                               | accepted |
 | [0005](0005-decision-seam-rather-than-transport-for-replay.md)      | Record at the decision seam rather than at the transport             | accepted |
+| [0006](0006-deterministic-retrieval-order-over-the-vector-index.md) | A deterministic retrieval order over the vector index                | accepted |
