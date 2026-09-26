@@ -171,7 +171,11 @@ export function resolveTest(repo, file, name, tier) {
  * the matrix prints the triggers: a nightly-only job is not a gate.
  */
 export function resolveCi(repo, workflow, job, run) {
-  const path = `.github/workflows/${workflow}`;
+  return resolveWorkflowJob(repo, `.github/workflows/${workflow}`, job, run);
+}
+
+/** As `resolveCi`, for a workflow file given by its tracked path. */
+export function resolveWorkflowJob(repo, path, job, run) {
   if (!repo.has(path)) return { error: `\`${path}\` is not a tracked workflow` };
   let doc;
   try {
@@ -239,7 +243,17 @@ export function resolveJsonKey(repo, file, keyPath) {
 
 const TEST_FILE = /\.(?:test|spec|e2e-spec)\.[cm]?[jt]sx?$/;
 const SOURCE_FILE = /\.[cm]?[jt]sx?$/;
-const WORKFLOW = /^\.github\/workflows\/([^/]+\.ya?ml)$/;
+const WORKFLOW = /(?:^|\/)\.github\/workflows\/[^/]+\.ya?ml$/;
+
+/**
+ * The tracked files an inline path names: the file at exactly that path if there is one,
+ * otherwise every file it is a suffix of. A full path is never ambiguous, however many
+ * fixtures under `scripts/__fixtures__/` end the same way.
+ */
+function tracked(repo, path) {
+  if (repo.has(path)) return [path];
+  return [...repo.tracked].filter((f) => f.endsWith(`/${path}`));
+}
 
 /**
  * An inline anchor is one code span, `` `path#anchor` ``, and what the anchor names depends
@@ -252,12 +266,11 @@ export function resolveInline(repo, span) {
   const hash = span.indexOf('#');
   const path = span.slice(0, hash);
   const anchor = span.slice(hash + 1);
-  const matches = [...repo.tracked].filter((f) => f === path || f.endsWith(`/${path}`));
+  const matches = tracked(repo, path);
   if (matches.length === 0) return `\`${path}\` matches no tracked file`;
   if (matches.length > 1) return `\`${path}\` is ambiguous (${matches.length} tracked matches)`;
   const [file] = matches;
-  const workflow = WORKFLOW.exec(file);
-  if (workflow) return resolveCi(repo, workflow[1], anchor).error ?? null;
+  if (WORKFLOW.test(file)) return resolveWorkflowJob(repo, file, anchor).error ?? null;
   if (file.endsWith('.md')) return resolveDoc(repo, file, anchor);
   if (TEST_FILE.test(file)) return resolveTest(repo, file, anchor);
   if (file.endsWith('.json')) return resolveJsonKey(repo, file, anchor);
@@ -277,6 +290,12 @@ export function checkInlineAnchors(repo, text) {
     seen.add(span);
     if (/^[\w./-]+\.[A-Za-z]+:\d+(?:-\d+)?$/.test(span)) {
       problems.push(`cites \`${span}\` — ${LINE_ANCHOR_MESSAGE}`);
+      continue;
+    }
+    // A bare path with a directory in it names a file; it has to be one that exists.
+    if (/^[\w.-]+(?:\/[\w.-]+)*\/[\w.-]+\.[A-Za-z]+$/.test(span)) {
+      const n = tracked(repo, span).length;
+      if (n !== 1) problems.push(`cites \`${span}\`, which matches ${n} tracked files, not 1`);
       continue;
     }
     if (!/^[\w./-]+\.[A-Za-z]+#.+$/.test(span)) continue;

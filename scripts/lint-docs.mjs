@@ -9,10 +9,11 @@
  * the index that no longer matches the file.
  */
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
-import { execFileSync } from 'node:child_process';
-import { join, dirname } from 'node:path';
+import { join, dirname, relative, resolve } from 'node:path';
+import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import { frontmatter, prdIndexRows } from './lib/frontmatter.mjs';
+import { createRepo, checkInlineAnchors } from './lib/anchors.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const prdDir = join(root, 'docs', 'prd');
@@ -144,48 +145,27 @@ if (existsSync(adrIndexPath)) {
   fail('docs/adr/README.md', 'missing');
 }
 
-// --- docs/STATUS.md evidence references -----------------------------------
-// Every row cites a `file.ts:NN`. Those citations are the whole value of the matrix, and
-// they rot silently when a file is renamed or shrinks. Resolve each one and range-check
-// the line, so a stale citation fails the build instead of misleading a reader.
-const statusPath = join(root, 'docs', 'STATUS.md');
+// --- docs/STATUS.md evidence anchors -------------------------------------
+// The anchors are the whole value of the matrix. They used to be `file.ts:NN`, checked
+// only for the file existing and being at least NN lines long, and three rows went on
+// citing lines that no longer held what their sentence named while this stayed green.
+// Each anchor now names a declaration, a test title, a workflow job, a heading or a JSON
+// key, and resolves by searching the file (scripts/lib/anchors.mjs). A `:NN` citation
+// fails on sight. `--status <file>` points the check at a fixture.
+const { values: args } = parseArgs({ options: { status: { type: 'string' } } });
+const statusPath = args.status ? resolve(args.status) : join(root, 'docs', 'STATUS.md');
+const statusName = relative(root, statusPath);
 if (existsSync(statusPath)) {
-  const tracked = execFileSync('git', ['ls-files'], { cwd: root, encoding: 'utf-8' })
-    .split('\n')
-    .filter(Boolean);
-  const seen = new Set();
-  const refs = readFileSync(statusPath, 'utf-8').matchAll(
-    /`([A-Za-z0-9._/-]+\.(?:ts|tsx|mjs|js|yml|yaml|json)):(\d+)(?:-(\d+))?`/g,
-  );
-  for (const [, relPath, startStr, endStr] of refs) {
-    const key = `${relPath}:${startStr}-${endStr ?? ''}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    const matches = tracked.filter((f) => f === relPath || f.endsWith(`/${relPath}`));
-    if (matches.length === 0) {
-      fail('docs/STATUS.md', `cites \`${relPath}\`, which no tracked file matches`);
-      continue;
-    }
-    if (matches.length > 1) {
-      fail(
-        'docs/STATUS.md',
-        `cites \`${relPath}\`, which is ambiguous (${matches.length} matches)`,
-      );
-      continue;
-    }
-    const lines = readFileSync(join(root, matches[0]), 'utf-8').split('\n').length;
-    const last = Number(endStr ?? startStr);
-    if (last > lines)
-      fail(
-        'docs/STATUS.md',
-        `cites \`${relPath}:${startStr}${endStr ? `-${endStr}` : ''}\` but ${matches[0]} has ${lines} lines`,
-      );
-  }
+  const repo = createRepo(root);
+  for (const problem of checkInlineAnchors(repo, readFileSync(statusPath, 'utf-8')))
+    fail(statusName, problem);
+} else {
+  fail(statusName, 'missing');
 }
 
 // --- One Node major across the README, the workflows and the images -------
 // docs/STATUS.md asserts these three agree, but that row is the one row citing no
-// `file.ts:NN`, so the check above had nothing to resolve and nothing to rot. A
+// anchor, so the check above had nothing to resolve and nothing to rot. A
 // Dependabot base-image bump then moved the Dockerfiles alone, every gate stayed on
 // the old major, and the row went quietly false. Read the major off each surface
 // instead of trusting a sentence about them.
