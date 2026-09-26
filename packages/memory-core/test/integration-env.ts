@@ -12,9 +12,11 @@
  *   - No REQUIRE_INTEGRATION_ENV: missing variables mean "skip". Running
  *     `yarn test:integration` on a machine with no Docker stays a no-op, not a
  *     crash.
- *   - REQUIRE_INTEGRATION_ENV set (the nightly `test:eval` script sets it):
- *     missing variables are a hard failure naming exactly which ones are absent.
- *     Under the flag the suite can never skip itself into a green build.
+ *   - REQUIRE_INTEGRATION_ENV set (the integration job in `e2e.yml` sets it,
+ *     and `turbo.json` declares it on `test:integration` so strict env mode
+ *     lets it through): missing variables are a hard failure naming exactly
+ *     which ones are absent. Under the flag the suite can never skip itself
+ *     into a green build.
  *
  * Note that this guard only covers *configuration*. If the variables are present
  * but the databases are unreachable, the suite's `beforeAll` throws on connect,

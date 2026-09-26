@@ -15,7 +15,6 @@
     "test:service": "turbo test:service",
     "test:integration": "turbo test:integration",
     "test:e2e": "turbo test:e2e",
-    "test:eval": "turbo test:eval",
     "eval": "turbo eval",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
