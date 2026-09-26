@@ -66,7 +66,23 @@ const staleEvidence = [
   ['ci-run-missing', 'CTL-TEST-01', /has no step whose run contains `yarn audit-licenses`/],
 ];
 
-for (const [name, control, cause] of [...noBacking, ...staleEvidence]) {
+// (c) PRDs, the catalogue and the matrix disagree.
+const disagreement = [
+  [
+    'prd-lists-unknown-control',
+    'CTL-PLAN-01',
+    /P8-B-next\.md: lists CTL-PLAN-01 in controls, which the catalogue does not have/,
+  ],
+  ['planned-owner-shipped', 'CTL-PLAN-02', /is planned under P8-A, which is shipped/],
+  ['owner-file-does-not-list', 'CTL-PLAN-02', /P8-B-next\.md does not list it in controls/],
+  [
+    'matrix-not-regenerated',
+    'CONTROLS.md',
+    /governance\/CONTROLS\.md is stale — run yarn controls:matrix/,
+  ],
+];
+
+for (const [name, control, cause] of [...noBacking, ...staleEvidence, ...disagreement]) {
   test(`fails on ${name}, naming ${control}`, () => {
     const run = lint(['--root', fixtureRepo, '--catalogue', join(fixtures, `${name}.yaml`)]);
     assert.notEqual(run.status, 0, `expected a failure, got:\n${run.stdout}`);
@@ -76,6 +92,20 @@ for (const [name, control, cause] of [...noBacking, ...staleEvidence]) {
     assert.match(found[0], cause);
   });
 }
+
+test('fails when CONTROLS.md is edited by hand', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'controls-matrix-'));
+  try {
+    const edited = join(dir, 'CONTROLS.md');
+    const original = readFileSync(join(fixtureRepo, 'governance', 'CONTROLS.md'), 'utf-8');
+    writeFileSync(edited, original.replace('The guard holds', 'The guard always holds'));
+    const run = lint(['--root', fixtureRepo, '--matrix', edited]);
+    assert.notEqual(run.status, 0);
+    assert.match(run.stderr, /CONTROLS\.md is stale — run yarn controls:matrix/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
 
 /**
  * The property the STATUS.md line check never had: an anchor keeps resolving when the lines
