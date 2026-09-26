@@ -2,11 +2,11 @@
 id: P4-A
 title: governance/controls.yaml and a CI check for unmapped controls
 tier: 4
-status: accepted
+status: in-progress
 size: M
 depends_on: []
 blocks: []
-issue: null
+issue: 63
 superseded_by: null
 ---
 
