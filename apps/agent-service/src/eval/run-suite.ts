@@ -31,6 +31,9 @@ export const OUTPUT_FILES = [
   'eval-report.xml',
   'eval-summary.md',
   'eval-abort.json',
+  // The gate's verdict (P1-D). Cleared with the rest, so a verdict from an
+  // earlier run can never sit beside this run's report.
+  'eval-gate.json',
 ] as const;
 
 /**
@@ -121,7 +124,8 @@ export async function runAndReport<TOutcome>(
   writeFileSync(resolve(options.outputDir, 'eval-report.xml'), renderJUnitReport(report));
   writeFileSync(resolve(options.outputDir, 'eval-summary.md'), renderMarkdownSummary(report));
 
-  // A failing suite is a failing command. The gate that decides *which*
-  // failures block a pull request is P1-D's; this is the local signal.
+  // A failing suite is a failing command. This is the local signal only: with
+  // `EVAL_GATE` set, `run-eval.ts` replaces it with the gate's verdict, which
+  // is what decides whether a pull request is blocked.
   return report.passRate < 1 ? 'failed' : 'passed';
 }

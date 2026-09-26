@@ -6,6 +6,13 @@ import type { RunProgress } from './run-suite.js';
 export const RE_RECORD_COMMAND = 'EVAL_CASSETTE_MODE=record EVAL_TRIALS=1 yarn eval';
 
 /**
+ * The command that regenerates the replay baseline from the set on disk. A
+ * re-record changes the cassette digest, so the snapshot has to move with it
+ * or the gate reports `stale-digest` on the next pull request (P1-D).
+ */
+export const UPDATE_BASELINE_COMMAND = 'EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval';
+
+/**
  * Which model API an error came from, for a sentence a reader can act on.
  * `EmbeddingRequestError` is ours; everything else that carries a 429 here is
  * the chat client's.
@@ -41,7 +48,8 @@ export function explainAbort(error: unknown, progress: RunProgress): AbortCause 
       remedy:
         `re-record with a key: \`${RE_RECORD_COMMAND}\`, on the live model axis. It costs ` +
         'about eight `generateContent` calls against a daily free tier of twenty, so it is a ' +
-        'deliberate local command and never a CI step.',
+        'deliberate local command and never a CI step. Then regenerate the replay baseline ' +
+        `with \`${UPDATE_BASELINE_COMMAND}\`, which needs no key, and push both to the branch.`,
     };
   }
 

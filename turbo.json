@@ -52,7 +52,9 @@
         "EVAL_CASSETTE_MODE",
         "EVAL_EXPECT_AXES",
         "OTEL_EXPORTER_OTLP_ENDPOINT",
-        "LOG_LEVEL"
+        "LOG_LEVEL",
+        "EVAL_GATE",
+        "EVAL_HISTORY_DIR"
       ]
     },
     "clean": {
