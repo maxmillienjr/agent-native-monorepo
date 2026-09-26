@@ -33,6 +33,12 @@ describe('RunResponseSchema', () => {
     const result = RunResponseSchema.safeParse(partial);
     expect(result.success).toBe(false);
   });
+
+  it('rejects a key it does not declare instead of stripping it', () => {
+    const result = RunResponseSchema.safeParse({ ...validResponse, undeclared: true });
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.code).toBe('unrecognized_keys');
+  });
 });
 
 describe('StreamEventSchema', () => {
