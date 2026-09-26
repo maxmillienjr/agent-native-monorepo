@@ -119,7 +119,7 @@ export const TaskSpecSchema = z.object({
    * reads the declaration next to the assertion it qualifies.
    */
   requires: AxisRequirementsSchema.optional(),
-  expectedSeeds: TaskSeedsSchema.default({ neo4j: [], relationships: [], pgvector: [] }),
+  expectedSeeds: TaskSeedsSchema.default({}),
   expectedOutcome: OutcomeSchema,
   assertions: z.object({
     retrievedContextMinLength: z.number().int().nonnegative().optional(),

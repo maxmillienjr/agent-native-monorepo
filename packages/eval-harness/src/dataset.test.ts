@@ -131,12 +131,44 @@ describe('the shipped dataset', () => {
         sessionId: '550e8400-e29b-41d4-a716-446655440000',
         messages: [{ role: 'user', content: 'hello' }],
       },
-      expectedSeeds: { neo4j: [], relationships: [], pgvector: [] },
+      expectedSeeds: { neo4j: [], relationships: [], pgvector: [], graphFacts: [] },
       expectedOutcome: 'success',
       assertions: { outcomeMustBe: 'success' },
     });
 
     expect(task.graders.map((g) => g.name)).toEqual(['outcome_must_be']);
+  });
+
+  it('defaults graphFacts to empty, so a task that predates it parses unchanged', () => {
+    const spec = TaskSpecSchema.parse({
+      ...minimalSpec,
+      expectedSeeds: { neo4j: [], relationships: [], pgvector: [] },
+    });
+    expect(spec.expectedSeeds.graphFacts).toEqual([]);
+    expect(TaskSpecSchema.parse(minimalSpec).expectedSeeds.graphFacts).toEqual([]);
+  });
+
+  it('accepts graph facts, each naming at least one concept to mention', () => {
+    const graphFact = {
+      contentHash: 'sha256-graph-fact',
+      text: 'Only the graph holds this.',
+      episodeId: '550e8400-e29b-41d4-a716-446655440010',
+      entityIds: ['langgraph'],
+    };
+    const spec = TaskSpecSchema.parse({
+      ...minimalSpec,
+      expectedSeeds: { graphFacts: [graphFact] },
+    });
+    expect(spec.expectedSeeds.graphFacts).toEqual([graphFact]);
+
+    // A graph fact that mentions nothing is unreachable by `expandFromSeeds`,
+    // so a task that declares one is declaring a seed that cannot be read.
+    expect(() =>
+      TaskSpecSchema.parse({
+        ...minimalSpec,
+        expectedSeeds: { graphFacts: [{ ...graphFact, entityIds: [] }] },
+      }),
+    ).toThrow();
   });
 
   it('refuses a dataset directory with no task files in it', () => {
