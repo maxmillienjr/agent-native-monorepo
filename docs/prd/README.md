@@ -188,9 +188,9 @@ P0-A ──▶ P2-A ──┬──▶ P1-A ──┬──▶ P1-B ──┬─
                 │           │           │           ├──▶ P1-E
                 │           │           │           └──▶ P1-F
                 │           │           ├──▶ P2-B
-                │           │           └──▶ P2-C ──────▶ P1-F
+                │           │           ├──▶ P2-C ──────▶ P1-F
+                │           │           └──▶ P3-B ──────▶ P3-C
                 │           └──▶ P1-G
-                ├──▶ P3-B
                 └──▶ P4-C
 
 P3-A ──┬──▶ P3-C
@@ -224,3 +224,11 @@ was previously drawn as a predecessor of P2-A; it is not one. `retryPolicy`,
 P3-C and P3-D wait on P3-A. The ledger records the attestation an adverse determination
 carries, and the prior-authorization surface emits its results through the determination
 types, so both should be drafted against those types rather than invent their own.
+
+P3-B is drawn under P1-B, its last predecessor, because the run record reuses the
+cassette's decision format and moves its seam wrappers into production; it also depends on
+P2-A directly, for the checkpointer it reads. P3-C appears twice because it needs two
+things: P3-A's determination types, and P3-B's run record, which is what its
+`run.recorded` entries commit to and the only producer the ledger has until P3-D. P3-D's
+reviewer surface will be the first caller of the ledger's attestation append, but it can be
+built before the ledger exists, so that is not drawn as an edge.
