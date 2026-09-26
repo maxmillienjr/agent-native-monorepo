@@ -174,14 +174,27 @@ describe('recordEmbeddings', () => {
       texts: ['one', 'two', 'three', 'four'],
       embed: async (text) => {
         calls.push(text);
-        if (text === 'two') throw new EmbeddingRequestError('embedContent failed: 429', 429);
+        if (text === 'two') {
+          throw new EmbeddingRequestError(
+            'embedContent failed: 429 {"error":{"details":[{"violations":[' +
+              '{"quotaId": "EmbedContentRequestsPerMinutePerProjectPerModel"}]}]}}',
+            429,
+          );
+        }
         return [1, 1, 1, 1];
       },
       expected,
       gitSha: GIT,
     });
 
-    expect(outcome).toEqual({ requested: 2, alreadyRecorded: 0, remaining: 3, rateLimited: true });
+    expect(outcome).toEqual({
+      requested: 2,
+      alreadyRecorded: 0,
+      remaining: 3,
+      rateLimited: true,
+      // Named, because a per-minute wall is a pause and a per-day wall is a day.
+      rateLimitDetail: 'EmbedContentRequestsPerMinutePerProjectPerModel',
+    });
     // Nothing after the 429 was attempted, and what came before it was kept.
     expect(calls).toEqual(['one', 'two']);
     const kept = JSON.parse(readFileSync(path, 'utf8')) as EmbeddingFile;

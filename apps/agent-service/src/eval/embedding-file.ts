@@ -142,6 +142,11 @@ export interface RecordOutcome {
   readonly remaining: number;
   /** True when a 429 stopped the recording. */
   readonly rateLimited: boolean;
+  /**
+   * The 429's message, which names the quota it hit. A per-minute limit is a
+   * pause and a per-day limit is a day, and the count alone does not say which.
+   */
+  readonly rateLimitDetail?: string;
 }
 
 export interface RecordOptions {
@@ -221,6 +226,7 @@ export async function recordEmbeddings(options: RecordOptions): Promise<RecordOu
           alreadyRecorded,
           remaining: todo.length - (requested - 1),
           rateLimited: true,
+          rateLimitDetail: quotaNames(error.message),
         };
       }
       throw error;
@@ -239,6 +245,20 @@ export async function recordEmbeddings(options: RecordOptions): Promise<RecordOu
   if (todo.length === 0 && !existsSync(options.path)) write();
 
   return { requested, alreadyRecorded, remaining: 0, rateLimited: false };
+}
+
+/**
+ * The quota a 429 names, when the body names one, else its first line.
+ *
+ * Only the quota identifiers are kept: the body is the API's own, and logging
+ * it whole would put whatever else it carries into a log that gets pasted.
+ */
+export function quotaNames(message: string): string {
+  const ids = [...new Set(message.match(/"quotaId":\s*"([^"]+)"/g) ?? [])].map((m) =>
+    m.replace(/"quotaId":\s*"/, '').replace(/"$/, ''),
+  );
+  if (ids.length > 0) return ids.join(', ');
+  return message.split('\n')[0]!.slice(0, 200);
 }
 
 export type EmbeddingsMode = 'replay' | 'record' | 'live';
