@@ -5,7 +5,7 @@ tier: 3
 status: accepted
 size: S
 depends_on: []
-blocks: [P3-C, P3-D]
+blocks: [P3-C, P3-D, P3-E]
 issue: null
 superseded_by: null
 controls: [CTL-HUM-01]
