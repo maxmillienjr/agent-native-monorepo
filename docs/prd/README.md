@@ -179,7 +179,7 @@ provider actually operates under. Uses synthetic data only.
 | [P3-B](P3-B-audit-replay.md)                  | Deterministic replay for audit reconstruction                | L    | accepted |
 | [P3-C](P3-C-decision-ledger.md)               | Hash-chained, tamper-evident decision ledger                 | L    | accepted |
 | [P3-D](P3-D-payer-dataset-fhir-prior-auth.md) | Synthetic payer dataset and FHIR prior-authorization surface | L    | accepted |
-| P3-E                                          | Clinician review queue, `$inquire` and the decision clock    | M    | draft    |
+| [P3-E](P3-E-clinician-review-queue.md)        | Clinician review queue, `$inquire` and the decision clock    | M    | draft    |
 
 ## Tier 4 — Governance and agent security as code
 
@@ -260,10 +260,14 @@ types, so both should be drafted against those types rather than invent their ow
 also depends on P1-A and P1-B directly, because it adds a suite to the harness and a seam to
 the cassette. Both are shipped, so it is not drawn under them.
 
+P3-E is drawn under P3-D, whose case and pended response it picks up. It also depends on
+P3-A directly, because its clinician route is the one caller of the `./clinician` entry
+point, and that is not drawn a second time.
+
 P3-B is drawn under P1-B, its last predecessor, because the run record reuses the
 cassette's decision format and moves its seam wrappers into production; it also depends on
 P2-A directly, for the checkpointer it reads. P3-C appears twice because it needs two
 things: P3-A's determination types, and P3-B's run record, which is what its
-`run.recorded` entries commit to and the only producer the ledger has until P3-D. P3-D's
-reviewer surface will be the first caller of the ledger's attestation append, but it can be
-built before the ledger exists, so that is not drawn as an edge.
+`run.recorded` entries commit to and the only producer the ledger has until P3-D. P3-E's
+reviewer surface, split out of P3-D, will be the first caller of the ledger's attestation
+append, but it can be built before the ledger exists, so that is not drawn as an edge.
