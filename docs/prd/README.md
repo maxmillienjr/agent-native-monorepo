@@ -156,12 +156,12 @@ measuring whether the hybrid premise holds, and saying so in the standard vocabu
 Optional vertical. Demonstrates that the chassis holds up under the constraints a payer or
 provider actually operates under. Uses synthetic data only.
 
-| ID                              | Title                                                        | Size | Status   |
-| ------------------------------- | ------------------------------------------------------------ | ---- | -------- |
-| [P3-A](P3-A-clinician-gate.md)  | Clinician-gate invariant enforced in the type system         | S    | accepted |
-| [P3-B](P3-B-audit-replay.md)    | Deterministic replay for audit reconstruction                | L    | accepted |
-| [P3-C](P3-C-decision-ledger.md) | Hash-chained, tamper-evident decision ledger                 | L    | accepted |
-| P3-D                            | Synthetic payer dataset and FHIR prior-authorization surface | L    | draft    |
+| ID                                            | Title                                                        | Size | Status   |
+| --------------------------------------------- | ------------------------------------------------------------ | ---- | -------- |
+| [P3-A](P3-A-clinician-gate.md)                | Clinician-gate invariant enforced in the type system         | S    | accepted |
+| [P3-B](P3-B-audit-replay.md)                  | Deterministic replay for audit reconstruction                | L    | accepted |
+| [P3-C](P3-C-decision-ledger.md)               | Hash-chained, tamper-evident decision ledger                 | L    | accepted |
+| [P3-D](P3-D-payer-dataset-fhir-prior-auth.md) | Synthetic payer dataset and FHIR prior-authorization surface | L    | draft    |
 
 ## Tier 4 — Governance and agent security as code
 
@@ -223,7 +223,9 @@ was previously drawn as a predecessor of P2-A; it is not one. `retryPolicy`,
 
 P3-C and P3-D wait on P3-A. The ledger records the attestation an adverse determination
 carries, and the prior-authorization surface emits its results through the determination
-types, so both should be drafted against those types rather than invent their own.
+types, so both should be drafted against those types rather than invent their own. P3-D
+also depends on P1-A and P1-B directly, because it adds a suite to the harness and a seam to
+the cassette. Both are shipped, so it is not drawn under them.
 
 P3-B is drawn under P1-B, its last predecessor, because the run record reuses the
 cassette's decision format and moves its seam wrappers into production; it also depends on
