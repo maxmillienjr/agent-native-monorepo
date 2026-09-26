@@ -5,6 +5,7 @@ import { PgNeo4jMemoryInspector } from '../src/inspect/run-inspector.js';
 import { PgNeo4jSeedManager } from '../src/inspect/seed-manager.js';
 import { DrizzleEpisodicRepository } from '../src/episodic/episodic.repo.js';
 import { CypherNeo4jWriter } from '../src/semantic/neo4j/neo4j.writer.js';
+import { CypherNeo4jReader } from '../src/semantic/neo4j/neo4j.reader.js';
 import { PgPgvectorWriter } from '../src/semantic/pgvector/pgvector.writer.js';
 import { EMBEDDING_DIMENSIONS, l2Normalize } from '../src/semantic/embedding.js';
 import { runMigrations } from '../src/migrate.js';
@@ -186,5 +187,82 @@ describe.skipIf(SKIP)('memory inspection (integration)', () => {
       (await inspector.inspectRun({ runId: SECOND_RUN, conceptIds: [] })).episodeRowsForRun,
     ).toBe(1);
     expect((await inspector.inspectRun({ runId: RUN, conceptIds: [] })).episodeRowsForRun).toBe(0);
+  });
+
+  describe('graph facts in a seed', () => {
+    const GRAPH_CONCEPT = 'inspect-graph-concept';
+    const GRAPH_HASH = 'inspect-graph-fact';
+
+    async function applyGraphSeed(): Promise<void> {
+      await reset.restoreToSeed({
+        sessionId: SESSION,
+        conceptIds: [...SEED_CONCEPTS, GRAPH_CONCEPT],
+        contentHashes: [...SEED_HASHES, GRAPH_HASH],
+      });
+      await reset.applySeed({
+        concepts: [
+          { id: SEED_CONCEPTS[0]!, label: 'Seed Concept' },
+          { id: GRAPH_CONCEPT, label: 'Graph Concept' },
+        ],
+        facts: [
+          {
+            contentHash: SEED_HASHES[0]!,
+            text: 'A seeded fact.',
+            embedding: embedding(),
+            episodeId: SEED_EPISODE,
+            sessionId: SESSION,
+          },
+        ],
+        graphFacts: [
+          {
+            contentHash: GRAPH_HASH,
+            text: 'A fact that only the graph holds.',
+            episodeId: SEED_EPISODE,
+            entityIds: [GRAPH_CONCEPT],
+          },
+        ],
+      });
+    }
+
+    async function factHashes(): Promise<string[]> {
+      const session = driver.session();
+      try {
+        const result = await session.run(
+          'MATCH (f:Fact) RETURN f.contentHash AS hash ORDER BY hash',
+        );
+        return result.records.map((record) => record.get('hash') as string);
+      } finally {
+        await session.close();
+      }
+    }
+
+    it('writes a graph fact the reader reaches from its concept at one hop', async () => {
+      await applyGraphSeed();
+
+      const found = await new CypherNeo4jReader(driver).expandFromSeeds([GRAPH_CONCEPT], 1);
+
+      expect(found).toHaveLength(1);
+      expect(found[0]).toMatchObject({ source: 'neo4j', contentHash: GRAPH_HASH, score: 0.5 });
+    });
+
+    it('writes the graph fact to the graph only', async () => {
+      await applyGraphSeed();
+
+      const rows = await pool.query('SELECT 1 FROM semantic_facts WHERE content_hash = $1', [
+        GRAPH_HASH,
+      ]);
+      expect(rows.rowCount).toBe(0);
+    });
+
+    it('leaves the same :Fact set after a second reset', async () => {
+      await applyGraphSeed();
+      const first = await factHashes();
+
+      await writeAsRun(RUN);
+      await applyGraphSeed();
+
+      expect(await factHashes()).toEqual(first);
+      expect(first).toContain(GRAPH_HASH);
+    });
   });
 });

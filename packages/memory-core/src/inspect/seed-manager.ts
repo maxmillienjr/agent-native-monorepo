@@ -4,7 +4,11 @@ import type { Driver } from 'neo4j-driver';
 import { getTracer } from '@repo/telemetry';
 import { CypherNeo4jWriter } from '../semantic/neo4j/neo4j.writer.js';
 import { PgPgvectorWriter } from '../semantic/pgvector/pgvector.writer.js';
-import { EntityWriteSchema, RelationshipWriteSchema } from '../semantic/neo4j/neo4j.writer.js';
+import {
+  EntityWriteSchema,
+  FactWriteSchema,
+  RelationshipWriteSchema,
+} from '../semantic/neo4j/neo4j.writer.js';
 import { FactUpsertSchema } from '../semantic/pgvector/pgvector.writer.js';
 
 const tracer = getTracer('memory-core');
@@ -47,6 +51,16 @@ export const SeedApplicationSchema = z.object({
   concepts: z.array(EntityWriteSchema).default([]),
   relationships: z.array(RelationshipWriteSchema.omit({ createdAt: true })).default([]),
   facts: z.array(FactUpsertSchema).default([]),
+  /**
+   * `:Fact` nodes and their `MENTIONS` edges, written through `mergeFact`.
+   *
+   * Without these a seed cannot reach the graph retriever at all:
+   * `expandFromSeeds` returns facts reached through `MENTIONS`, and concepts
+   * and `RELATES_TO` edges alone give it nothing to return. A graph fact is
+   * independent of `facts` on purpose — a fact present in one index and absent
+   * from the other is exactly what an ablation or a graph-path task needs.
+   */
+  graphFacts: z.array(FactWriteSchema).default([]),
 });
 export type SeedApplication = z.input<typeof SeedApplicationSchema>;
 
@@ -79,6 +93,7 @@ export class PgNeo4jSeedManager implements SeedManager {
         span.setAttribute('conceptCount', validated.concepts.length);
         span.setAttribute('relationshipCount', validated.relationships.length);
         span.setAttribute('factCount', validated.facts.length);
+        span.setAttribute('graphFactCount', validated.graphFacts.length);
 
         const neo4jWriter = new CypherNeo4jWriter(this.driver);
         const pgvectorWriter = new PgPgvectorWriter(this.pool);
@@ -88,6 +103,10 @@ export class PgNeo4jSeedManager implements SeedManager {
           await neo4jWriter.mergeRelationship({ ...relationship, createdAt: new Date() });
         }
         for (const fact of validated.facts) await pgvectorWriter.upsertFact(fact);
+        // After the concepts, and that order is load-bearing: `mergeFact` links
+        // with `MATCH (c:Concept {id: eid})`, which matches nothing for a concept
+        // not yet written and so drops the edge without an error.
+        for (const fact of validated.graphFacts) await neo4jWriter.mergeFact(fact);
       } finally {
         span.end();
       }
