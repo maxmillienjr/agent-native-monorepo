@@ -5,9 +5,12 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
+import { spawnSync, execFileSync } from 'node:child_process';
+import { cpSync, mkdtempSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { gitEnv } from './lib/anchors.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const script = join(here, 'lint-controls.mjs');
@@ -49,7 +52,21 @@ const noBacking = [
   ['line-anchor', 'CTL-TEST-01', /evidence\[0\]\.file: line anchors rot/],
 ];
 
-for (const [name, control, cause] of noBacking) {
+// (b) Evidence that no longer exists: an anchor that does not resolve.
+const staleEvidence = [
+  [
+    'symbol-file-untracked',
+    'CTL-TEST-01',
+    /packages\/demo\/src\/missing\.ts` is not a tracked file/,
+  ],
+  ['symbol-not-declared', 'CTL-TEST-01', /`guardRenamed` is declared on 0 lines/],
+  ['test-title-missing', 'CTL-TEST-01', /test title 'holds the line firmly' matches 0 calls/],
+  ['test-title-skipped', 'CTL-TEST-01', /is `it\.skip`, which does not run/],
+  ['ci-job-missing', 'CTL-TEST-01', /fixture\.yml has no job `audit`/],
+  ['ci-run-missing', 'CTL-TEST-01', /has no step whose run contains `yarn audit-licenses`/],
+];
+
+for (const [name, control, cause] of [...noBacking, ...staleEvidence]) {
   test(`fails on ${name}, naming ${control}`, () => {
     const run = lint(['--root', fixtureRepo, '--catalogue', join(fixtures, `${name}.yaml`)]);
     assert.notEqual(run.status, 0, `expected a failure, got:\n${run.stdout}`);
@@ -59,3 +76,38 @@ for (const [name, control, cause] of noBacking) {
     assert.match(found[0], cause);
   });
 }
+
+/**
+ * The property the STATUS.md line check never had: an anchor keeps resolving when the lines
+ * above it move, and stops resolving when the thing it names is renamed. Runs on a copy of
+ * the fixture tree in its own git repository, because resolution reads `git ls-files`.
+ */
+test('an anchor survives twenty inserted lines and fails on a rename', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'controls-anchor-'));
+  try {
+    cpSync(fixtureRepo, dir, { recursive: true });
+    // Without gitEnv(), a GIT_DIR inherited from a hook or `rebase --exec` points these two
+    // calls at the enclosing repository: `init` rewrites its core.bare and `add` stages the
+    // copy into its index.
+    execFileSync('git', ['init', '-q'], { cwd: dir, env: gitEnv() });
+    execFileSync('git', ['add', '-A'], { cwd: dir, env: gitEnv() });
+    const source = join(dir, 'packages', 'demo', 'src', 'guard.ts');
+    const original = readFileSync(source, 'utf-8');
+
+    writeFileSync(source, '// padding\n'.repeat(20) + original);
+    const moved = lint(['--root', dir]);
+    assert.equal(moved.status, 0, moved.stderr);
+
+    writeFileSync(source, original.replace('function guard(', 'function guarded('));
+    const renamed = lint(['--root', dir]);
+    assert.notEqual(renamed.status, 0);
+    const found = problems(renamed.stderr);
+    assert.equal(found.length, 1, found.join('\n'));
+    assert.match(
+      found[0],
+      /CTL-TEST-01: evidence\[0\] \(symbol\) does not resolve: `guard` is declared on 0 lines/,
+    );
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
