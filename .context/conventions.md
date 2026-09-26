@@ -44,15 +44,16 @@
 ## Testing
 
 Each tier has one command. Unit, Service, Integration and E2E run in CI; `test:eval` is
-nightly; `eval` is local-only until P1-C wires it into a pipeline.
+nightly; `eval` and `eval:retrieval` are local-only until P1-C wires them into a pipeline.
 
-| Tier        | Runner                 | Command                       | Scope                                            |
-| ----------- | ---------------------- | ----------------------------- | ------------------------------------------------ |
-| Unit        | Vitest                 | `yarn turbo test:unit`        | `packages/` and pure logic in apps — no I/O      |
-| Service     | Jest + @nestjs/testing | `yarn turbo test:service`     | `apps/agent-service` over HTTP, stub graph deps  |
-| Integration | Vitest                 | `yarn turbo test:integration` | Real Postgres/Neo4j — never mock a database      |
-| E2E         | Playwright             | `yarn turbo test:e2e`         | Browser against the full `docker compose` stack  |
-| Eval        | `@repo/eval-harness`   | `yarn eval`                   | Live agent trials, real model calls, real stores |
+| Tier        | Runner                 | Command                       | Scope                                                         |
+| ----------- | ---------------------- | ----------------------------- | ------------------------------------------------------------- |
+| Unit        | Vitest                 | `yarn turbo test:unit`        | `packages/` and pure logic in apps — no I/O                   |
+| Service     | Jest + @nestjs/testing | `yarn turbo test:service`     | `apps/agent-service` over HTTP, stub graph deps               |
+| Integration | Vitest                 | `yarn turbo test:integration` | Real Postgres/Neo4j — never mock a database                   |
+| E2E         | Playwright             | `yarn turbo test:e2e`         | Browser against the full `docker compose` stack               |
+| Eval        | `@repo/eval-harness`   | `yarn eval`                   | Live agent trials, real model calls, real stores              |
+| Retrieval   | `@repo/eval-harness`   | `yarn eval:retrieval`         | The P2-B ablation: real stores, recorded embeddings, no model |
 
 - **Service tests need `--experimental-vm-modules`**, which the `test:service` script
   already carries. Jest's ESM support requires it, and without it every import in a spec
@@ -132,6 +133,29 @@ nightly; `eval` is local-only until P1-C wires it into a pipeline.
   pass. Re-recording needs a live key and about eight `generateContent` calls against a
   20-request daily free tier, so it is a deliberate act rather than a step in a loop. ADR
   0005 records the seam choice and what replay stops measuring.
+- **Retrieval labels are written, not computed, and they are frozen before the first
+  run.** `yarn eval:retrieval` scores the graph/vector/hybrid ablation against
+  `packages/eval-harness/datasets/retrieval-ablation/queries.json`. Every label there is a
+  human-authored judgement that a fact's text answers the question — never "cosine above a
+  threshold" or "reachable from the seed", which would make one of the measured systems
+  correct by definition. The dataset commit precedes the embedding commit, every report
+  prints the dataset's sha256, and a label is never edited after a run. Missing labels are
+  found by pooling and blind adjudication, which adds to `adjudication/` in its own commit
+  and leaves the pre-registered set untouched.
+- **An embedding file is recorded against a model, a width and a dataset, and replays
+  nothing else.** `recorded/embeddings.json` pins `EMBEDDING_MODEL`,
+  `EMBEDDING_DIMENSIONS` and the dataset sha256 in its header, and replay refuses a
+  mismatch or a missing vector rather than calling the embedder. Re-record it with
+  `EVAL_EMBEDDINGS_MODE=record yarn eval:retrieval` when any of the three moves — a query
+  or label edit moves the third. The recorder is resumable and stops on the first 429:
+  the free tier allows about 100 `embedContent` requests a minute per model, so a full
+  recording of the 535 texts takes six invocations a minute apart. Its default,
+  `EVAL_EMBEDDINGS_MODE` unset, makes no request to the model host and fails if one is
+  made.
+- **`EVAL_TASKS` narrows `yarn eval` to named tasks.** Recording is per suite, so adding
+  one task and recording its cassette otherwise re-records every other cassette and
+  spends their `generateContent` calls. An unknown id is refused, and the selection is
+  printed in the suite name.
 - **A retriever's `ORDER BY` needs a unique secondary key.** Both semantic readers produce
   ties by construction — `expandFromSeeds` scores on hop distance, and the eval harness
   seeds every fact in a task with one vector — and an untied order is decided by whatever
