@@ -20,6 +20,15 @@
 - Internal imports within a package use relative paths.
 - Cross-package imports use the `@repo/<name>` workspace alias.
 
+## Migrations
+
+- **An applied migration's statements never change; a schema change is a new migration.**
+  `runMigrations` is Drizzle's migrator, which picks what to apply from
+  `meta/_journal.json`'s `when` and records a sha256 of each file without ever comparing
+  it. An edited statement is neither re-applied nor rejected — it diverges silently between
+  databases migrated before the edit and after it. A comment may be corrected in place, and
+  `0001_semantic_facts.sql` says where it was (ADR 0006).
+
 ## Commits
 
 - **Conventional Commits:** `feat:`, `fix:`, `chore:`, `test:`, `docs:`, `ci:`.
