@@ -112,6 +112,37 @@ export { renderMarkdownSummary } from './reporters/summary.js';
 // Retrieval metrics — a ranked list per query, not a trial, so not `Grader`s.
 export { recallAtK, reciprocalRank, ndcgAtK } from './retrieval/metrics.js';
 
+// The retrieval-ablation dataset: corpus, labelled queries, and the checks
+// that hold each stratum to its declared construction.
+export {
+  RETRIEVAL_ABLATION_DATASET_DIR,
+  CorpusSchema,
+  CorpusEpisodeSchema,
+  LabelledQuerySchema,
+  QuerySetSchema,
+  STRATA,
+  StratumSchema,
+  adjacency,
+  buildRetrievalDataset,
+  datasetProblems,
+  datasetSha256,
+  graphFacts,
+  loadRetrievalDataset,
+  mentionCounts,
+  sha256Hex,
+  strataProblems,
+  textsToEmbed,
+  wordJaccard,
+  type Corpus,
+  type CorpusEpisode,
+  type CorpusFact,
+  type GraphFactSeed,
+  type GraphShape,
+  type LabelledQuery,
+  type RetrievalDataset,
+  type Stratum,
+} from './retrieval/dataset.js';
+
 // Statistics — nothing here knows what a query is; P1-D needs the same interval.
 export {
   DEFAULT_BOOTSTRAP_SEED,
