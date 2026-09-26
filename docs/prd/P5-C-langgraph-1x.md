@@ -2,7 +2,7 @@
 id: P5-C
 title: Upgrade to LangGraph 1.x
 tier: 5
-status: draft
+status: accepted
 size: S
 depends_on: [P0-A]
 blocks: []
@@ -292,7 +292,9 @@ memory axis is `live` wherever stores are named.
   versions of the same package in one process, which a workspace cannot hold, so the PRD
   asks for its output in the pull request rather than a test. If the reviewer wants it
   repeatable, the cost is a second workspace pinned to the old line, and that is probably
-  more machinery than a one-time migration earns.
+  more machinery than a one-time migration earns. **Decided at review, 2026-09-26: not
+  committed.** The output goes in the pull request, and the risk above says which graphs
+  may not cite it.
 
 ## References
 
