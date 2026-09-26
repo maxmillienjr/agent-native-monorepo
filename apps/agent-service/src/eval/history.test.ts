@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { LiveTallySchema, cassetteSetDigest, type LiveTally } from '@repo/eval-harness';
 import {
   HISTORY_BRANCH,
@@ -20,8 +20,20 @@ import {
  * decided by git and by the code here, not by the host.
  */
 
+/**
+ * Git for the fixtures, with no inherited `GIT_*`: under a hook or `rebase
+ * --exec`, `GIT_DIR` would point these at the enclosing repository.
+ */
+const env = Object.fromEntries(
+  Object.entries(process.env).filter(([key]) => !key.startsWith('GIT_')),
+);
 const run = (cwd: string, ...args: string[]): string =>
-  execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+  execFileSync('git', ['-c', 'commit.gpgsign=false', ...args], {
+    cwd,
+    env,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  }).trim();
 
 const DIGEST = 'd'.repeat(64);
 
@@ -32,26 +44,6 @@ const tally = (startedAt: string, gitSha: string, passed: boolean[]): LiveTally 
   gitSha,
   startedAt,
   tasks: { 'memory-recall-001': { trials: passed, graders: { entity_merged: passed } } },
-});
-
-// Hermetic: a developer's global config (signing, hooks, a default branch)
-// must not decide whether this passes.
-const saved = {
-  global: process.env['GIT_CONFIG_GLOBAL'],
-  system: process.env['GIT_CONFIG_NOSYSTEM'],
-};
-beforeAll(() => {
-  process.env['GIT_CONFIG_GLOBAL'] = '/dev/null';
-  process.env['GIT_CONFIG_NOSYSTEM'] = '1';
-});
-afterAll(() => {
-  for (const [key, value] of [
-    ['GIT_CONFIG_GLOBAL', saved.global],
-    ['GIT_CONFIG_NOSYSTEM', saved.system],
-  ] as const) {
-    if (value === undefined) delete process.env[key];
-    else process.env[key] = value;
-  }
 });
 
 describe('the eval-history writer', () => {

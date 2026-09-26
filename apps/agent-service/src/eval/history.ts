@@ -30,12 +30,25 @@ const IDENTITY = [
   'user.name=github-actions[bot]',
   '-c',
   'user.email=41898282+github-actions[bot]@users.noreply.github.com',
+  '-c',
+  'commit.gpgsign=false',
 ];
+
+/**
+ * The environment every git call here runs with: the process's, minus `GIT_*`.
+ * Git exports `GIT_DIR` to hooks and to `rebase --exec`, and an inherited one
+ * overrides discovery from `cwd` — the history worktree would then commit into
+ * whatever repository the caller was inside (`.context/conventions.md`).
+ */
+function gitEnv(): NodeJS.ProcessEnv {
+  return Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('GIT_')));
+}
 
 function git(cwd: string, args: readonly string[]): string {
   return execFileSync('git', args, {
     cwd,
     encoding: 'utf8',
+    env: gitEnv(),
     stdio: ['ignore', 'pipe', 'pipe'],
   }).trim();
 }
@@ -73,7 +86,10 @@ export function committedCassetteDigest(datasetDir: string, ref = 'HEAD'): strin
   return digestFiles(
     listed.map((path) => ({
       path: path.slice(dir.length + 1),
-      bytes: execFileSync('git', ['cat-file', 'blob', `${ref}:${path}`], { cwd: root }),
+      bytes: execFileSync('git', ['cat-file', 'blob', `${ref}:${path}`], {
+        cwd: root,
+        env: gitEnv(),
+      }),
     })),
   );
 }
