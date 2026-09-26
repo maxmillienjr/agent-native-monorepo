@@ -23,7 +23,9 @@
   },
   "devDependencies": {
     "prettier": "^3.9.6",
-    "turbo": "^2.10.12"
+    "turbo": "^2.10.12",
+    "yaml": "^2.8.3",
+    "zod": "^3.24.0"
   },
   "resolutions": {
     "@grpc/grpc-js": "^1.14.4",

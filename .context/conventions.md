@@ -207,3 +207,11 @@ axis nightly and on dispatch when a `GOOGLE_API_KEY` repository secret exists.
   package names. A new package in either directory is registered by existing there, and
   `yarn workspaces list` is the check. Adding a name is only needed outside those globs.
 - Pin major versions. Use `^` for minor/patch ranges.
+- **A root `scripts/` check may import a package only from the root `devDependencies`, and
+  only one already in `yarn.lock`.** `scripts/lint-docs.mjs` once needed nothing installed.
+  The controls check needs `yaml` to read workflows and the catalogue, and `zod` because a
+  Zod schema is the source of truth here too. Both were already resolved for the workspaces
+  at the same ranges, so declaring them at the root added no package to the tree. The cost
+  is that `yarn lint:docs` now needs `yarn install` first, which CI already runs. A check
+  that would need a package the lockfile does not have belongs in a workspace, not in
+  `scripts/`.
