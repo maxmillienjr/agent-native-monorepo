@@ -47,3 +47,6 @@ drizzle/meta/
 # Misc
 *.log
 tmp/
+
+# Agent worktrees: whole checkouts of this repository, not part of it.
+.claude/worktrees/

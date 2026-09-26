@@ -15,7 +15,8 @@ before making any changes.
   package outside those two directories has to be added by hand.
 - Run `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs`, and `yarn format:check`
   before declaring any task complete. All four gate CI.
-- See .context/workflows.md for how to add a new graph node, package, or memory adapter.
+- See .context/workflows.md for how to add a new graph node, package, memory adapter, or
+  control.
 - See .agents/ for specialized subagent prompts to use for common tasks, including
   .agents/prd-author.md for writing or revising a PRD.
 - Planned work lives in docs/prd/ and is indexed by docs/prd/README.md. Read the index

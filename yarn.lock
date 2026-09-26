@@ -3979,10 +3979,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "agent-native-monorepo@workspace:."
   dependencies:
-    "@repo/eval-harness": "workspace:*"
-    "@repo/memory-core": "workspace:*"
     prettier: "npm:^3.9.6"
     turbo: "npm:^2.10.12"
+    yaml: "npm:^2.8.3"
+    zod: "npm:^3.24.0"
   languageName: unknown
   linkType: soft
 

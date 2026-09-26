@@ -1,0 +1,363 @@
+# The control catalogue: which safeguards this repository has, which framework clauses
+# each one answers, and what backs it. `yarn lint:docs` validates it and resolves every
+# evidence anchor by name; `yarn controls:matrix` renders governance/CONTROLS.md from it.
+#
+# Anchors name a declaration, a test title, a workflow job or a heading. A `file:NN` line
+# anchor is rejected: lines move, and a line check stays green after they do.
+#
+# A framework's `clauses` holds only the clauses a control maps, with their text copied
+# from the source. A new edition of a framework is a new registry id, never an edit to an
+# existing one, so a control's mapping is not rewritten under it.
+#
+# See .context/workflows.md, "Add or change a control".
+
+frameworks:
+  nist-ai-rmf-1.0:
+    title: NIST AI 100-1, Artificial Intelligence Risk Management Framework (AI RMF 1.0)
+    short: AI RMF
+    published: '2023-01'
+    url: https://doi.org/10.6028/NIST.AI.100-1
+    size: 72
+    unit: subcategories
+    source:
+      kind: primary
+      note: Subcategory text copied from Tables 1–4 of the NIST PDF (GOVERN 19, MAP 18, MEASURE 22, MANAGE 13).
+    clauses:
+      GOVERN 1.4: The risk management process and its outcomes are established through transparent policies, procedures, and other controls based on organizational risk priorities.
+      GOVERN 3.2: Policies and procedures are in place to define and differentiate roles and responsibilities for human-AI configurations and oversight of AI systems.
+      GOVERN 4.3: Organizational practices are in place to enable AI testing, identification of incidents, and information sharing.
+      MAP 3.5: Processes for human oversight are defined, assessed, and documented in accordance with organizational policies from the GOVERN function.
+      MAP 4.1: Approaches for mapping AI technology and legal risks of its components – including the use of third-party data or software – are in place, followed, and documented, as are risks of infringement of a third party's intellectual property or other rights.
+      MEASURE 1.1: Approaches and metrics for measurement of AI risks enumerated during the MAP function are selected for implementation starting with the most significant AI risks. The risks or trustworthiness characteristics that will not – or cannot – be measured are properly documented.
+      MEASURE 2.3: AI system performance or assurance criteria are measured qualitatively or quantitatively and demonstrated for conditions similar to deployment setting(s). Measures are documented.
+      MEASURE 2.4: The functionality and behavior of the AI system and its components – as identified in the MAP function – are monitored when in production.
+      MEASURE 2.5: The AI system to be deployed is demonstrated to be valid and reliable. Limitations of the generalizability beyond the conditions under which the technology was developed are documented.
+      MEASURE 2.6: The AI system is evaluated regularly for safety risks – as identified in the MAP function. The AI system to be deployed is demonstrated to be safe, its residual negative risk does not exceed the risk tolerance, and it can fail safely, particularly if made to operate beyond its knowledge limits. Safety metrics reflect system reliability and robustness, real-time monitoring, and response times for AI system failures.
+      MEASURE 2.7: AI system security and resilience – as identified in the MAP function – are evaluated and documented.
+      MEASURE 2.10: Privacy risk of the AI system – as identified in the MAP function – is examined and documented.
+      MANAGE 1.1: A determination is made as to whether the AI system achieves its intended purposes and stated objectives and whether its development or deployment should proceed.
+      MANAGE 3.1: AI risks and benefits from third-party resources are regularly monitored, and risk controls are applied and documented.
+      MANAGE 4.1: Post-deployment AI system monitoring plans are implemented, including mechanisms for capturing and evaluating input from users and other relevant AI actors, appeal and override, decommissioning, incident response, recovery, and change management.
+
+  nist-ai-600-1:
+    title: NIST AI 600-1, Artificial Intelligence Risk Management Framework — Generative Artificial Intelligence Profile
+    short: AI 600-1
+    published: '2024-07'
+    url: https://doi.org/10.6028/NIST.AI.600-1
+    size: 213
+    unit: suggested actions
+    source:
+      kind: primary
+      note: Action text copied from the NIST PDF. The 213 is a count of unique GV-/MP-/MS-/MG-n.n-nnn ids in the PDF (GV 59, MP 39, MS 72, MG 43), including GV-4.3-001, which the PDF prints as "GV4.3--001".
+    clauses:
+      MS-2.5-001: Avoid extrapolating GAI system performance or capabilities from narrow, non-systematic, and anecdotal assessments.
+      MS-2.7-001: 'Apply established security measures to: Assess likelihood and magnitude of vulnerabilities and threats such as backdoors, compromised dependencies, data breaches, eavesdropping, man-in-the-middle attacks, reverse engineering, autonomous agents, model theft or exposure of model weights, AI inference, bypass, extraction, and other baseline security concerns.'
+      MS-2.7-007: 'Perform AI red-teaming to assess resilience against: Abuse to facilitate attacks on other systems (e.g., malicious code generation, enhanced phishing content), GAI attacks (e.g., prompt injection), ML attacks (e.g., adversarial examples/prompts, data poisoning, membership inference, model extraction, sponge examples).'
+      MS-2.8-003: Use digital content transparency solutions to enable the documentation of each instance where content is generated, modified, or shared to provide a tamper-proof history of the content, promote transparency, and enable traceability. Robust version control systems can also be applied to track changes across the AI lifecycle over time.
+
+  iso-iec-42001-2023:
+    title: ISO/IEC 42001:2023, Information technology — Artificial intelligence — Management system, Annex A
+    short: ISO/IEC 42001
+    published: '2023-12'
+    url: https://www.iso.org/standard/42001
+    size: 38
+    unit: Annex A controls
+    source:
+      kind: secondary
+      note: 'The ISO/IEC 42001 Annex A identifiers, titles and the count of 38 are taken from secondary sources — ISMS.online, "ISO 42001 Annex A Controls Explained" (https://www.isms.online/iso-42001/annex-a-controls/), and RiskProfs, "ISO 42001 Annex A Controls List: All 38 Controls Explained" (https://riskprofs.com/iso-42001-annex-a-controls-list/), which agree — and were not checked against the standard''s text. A reader with the standard can correct them.'
+    clauses:
+      A.6.2.4: AI system verification and validation
+      A.6.2.5: AI system deployment
+      A.6.2.6: AI system operation and monitoring
+      A.6.2.7: AI system technical documentation
+      A.6.2.8: AI system recording of event logs
+
+  owasp-llm-2025:
+    title: OWASP Top 10 for LLM Applications 2025
+    short: OWASP
+    published: '2024-11'
+    url: https://genai.owasp.org/llm-top-10/
+    size: 10
+    unit: risks
+    source:
+      kind: primary
+      note: Titles and definitions copied from the risk pages under genai.owasp.org/llmrisk/. OWASP's 2026 edition renumbers this list (its LLM06 is Unbounded Consumption), so every ref keeps its :2025 suffix; mapping to the 2026 edition would be a new registry id.
+    clauses:
+      'LLM02:2025': Sensitive Information Disclosure — "Sensitive information can affect both the LLM and its application context."
+      'LLM03:2025': Supply Chain — "LLM supply chains are susceptible to various vulnerabilities, which can affect the integrity of training data, models, and deployment platforms."
+      'LLM04:2025': Data and Model Poisoning — "Data poisoning occurs when pre-training, fine-tuning, or embedding data is manipulated to introduce vulnerabilities, backdoors, or biases."
+      'LLM05:2025': Improper Output Handling — "insufficient validation, sanitization, and handling of the outputs generated by large language models before they are passed downstream to other components and systems."
+      'LLM06:2025': Excessive Agency — "the vulnerability that enables damaging actions to be performed in response to unexpected, ambiguous or manipulated outputs from an LLM, regardless of what is causing the LLM to malfunction."
+      'LLM08:2025': Vector and Embedding Weaknesses — "Vectors and embeddings vulnerabilities present significant security risks in systems utilizing Retrieval Augmented Generation (RAG) with Large Language Models (LLMs)."
+      'LLM10:2025': Unbounded Consumption — "occurs when a Large Language Model (LLM) application allows users to conduct excessive and uncontrolled inferences, leading to risks such as denial of service (DoS), economic losses, model theft, and service degradation."
+
+  owasp-asi-2026:
+    title: OWASP Top 10 for Agentic Applications for 2026
+    short: OWASP
+    published: '2025-12'
+    url: https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/
+    size: 10
+    unit: risks
+    source:
+      kind: primary
+      note: Titles copied from the table of contents of the OWASP PDF, version 2026, dated December 2025. Several secondary write-ups print different titles for ASI03, ASI04 and ASI08; these are the PDF's.
+    clauses:
+      ASI02: Tool Misuse and Exploitation
+      ASI03: Identity and Privilege Abuse
+      ASI04: Agentic Supply Chain Vulnerabilities
+      ASI06: Memory & Context Poisoning
+      ASI08: Cascading Failures
+      ASI09: Human-Agent Trust Exploitation
+
+  hipaa-164.312:
+    title: 45 CFR §164.312, Technical safeguards (HIPAA Security Rule)
+    short: §164.312
+    published: '2026-09-24'
+    url: https://www.ecfr.gov/current/title-45/subtitle-A/subchapter-C/part-164/subpart-C/section-164.312
+    size: 12
+    unit: standards and implementation specifications
+    source:
+      kind: primary
+      note: Text copied from the eCFR as in force on 2026-09-24, the date given as its edition. The 12 are the five standards and seven implementation specifications of §164.312. The January 2025 NPRM (90 FR 898) is not final and is not mapped.
+    clauses:
+      (a)(1): Standard, Access control — "Implement technical policies and procedures for electronic information systems that maintain electronic protected health information to allow access only to those persons or software programs that have been granted access rights as specified in § 164.308(a)(4)."
+      (b): Standard, Audit controls — "Implement hardware, software, and/or procedural mechanisms that record and examine activity in information systems that contain or use electronic protected health information."
+      (c)(1): Standard, Integrity — "Implement policies and procedures to protect electronic protected health information from improper alteration or destruction."
+      (c)(2): Implementation specification, Mechanism to authenticate electronic protected health information (Addressable) — "Implement electronic mechanisms to corroborate that electronic protected health information has not been altered or destroyed in an unauthorized manner."
+      (d): Standard, Person or entity authentication — "Implement procedures to verify that a person or entity seeking access to electronic protected health information is the one claimed."
+      (e)(1): Standard, Transmission security — "Implement technical security measures to guard against unauthorized access to electronic protected health information that is being transmitted over an electronic communications network."
+
+controls:
+  - id: CTL-EVAL-01
+    title: Agent capability and reliability are measured over repeated trials (pass@k, pass^k)
+    status: implemented
+    maps:
+      - { framework: nist-ai-rmf-1.0, ref: MEASURE 2.3 }
+      - { framework: nist-ai-rmf-1.0, ref: MEASURE 2.5 }
+      - { framework: nist-ai-600-1, ref: MS-2.5-001 }
+      - { framework: iso-iec-42001-2023, ref: A.6.2.4 }
+    evidence:
+      - { kind: symbol, file: packages/eval-harness/src/harness.ts, name: EvalHarness }
+      - kind: test
+        file: packages/eval-harness/src/harness.test.ts
+        name: reports pass@k as capability and pass^k as reliability
+        tier: unit
+
+  - id: CTL-EVAL-02
+    title: A task the run's axes cannot measure is excluded and named beside the rate
+    status: implemented
+    maps:
+      - { framework: nist-ai-rmf-1.0, ref: MEASURE 1.1 }
+      - { framework: iso-iec-42001-2023, ref: A.6.2.4 }
+    evidence:
+      - { kind: symbol, file: packages/eval-harness/src/axes.ts, name: skippedTasks }
+      - kind: test
+        file: packages/eval-harness/src/harness.test.ts
+        name: computes passRate over the tasks that ran, and says which did not
+        tier: unit
+
+  - id: CTL-EVAL-03
+    title: Agent evaluation runs on every pull request, and a failed trial fails its job
+    status: implemented
+    maps:
+      - { framework: nist-ai-rmf-1.0, ref: MANAGE 1.1 }
+      - { framework: nist-ai-rmf-1.0, ref: MEASURE 2.3 }
+      - { framework: iso-iec-42001-2023, ref: A.6.2.5 }
+    evidence:
+      - { kind: ci, workflow: agent-eval.yml, job: replay, run: yarn eval }
+    note: Delivered by P1-C. This is the replay axis, which grades a recorded sample rather than the live model. The live job runs nightly and on dispatch, and is skipped until a GOOGLE_API_KEY repository secret exists. A red job blocks a merge only once it is a required check, which P1-D owns.
+
+  - id: CTL-OUT-01
+    title: Model output is schema-validated before it can reach memory
+    status: implemented
+    maps:
+      - { framework: owasp-llm-2025, ref: 'LLM05:2025' }
+      - { framework: owasp-asi-2026, ref: ASI06 }
+    evidence:
+      - {
+          kind: symbol,
+          file: apps/agent-service/src/agent/model/extraction.ts,
+          name: parseExtraction,
+        }
+      - kind: test
+        file: apps/agent-service/src/agent/model/extraction.test.ts
+        name: throws when the JSON parses but does not match the schema
+        tier: unit
+
+  - id: CTL-SEC-01
+    title: Committed model recordings carry no credential
+    status: implemented
+    maps:
+      - { framework: owasp-llm-2025, ref: 'LLM02:2025' }
+      - { framework: nist-ai-rmf-1.0, ref: MEASURE 2.7 }
+    evidence:
+      - { kind: symbol, file: packages/agent-cassette/src/redact.ts, name: redactString }
+      - kind: test
+        file: packages/agent-cassette/src/cassette-secrets.test.ts
+        name: carries no Google API key
+        tier: unit
+    note: The test covers one credential format, the Google API key, which is the only one the recording path handles.
+
+  - id: CTL-SUP-01
+    title: A high or critical dependency advisory fails the pull request, and is re-checked weekly
+    status: implemented
+    maps:
+      - { framework: owasp-llm-2025, ref: 'LLM03:2025' }
+      - { framework: owasp-asi-2026, ref: ASI04 }
+      - { framework: nist-ai-600-1, ref: MS-2.7-001 }
+      - { framework: nist-ai-rmf-1.0, ref: MANAGE 3.1 }
+    evidence:
+      - { kind: ci, workflow: security.yml, job: dependency-audit, run: yarn npm audit }
+    note: The audit runs at --severity high, so a moderate advisory does not fail it.
+
+  - id: CTL-RES-01
+    title: A failing I/O node is retried under a bound; a client error is not; a run fails whole
+    status: implemented
+    maps:
+      - { framework: nist-ai-rmf-1.0, ref: MEASURE 2.6 }
+      - { framework: owasp-asi-2026, ref: ASI08 }
+    evidence:
+      - { kind: symbol, file: apps/agent-service/src/agent/graph/retry.ts, name: IO_RETRY }
+      - kind: test
+        file: apps/agent-service/src/agent/graph/graph.test.ts
+        name: retries an I/O node that fails twice and succeeds on the third attempt
+        tier: unit
+      - kind: test
+        file: apps/agent-service/src/agent/graph/graph.test.ts
+        name: does not retry a client error
+        tier: unit
+      - kind: test
+        file: apps/agent-service/test/runs.e2e-spec.ts
+        name: emits a terminal error frame and closes the stream
+        tier: service
+
+  - id: CTL-LOG-01
+    title: Graph nodes and store operations are traced as nested spans
+    status: implemented
+    maps:
+      - { framework: iso-iec-42001-2023, ref: A.6.2.8 }
+      - { framework: nist-ai-rmf-1.0, ref: GOVERN 4.3 }
+    evidence:
+      - kind: test
+        file: apps/agent-service/src/agent/graph/spans.test.ts
+        name: nests the retrieval store spans under agent.node.retrieve
+        tier: unit
+      - kind: test
+        file: apps/agent-service/src/agent/graph/spans.test.ts
+        name: nests the write spans under agent.node.reflect
+        tier: unit
+    note: The GOVERN 4.3 mapping is the weakest in the catalogue — spans enable identifying an incident, and GOVERN 4.3 is about organizational practice.
+
+  - id: CTL-DOC-01
+    title: Capability and control claims carry evidence that CI resolves by name
+    status: implemented
+    maps:
+      - { framework: iso-iec-42001-2023, ref: A.6.2.7 }
+      - { framework: nist-ai-rmf-1.0, ref: GOVERN 1.4 }
+    evidence:
+      - { kind: ci, workflow: ci.yml, job: ci, run: yarn lint:docs }
+    note: This proves that each cited declaration, test, job or heading exists, not that it holds what the sentence around it says.
+
+  - id: CTL-MEM-01
+    title: Long-term memory has one write path, reflect, through memory-core
+    status: procedural
+    maps:
+      - { framework: owasp-asi-2026, ref: ASI06 }
+      - { framework: owasp-llm-2025, ref: 'LLM04:2025' }
+    evidence:
+      - { kind: doc, file: CLAUDE.md, heading: Key Rules }
+      - { kind: doc, file: .agents/reviewer.md, heading: Checklist }
+    note: Rule 4 of the reviewer checklist. No lint rule or test enforces it.
+
+  - id: CTL-DATA-01
+    title: No real PHI or PII, CPT code or proprietary payer content enters the repository
+    status: planned
+    owner: P3-D
+    maps:
+      - { framework: owasp-llm-2025, ref: 'LLM02:2025' }
+      - { framework: nist-ai-rmf-1.0, ref: MAP 4.1 }
+      - { framework: nist-ai-rmf-1.0, ref: MEASURE 2.10 }
+    evidence:
+      - {
+          kind: doc,
+          file: docs/adr/0003-payer-domain-with-licensing-and-phi-as-the-boundary.md,
+          heading: Decision,
+        }
+      - { kind: doc, file: .agents/reviewer.md, heading: Checklist }
+    note: Until P3-D ships, a reviewer enforces this by hand under rule 10 of the checklist, and no check does. P3-D owns the automated CPT and synthetic-data detector, because it introduces the payer dataset the detector guards. At review P3-D decided to narrow this row to what the detector checks, and to move the rest — proprietary payer content, and real PHI outside payer data — to a new procedural CTL-DATA-02 in its own implementation.
+
+  - id: CTL-MEM-02
+    title: Memory poisoning is red-teamed against the live write path
+    status: planned
+    owner: P4-B
+    maps:
+      - { framework: owasp-asi-2026, ref: ASI06 }
+      - { framework: owasp-llm-2025, ref: 'LLM04:2025' }
+      - { framework: owasp-llm-2025, ref: 'LLM08:2025' }
+      - { framework: nist-ai-600-1, ref: MS-2.7-007 }
+
+  - id: CTL-AGY-01
+    title: Every tool declares a reversibility tier, and irreversible calls are compensable
+    status: planned
+    owner: P4-C
+    maps:
+      - { framework: owasp-llm-2025, ref: 'LLM06:2025' }
+      - { framework: owasp-asi-2026, ref: ASI02 }
+
+  - id: CTL-HUM-01
+    title: No adverse determination is issued without a licensed clinician
+    status: planned
+    owner: P3-A
+    maps:
+      - { framework: nist-ai-rmf-1.0, ref: MAP 3.5 }
+      - { framework: nist-ai-rmf-1.0, ref: GOVERN 3.2 }
+      - { framework: owasp-asi-2026, ref: ASI09 }
+    evidence:
+      - {
+          kind: doc,
+          file: docs/adr/0003-payer-domain-with-licensing-and-phi-as-the-boundary.md,
+          heading: Decision,
+        }
+    note: ADR 0003 states the constraint; P3-A makes it a type-level invariant.
+
+  - id: CTL-AUD-01
+    title: Each decision is recorded in a hash-chained, tamper-evident ledger
+    status: planned
+    owner: P3-C
+    maps:
+      - { framework: hipaa-164.312, ref: (b) }
+      - { framework: hipaa-164.312, ref: (c)(1) }
+      - { framework: hipaa-164.312, ref: (c)(2) }
+      - { framework: nist-ai-600-1, ref: MS-2.8-003 }
+      - { framework: iso-iec-42001-2023, ref: A.6.2.8 }
+    note: The repository holds no ePHI (ADR 0003), so the §164.312 mappings describe the safeguard's shape, not a compliance obligation.
+
+  - id: CTL-OBS-01
+    title: Model calls and evaluations emit OpenTelemetry GenAI semantic-convention telemetry
+    status: planned
+    owner: P2-C
+    maps:
+      - { framework: nist-ai-rmf-1.0, ref: MEASURE 2.4 }
+      - { framework: nist-ai-rmf-1.0, ref: MANAGE 4.1 }
+      - { framework: iso-iec-42001-2023, ref: A.6.2.6 }
+
+  - id: CTL-COST-01
+    title: A trial is bounded in input tokens, output tokens and model calls, asserted in CI
+    status: planned
+    owner: P1-F
+    maps:
+      - { framework: owasp-llm-2025, ref: 'LLM10:2025' }
+    note: P1-F reports latency and an estimated dollar cost without asserting either. It rejects a latency budget outright; a dollar assertion waits for two model ids with different prices, which P1-E compares.
+
+  - id: CTL-ACC-01
+    title: Access to the service is authenticated, authorized and encrypted in transit
+    status: planned
+    owner: P5-A
+    maps:
+      - { framework: hipaa-164.312, ref: (a)(1) }
+      - { framework: hipaa-164.312, ref: (d) }
+      - { framework: hipaa-164.312, ref: (e)(1) }
+      - { framework: owasp-asi-2026, ref: ASI03 }
+    evidence:
+      - { kind: symbol, file: apps/gateway/src/server.ts, name: app }
+    note: Nothing authenticates a caller today — the gateway mounts JSON parsing, a correlation id and the proxy, and nothing else. P5-A's A2A server declares an authentication scheme in its Agent Card and covers the service's external surface. P5-A cannot close "encrypted in transit", so its implementation splits this row. Authentication stays CTL-ACC-01, per-caller authorization becomes CTL-ACC-02, and transport encryption becomes a not-applicable CTL-ACC-03. The §164.312 mappings describe the safeguard's shape; the repository holds no ePHI (ADR 0003).

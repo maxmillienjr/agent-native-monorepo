@@ -8,6 +8,7 @@ depends_on: [P1-A, P1-B]
 blocks: [P1-F]
 issue: null
 superseded_by: null
+controls: [CTL-OBS-01]
 ---
 
 # P2-C · OpenTelemetry GenAI semantics, including evaluation events
@@ -310,7 +311,9 @@ Two Recommended attributes are left out, with the reason recorded next to the co
   response. `@langchain/google-genai@0.2.18` builds the message from the first candidate
   and `usageMetadata` only (`dist/chat_models.js:661-672`, `dist/utils/common.js:384-441`),
   and the pinned `@google/generative-ai@0.24.1` type does not declare the field. P5-C's
-  client upgrade is where it becomes reachable.
+  client upgrade does not change that: P1-E found that `@langchain/google-genai@2.3.2`
+  still drops `modelVersion`. P1-E's canary reads it from a direct call; recording it on
+  every inference span would need the client to surface it, and no PRD owns that.
 - **Embedding usage.** The `embedContent` response the embedder reads has no usage block
   (`gemini-embedder.ts:49`). Absent is recorded as absent; it is never estimated and never
   zero.

@@ -31,9 +31,9 @@ export interface RunInspection {
  * a session is not a run.
  *
  * The alternative was a grader holding its own pool and its own SQL, and the
- * cost of that is on the record: `scripts/seed-eval-fixtures.mjs` used to
- * hand-roll the schema it seeded into, which is how the eval fixtures ended up
- * in a table shaped differently from production's. A grader that drifts the
+ * cost of that is on the record: the nightly seed script, since deleted, used
+ * to hand-roll the schema it seeded into, which is how the eval fixtures ended
+ * up in a table shaped differently from production's. A grader that drifts the
  * same way reports a false negative on the one signal evaluation exists to
  * produce.
  */

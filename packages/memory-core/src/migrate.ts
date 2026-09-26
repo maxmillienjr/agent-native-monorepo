@@ -18,9 +18,10 @@ const MIGRATIONS_FOLDER = fileURLToPath(new URL('../migrations', import.meta.url
  * `PgPgvectorWriter.ensureTable` — which meant a column could be added to the
  * table a test created and not to the one production would have had.
  *
- * Callers: `apps/agent-service` at boot, before `app.listen`; the integration
- * suites in `beforeAll`; and `scripts/seed-eval-fixtures.mjs`. Idempotent —
- * Drizzle records applied migrations in `__drizzle_migrations`.
+ * Callers: `apps/agent-service` at boot, before `app.listen`, which is also
+ * how every evaluation run gets its schema; and the integration suites in
+ * `beforeAll`. Idempotent — Drizzle records applied migrations in
+ * `__drizzle_migrations`.
  */
 export async function runMigrations(pool: pg.Pool): Promise<void> {
   await migrate(drizzle(pool), { migrationsFolder: MIGRATIONS_FOLDER });

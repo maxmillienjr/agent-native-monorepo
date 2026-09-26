@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { renderJsonReport } from './json.js';
 import { renderJUnitReport } from './junit.js';
 import { renderMarkdownSummary } from './summary.js';
-import type { SuiteReport, Trial } from '../types.js';
+import { abortError, completedTrial, renderAbortJson, renderAbortSummary } from './abort.js';
+import type { EvalAbort, SuiteReport, Trial } from '../types.js';
 
 function trial(index: number, passed: boolean): Trial {
   return {
@@ -214,5 +215,86 @@ describe('a replayed report', () => {
       '<property name="cassettes_git_sha" value="3b696d5c0ffee1234567890abcdef1234567890a"/>',
     );
     expect(xml).toContain('<property name="trials_per_task" value="2"/>');
+  });
+});
+
+describe('the abort reporters', () => {
+  const abort: EvalAbort = {
+    suite: 'memory-recall',
+    startedAt: '2026-09-26T00:00:00.000Z',
+    abortedAt: '2026-09-26T00:00:05.000Z',
+    axes: { model: 'replay', memory: 'live' },
+    replay: { recordedAt: '2026-09-10T12:00:00.000Z', gitSha: '021c6f2', cassettes: 2 },
+    error: {
+      name: 'CassetteMissError',
+      message: 'cassette miss at seam `plan.callLlm`\n- "old"\n+ "new"',
+    },
+    cause: {
+      code: 'cassette-miss',
+      summary: 'a recorded request no longer matches',
+      remedy: '`EVAL_CASSETTE_MODE=record EVAL_TRIALS=1 yarn eval` with a key',
+    },
+    completedTrials: [completedTrial(trial(0, false))],
+  };
+
+  it('heads the summary `aborted` and gives no pass rate', () => {
+    const markdown = renderAbortSummary(abort);
+    expect(markdown.startsWith('## Eval — aborted\n')).toBe(true);
+    expect(markdown).not.toMatch(/pass rate \d/);
+    expect(markdown).toContain('there is no pass rate');
+  });
+
+  it('names the error, prints its message whole, and says what to do about it', () => {
+    const markdown = renderAbortSummary(abort);
+    expect(markdown).toContain('**`CassetteMissError`**');
+    expect(markdown).toContain('- "old"\n+ "new"');
+    expect(markdown).toContain('**Cause (`cassette-miss`):** a recorded request no longer matches');
+    expect(markdown).toContain('**To fix:** `EVAL_CASSETTE_MODE=record EVAL_TRIALS=1 yarn eval`');
+    expect(markdown).toContain('recorded `2026-09-10T12:00:00.000Z` at `021c6f2`');
+  });
+
+  it('lists the trials that finished before the abort, with what they failed', () => {
+    expect(renderAbortSummary(abort)).toContain(
+      '| `memory-recall-001` | 1 | ❌ | `episodic_row_written` |',
+    );
+    expect(renderAbortSummary({ ...abort, completedTrials: [] })).toContain(
+      'stopped before its first trial finished',
+    );
+  });
+
+  it('keeps a message holding a backtick fence inside a longer fence of its own', () => {
+    const markdown = renderAbortSummary({
+      ...abort,
+      error: { name: 'Error', message: 'inner ``` fence' },
+    });
+    expect(markdown).toContain('````text\ninner ``` fence\n````');
+  });
+
+  it('round-trips through JSON, error details included', () => {
+    const withDetails: EvalAbort = {
+      ...abort,
+      error: {
+        name: 'GoogleGenerativeAIFetchError',
+        message: '429',
+        status: 429,
+        errorDetails: [{ '@type': 'type.googleapis.com/google.rpc.QuotaFailure' }],
+      },
+    };
+    expect(JSON.parse(renderAbortJson(withDetails))).toEqual(withDetails);
+  });
+
+  it('reads status and details off a thrown client error, and nothing else', () => {
+    const thrown = Object.assign(new Error('quota'), {
+      status: 429,
+      errorDetails: [{ '@type': 'x' }],
+      request: { headers: { 'x-goog-api-key': 'not-copied' } },
+    });
+    expect(abortError(thrown)).toEqual({
+      name: 'Error',
+      message: 'quota',
+      status: 429,
+      errorDetails: [{ '@type': 'x' }],
+    });
+    expect(abortError('a string')).toEqual({ name: 'NonError', message: 'a string' });
   });
 });

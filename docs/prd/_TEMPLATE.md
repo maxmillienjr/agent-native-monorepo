@@ -8,6 +8,7 @@ depends_on: []
 blocks: []
 issue: null
 superseded_by: null
+controls: [] # optional: the planned CTL- ids in governance/controls.yaml this PRD delivers
 ---
 
 # PX-Y · Title

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { EMBEDDING_DIMENSIONS } from '@repo/memory-core';
+import { CassetteMissError } from '@repo/agent-cassette';
 import { buildAgentGraph, type GraphDeps } from './graph.js';
 
 /**
@@ -149,6 +150,32 @@ describe('buildAgentGraph', () => {
     await expect(
       compiled.invoke({ runId: '550e8400-e29b-41d4-a716-446655440005' }),
     ).rejects.toThrow('403');
+    expect(attempts).toBe(1);
+  });
+
+  it('does not retry a cassette miss', async () => {
+    // A miss consumes no entry, so a retry asks the same deck the same question
+    // and misses again. It used to be tried three times, 400ms and 800ms apart,
+    // before the diff it carries reached anyone.
+    let attempts = 0;
+    const deps = makeDeps();
+    deps.plan.callLlm = async () => {
+      attempts += 1;
+      throw new CassetteMissError('plan.callLlm', undefined, 'abc123', '- old\n+ new');
+    };
+
+    const compiled = buildAgentGraph(
+      deps,
+      {
+        sessionId: '550e8400-e29b-41d4-a716-446655440000',
+        messages: [{ role: 'user', content: 'What is LangGraph?' }],
+      },
+      'corr-123',
+    );
+
+    await expect(
+      compiled.invoke({ runId: '550e8400-e29b-41d4-a716-446655440006' }),
+    ).rejects.toThrow(CassetteMissError);
     expect(attempts).toBe(1);
   });
 });

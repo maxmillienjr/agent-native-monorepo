@@ -358,6 +358,62 @@ export interface SuiteReport<TOutcome = Outcome> {
   readonly uncalibratedGraders: readonly string[];
 }
 
+// --- A run that did not complete --------------------------------------------
+
+/**
+ * A trial that finished before the run aborted, reduced to what a reader acts
+ * on. The transcript stays out: an abort file is read to find out what broke,
+ * and the run that would own the transcripts never produced a report.
+ */
+export interface CompletedTrial {
+  readonly taskId: string;
+  readonly index: number;
+  readonly runId: string;
+  readonly passed: boolean;
+  readonly failedGraders: readonly string[];
+}
+
+/** The error that ended the run, with whatever structured detail it carried. */
+export interface AbortError {
+  readonly name: string;
+  readonly message: string;
+  readonly status?: number;
+  /** A model client's `google.rpc` details, kept whole: they are what names a quota. */
+  readonly errorDetails?: unknown;
+}
+
+/**
+ * Why the run stopped, in words someone can act on, when the caller could tell.
+ * `code` is stable for a reader such as P1-D; `summary` and `remedy` are prose.
+ */
+export interface AbortCause {
+  readonly code: string;
+  readonly summary: string;
+  readonly remedy?: string;
+}
+
+/**
+ * The record of a run that stopped before it had a report to write.
+ *
+ * Aborted is not failed. A failed suite completed and graded something; an
+ * aborted one did not complete, so it has no pass rate, and `eval-report.json`
+ * is never written beside this — its presence is the signal that a run
+ * completed. The exit code cannot carry the difference, because Turbo reduces
+ * every failing task to 1.
+ */
+export interface EvalAbort {
+  readonly suite: string;
+  readonly startedAt: string;
+  readonly abortedAt: string;
+  /** Absent when the run stopped before the axes were read. */
+  readonly axes?: Axes;
+  readonly replay?: ReplayProvenance;
+  readonly error: AbortError;
+  readonly cause?: AbortCause;
+  /** In the order they finished. A run that dies on its last call keeps the rest. */
+  readonly completedTrials: readonly CompletedTrial[];
+}
+
 // --- The system under test -------------------------------------------------
 
 /**

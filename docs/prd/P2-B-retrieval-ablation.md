@@ -5,7 +5,7 @@ tier: 2
 status: in-progress
 size: L
 depends_on: [P1-A, P1-B, P2-A]
-blocks: []
+blocks: [P4-B]
 issue: 57
 superseded_by: null
 ---
@@ -151,8 +151,9 @@ repository makes about evaluation.
   no session (`seed-manager.ts:36-40` says so). In production the hybrid can therefore
   return, through the graph, another session's fact that the vector path would have
   filtered. The ablation database holds one session, so this does not affect its numbers.
-  **Unowned.** P4-B is the nearest candidate, since a fact written in one session and read
-  in another is a memory-poisoning path, but P4-B has no file yet and nothing assigns it.
+  **[P4-B](P4-B-memory-poisoning-red-team.md) owns it**, since a fact written in one session
+  and read in another is a memory-poisoning path. P4-B reuses this PRD's `graphFacts` seed
+  format and `graph-recall-001`, which is why it depends on this one.
 - **A different embedding task type.** `createGeminiEmbedder` sends no `taskType`
   (`gemini-embedder.ts:35-39`), so queries and facts are embedded identically. That is the
   deployed configuration and the ablation measures it as deployed.

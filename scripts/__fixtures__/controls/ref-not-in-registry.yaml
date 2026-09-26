@@ -1,0 +1,47 @@
+# Failure fixture: a mapping to a ref absent from its framework's clauses.
+frameworks:
+  demo-fw:
+    title: Demo framework
+    short: Demo
+    published: '2026-01'
+    url: https://example.com/demo
+    size: 5
+    unit: clauses
+    source: { kind: primary, note: Fixture text. }
+    clauses:
+      D-1: The first clause.
+      D-2: The second clause.
+
+controls:
+  - id: CTL-TEST-01
+    title: The guard holds
+    status: implemented
+    maps:
+      - { framework: demo-fw, ref: D-9 }
+      - { framework: demo-fw, ref: D-1 }
+    evidence:
+      - { kind: symbol, file: packages/demo/src/guard.ts, name: guard }
+      - { kind: test, file: packages/demo/src/guard.test.ts, name: holds the line, tier: unit }
+      - { kind: ci, workflow: fixture.yml, job: check, run: yarn npm audit }
+
+  - id: CTL-RULE-01
+    title: A reviewer applies the rule
+    status: procedural
+    maps:
+      - { framework: demo-fw, ref: D-2 }
+    evidence:
+      - { kind: doc, file: docs/rule.md, heading: The rule }
+
+  - id: CTL-PLAN-01
+    title: Something P8-B delivers
+    status: planned
+    owner: P8-B
+    maps:
+      - { framework: demo-fw, ref: D-1 }
+
+  - id: CTL-NA-01
+    title: Something this fixture does not do
+    status: not-applicable
+    rationale: The fixture has no network surface, so there is nothing for this to guard.
+    maps:
+      - { framework: demo-fw, ref: D-2 }

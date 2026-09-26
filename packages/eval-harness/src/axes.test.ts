@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
   assertAxesSatisfy,
+  assertExpectedAxes,
+  AxisExpectationError,
   AxisRequirementError,
   describeAxes,
   detectAxes,
@@ -58,6 +60,32 @@ describe('detectAxes', () => {
     expect(describeAxes({ model: 'live', memory: 'unconfigured' })).toBe(
       'model=live memory=unconfigured',
     );
+  });
+});
+
+describe('assertExpectedAxes', () => {
+  const replayOnLive = { model: 'replay', memory: 'live' } as const;
+
+  it('passes when the detected axes are the ones the job declared', () => {
+    expect(() =>
+      assertExpectedAxes(replayOnLive, { EVAL_EXPECT_AXES: 'model=replay memory=live' }),
+    ).not.toThrow();
+  });
+
+  it('refuses a mismatch, naming both the expected and the detected axes', () => {
+    // The CI case it exists for: a live job whose secret never arrived falls
+    // back to the stub set, which would otherwise go green on one task.
+    const stub = { model: 'stub', memory: 'live' } as const;
+    const expectation = () =>
+      assertExpectedAxes(stub, { EVAL_EXPECT_AXES: 'model=live memory=live' });
+
+    expect(expectation).toThrow(AxisExpectationError);
+    expect(expectation).toThrow(/expected model=live memory=live, detected model=stub memory=live/);
+  });
+
+  it('holds no expectation when the variable is unset or blank', () => {
+    expect(() => assertExpectedAxes(replayOnLive, {})).not.toThrow();
+    expect(() => assertExpectedAxes(replayOnLive, { EVAL_EXPECT_AXES: '  ' })).not.toThrow();
   });
 });
 

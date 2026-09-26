@@ -116,7 +116,13 @@ The agent runs as a compiled `StateGraph` with seven nodes:
 START → ingress → retrieve → plan → act ⟲ (loop) → distill → reflect → egress → END
 ```
 
-- **act** self-loops while `stepCount < maxSteps && shouldContinue`.
+- **act** self-loops while `stepCount < maxSteps && shouldContinue`. Its results go to
+  `toolOutputs`, and no prompt reads that channel: `plan` runs first, and its response is
+  already the assistant's answer. `selectTool` sees the plan and the tool names, and not
+  the previous call's output. P4-C owns both halves of that.
+- **distill** extracts from every message, including the assistant's own turn, so what
+  `reflect` promotes to semantic memory is mostly the model's plan restated. P4-B proposes
+  changing that.
 - **distill** makes the extraction model call and writes `extraction` into state. It exists
   so that **reflect** can be retried: a node is only safe to re-run when it is a function of
   its input state, and a `reflect` that extracted its own entities was not.

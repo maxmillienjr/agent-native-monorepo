@@ -1,0 +1,7 @@
+{
+  "name": "controls-fixture-demo",
+  "private": true,
+  "scripts": {
+    "test:unit": "vitest run"
+  }
+}

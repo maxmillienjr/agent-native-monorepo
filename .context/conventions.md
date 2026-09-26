@@ -43,17 +43,20 @@
 
 ## Testing
 
-Each tier has one command. Unit, Service, Integration and E2E run in CI; `test:eval` is
-nightly; `eval` and `eval:retrieval` are local-only until P1-C wires them into a pipeline.
+Each tier has one command, and the first five run in CI. Eval runs twice in
+`agent-eval.yml`: on the replay axis on every pull request, every push to `main` and
+nightly, and on the live axis nightly and on dispatch when a `GOOGLE_API_KEY` repository
+secret exists. `eval:retrieval` runs in no pipeline: P2-B left the choice of tier to P1-C,
+which shipped before the command existed.
 
-| Tier        | Runner                 | Command                       | Scope                                                         |
-| ----------- | ---------------------- | ----------------------------- | ------------------------------------------------------------- |
-| Unit        | Vitest                 | `yarn turbo test:unit`        | `packages/` and pure logic in apps — no I/O                   |
-| Service     | Jest + @nestjs/testing | `yarn turbo test:service`     | `apps/agent-service` over HTTP, stub graph deps               |
-| Integration | Vitest                 | `yarn turbo test:integration` | Real Postgres/Neo4j — never mock a database                   |
-| E2E         | Playwright             | `yarn turbo test:e2e`         | Browser against the full `docker compose` stack               |
-| Eval        | `@repo/eval-harness`   | `yarn eval`                   | Live agent trials, real model calls, real stores              |
-| Retrieval   | `@repo/eval-harness`   | `yarn eval:retrieval`         | The P2-B ablation: real stores, recorded embeddings, no model |
+| Tier        | Runner                 | Command                       | Scope                                                    |
+| ----------- | ---------------------- | ----------------------------- | -------------------------------------------------------- |
+| Unit        | Vitest                 | `yarn turbo test:unit`        | `packages/` and pure logic in apps — no I/O              |
+| Service     | Jest + @nestjs/testing | `yarn turbo test:service`     | `apps/agent-service` over HTTP, stub graph deps          |
+| Integration | Vitest                 | `yarn turbo test:integration` | Real Postgres/Neo4j — never mock a database              |
+| E2E         | Playwright             | `yarn turbo test:e2e`         | Browser against the full `docker compose` stack          |
+| Eval        | `@repo/eval-harness`   | `yarn eval`                   | Agent trials against real stores, model replayed or live |
+| Retrieval   | `@repo/eval-harness`   | `yarn eval:retrieval`         | The P2-B ablation: real stores, recorded embeddings      |
 
 - **Service tests need `--experimental-vm-modules`**, which the `test:service` script
   already carries. Jest's ESM support requires it, and without it every import in a spec
@@ -69,26 +72,39 @@ nightly; `eval` and `eval:retrieval` are local-only until P1-C wires them into a
   JSON, JUnit XML and a Markdown summary. The package's own unit tests are Vitest like
   everything else; the trials are not, because they hold one Nest context across every
   trial and their output is three report files rather than a pass/fail line.
-- **`packages/eval-harness` must not declare a `test:eval` script.** `agent-eval.yml` runs
-  `yarn turbo test:eval` across every workspace, so declaring one there silently makes the
-  nightly job run the trial suite on whatever axes that runner happens to have. P1-C owns
-  that switch.
+- **A CI eval job declares the axes it exists to measure.** `detectAxes` falls back to the
+  stub set when the key is empty, which keeps `yarn eval` usable on a clone with no `.env`
+  and is exactly wrong in CI: a live job that lost its secret, or a replay job whose
+  `EVAL_CASSETTE_MODE` was stripped, skips `tool-use-001` and goes green at 100% over one
+  task. Each job in `agent-eval.yml` sets `EVAL_EXPECT_AXES` (`model=replay memory=live`,
+  `model=live memory=live`), and the runner refuses before the Nest context is built when
+  the detected axes differ. It is the same move as `REQUIRE_INTEGRATION_ENV`.
+- **A report file exists only if the suite completed.** A graded failure writes
+  `eval-report.json`, `eval-report.xml` and `eval-summary.md` and exits 1. Anything that
+  stops the run — a stale cassette, an axis refusal, a request that reached the model
+  during replay, an exhausted quota, an unreachable store — writes `eval-abort.json` and an
+  `eval-summary.md` headed `aborted`, names the error and the trials that finished, and
+  also exits 1. The runner clears all four files before it starts, so read the directory,
+  never the exit code.
 - **A Turbo task declares every variable its process reads.** Turbo runs in
   `envMode: strict` — the 2.x default — so a task receives only the variables its `env`
   array names, and an undeclared one arrives as `undefined` with nothing said. The damage
   is not uniform. Without `GOOGLE_API_KEY` every trial runs the canned model set, the suite
   reports on canned strings, and it looks identical to one that is working. `EVAL_TRIALS`,
-  `EVAL_OUTPUT_DIR` and `EVAL_CASSETTE_MODE` fail quieter and still cost: the first two were
-  documented as working knobs for as long as they were absent from the list, so
-  `EVAL_TRIALS=1 yarn eval` ran five trials. A stripped `EVAL_CASSETTE_MODE` is the
+  `EVAL_OUTPUT_DIR`, `EVAL_CASSETTE_MODE` and `EVAL_EXPECT_AXES` fail quieter and still
+  cost: the first two were documented as working knobs for as long as they were absent
+  from the list, so `EVAL_TRIALS=1 yarn eval` ran five trials. A stripped `EVAL_CASSETTE_MODE` is the
   expensive one — a run that was asked to replay for nothing goes live instead. Check the
   `env` array against what the script actually reads, not against the one variable that
-  broke last time.
+  broke last time. A variable a workflow sets in a job's `env` is no exception:
+  `REQUIRE_INTEGRATION_ENV` reached nothing under `yarn turbo test:integration` until
+  `turbo.json` declared it, because the alias that used to carry it set it inside the
+  script's own command, where Turbo never looks.
 - **Turbo reduces a failing task's exit code to 1.** A script that exits 2 under
   `yarn turbo run <task>`, or under a root script that calls Turbo, returns 1 to the
   caller. This was checked with a probe on 2026-09-26. A distinction that CI needs, such as
   aborted versus failed, therefore has to be carried in a file the task writes, not in its
-  exit code.
+  exit code. For `yarn eval` that file is `eval-abort.json`.
 - **A task declares the axes it is meaningful on, and a skipped task is visible beside the
   rate.** A grader says what it needs in `requires` and the suite refuses when that is
   unmet; a task says the same thing in the `requires` block of its file and is **skipped**
@@ -111,8 +127,9 @@ nightly; `eval` and `eval:retrieval` are local-only until P1-C wires them into a
   absent, `test/integration-env.ts` skips every suite so a laptop with no Docker is not a
   crash, and `yarn turbo test:integration` then reports 27 skipped tests and exits 0. That
   is a pass by shape and a no-op by content. `REQUIRE_INTEGRATION_ENV=1` turns the skip into
-  a failure naming each missing variable; the nightly `test:eval` script sets it, and it is
-  the flag to reach for whenever a green integration run needs to mean something.
+  a failure naming each missing variable; the integration job in `e2e.yml` sets it on every
+  pull request, and it is the flag to reach for whenever a green integration run needs to
+  mean something.
 - **A cassette is recorded against a commit, a prompt and a model, and replays nothing
   else.** `EVAL_CASSETTE_MODE=record` writes one cassette per trial to
   `packages/eval-harness/datasets/memory-recall/cassettes/<taskId>.trial-<n>.json`, holding
@@ -162,6 +179,12 @@ nightly; `eval` and `eval:retrieval` are local-only until P1-C wires them into a
   order the store holds rows in, which changes across a delete-and-reseed. That order
   reaches `plan`'s prompt through `rrfMerge` and `retrievedContext`, so it is an input to
   the agent and not a presentation detail. Both readers break the tie on the content hash.
+- **A script or test that runs git in another directory strips git's environment first.**
+  Git exports `GIT_DIR` and `GIT_INDEX_FILE` to hooks and to `git rebase --exec`, and an
+  inherited `GIT_DIR` overrides discovery from `cwd`. A fixture test that ran `git init` and
+  `git add` in a temporary directory under `rebase --exec` set `core.bare = true` in this
+  repository's shared config and staged the fixture into the worktree's index.
+  `gitEnv()` in `scripts/lib/anchors.mjs` drops every `GIT_` variable; pass it as `env`.
 - **E2E runs against the compose stack, not the dev server.** Bring it up with
   `docker compose --profile full up -d --build --wait`, then run the suite with
   `E2E_BASE_URL=http://localhost:8080`. Without that variable Playwright boots the Vite dev
@@ -175,8 +198,17 @@ nightly; `eval` and `eval:retrieval` are local-only until P1-C wires them into a
   supersede it with a new one instead.
 - `yarn lint:docs` checks the structure: frontmatter completeness, that every id resolves,
   that `depends_on` and `blocks` are mutual, that the index agrees with the files, and that
-  a `shipped` PRD's unmet criteria each name the PRD that now owns them. It runs on every
-  pull request.
+  a `shipped` PRD's unmet criteria each name the PRD that now owns them. It also resolves
+  every evidence anchor in `docs/STATUS.md` and `governance/controls.yaml`, checks the
+  control catalogue against the PRDs that own its `planned` rows, fails when
+  `governance/CONTROLS.md` is stale, and runs the fixture tests under `scripts/`. It runs on
+  every pull request.
+- **Evidence is cited by name, not by line.** In `docs/STATUS.md` a citation is
+  `path#name`: a declaration (`Class.member` for a method), a test title, a workflow job, a
+  heading or a JSON key. In `governance/controls.yaml` it is a `symbol`, `test`, `ci` or
+  `doc` anchor. A `path:NN` citation fails the lint in either file, because a line check
+  stays green after the line stops holding what the sentence names. PRDs are dated records
+  and keep `file:line`: they describe the tree they were written against.
 - **A capability claim in `README.md`, `.context/`, or `.agents/` must be true of the code
   at HEAD.** `.agents/` counts: the testcontainers convention this repo never followed lived
   in three of those files, and one of them was the prompt that reviews pull requests.
@@ -185,6 +217,11 @@ nightly; `eval` and `eval:retrieval` are local-only until P1-C wires them into a
 - **`docs/STATUS.md` is that status matrix**, one row per documented capability with what
   is actually behind it and which PRD owns the rest. A change that moves a row — wiring an
   adapter, deleting a claim — updates the row in the same pull request.
+- **`governance/controls.yaml` is the control catalogue**: which safeguards the repository
+  has, which framework clauses each one answers, and what backs it. `implemented` needs a
+  test or a CI job, `procedural` a written rule, `planned` an unshipped owning PRD, and
+  `not-applicable` a rationale. A change that moves a control updates its row in the same
+  pull request and regenerates `governance/CONTROLS.md` with `yarn controls:matrix`.
 
 ## Error Handling
 
@@ -216,3 +253,11 @@ nightly; `eval` and `eval:retrieval` are local-only until P1-C wires them into a
   package names. A new package in either directory is registered by existing there, and
   `yarn workspaces list` is the check. Adding a name is only needed outside those globs.
 - Pin major versions. Use `^` for minor/patch ranges.
+- **A root `scripts/` check may import a package only from the root `devDependencies`, and
+  only one already in `yarn.lock`.** `scripts/lint-docs.mjs` once needed nothing installed.
+  The controls check needs `yaml` to read workflows and the catalogue, and `zod` because a
+  Zod schema is the source of truth here too. Both were already resolved for the workspaces
+  at the same ranges, so declaring them at the root added no package to the tree. The cost
+  is that `yarn lint:docs` now needs `yarn install` first, which CI already runs. A check
+  that would need a package the lockfile does not have belongs in a workspace, not in
+  `scripts/`.

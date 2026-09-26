@@ -9,9 +9,12 @@
  * the index that no longer matches the file.
  */
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
-import { execFileSync } from 'node:child_process';
-import { join, dirname } from 'node:path';
+import { join, dirname, relative, resolve } from 'node:path';
+import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
+import { frontmatter, prdIndexRows } from './lib/frontmatter.mjs';
+import { createRepo, checkInlineAnchors } from './lib/anchors.mjs';
+import { lintControls, defaultPaths } from './lint-controls.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const prdDir = join(root, 'docs', 'prd');
@@ -34,43 +37,12 @@ const REQUIRED = [
   'superseded_by',
 ];
 
-/** Minimal frontmatter reader. Handles scalars and inline arrays, which is all we use. */
-function frontmatter(text) {
-  const match = /^---\n([\s\S]*?)\n---/.exec(text);
-  if (!match) return null;
-  const out = {};
-  for (const line of match[1].split('\n')) {
-    if (!line.trim() || line.trimStart().startsWith('#')) continue;
-    const idx = line.indexOf(':');
-    if (idx === -1) continue;
-    const key = line.slice(0, idx).trim();
-    let raw = line.slice(idx + 1).trim();
-    raw = raw.replace(/\s+#.*$/, '').trim();
-    if (raw.startsWith('[') && raw.endsWith(']')) {
-      const inner = raw.slice(1, -1).trim();
-      out[key] = inner ? inner.split(',').map((s) => s.trim()) : [];
-    } else if (raw === 'null' || raw === '') {
-      out[key] = null;
-    } else {
-      out[key] = raw;
-    }
-  }
-  return out;
-}
-
 // --- PRD index is the registry of known ids -------------------------------
 const prdIndexPath = join(prdDir, 'README.md');
 if (!existsSync(prdIndexPath)) {
   fail('docs/prd/README.md', 'missing — the index is the source of truth for the backlog');
 }
-const prdIndex = new Map();
-for (const line of readFileSync(prdIndexPath, 'utf-8').split('\n')) {
-  const row = /^\|\s*(?:\[([^\]]+)\]\([^)]+\)|([A-Z]\d-[A-Z]))\s*\|(.+)\|\s*$/.exec(line);
-  if (!row) continue;
-  const id = row[1] ?? row[2];
-  const cells = row[3].split('|').map((c) => c.trim());
-  prdIndex.set(id, { status: cells[cells.length - 1], size: cells[cells.length - 2] });
-}
+const prdIndex = prdIndexRows(readFileSync(prdIndexPath, 'utf-8'));
 if (prdIndex.size === 0) fail('docs/prd/README.md', 'no PRD rows parsed from the index tables');
 
 // --- Each PRD file -------------------------------------------------------
@@ -174,48 +146,27 @@ if (existsSync(adrIndexPath)) {
   fail('docs/adr/README.md', 'missing');
 }
 
-// --- docs/STATUS.md evidence references -----------------------------------
-// Every row cites a `file.ts:NN`. Those citations are the whole value of the matrix, and
-// they rot silently when a file is renamed or shrinks. Resolve each one and range-check
-// the line, so a stale citation fails the build instead of misleading a reader.
-const statusPath = join(root, 'docs', 'STATUS.md');
+// --- docs/STATUS.md evidence anchors -------------------------------------
+// The anchors are the whole value of the matrix. They used to be `file.ts:NN`, checked
+// only for the file existing and being at least NN lines long, and three rows went on
+// citing lines that no longer held what their sentence named while this stayed green.
+// Each anchor now names a declaration, a test title, a workflow job, a heading or a JSON
+// key, and resolves by searching the file (scripts/lib/anchors.mjs). A `:NN` citation
+// fails on sight. `--status <file>` points the check at a fixture.
+const { values: args } = parseArgs({ options: { status: { type: 'string' } } });
+const statusPath = args.status ? resolve(args.status) : join(root, 'docs', 'STATUS.md');
+const statusName = relative(root, statusPath);
 if (existsSync(statusPath)) {
-  const tracked = execFileSync('git', ['ls-files'], { cwd: root, encoding: 'utf-8' })
-    .split('\n')
-    .filter(Boolean);
-  const seen = new Set();
-  const refs = readFileSync(statusPath, 'utf-8').matchAll(
-    /`([A-Za-z0-9._/-]+\.(?:ts|tsx|mjs|js|yml|yaml|json)):(\d+)(?:-(\d+))?`/g,
-  );
-  for (const [, relPath, startStr, endStr] of refs) {
-    const key = `${relPath}:${startStr}-${endStr ?? ''}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    const matches = tracked.filter((f) => f === relPath || f.endsWith(`/${relPath}`));
-    if (matches.length === 0) {
-      fail('docs/STATUS.md', `cites \`${relPath}\`, which no tracked file matches`);
-      continue;
-    }
-    if (matches.length > 1) {
-      fail(
-        'docs/STATUS.md',
-        `cites \`${relPath}\`, which is ambiguous (${matches.length} matches)`,
-      );
-      continue;
-    }
-    const lines = readFileSync(join(root, matches[0]), 'utf-8').split('\n').length;
-    const last = Number(endStr ?? startStr);
-    if (last > lines)
-      fail(
-        'docs/STATUS.md',
-        `cites \`${relPath}:${startStr}${endStr ? `-${endStr}` : ''}\` but ${matches[0]} has ${lines} lines`,
-      );
-  }
+  const repo = createRepo(root);
+  for (const problem of checkInlineAnchors(repo, readFileSync(statusPath, 'utf-8')))
+    fail(statusName, problem);
+} else {
+  fail(statusName, 'missing');
 }
 
 // --- One Node major across the README, the workflows and the images -------
 // docs/STATUS.md asserts these three agree, but that row is the one row citing no
-// `file.ts:NN`, so the check above had nothing to resolve and nothing to rot. A
+// anchor, so the check above had nothing to resolve and nothing to rot. A
 // Dependabot base-image bump then moved the Dockerfiles alone, every gate stayed on
 // the old major, and the row went quietly false. Read the major off each surface
 // instead of trusting a sentence about them.
@@ -286,6 +237,13 @@ if (nodeSurfaces.length === 0) {
   }
 }
 
+// --- governance/controls.yaml ---------------------------------------------
+// In-process rather than chained after this script with `&&`: a renamed declaration that
+// breaks a STATUS.md row and a control at once is then reported against both, instead of
+// the first failure hiding the second.
+const controls = await lintControls({ root, ...defaultPaths(root) });
+errors.push(...controls.errors);
+
 // --- Report ---------------------------------------------------------------
 if (errors.length) {
   console.error(`\ndocs lint failed with ${errors.length} problem(s):\n`);
@@ -294,5 +252,5 @@ if (errors.length) {
   process.exit(1);
 }
 console.log(
-  `docs lint passed: ${byId.size} PRD file(s), ${prdIndex.size} indexed, ADR index consistent.`,
+  `docs lint passed: ${byId.size} PRD file(s), ${prdIndex.size} indexed, ADR index consistent, STATUS.md anchors resolve.\n${controls.summary}`,
 );

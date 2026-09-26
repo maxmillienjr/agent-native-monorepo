@@ -6,9 +6,9 @@
  * Postgres, Neo4j and pgvector *after* the run, through the read surface in
  * `packages/memory-core` — the harness never opens a pool of its own. Reviewer
  * checklist rule 4 forbids database calls outside `memory-core`, and the reason
- * is not stylistic: `scripts/seed-eval-fixtures.mjs` recorded that hand-rolled
- * SQL is how the eval fixtures ended up in a table shaped differently from
- * production's. A grader with its own `SELECT` drifts the same way, and a
+ * is not stylistic: the nightly seed script, since deleted, recorded that
+ * hand-rolled SQL is how the eval fixtures ended up in a table shaped
+ * differently from production's. A grader with its own `SELECT` drifts the same way, and a
  * grader that drifts reports a false negative on the one signal this package
  * exists to produce.
  *

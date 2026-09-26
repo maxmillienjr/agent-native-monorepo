@@ -9,11 +9,15 @@ export {
   ModelAxisSchema,
   OutcomeSchema,
   TaskSeedsSchema,
+  type AbortCause,
+  type AbortError,
   type AgentReportedOutcome,
   type AgentHarness,
   type Axes,
   type AxisRequirement,
   type AxisRequirements,
+  type CompletedTrial,
+  type EvalAbort,
   type Grader,
   type GraderKind,
   type GraderResult,
@@ -43,6 +47,8 @@ export type { MemoryOutcome } from './outcome.js';
 export {
   detectAxes,
   describeAxes,
+  assertExpectedAxes,
+  AxisExpectationError,
   readCassetteMode,
   assertAxesSatisfy,
   skippedTasks,
@@ -86,6 +92,7 @@ export {
 export {
   EVAL_DATASETS_DIR,
   MEMORY_RECALL_DATASET_DIR,
+  MEMORY_RECALL_SUITE,
   TaskSpecSchema,
   type TaskSpec,
   buildGraders,
@@ -213,3 +220,10 @@ export {
   type PairedBootstrapOptions,
   type PairedBootstrapResult,
 } from './stats/paired-bootstrap.js';
+
+export {
+  abortError,
+  completedTrial,
+  renderAbortJson,
+  renderAbortSummary,
+} from './reporters/abort.js';

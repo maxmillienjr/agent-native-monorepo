@@ -19,14 +19,15 @@ NEO4J_URI=bolt://localhost:7687 \
 exercises the same `MemoryModule` providers, the same model axis and the same checkpointer
 a request would. Reports land in `apps/agent-service/eval-results/` — `eval-report.json`,
 `eval-report.xml` (JUnit) and `eval-summary.md` — or wherever `EVAL_OUTPUT_DIR` points.
-`EVAL_TRIALS` overrides the five trials per task, and `EVAL_CASSETTE_MODE` is `record` or
-`replay` — see below. All three are declared on `turbo.json`'s `eval` task, without which
+A run that cannot complete writes `eval-abort.json` and an `eval-summary.md` headed
+`aborted` instead, and never `eval-report.json`, so that file's presence means the suite
+completed. `EVAL_TRIALS` overrides the five trials per task, `EVAL_CASSETTE_MODE` is
+`record` or `replay` — see below — and `EVAL_EXPECT_AXES`, when set, refuses a run whose
+axes differ from it. All four are declared on `turbo.json`'s `eval` task, without which
 strict env mode strips them.
 
-This package deliberately declares **no `test:eval` script**. `agent-eval.yml` runs
-`yarn turbo test:eval` across every workspace, so declaring one here would silently make
-the nightly job run live trials on whatever axes that runner happened to have. P1-C owns
-wiring evaluation into CI.
+In CI, `agent-eval.yml` runs this same command twice: on the replay axis on every pull
+request, and on the live axis nightly when a `GOOGLE_API_KEY` repository secret exists.
 
 ## What it grades
 
@@ -47,7 +48,7 @@ message cannot tell the difference.
 
 Outcome reads go through `packages/memory-core` — `PgNeo4jMemoryInspector` — never through
 a connection this package opens. Reviewer checklist rule 4 is the rule; the reason is that
-`scripts/seed-eval-fixtures.mjs` recorded what hand-rolled SQL cost the last time.
+the nightly seed script, deleted in P1-C, recorded what hand-rolled SQL cost the last time.
 
 `entity_merged` is keyed on the run's own extraction rather than a count of `:Concept`
 nodes, because `mergeEntity` writes no episode onto a concept: a count cannot attribute one
@@ -97,9 +98,11 @@ disposable database.
 ## Dataset
 
 `datasets/memory-recall/` holds the task files. `EVAL_DATASETS_DIR` is exported so nothing
-has to spell the path — `scripts/seed-eval-fixtures.mjs` imports it, because the previous
-arrangement (a path literal pointing into `apps/agent-service/test/fixtures`) would have
-gone stale the moment the dataset moved, and a seed step that finds nothing reports success.
+has to spell the path. The nightly seed script that first imported it is gone, and the
+reason still holds: its previous arrangement (a path literal pointing into
+`apps/agent-service/test/fixtures`) went stale the moment the dataset moved, and a consumer
+that finds nothing reports success. A trial needs no seed step of its own — every trial
+applies its task's seed in `reset`, against the schema `MemoryModule` migrates on boot.
 
 ## Current results
 
@@ -126,10 +129,12 @@ One `POST`-equivalent run wrote 2 `episodes` rows, 17 `semantic_facts` rows and 
 in the graph afterwards. It made no tool call, which is the same behaviour the stub set
 shows and the reason `tool-use-001` exists.
 
-`tool-use-001` has **not** been run on the live model axis. It was added after the live
-verification, and this key's free-tier quota for `gemini-2.5-flash` `generateContent` is 20
-requests — a 5×2 suite needs roughly forty. The number above is therefore not the suite's
-live pass rate, and is not presented as one.
+`tool-use-001` has since run on the live model axis, once: one trial on 2026-09-10 passed
+on three `web-search` selections (P1-G), and the recording run for P1-B's cassettes passed
+one trial of each task the same day. That is one trial per task. The 5×2 suite needs
+roughly forty `generateContent` calls against this key's free-tier quota of 20 for
+`gemini-2.5-flash`, and has not been run, so none of these numbers is the suite's live pass
+rate, and none is presented as one.
 
 ## Recording and replaying a trial
 
@@ -157,7 +162,8 @@ moves the request hash, every replay misses, and `CassetteMissError` prints the 
 - **Reading a cassette.** This package resolves their paths and counts them; it never opens
   one. `@repo/agent-cassette` is the format, and its only runtime dependency is `zod` —
   importing it here for a type would end that.
-- **CI.** P1-C owns the tiered pipeline and retiring `memory-core`'s `test:eval` alias.
+- **CI.** The workflow is `agent-eval.yml` (P1-C); this package has no script of its own for
+  it and needs none.
 - **Statistical gating.** `yarn eval` exits non-zero on any failing trial; deciding which
   failures should block a merge is P1-D.
 - **Retrieval-quality metrics** (`Recall@k`, `nDCG`, `MRR`). P2-B, built on the `Grader`

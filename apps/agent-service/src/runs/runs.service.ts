@@ -17,6 +17,7 @@ import { buildAgentGraph, type GraphDeps } from '../agent/graph/graph.js';
 import { buildRunResponse } from '../agent/nodes/egress.node.js';
 import type { AgentState } from '../agent/graph/state.js';
 import { createGeminiEmbedder } from '../agent/model/gemini-embedder.js';
+import { stopOnDailyQuota } from '../agent/model/rate-limit.js';
 import { EXTRACTION_PROMPT, parseExtraction } from '../agent/model/extraction.js';
 import {
   EPISODIC_REPOSITORY,
@@ -61,6 +62,27 @@ export interface TracedRun {
  * being wrong.
  */
 export const CHAT_MODEL = 'gemini-2.5-flash';
+
+/**
+ * The chat client, constructed in one place so the retry behaviour is the same
+ * on both instances and a test can build exactly what a request uses.
+ *
+ * `onFailedAttempt` reaches LangChain's `AsyncCaller`, which retries every
+ * status outside a short list — 429 included — up to six times. A daily-quota
+ * 429 cannot succeed on any of them, so `stopOnDailyQuota` makes it terminal
+ * and leaves every other failure to the default handler.
+ */
+export function createGeminiChat(
+  apiKey: string,
+  options: { json?: boolean } = {},
+): ChatGoogleGenerativeAI {
+  return new ChatGoogleGenerativeAI({
+    model: CHAT_MODEL,
+    apiKey,
+    ...(options.json === true ? { json: true } : {}),
+    onFailedAttempt: stopOnDailyQuota,
+  });
+}
 
 /** The model half of a dependency set: everything that costs a model call. */
 export interface ModelDeps {
@@ -198,8 +220,8 @@ export class RunsService {
     // `responseMimeType: application/json`, which is what stops it wrapping a
     // JSON answer in a ```json fence. `plan` wants prose and must not have it;
     // the two callers that parse a response must.
-    const prose = new ChatGoogleGenerativeAI({ model: CHAT_MODEL, apiKey });
-    const json = new ChatGoogleGenerativeAI({ model: CHAT_MODEL, apiKey, json: true });
+    const prose = createGeminiChat(apiKey);
+    const json = createGeminiChat(apiKey, { json: true });
 
     const callWith =
       (llm: ChatGoogleGenerativeAI) => async (systemPrompt: string, userPrompt: string) => {

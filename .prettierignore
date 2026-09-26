@@ -14,3 +14,7 @@ packages/eval-harness/datasets/*/cassettes/
 packages/eval-harness/datasets/*/recorded/
 packages/eval-harness/datasets/retrieval-ablation/reports/
 packages/eval-harness/datasets/retrieval-ablation/adjudication/
+
+# Agent worktrees are whole checkouts; formatting from the root must not descend
+# into them.
+.claude/worktrees/
