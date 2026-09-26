@@ -9,11 +9,15 @@ export {
   ModelAxisSchema,
   OutcomeSchema,
   TaskSeedsSchema,
+  type AbortCause,
+  type AbortError,
   type AgentReportedOutcome,
   type AgentHarness,
   type Axes,
   type AxisRequirement,
   type AxisRequirements,
+  type CompletedTrial,
+  type EvalAbort,
   type Grader,
   type GraderKind,
   type GraderResult,
@@ -87,6 +91,7 @@ export {
 export {
   EVAL_DATASETS_DIR,
   MEMORY_RECALL_DATASET_DIR,
+  MEMORY_RECALL_SUITE,
   TaskSpecSchema,
   type TaskSpec,
   buildGraders,
@@ -110,3 +115,9 @@ export { EvalHarness, trialsFor, type EvalHarnessOptions } from './harness.js';
 export { renderJsonReport } from './reporters/json.js';
 export { renderJUnitReport } from './reporters/junit.js';
 export { renderMarkdownSummary } from './reporters/summary.js';
+export {
+  abortError,
+  completedTrial,
+  renderAbortJson,
+  renderAbortSummary,
+} from './reporters/abort.js';

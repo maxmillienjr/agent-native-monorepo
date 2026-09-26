@@ -215,7 +215,10 @@ export function loadSuite(
   };
 }
 
+/** The shipped suite's name, readable before it loads so an abort can name it. */
+export const MEMORY_RECALL_SUITE = 'memory-recall';
+
 /** The dataset shipped with this package. */
 export function loadMemoryRecallSuite(trialsPerTask = 5): Suite<MemoryOutcome> {
-  return loadSuite('memory-recall', MEMORY_RECALL_DATASET_DIR, trialsPerTask);
+  return loadSuite(MEMORY_RECALL_SUITE, MEMORY_RECALL_DATASET_DIR, trialsPerTask);
 }
