@@ -182,3 +182,14 @@ export {
   type ReplayDifference,
   type ReplayDifferenceKind,
 } from './gate/compare-replay.js';
+export {
+  LIVE_DELTA,
+  TASKS_RANDOM_FROM,
+  compareLive,
+  trialFloor,
+  type CompareLiveOptions,
+  type LiveComparison,
+  type LiveRegime,
+  type LiveTaskArms,
+  type LiveVerdict,
+} from './gate/compare-live.js';
