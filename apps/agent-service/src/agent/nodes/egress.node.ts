@@ -1,5 +1,5 @@
 import { getTracer } from '@repo/telemetry';
-import type { RunResponse } from '@repo/agent-contracts';
+import { RunResponseSchema, type RunResponse } from '@repo/agent-contracts';
 import type { AgentState } from '../graph/state.js';
 
 const tracer = getTracer('agent-service');
@@ -22,13 +22,23 @@ export async function egressNode(state: AgentState): Promise<Partial<AgentState>
   });
 }
 
+/**
+ * The response, parsed on the way out.
+ *
+ * `RunsService` hands this the graph's final state through an `unknown` cast,
+ * and a state restored by the checkpointer is deserialized JSON no schema has
+ * seen, so the types that built the response prove nothing about it. The parse
+ * is the check that holds: a value that breaks the contract becomes a failed
+ * run here rather than bytes a client trusts. `RunResponseSchema` is strict, so
+ * an undeclared key throws instead of being silently stripped (P3-A).
+ */
 export function buildRunResponse(state: AgentState): RunResponse {
-  return {
+  return RunResponseSchema.parse({
     runId: state.runId,
     sessionId: state.sessionId,
     messages: state.messages,
     outcome: state.outcome ?? 'success',
     tokenCounts: state.tokenCounts,
     retrievedContext: state.retrievedContext,
-  };
+  });
 }

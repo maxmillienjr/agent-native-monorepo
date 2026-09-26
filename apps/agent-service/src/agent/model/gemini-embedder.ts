@@ -41,11 +41,11 @@ function errorDetailsOf(body: string): unknown[] | undefined {
  * Embeddings via a direct `embedContent` call rather than the LangChain
  * adapter.
  *
- * `GoogleGenerativeAIEmbeddingsParams` at the pinned `@langchain/google-genai`
- * exposes model, taskType, title, stripNewLines, apiKey and baseUrl — and no
- * output-dimension field. The version that has one peers on
- * `@langchain/core ^1.2.9`, which is the P5-C upgrade. Until then chat goes
- * through LangChain and embeddings come from here.
+ * This was forced once and is a choice now. `GoogleGenerativeAIEmbeddingsParams`
+ * at `@langchain/google-genai` 0.2.x had no output-dimension field; since the
+ * P5-C upgrade to 2.x it has `outputDimensionality`. The direct call stays
+ * because it works, the `embed` seam covers it, and swapping it would change
+ * the live embedding path, which only live `embedContent` calls can verify.
  *
  * The response is L2-normalized because a Matryoshka embedding truncated below
  * its native width is not unit-norm: measured at 0.583 at EMBEDDING_DIMENSIONS

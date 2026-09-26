@@ -1,6 +1,7 @@
 import { StateGraph, END, START, Annotation } from '@langchain/langgraph';
 import type { BaseCheckpointSaver } from '@langchain/langgraph';
 import type { AgentState } from './state.js';
+import type { Node } from './node.js';
 import { shouldContinueActing } from './edges.js';
 import { ingressNode } from '../nodes/ingress.node.js';
 import { retrieveNode, type RetrieveNodeDeps } from '../nodes/retrieve.node.js';
@@ -46,52 +47,28 @@ export function buildAgentGraph(
   correlationId: string,
   checkpointer?: BaseCheckpointSaver,
 ) {
+  // Every wrapper is typed `Node`, because LangGraph does not check what an
+  // inline node returns against the annotation. See `node.ts`.
+  const ingress: Node = async (state) => ingressNode(state, rawBody, correlationId);
+  const retrieve: Node = async (state) => retrieveNode(state, deps.retrieve);
+  const plan: Node = async (state) => planNode(state, deps.plan);
+  const act: Node = async (state) => actNode(state, deps.act);
+  const distill: Node = async (state) => distillNode(state, deps.distill);
+  const reflect: Node = async (state) => reflectNode(state, deps.reflect);
+  const egress: Node = async (state) => egressNode(state);
+
   // IO_RETRY goes on every node that performs I/O and on none that does not.
   // `ingress` and `egress` are pure; retrying them would only repeat a Zod
   // parse. `distill` carries it too — it makes a model call, and having no
   // side effects makes it the safest node in the graph to re-run.
   const graph = new StateGraph(AgentStateAnnotation)
-    .addNode('ingress', async (state) => {
-      return ingressNode(state as AgentState, rawBody, correlationId);
-    })
-    .addNode(
-      'retrieve',
-      async (state) => {
-        return retrieveNode(state as AgentState, deps.retrieve);
-      },
-      { retryPolicy: IO_RETRY },
-    )
-    .addNode(
-      'plan',
-      async (state) => {
-        return planNode(state as AgentState, deps.plan);
-      },
-      { retryPolicy: IO_RETRY },
-    )
-    .addNode(
-      'act',
-      async (state) => {
-        return actNode(state as AgentState, deps.act);
-      },
-      { retryPolicy: IO_RETRY },
-    )
-    .addNode(
-      'distill',
-      async (state) => {
-        return distillNode(state as AgentState, deps.distill);
-      },
-      { retryPolicy: IO_RETRY },
-    )
-    .addNode(
-      'reflect',
-      async (state) => {
-        return reflectNode(state as AgentState, deps.reflect);
-      },
-      { retryPolicy: IO_RETRY },
-    )
-    .addNode('egress', async (state) => {
-      return egressNode(state as AgentState);
-    })
+    .addNode('ingress', ingress)
+    .addNode('retrieve', retrieve, { retryPolicy: IO_RETRY })
+    .addNode('plan', plan, { retryPolicy: IO_RETRY })
+    .addNode('act', act, { retryPolicy: IO_RETRY })
+    .addNode('distill', distill, { retryPolicy: IO_RETRY })
+    .addNode('reflect', reflect, { retryPolicy: IO_RETRY })
+    .addNode('egress', egress)
     .addEdge(START, 'ingress')
     .addEdge('ingress', 'retrieve')
     .addEdge('retrieve', 'plan')

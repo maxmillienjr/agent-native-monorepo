@@ -2,11 +2,11 @@
 id: P5-C
 title: Upgrade to LangGraph 1.x
 tier: 5
-status: accepted
+status: in-progress
 size: S
 depends_on: [P0-A]
 blocks: []
-issue: null
+issue: 61
 superseded_by: null
 ---
 
@@ -244,29 +244,109 @@ slower.
 Every criterion names the axis it is checked on. "Stub" and "replay" are model axes; the
 memory axis is `live` wherever stores are named.
 
-- [ ] `apps/agent-service/package.json` declares `@langchain/langgraph`, `@langchain/core`,
+- [x] `apps/agent-service/package.json` declares `@langchain/langgraph`, `@langchain/core`,
       `@langchain/langgraph-checkpoint`, `@langchain/langgraph-checkpoint-postgres` on `^1`
       and `@langchain/google-genai` on `^2`, and `yarn.lock` holds exactly one entry for each
-      of those five packages.
-- [ ] `yarn install` prints no `YN0002` or `YN0060` line naming an `@langchain/` package.
-- [ ] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
-      pass.
-- [ ] Model stub, memory unconfigured: `yarn turbo test:unit` passes at least the 254 tests
-      it passes at `4516f4e`, and `yarn turbo test:service` passes 5 of 5.
-- [ ] Memory live: `yarn turbo test:integration` reports 27 passed and 0 skipped.
-- [ ] Model replay, memory live: `EVAL_CASSETTE_MODE=replay yarn eval` passes all 21 grader
+      of those five packages. Resolved to `1.4.18`, `1.2.12`, `1.1.5`, `1.0.5` and `2.3.2`,
+      one `yarn.lock` entry each.
+- [x] `yarn install` prints no `YN0002` or `YN0060` line naming an `@langchain/` package.
+      The `p3239ce` warning is gone; the three that remain name `@opentelemetry/*` and
+      `typescript`, as they did before.
+- [x] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
+      pass. Typecheck and lint 15/15 tasks with `--force`.
+- [x] Model stub, memory unconfigured: `yarn turbo test:unit` passes at least the 254 tests
+      it passes at `4516f4e`, and `yarn turbo test:service` passes 5 of 5. 254 tests in 31
+      files at the original base, and 279 in 34 after the rebase onto P1-C, including
+      `rate-limit.test.ts`. Service tests pass 5 of 5 on both, with `GOOGLE_API_KEY` empty.
+- [x] Memory live: `yarn turbo test:integration` reports 27 passed and 0 skipped. Run with
+      `REQUIRE_INTEGRATION_ENV=1` against fresh containers.
+- [x] Model replay, memory live: `EVAL_CASSETTE_MODE=replay yarn eval` passes all 21 grader
       results with the committed cassettes, logs no `eval.replay.live-call`, and two
-      consecutive runs produce reports identical once run ids and latencies are masked.
-- [ ] `git diff main -- packages/eval-harness/datasets` is empty on the implementing branch.
-- [ ] Model live, memory live: one trial of each task (`EVAL_TRIALS=1`, no cassette mode)
-      passes every grader, using no more than 8 `generateContent` calls, and each trial's
-      transcript carries a non-empty assistant message.
-- [ ] Memory live: the pull request carries the output of the cross-version resume check
+      consecutive runs produce reports identical once run ids and latencies are masked. A
+      replay at the 0.x pins, taken during the resume check, is identical to both.
+- [x] `git diff main -- packages/eval-harness/datasets` is empty on the implementing branch.
+- [x] Model live, memory live: one trial of `memory-recall-001` (`EVAL_TRIALS=1`, no cassette
+      mode) passes all eleven graders at 1.x, logged as `eval.trial` with `failed: []`.
+- [ ] Model live, memory live: one trial of `tool-use-001` passes every grader. **Not met:**
+      the run aborted on a per-minute 429 before the trial finished (see "What the
+      implementation found"). Owned here; P5-C stays `in-progress` until it is run.
+- [ ] Model live: each live trial's transcript carries a non-empty assistant message.
+      **Not met:** an aborted suite writes no report, so the `memory-recall-001` transcript
+      never reached disk. Owned here, and closed by the same run as the one above.
+- [x] Model live: the live run used no more than 8 `generateContent` calls. At most 6: the
+      three a passing `memory-recall-001` trial needs, at most two more before the limit of
+      5 a minute, and the one rejected request, which nothing retried in the code that run
+      used.
+- [x] Memory live: the pull request carries the output of the cross-version resume check
       from the Problem section, in both directions — a thread left at `next: ['reflect']`
       resumes to `success` with zero `distill` calls — and `checkpoint_migrations` still tops
-      out at `v = 4` after the 1.x `setup()`.
-- [ ] `gemini-embedder.ts` no longer says the direct call exists "until" the upgrade, and
+      out at `v = 4` after the 1.x `setup()`. Five rows, `max(v) = 4`, under both savers.
+- [x] `gemini-embedder.ts` no longer says the direct call exists "until" the upgrade, and
       `docs/prd/README.md` names the new pins where it names `0.4.10` and `0.1.3` today.
+
+## What the implementation found
+
+Implemented 2026-09-26 under #61. npm had not moved since the trial, so the bump resolved to
+the same versions and every offline gate reproduced the trial's table. One behaviour change
+was invisible to the trial. It stopped the live step, and after the rebase onto P1-C it broke
+P1-C's rate-limit handler.
+
+**LangChain's default retry handler now stops on a quota-worded 429.** `@langchain/core@1.2.12`
+classifies a 429 by its message before deciding to retry (`classifyRateLimitError` and
+`defaultFailedAttemptHandler` in `dist/utils/async_caller.js`). A message matching
+`/exceeded (?:your|the current|the available).+quota/i` or `/billing/i` becomes a
+`RateLimitQuotaExhaustedError` stamped non-retryable. Gemini's per-minute free-tier 429 reads
+"You exceeded your current quota, please check your plan and billing details", which matches
+both. Measured with the default handler, `fetch` stubbed to return that body verbatim, a fake
+key and no network:
+
+| Version       | Requests for one `invoke` | Time to throw | Error                                 |
+| ------------- | ------------------------- | ------------- | ------------------------------------- |
+| `core@0.3.80` | 7                         | 89 s          | `Error`, `status: 429`                |
+| `core@1.2.12` | 1                         | 15 ms         | `RateLimitQuotaExhaustedError`, `429` |
+
+Nothing else about `AsyncCaller` changed in a way this repository sees. `onFailedAttempt` is
+still a protected field set to `params.onFailedAttempt ?? defaultFailedAttemptHandler`, the
+default is still not exported, a handler that returns still means retry, and `maxRetries`
+still defaults to 6. `ChatGoogleGenerativeAI` at `2.3.2` still sends every call through
+`this.caller`, the `AsyncCaller` its base class builds from the constructor's params.
+
+**P1-C's handler depended on the old default.** `stopOnDailyQuota` (`rate-limit.ts`) throws on
+a 429 that names a per-day quota and hands everything else to the default. At 1.x the
+default made every other Gemini 429 terminal too, so `rate-limit.test.ts` counted 1 request
+where it expects 7, and a per-minute 429 would have stopped the run. The handler now retries
+an unclassified 429 itself and delegates only errors that are not 429s, so a 400 stays
+terminal and a 5xx is still retried. With that, the client waits out a per-minute 429 as it
+did at 0.x. The seven-request test is also the evidence that `2.3.2` honours the injected
+handler, since the 1.x default alone would stop at one.
+
+**The live run predates that fix.** Step 4 runs both tasks in one process: 8
+`generateContent` calls in about 30 seconds, against the `gemini-2.5-flash` free-tier limit
+of 5 a minute. The run was made before the rebase, on code with no `stopOnDailyQuota`, so
+the 1.x default stopped at the first 429. It passed `memory-recall-001` on every grader.
+`tool-use-001` hit the limit about six seconds in, the 429 came back once, and the suite
+exited 1 with no report. The 429 named `GenerateRequestsPerMinutePerProjectPerModel-FreeTier`,
+which P1-C's classifier reads as `unclassified`. It is a per-minute body, so it does not
+close P1-C's open criterion, which asks for a daily one. The two open criteria here need a
+live run at this branch's head, where the client should now wait the limit out. That is
+another 8 calls, which were not spent.
+
+**The exact call count was lost.** It came from a scratch preload that tallied requests to
+the model host. Pino's transport workers inherit `--import`, and each wrote its own empty
+tally over the main thread's on exit. The defect was in the scratch counter, not in
+`watchForModelRequests`, which runs in the main thread. The bound in the criterion above is
+derived from the rate limit and from 1.x making one request per 429.
+
+**The report grew four lines, and not because of this upgrade.** The trial counted 476 lines
+of JSON; the report is 480 at both versions today, because its shape changed on `main` after
+`4516f4e`. The masked diff between the 0.x and 1.x replays is empty.
+
+**Two accepted PRDs were re-checked rather than renamed.** P3-A's gate depends on LangGraph
+not type-checking an inline node's return. A probe still compiles at 1.4.18 with a node
+returning a value its channel does not allow, so the design stands. P2-C expected the client
+upgrade to expose `gen_ai.response.model`, but `2.3.2` still sets only `model_provider`.
+`main` had already corrected P2-C from P1-E's reading, so that sentence was left as it
+stands.
 
 ## Risks and open questions
 

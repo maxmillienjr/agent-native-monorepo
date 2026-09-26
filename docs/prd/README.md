@@ -13,8 +13,8 @@ stores from an empty database: one run leaves episodic rows, `:Concept` and `:Fa
 `semantic_facts` rows and checkpoints under the runId its own response returned.
 
 **`docs/STATUS.md` is the authority on any capability sentence, including the ones above.**
-Eighteen rows, each with a status, a file and a line — fifteen `implemented`, one
-`planned`, one `stubbed`, one `removed`, none `broken`. The rule that keeps it true is in
+Twenty rows, each with a status and evidence cited by name — fifteen `implemented`, one
+`planned`, three `stubbed`, one `removed`, none `broken`. The rule that keeps it true is in
 `.context/conventions.md`: a change that moves a row moves it there in the same pull
 request. `yarn lint:docs` fails CI when a PRD's status disagrees with its row below.
 
@@ -109,6 +109,30 @@ citation fails the lint. Rows 3 and 11 were still citing lines that no longer he
 they named when they migrated. A green check
 means the evidence exists, not that it is sufficient, and the matrix says so in its header.
 
+**[P5-C](P5-C-langgraph-1x.md) is in progress**, tracked in [#61](https://github.com/maxmillienjr/agent-native-monorepo/issues/61).
+The service now runs on `@langchain/langgraph@1.4.18` and `@langchain/core@1.2.12`. Every
+offline gate passes, the replay is identical to the one at 0.x, and checkpoints resume across
+the upgrade in both directions. The upgrade changed one behaviour. At `core` 1.x, LangChain's
+default retry handler stops on any 429 whose message mentions quota or billing, and every
+Gemini 429 does. P1-C's `stopOnDailyQuota` handed non-daily 429s to that default, so they
+became terminal. It now retries them itself, and the client waits out a per-minute 429
+again, as it did at 0.x. One live `tool-use-001` trial is still open: the only live run
+predates that fix, and it stopped on a per-minute 429.
+
+**[P3-A](P3-A-clinician-gate.md) has shipped**, tracked in
+[#75](https://github.com/maxmillienjr/agent-native-monorepo/issues/75). ADR 0003's rule
+that the agent must not make an adverse determination now has a mechanism.
+`@repo/determination` types the agent's output as an approval or a referral, and the one
+constructor for a denial needs a clinician's attestation. That constructor sits behind a
+`./clinician` subpath, which a lint rule bars from the graph. Type tests fail
+`yarn turbo typecheck` if an unattested denial compiles, and every run response is now
+parsed strictly on the way out. On review, the chat graph's `disposition` channel moved to
+P3-D, so nothing produces a disposition yet, and `docs/STATUS.md` row 20 says `stubbed`.
+LangGraph still does not check what a node returns, at 0.4.10 or at 1.4.18. Implementing
+this found that the `Node` alias misses an undeclared key returned beside a declared one;
+an explicit return type catches it. CTL-HUM-01 is `implemented`, with its title narrowed to
+what is enforced.
+
 **Where the detail lives.** Each PRD carries its own risks, its divergences from the design
 that was reviewed, and — where a shipped record turned out to be wrong — the correction that
 followed. P2-A is the one to read first: it shipped, was reopened the same day when two of
@@ -179,7 +203,7 @@ provider actually operates under. Uses synthetic data only.
 
 | ID                                            | Title                                                         | Size | Status   |
 | --------------------------------------------- | ------------------------------------------------------------- | ---- | -------- |
-| [P3-A](P3-A-clinician-gate.md)                | Clinician-gate invariant enforced in the type system          | S    | accepted |
+| [P3-A](P3-A-clinician-gate.md)                | Clinician-gate invariant enforced in the type system          | S    | shipped  |
 | [P3-B](P3-B-audit-replay.md)                  | Deterministic replay for audit reconstruction                 | L    | accepted |
 | [P3-C](P3-C-decision-ledger.md)               | Hash-chained, tamper-evident decision ledger                  | L    | accepted |
 | [P3-D](P3-D-payer-dataset-fhir-prior-auth.md) | Synthetic payer dataset and FHIR prior-authorization surface  | L    | accepted |
@@ -196,11 +220,11 @@ provider actually operates under. Uses synthetic data only.
 
 ## Tier 5 — Interoperability
 
-| ID                              | Title                                            | Size | Status   |
-| ------------------------------- | ------------------------------------------------ | ---- | -------- |
-| [P5-A](P5-A-a2a-server.md)      | Agent2Agent v1.0 server with a signed Agent Card | L    | accepted |
-| [P5-B](P5-B-adk-portability.md) | Agent Development Kit portability appendix       | S    | accepted |
-| [P5-C](P5-C-langgraph-1x.md)    | Upgrade to LangGraph 1.x                         | S    | accepted |
+| ID                              | Title                                            | Size | Status      |
+| ------------------------------- | ------------------------------------------------ | ---- | ----------- |
+| [P5-A](P5-A-a2a-server.md)      | Agent2Agent v1.0 server with a signed Agent Card | L    | accepted    |
+| [P5-B](P5-B-adk-portability.md) | Agent Development Kit portability appendix       | S    | accepted    |
+| [P5-C](P5-C-langgraph-1x.md)    | Upgrade to LangGraph 1.x                         | S    | in-progress |
 
 ## Sequencing
 
@@ -250,9 +274,9 @@ cassettes, and both say what that costs.
 `P0-B`, `P3-A`, `P4-A`, `P5-A`, and `P5-C` have no hard
 predecessors and can be picked up whenever they are the most valuable next thing. P5-C
 was previously drawn as a predecessor of P2-A; it is not one. `retryPolicy`,
-`compile({ checkpointer })`, and a peer-compatible
-`@langchain/langgraph-checkpoint-postgres@0.1.3` are all available at the pinned
-`@langchain/langgraph@0.4.10`.
+`compile({ checkpointer })` and a peer-compatible saver were all available at
+`@langchain/langgraph@0.4.10`, where P2-A shipped. P5-C has since moved the pins to
+`@langchain/langgraph@1.4.18` and `@langchain/langgraph-checkpoint-postgres@1.0.5`.
 
 P5-B waits on P5-A. The appendix recommends integrating with an ADK estate over A2A
 rather than porting, and the one trial step that checks that recommendation needs P5-A's

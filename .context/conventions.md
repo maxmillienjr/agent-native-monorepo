@@ -13,10 +13,20 @@
 - `PascalCase.tsx` for React components (e.g., `RunForm.tsx`).
 - Test files: `*.test.ts` co-located with source for unit tests; separate `test/`
   directory for integration tests.
+- Type tests: `*.test-d.ts`, co-located. `tsc --noEmit` checks them under
+  `yarn turbo typecheck`, and Vitest never runs them, because its include is
+  `src/**/*.test.ts`. An unused `@ts-expect-error` fails with TS2578, so each one carries a
+  one-line reason naming the error it expects.
 
 ## Package Structure
 
-- All packages export through a root `src/index.ts` barrel file.
+- All packages export through a root `src/index.ts` barrel file. There is one deliberate
+  exception: `@repo/determination/clinician`, the only constructor for an adverse
+  determination. It is a second entry point in the package's `exports` map and is absent
+  from the barrel, so the graph can import everything it may use without the one thing it
+  may not. A lint rule in `apps/agent-service/eslint.config.js` forbids the subpath under
+  `src/agent/**`, because an `exports` map cannot: the subpath is public on purpose, for
+  the clinician review surface (P3-A).
 - Internal imports within a package use relative paths.
 - Cross-package imports use the `@repo/<name>` workspace alias.
 
@@ -148,8 +158,15 @@ which shipped before the command existed.
   cost is real and it falls on prompt changes, which are common here; the alternative,
   keying on a normalized shape, serves the old answer to the new prompt and calls it a
   pass. Re-recording needs a live key and about eight `generateContent` calls against a
-  20-request daily free tier, so it is a deliberate act rather than a step in a loop. ADR
-  0005 records the seam choice and what replay stops measuring.
+  20-request daily free tier, so it is a deliberate act rather than a step in a loop.
+  ADR 0005 records the seam choice and what replay stops measuring.
+  **The free tier also allows 5 `generateContent` calls a minute**, and a record or live
+  run of both tasks makes about eight in half a minute, so it reaches that limit. The chat
+  client is meant to wait it out: `stopOnDailyQuota` retries any 429 that does not name a
+  per-day quota, and the client backs off for up to about 90 seconds. That retry has to be
+  explicit, because from `@langchain/core` 1.x LangChain's default handler stops on
+  Gemini's quota wording. At 1.x the wait is proven by `rate-limit.test.ts` against a
+  stubbed `fetch` and has not been observed live (P5-C, "What the implementation found").
 - **Retrieval labels are written, not computed, and they are frozen before the first
   run.** `yarn eval:retrieval` scores the graph/vector/hybrid ablation against
   `packages/eval-harness/datasets/retrieval-ablation/queries.json`. Every label there is a

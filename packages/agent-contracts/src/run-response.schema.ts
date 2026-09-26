@@ -7,14 +7,23 @@ import {
   OutcomeSchema,
 } from '@repo/shared-types';
 
-export const RunResponseSchema = z.object({
-  runId: UuidSchema,
-  sessionId: UuidSchema,
-  messages: z.array(MessageSchema),
-  outcome: OutcomeSchema,
-  tokenCounts: TokenCountsSchema,
-  retrievedContext: z.array(RetrievedContextItemSchema),
-});
+/**
+ * Strict, because `buildRunResponse` parses every response through it before
+ * it leaves the service. A non-strict object strips an unknown key, so a value
+ * placed under any key this schema does not declare — a denial, say — would
+ * vanish from the response and the defect that put it there would never
+ * surface. Strict turns it into an error (P3-A).
+ */
+export const RunResponseSchema = z
+  .object({
+    runId: UuidSchema,
+    sessionId: UuidSchema,
+    messages: z.array(MessageSchema),
+    outcome: OutcomeSchema,
+    tokenCounts: TokenCountsSchema,
+    retrievedContext: z.array(RetrievedContextItemSchema),
+  })
+  .strict();
 export type RunResponse = z.infer<typeof RunResponseSchema>;
 
 export const StreamEventSchema = z.object({
