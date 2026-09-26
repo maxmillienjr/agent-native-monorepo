@@ -166,11 +166,11 @@ provider actually operates under. Uses synthetic data only.
 
 ## Tier 4 — Governance and agent security as code
 
-| ID                               | Title                                                           | Size | Status   |
-| -------------------------------- | --------------------------------------------------------------- | ---- | -------- |
-| [P4-A](P4-A-controls-as-code.md) | `governance/controls.yaml` and a CI check for unmapped controls | M    | accepted |
-| P4-B                             | Memory-poisoning red team mapped to OWASP Agentic Top 10        | M    | draft    |
-| P4-C                             | Reversibility-tiered tool registry with saga compensation       | M    | draft    |
+| ID                                        | Title                                                           | Size | Status   |
+| ----------------------------------------- | --------------------------------------------------------------- | ---- | -------- |
+| [P4-A](P4-A-controls-as-code.md)          | `governance/controls.yaml` and a CI check for unmapped controls | M    | accepted |
+| [P4-B](P4-B-memory-poisoning-red-team.md) | Memory-poisoning red team mapped to OWASP Agentic Top 10        | M    | draft    |
+| [P4-C](P4-C-reversible-tool-registry.md)  | Reversibility-tiered tool registry with saga compensation       | M    | draft    |
 
 ## Tier 5 — Interoperability
 
@@ -185,14 +185,14 @@ provider actually operates under. Uses synthetic data only.
 The dependency spine, not a schedule:
 
 ```
-P0-A ──▶ P2-A ──┬──▶ P1-A ──┬──▶ P1-B ──┬──▶ P1-C ──┬──▶ P1-D
-                │           │           │           ├──▶ P1-E
-                │           │           │           └──▶ P1-F
-                │           │           ├──▶ P2-B
-                │           │           ├──▶ P2-C ──────▶ P1-F
-                │           │           └──▶ P3-B ──────▶ P3-C
-                │           └──▶ P1-G
-                └──▶ P4-C
+P0-A ──▶ P2-A ──▶ P1-A ──┬──▶ P1-B ──┬──▶ P1-C ──┬──▶ P1-D
+                         │           │           ├──▶ P1-E
+                         │           │           └──▶ P1-F
+                         │           ├──▶ P2-B ──────▶ P4-B
+                         │           ├──▶ P2-C ──────▶ P1-F
+                         │           ├──▶ P3-B ──────▶ P3-C
+                         │           └──▶ P4-C
+                         └──▶ P1-G
 
 P3-A ──┬──▶ P3-C
        └──▶ P3-D ──▶ P3-E
@@ -215,7 +215,15 @@ P1-E is drawn under P1-C, whose nightly live job it reads, but it also depends o
 directly: its embedding baseline is the committed cassettes' vectors, and its decision
 comparison reads the cassette format.
 
-`P0-B`, `P3-A`, `P4-A`, `P4-B`, `P5-A`, `P5-B`, and `P5-C` have no hard
+P4-B is drawn under P2-B, whose `graphFacts` seed format and graph-path task its
+cross-session case needs; it also depends on P1-A and P1-B directly, for the harness and
+the cassettes. P4-C used to hang off P2-A alone. It is now drawn under P1-B, because it
+changes the `act.selectTool` request and so re-records every cassette, and it adds an
+evaluation task; it still depends on P2-A (ADR 0001's second obligation) and on P1-A.
+Neither PRD depends on the other. Whichever of them lands second re-records the other's
+cassettes, and both say what that costs.
+
+`P0-B`, `P3-A`, `P4-A`, `P5-A`, `P5-B`, and `P5-C` have no hard
 predecessors and can be picked up whenever they are the most valuable next thing. P5-C
 was previously drawn as a predecessor of P2-A; it is not one. `retryPolicy`,
 `compile({ checkpointer })`, and a peer-compatible
