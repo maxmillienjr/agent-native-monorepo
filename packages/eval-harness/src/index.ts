@@ -143,6 +143,53 @@ export {
   type Stratum,
 } from './retrieval/dataset.js';
 
+// The ablation's arithmetic and its report.
+export {
+  DECISION_MARGIN,
+  GRAPH_READER_LIMIT,
+  K_VALUES,
+  TIE_SALTS,
+  applyDecisionRule,
+  buildPool,
+  conditionScores,
+  fusionReproduced,
+  limitCut,
+  meanScores,
+  percentile,
+  provenance,
+  queryIndex,
+  reachableFacts,
+  resortTies,
+  scoreList,
+  summarizeCondition,
+  type ConditionKind,
+  type ConditionSummary,
+  type K,
+  type Labels,
+  type LimitCut,
+  type MetricMeans,
+  type PoolCandidate,
+  type PoolKeyEntry,
+  type PoolQuery,
+  type ProvenanceSplit,
+  type QueryScores,
+  type RawCondition,
+  type RawQueryResult,
+  type RuleOutcome,
+  type SeedSource,
+  type TieRange,
+} from './retrieval/evaluate.js';
+export {
+  buildAblationReport,
+  renderAblationJson,
+  renderAblationMarkdown,
+  type AblationInput,
+  type AblationReport,
+  type AdjudicationSummary,
+  type Comparison,
+  type LabelSetReport,
+} from './retrieval/report.js';
+
 // Statistics — nothing here knows what a query is; P1-D needs the same interval.
 export {
   DEFAULT_BOOTSTRAP_SEED,
