@@ -5,6 +5,8 @@ import {
   datasetProblems,
   datasetSha256,
   graphFacts,
+  loadRetrievalDataset,
+  STRATA,
   strataProblems,
   textsToEmbed,
   wordJaccard,
@@ -229,5 +231,35 @@ describe('wordJaccard', () => {
     expect(wordJaccard('The Alpha plan', 'alpha PLAN covers')).toBeCloseTo(2 / 4, 12);
     expect(wordJaccard('', '')).toBe(0);
     expect(wordJaccard('a b', 'a b')).toBe(1);
+  });
+});
+
+describe('the shipped retrieval-ablation dataset', () => {
+  // Loading runs every referential and stratum check and throws on any.
+  const dataset = loadRetrievalDataset();
+
+  it('holds 200 queries, 50 per stratum, fixed before the first run', () => {
+    expect(dataset.queries).toHaveLength(200);
+    for (const stratum of STRATA) {
+      expect(dataset.queries.filter((query) => query.stratum === stratum)).toHaveLength(50);
+    }
+  });
+
+  it('resolves every relevant handle and every gold seed', () => {
+    expect(datasetProblems(dataset)).toEqual([]);
+  });
+
+  it('holds each stratum to its construction', () => {
+    expect(strataProblems(dataset)).toEqual([]);
+  });
+
+  it('gives no two facts the same text, so no two share a content hash', () => {
+    const hashes = [...dataset.facts.values()].map((fact) => fact.contentHash);
+    expect(new Set(hashes).size).toBe(hashes.length);
+  });
+
+  it('gives every episode its own id', () => {
+    const ids = dataset.episodes.map((episode) => episode.episodeId);
+    expect(new Set(ids).size).toBe(ids.length);
   });
 });
