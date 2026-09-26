@@ -2,11 +2,11 @@
 id: P2-B
 title: Hybrid retrieval evaluation and the graph/vector/hybrid ablation
 tier: 2
-status: accepted
+status: in-progress
 size: L
 depends_on: [P1-A, P1-B, P2-A]
 blocks: []
-issue: null
+issue: 57
 superseded_by: null
 ---
 

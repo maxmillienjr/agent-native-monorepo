@@ -145,11 +145,11 @@ replacing it.
 The three-tier memory model is instantiated and the graph is checkpointed. What remains is
 measuring whether the hybrid premise holds, and saying so in the standard vocabulary.
 
-| ID                                   | Title                                                            | Size | Status   |
-| ------------------------------------ | ---------------------------------------------------------------- | ---- | -------- |
-| [P2-A](P2-A-wire-memory-core.md)     | Wire memory-core into the service; add checkpointing and retry   | L    | shipped  |
-| [P2-B](P2-B-retrieval-ablation.md)   | Hybrid retrieval evaluation and the graph/vector/hybrid ablation | L    | accepted |
-| [P2-C](P2-C-otel-genai-semantics.md) | OpenTelemetry GenAI semantics, including evaluation events       | L    | accepted |
+| ID                                   | Title                                                            | Size | Status      |
+| ------------------------------------ | ---------------------------------------------------------------- | ---- | ----------- |
+| [P2-A](P2-A-wire-memory-core.md)     | Wire memory-core into the service; add checkpointing and retry   | L    | shipped     |
+| [P2-B](P2-B-retrieval-ablation.md)   | Hybrid retrieval evaluation and the graph/vector/hybrid ablation | L    | in-progress |
+| [P2-C](P2-C-otel-genai-semantics.md) | OpenTelemetry GenAI semantics, including evaluation events       | L    | accepted    |
 
 ## Tier 3 — Regulated-domain credibility
 
