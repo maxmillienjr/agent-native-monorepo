@@ -20,6 +20,34 @@ workflow for you; the steps below are the tool-agnostic version.
 6. Open a GitHub issue only when work actually starts, using the PRD issue template. The
    backlog lives in the index; the tracker is for work in flight.
 
+## Add or Change a Control
+
+`governance/controls.yaml` is the catalogue; `governance/CONTROLS.md` is generated from it.
+
+1. **Read the clause before mapping to it.** A `ref` must be a key of its framework's
+   `clauses` map. To map to a clause that is not there yet, add it with its text copied
+   from the source, not paraphrased. A new edition of a framework is a new registry id,
+   never an edit to an existing one — OWASP's 2026 LLM list renumbers the 2025 one, and
+   `LLM06:2025` and the 2026 `LLM06` are different risks.
+2. **Pick the status by what backs it, not by what the code does.**
+   - `implemented` needs at least one `test` or `ci` anchor. A `symbol` or `doc` anchor
+     alone does not make a control implemented, because neither fails when the control
+     stops holding.
+   - `procedural` needs a `doc` anchor naming the written rule a person applies, and no
+     executable anchor.
+   - `planned` needs an `owner`: a PRD id in the index that is not `shipped`. If that PRD
+     has a file, add the control id to its `controls:` frontmatter in the same change.
+   - `not-applicable` needs a `rationale` of at least 40 characters, printed in the matrix.
+3. **Anchor by name.** `symbol` is `{ file, name }` with `name` a declaration or
+   `Class.member`. `test` is `{ file, name, tier }` with `name` the exact title. `ci` is
+   `{ workflow, job, run? }`. `doc` is `{ file, heading }`. Paths are exact
+   repository-relative paths, and a `:NN` line anchor is rejected.
+4. Run `yarn controls:matrix` to regenerate `governance/CONTROLS.md`, then `yarn lint:docs`.
+   The lint names every problem at once, each with the control id.
+5. **When a PRD ships a `planned` control**, move the row to `implemented` with its
+   evidence in that PRD's pull request. The lint fails a `planned` row whose owner is
+   `shipped`, so the row cannot be left behind.
+
 ## Add a New Graph Node
 
 1. Create `apps/agent-service/src/agent/nodes/<name>.node.ts`.

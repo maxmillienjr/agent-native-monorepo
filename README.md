@@ -224,6 +224,7 @@ its hash, and write an extra row rather than converging on the first attempt's.
    - Adding a new graph node
    - Adding a new package
    - Adding a new memory adapter
+   - Adding or changing a control in `governance/controls.yaml`
 5. Use the specialized subagent prompts in `.agents/` if working with AI coding tools.
 6. See `AGENTS.md` for cross-tool compatibility notes (Cursor, Kilo Code, Continue, Aider).
 7. Run `yarn turbo typecheck && yarn turbo lint` before submitting a PR.

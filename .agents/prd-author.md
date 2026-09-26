@@ -76,6 +76,13 @@ PRD's `depends_on`, add that PRD to `P1-A`'s `blocks`. The sequencing graph in
 
 Set `issue` only once an issue actually exists. Do not open GitHub issues.
 
+**A PRD that delivers a `planned` control lists it in `controls:`.** Check
+`governance/controls.yaml` for rows whose `owner` is this PRD's id and list each one, as
+`controls: [CTL-EVAL-03]`. `yarn lint:docs` fails when a PRD file exists for a control's
+owner and does not list it, the same symmetry it enforces for `depends_on` and `blocks`. If
+the PRD will deliver a safeguard the catalogue does not have yet, add the row as `planned`
+under this PRD in the same change. Never add `controls:` to a `shipped` PRD.
+
 ## Status Transitions
 
 `draft` → `accepted` requires that the design section survives review without open

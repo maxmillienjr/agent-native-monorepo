@@ -166,8 +166,17 @@ axis nightly and on dispatch when a `GOOGLE_API_KEY` repository secret exists.
   supersede it with a new one instead.
 - `yarn lint:docs` checks the structure: frontmatter completeness, that every id resolves,
   that `depends_on` and `blocks` are mutual, that the index agrees with the files, and that
-  a `shipped` PRD's unmet criteria each name the PRD that now owns them. It runs on every
-  pull request.
+  a `shipped` PRD's unmet criteria each name the PRD that now owns them. It also resolves
+  every evidence anchor in `docs/STATUS.md` and `governance/controls.yaml`, checks the
+  control catalogue against the PRDs that own its `planned` rows, fails when
+  `governance/CONTROLS.md` is stale, and runs the fixture tests under `scripts/`. It runs on
+  every pull request.
+- **Evidence is cited by name, not by line.** In `docs/STATUS.md` a citation is
+  `path#name`: a declaration (`Class.member` for a method), a test title, a workflow job, a
+  heading or a JSON key. In `governance/controls.yaml` it is a `symbol`, `test`, `ci` or
+  `doc` anchor. A `path:NN` citation fails the lint in either file, because a line check
+  stays green after the line stops holding what the sentence names. PRDs are dated records
+  and keep `file:line`: they describe the tree they were written against.
 - **A capability claim in `README.md`, `.context/`, or `.agents/` must be true of the code
   at HEAD.** `.agents/` counts: the testcontainers convention this repo never followed lived
   in three of those files, and one of them was the prompt that reviews pull requests.
@@ -176,6 +185,11 @@ axis nightly and on dispatch when a `GOOGLE_API_KEY` repository secret exists.
 - **`docs/STATUS.md` is that status matrix**, one row per documented capability with what
   is actually behind it and which PRD owns the rest. A change that moves a row — wiring an
   adapter, deleting a claim — updates the row in the same pull request.
+- **`governance/controls.yaml` is the control catalogue**: which safeguards the repository
+  has, which framework clauses each one answers, and what backs it. `implemented` needs a
+  test or a CI job, `procedural` a written rule, `planned` an unshipped owning PRD, and
+  `not-applicable` a rationale. A change that moves a control updates its row in the same
+  pull request and regenerates `governance/CONTROLS.md` with `yarn controls:matrix`.
 
 ## Error Handling
 

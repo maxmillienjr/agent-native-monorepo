@@ -62,3 +62,12 @@ against the project's conventions.
     `.context/` that is not true of the code it ships. Aspirational statements belong in
     `docs/prd/`. `docs/STATUS.md` is the per-capability matrix: a change that moves a row
     updates it in the same pull request. Run `yarn lint:docs`.
+
+14. **Controls:** A change that moves a control updates its row in
+    `governance/controls.yaml` in the same pull request, and regenerates
+    `governance/CONTROLS.md` with `yarn controls:matrix`. That includes a PRD that delivers
+    a `planned` control (the row becomes `implemented` with a test or CI anchor), a change
+    that removes or renames the evidence of an `implemented` one, and a new check that
+    enforces a `procedural` one. `yarn lint:docs` catches a broken anchor. It does not catch
+    a test that still exists but no longer asserts what the control claims, so read the
+    anchored test when the diff touches it.
