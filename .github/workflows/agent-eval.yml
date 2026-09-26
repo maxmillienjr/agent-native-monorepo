@@ -1,13 +1,62 @@
 name: Agent Eval
 
+# Two tiers of the same suite (P1-C, ADR 0005).
+#
+#   replay  every pull request, every push to main, and nightly. The model's
+#           decisions come from the committed cassettes, so it makes no model
+#           call and needs no key; the memory axis is live, against the two
+#           service containers. A failed trial here means something changed.
+#   live    nightly and on dispatch, only when a GOOGLE_API_KEY repository
+#           secret exists. It catches what replay cannot: the model getting
+#           worse and the client breaking. About eight generateContent calls
+#           per trial, against a daily free tier of twenty.
+#
+# Either tier goes red on any failed trial or aborted run. Deciding which of
+# those block a merge is P1-D's, and nothing here is a required check yet.
+
 on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
   schedule:
     - cron: '0 3 * * *'
   workflow_dispatch:
+    inputs:
+      trials:
+        description: Live trials per task. About 8 generateContent calls per trial at HEAD.
+        type: number
+        default: 1
+
+permissions:
+  contents: read
+
+# Both jobs point at their own service containers.
+env:
+  DATABASE_URL: postgresql://postgres:postgres@localhost:5432/agentdb
+  NEO4J_URI: bolt://localhost:7687
+  NEO4J_USER: neo4j
+  NEO4J_PASSWORD: password
 
 jobs:
-  agent-eval:
+  # The secrets context cannot be read in a job-level `if`, so the live job
+  # cannot skip itself on a missing key. This job reads it for them. The key is
+  # compared inside the expression and never enters a process environment, and
+  # nothing is checked out, so no pull-request code runs beside it.
+  live-key:
+    name: Is there a live key
     runs-on: ubuntu-latest
+    outputs:
+      present: ${{ steps.probe.outputs.present }}
+    steps:
+      - id: probe
+        run: echo "present=${{ secrets.GOOGLE_API_KEY != '' }}" >> "$GITHUB_OUTPUT"
+
+  replay:
+    name: Replay tier
+    needs: live-key
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     services:
       postgres:
         image: pgvector/pgvector:pg16
@@ -24,6 +73,16 @@ jobs:
         env:
           NEO4J_AUTH: neo4j/password
         ports: ['7687:7687']
+        options: >-
+          --health-cmd "cypher-shell -u neo4j -p password 'RETURN 1'"
+          --health-interval 5s
+          --health-retries 30
+    # No GOOGLE_API_KEY anywhere in this job, so code from a pull request never
+    # has one. The runner's own watcher fails the run if a request reaches the
+    # model host regardless.
+    env:
+      EVAL_CASSETTE_MODE: replay
+      EVAL_EXPECT_AXES: model=replay memory=live
 
     steps:
       - uses: actions/checkout@v7
@@ -33,20 +92,134 @@ jobs:
           node-version: '24.x'
           cache: 'yarn'
 
+      # Absolute, because Turbo runs the task in apps/agent-service and a
+      # relative path would resolve there.
+      - run: echo "EVAL_OUTPUT_DIR=$RUNNER_TEMP/eval-replay" >> "$GITHUB_ENV"
+
       - run: yarn install --immutable
-      - run: yarn turbo build
 
-      - name: Seed eval fixtures
-        run: node scripts/seed-eval-fixtures.mjs
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/agentdb
-          NEO4J_URI: bolt://localhost:7687
-          NEO4J_USER: neo4j
-          NEO4J_PASSWORD: password
+      - run: yarn eval
 
-      - run: yarn turbo test:eval
+      # Three outcomes, told apart by the files rather than the exit code,
+      # which Turbo reduces to 1: a report for a completed suite, pass or fail,
+      # and an abort summary for a run that did not complete.
+      - name: Job summary
+        if: always()
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/agentdb
-          NEO4J_URI: bolt://localhost:7687
-          NEO4J_USER: neo4j
-          NEO4J_PASSWORD: password
+          EVENT: ${{ github.event_name }}
+          LIVE_KEY: ${{ needs.live-key.outputs.present }}
+        run: |
+          if [ -f "$EVAL_OUTPUT_DIR/eval-summary.md" ]; then
+            cat "$EVAL_OUTPUT_DIR/eval-summary.md" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo '## Eval — did not start' >> "$GITHUB_STEP_SUMMARY"
+            echo 'No summary was written. See the step that failed before `yarn eval`.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+          echo >> "$GITHUB_STEP_SUMMARY"
+          if [ "$EVENT" != schedule ] && [ "$EVENT" != workflow_dispatch ]; then
+            echo "> **Live tier:** not run on \`$EVENT\`. It runs nightly and on dispatch." >> "$GITHUB_STEP_SUMMARY"
+          elif [ "$LIVE_KEY" != true ]; then
+            echo '> **Live tier: did not run.** There is no `GOOGLE_API_KEY` repository secret, so the `live` job was skipped. This replay is a frozen sample and cannot catch the model getting worse or the client breaking.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo '> **Live tier:** see the `live` job in this run.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: eval-replay
+          path: ${{ env.EVAL_OUTPUT_DIR }}
+          if-no-files-found: warn
+
+  live:
+    name: Live tier
+    needs: live-key
+    # Skipped, never passed, when there is no key: a green job that measured
+    # nothing is the failure REQUIRE_INTEGRATION_ENV was written to stop.
+    if: >-
+      needs.live-key.outputs.present == 'true' &&
+      (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+    # One run at a time: two overlapping runs on one daily quota make it
+    # impossible to tell which of them exhausted it.
+    concurrency:
+      group: eval-live
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: agentdb
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-retries 10
+      neo4j:
+        image: neo4j:5-community
+        env:
+          NEO4J_AUTH: neo4j/password
+        ports: ['7687:7687']
+        options: >-
+          --health-cmd "cypher-shell -u neo4j -p password 'RETURN 1'"
+          --health-interval 5s
+          --health-retries 30
+    env:
+      # `record` does not change the axis: it is a live run that keeps a copy
+      # of its decisions, including any recorded error, which is how a live
+      # failure is diagnosed after the fact. Never committed from here.
+      EVAL_CASSETTE_MODE: record
+      # A present key that still produces the wrong axes fails before any
+      # trial, rather than going green on the stub set.
+      EVAL_EXPECT_AXES: model=live memory=live
+      EVAL_TRIALS: ${{ inputs.trials || '1' }}
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24.x'
+          cache: 'yarn'
+
+      - run: echo "EVAL_OUTPUT_DIR=$RUNNER_TEMP/eval-live" >> "$GITHUB_ENV"
+
+      - run: yarn install --immutable
+
+      # So the cassette artifact holds this run's recordings and nothing else.
+      # A trial that throws writes no cassette, and a committed file left in
+      # its place would be indistinguishable from a fresh one.
+      - name: Clear the committed cassettes
+        run: rm -f packages/eval-harness/datasets/memory-recall/cassettes/*.json
+
+      # The key is on this step only, not the job: `yarn install` runs package
+      # build scripts, and none of them needs it.
+      - run: yarn eval
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+
+      - name: Job summary
+        if: always()
+        run: |
+          if [ -f "$EVAL_OUTPUT_DIR/eval-summary.md" ]; then
+            cat "$EVAL_OUTPUT_DIR/eval-summary.md" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo '## Eval — did not start' >> "$GITHUB_STEP_SUMMARY"
+            echo 'No summary was written. See the step that failed before `yarn eval`.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: eval-live
+          path: ${{ env.EVAL_OUTPUT_DIR }}
+          if-no-files-found: warn
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: eval-live-cassettes
+          path: packages/eval-harness/datasets/memory-recall/cassettes/
+          if-no-files-found: warn
