@@ -2,7 +2,7 @@
 id: P4-B
 title: Memory-poisoning red team mapped to OWASP Agentic Top 10
 tier: 4
-status: draft
+status: accepted
 size: M
 depends_on: [P1-A, P1-B, P2-B]
 blocks: []
@@ -140,8 +140,8 @@ into something it now remembers.
   does not inject content. Closing it needs a tenant model. **Unowned.**
 - **Authentication.** `sessionId` comes from the client (`RunRequest`), so anyone who knows
   a session id can read and write that session. Session scope is a boundary for data, not
-  for access. P4-A records access control as `not-applicable` (CTL-ACC-01), and this PRD
-  does not reopen that.
+  for access. P4-A records access control (CTL-ACC-01) as `planned` under P5-A, decided at
+  P4-A's review, and this PRD does not take it.
 - **Poisoned memory that triggers a tool call** (ASI06 leading to ASI02). The one tool today
   is a pure function (`runs.service.ts:87-94`), and tool output reaches no prompt (see
   P4-C). A case like this measures something only once a tool has an effect. P4-C adds the
@@ -360,22 +360,28 @@ no network.
 
 ## Risks and open questions
 
-**Open questions that change scope.**
+**Open questions, decided at review 2026-09-26.**
 
 1. **M3, or labelled provenance.** Instead of dropping assistant turns, `distill` could
    label each fact with the turn it came from, and `reflect` could store the label and
    refuse to promote assistant-sourced facts. That keeps the option of promoting them later
    under a rule. It also relies on the model labelling correctly, adds a schema field to
    both stores, and leaves the laundering path open whenever a label is wrong. The draft
-   recommends M3. Choosing labels would add about a day and a migration.
+   recommends M3. Choosing labels would add about a day and a migration. _Decided: M3._ A
+   label is a model judgement standing between an attacker and long-term memory, and the
+   attacker writes the text the model judges.
 2. **Per-session fact identity.** Taking it here fixes the first-writer defect in both
    stores. It also removes the recall regression M1 introduces (next section). The cost is
    a migration, a composite Neo4j constraint and an amendment to ADR 0004's fusion key,
    which makes this PRD an L. The draft recommends leaving it unowned and saying so.
+   _Decided: not taken here, and not left silent._ The new ADR records the first-writer
+   rule, the recall cost M1 introduces as the positive control measures it, and that a
+   measured loss on any task reopens per-session identity as its own PRD.
 3. **`rt-003` and `priorRuns`.** Of the three cases, only `rt-003` goes through the live write
    path that CTL-MEM-02's title names. It is also the only case that needs a harness change
    and six calls a trial. Dropping it keeps the suite to seeded cases, and it would then
-   show isolation but not injection. The draft recommends keeping it.
+   show isolation but not injection. The draft recommends keeping it. _Decided: kept._ It
+   is the only case that exercises the write path the control is named for.
 
 **Risks.**
 

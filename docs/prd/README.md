@@ -169,8 +169,8 @@ provider actually operates under. Uses synthetic data only.
 | ID                                        | Title                                                           | Size | Status   |
 | ----------------------------------------- | --------------------------------------------------------------- | ---- | -------- |
 | [P4-A](P4-A-controls-as-code.md)          | `governance/controls.yaml` and a CI check for unmapped controls | M    | accepted |
-| [P4-B](P4-B-memory-poisoning-red-team.md) | Memory-poisoning red team mapped to OWASP Agentic Top 10        | M    | draft    |
-| [P4-C](P4-C-reversible-tool-registry.md)  | Reversibility-tiered tool registry with saga compensation       | M    | draft    |
+| [P4-B](P4-B-memory-poisoning-red-team.md) | Memory-poisoning red team mapped to OWASP Agentic Top 10        | M    | accepted |
+| [P4-C](P4-C-reversible-tool-registry.md)  | Reversibility-tiered tool registry with saga compensation       | M    | accepted |
 
 ## Tier 5 — Interoperability
 

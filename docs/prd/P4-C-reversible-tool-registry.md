@@ -2,7 +2,7 @@
 id: P4-C
 title: Reversibility-tiered tool registry with saga compensation
 tier: 4
-status: draft
+status: accepted
 size: M
 depends_on: [P1-A, P1-B, P2-A]
 blocks: []
@@ -414,24 +414,29 @@ choices. The agent's choices are checked only on the live and replay axes.
 
 ## Risks and open questions
 
-**Open questions that change scope.**
+**Open questions, decided at review 2026-09-26.**
 
 1. **How far the approval gate goes.** The draft builds the pause and resume at graph level,
    the fail-closed refusal and the `awaiting-approval` outcome. It does not build the
    resume endpoint, since no production tool can pause. Adding
    `POST /runs/:runId/approval`, with a contract change and an e2e test, makes this an L.
    The draft recommends against it until a real irreversible tool exists. That is P1-G's
-   argument for not designing against a guess.
+   argument for not designing against a guess. _Decided: no endpoint here._ P3-E's
+   clinician route is the first HTTP resume surface this repository needs, and it is
+   designed against a real pause.
 2. **What aborts the loop.** The draft aborts on any failed step, including an invalid input
    and an unknown tool, so a partial sequence of effects is never left standing. The
    alternative aborts only when a tool throws, and lets the model retry after a validation
    error, using the error it now sees in `previous`. That alternative is friendlier to the
    model, it costs more calls, and it needs its own step bound. The choice changes the
-   edge function and the tests, and it does not change the size.
+   edge function and the tests, and it does not change the size. _Decided: abort on any
+   failed step._ A saga that lets the model improvise after a partial sequence of effects
+   is the state compensation exists to prevent.
 3. **`awaiting-approval` in the public contract.** Adding a value to `OutcomeSchema` affects
    every consumer of `RunResponse`, including the console's colour map. The alternative is
    to throw a typed error from `RunsService`. The draft adds the value, because a paused
-   run is not an error.
+   run is not an error. _Decided: add the value._ A paused run reported as a failure, or as
+   a thrown error, would be the misreported outcome this repository keeps correcting.
 
 **Risks.**
 
