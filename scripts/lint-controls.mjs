@@ -123,9 +123,12 @@ const EXECUTABLE = new Set(['test', 'ci']);
 
 // --- Checks ----------------------------------------------------------------------------
 
-/** Zod issues as one line each, prefixed with where they are. */
+/** Zod issues as one line each: `CTL-X-01: evidence[0].file: <message>`. */
 const issues = (error, prefix) =>
-  error.issues.map((i) => `${[prefix, ...i.path].filter((p) => p !== '').join('.')}: ${i.message}`);
+  error.issues.map((i) => {
+    const path = i.path.map((p) => (typeof p === 'number' ? `[${p}]` : `.${p}`)).join('');
+    return `${prefix}: ${path.replace(/^\./, '') || '(root)'}: ${i.message}`;
+  });
 
 /**
  * The status rules. A control that breaks one has no backing the catalogue can stand
@@ -222,7 +225,7 @@ export function check({ root, cataloguePath }) {
   }
   const top = Catalogue.safeParse(raw);
   if (!top.success) {
-    issues(top.error, '').forEach(fail);
+    issues(top.error, 'catalogue').forEach(fail);
     return { errors };
   }
 
@@ -242,9 +245,13 @@ export function check({ root, cataloguePath }) {
 
   const controls = [];
   const ids = new Set();
+  const declared = new Set();
   const referenced = new Set();
   top.data.controls.forEach((value, i) => {
     const label = typeof value?.id === 'string' ? value.id : `controls[${i}]`;
+    // Recorded before validation, so a PRD listing a malformed control is not also told
+    // that the catalogue lacks it.
+    if (typeof value?.id === 'string') declared.add(value.id);
     const parsed = Control.safeParse(value);
     if (!parsed.success) {
       issues(parsed.error, label).forEach(fail);
@@ -294,13 +301,13 @@ export function check({ root, cataloguePath }) {
     for (const id of listed) {
       const control = byId.get(id);
       if (!control) {
-        if (!ids.has(id))
+        if (!declared.has(id))
           fail(`docs/prd/${file}: lists ${id} in controls, which the catalogue does not have`);
         continue;
       }
       if (fm.status === 'shipped' && control.status === 'planned')
         fail(`${id}: is still planned, but docs/prd/${file} is shipped and lists it`);
-      if (control.status === 'planned' && control.owner !== fm.id)
+      if (control.status === 'planned' && control.owner && control.owner !== fm.id)
         fail(`${id}: is planned under ${control.owner}, but docs/prd/${file} (${fm.id}) lists it`);
     }
   }
@@ -422,7 +429,9 @@ export async function render({ frameworks, controls, repo }, matrixPath) {
     }
     out.push('');
   }
-  const options = (await prettier.resolveConfig(matrixPath)) ?? {};
+  // This repository's Prettier config, wherever the matrix is written: a fixture tree
+  // copied to a temporary directory must render byte-for-byte what it renders in place.
+  const options = (await prettier.resolveConfig(fileURLToPath(import.meta.url))) ?? {};
   return prettier.format(out.join('\n'), { ...options, parser: 'markdown' });
 }
 

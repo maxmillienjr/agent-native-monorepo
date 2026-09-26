@@ -1,0 +1,13 @@
+# A workflow for the fixture tree. It is never run: GitHub reads workflows only from the
+# repository root. The controls check reads it to resolve `ci` and `test` anchors.
+name: Fixture CI
+
+on:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - run: yarn turbo test:unit
+      - run: yarn npm audit --severity high
