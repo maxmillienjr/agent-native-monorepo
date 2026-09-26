@@ -5,7 +5,7 @@ tier: 1
 status: shipped
 size: L
 depends_on: [P1-A]
-blocks: [P1-C, P2-B]
+blocks: [P1-C, P2-B, P2-C]
 issue: 45
 superseded_by: null
 ---

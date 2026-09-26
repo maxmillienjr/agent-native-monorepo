@@ -80,6 +80,14 @@ as well as the deployed path, and pre-registers what happens to ADR 0002 under e
 outcome. It also found that the tie-break P1-B added stops the vector query from using its
 HNSW index, a trade ADR 0006 now records.
 
+**[P2-C](P2-C-otel-genai-semantics.md) is accepted.** It found that a
+run is seven single-span traces rather than one — no span encloses the graph, and no
+instrumentation supplies a parent — that two of the three `generateContent` calls drop
+their token usage before anything records it, and that the GenAI conventions it adopts
+have moved to a repository with no release, so it pins a commit. The replay axis emits
+inference spans carrying the cassette's recorded usage, marked as replayed, so that the
+pull-request tier can see the budgets P1-F will assert.
+
 **Where the detail lives.** Each PRD carries its own risks, its divergences from the design
 that was reviewed, and — where a shipped record turned out to be wrong — the correction that
 followed. P2-A is the one to read first: it shipped, was reopened the same day when two of
@@ -137,11 +145,11 @@ replacing it.
 The three-tier memory model is instantiated and the graph is checkpointed. What remains is
 measuring whether the hybrid premise holds, and saying so in the standard vocabulary.
 
-| ID                                 | Title                                                            | Size | Status   |
-| ---------------------------------- | ---------------------------------------------------------------- | ---- | -------- |
-| [P2-A](P2-A-wire-memory-core.md)   | Wire memory-core into the service; add checkpointing and retry   | L    | shipped  |
-| [P2-B](P2-B-retrieval-ablation.md) | Hybrid retrieval evaluation and the graph/vector/hybrid ablation | L    | accepted |
-| P2-C                               | OpenTelemetry GenAI semantics, including evaluation events       | M    | draft    |
+| ID                                   | Title                                                            | Size | Status   |
+| ------------------------------------ | ---------------------------------------------------------------- | ---- | -------- |
+| [P2-A](P2-A-wire-memory-core.md)     | Wire memory-core into the service; add checkpointing and retry   | L    | shipped  |
+| [P2-B](P2-B-retrieval-ablation.md)   | Hybrid retrieval evaluation and the graph/vector/hybrid ablation | L    | accepted |
+| [P2-C](P2-C-otel-genai-semantics.md) | OpenTelemetry GenAI semantics, including evaluation events       | L    | accepted |
 
 ## Tier 3 — Regulated-domain credibility
 
@@ -179,7 +187,8 @@ The dependency spine, not a schedule:
 P0-A ──▶ P2-A ──┬──▶ P1-A ──┬──▶ P1-B ──┬──▶ P1-C ──┬──▶ P1-D
                 │           │           │           ├──▶ P1-E
                 │           │           │           └──▶ P1-F
-                │           │           └──▶ P2-B
+                │           │           ├──▶ P2-B
+                │           │           └──▶ P2-C ──────▶ P1-F
                 │           └──▶ P1-G
                 ├──▶ P3-B
                 └──▶ P4-C
@@ -191,7 +200,12 @@ with, and P1-B's deterministic tie-breaking and float32 vector codec to make the
 measurement reproducible from committed embeddings. It is drawn under P1-B because that is
 the last of its three predecessors; it also depends on P2-A and P1-A directly.
 
-`P0-B`, `P2-C`, `P3-A`, `P3-C`, `P4-A`, `P4-B`, `P5-A`, `P5-B`, and `P5-C` have no hard
+P1-F appears twice because it needs two things: the pipeline P1-C builds, and the per-call
+token usage P2-C puts on inference spans. P2-C hangs off P1-B rather than P1-A alone
+because its replay-axis design reads the cassette's recorded usage; both are shipped, so
+P2-C is unblocked.
+
+`P0-B`, `P3-A`, `P3-C`, `P4-A`, `P4-B`, `P5-A`, `P5-B`, and `P5-C` have no hard
 predecessors and can be picked up whenever they are the most valuable next thing. P5-C
 was previously drawn as a predecessor of P2-A; it is not one. `retryPolicy`,
 `compile({ checkpointer })`, and a peer-compatible
