@@ -2,7 +2,7 @@
 id: P1-C
 title: Tiered evaluation pipeline replacing the nightly stub
 tier: 1
-status: draft
+status: accepted
 size: M
 depends_on: [P1-A, P1-B]
 blocks: [P1-D, P1-E, P1-F]
@@ -369,16 +369,22 @@ and no request leaves the process.
       must end `aborted` with `daily-quota` as the cause, list the trials that completed,
       and include the real `errorDetails` in the abort artifact. If the body has a
       different shape, this criterion stays unchecked and the classifier is fixed against
-      the captured body.
+      the captured body. If no repository secret exists when this ships, the dispatch may
+      be replaced by the same run made locally with the developer key, stated as such.
 - [ ] The `live` job runs only on `schedule` and `workflow_dispatch`, is in one concurrency
       group, reads the key from `secrets.GOOGLE_API_KEY`, and sets
-      `EVAL_EXPECT_AXES=model=live memory=live`. **With no secret configured**, its first
-      scheduled run fails before any trial with the axis-expectation message. It must not
-      go green on the stub axis.
+      `EVAL_EXPECT_AXES=model=live memory=live`. **With no secret configured**, the job is
+      skipped by a condition on a preceding job's output (the `secrets` context is not
+      readable in a job-level `if`), so the run list shows it as skipped rather than
+      passed, and the replay job's summary says the live tier did not run for want of the
+      secret. **With a secret configured but the run on any other axis**, it fails before
+      any trial with the axis-expectation message. It must never go green on the stub axis.
 - [ ] **Model `live` / memory `live`, in CI:** with the secret present, one nightly run
       runs both tasks, skips neither, and uploads the three reports and the recorded
-      cassettes. This closes the criterion P1-G handed over (see below). It depends on open
-      question 1.
+      cassettes. This closes the criterion P1-G handed over (see below). It needs a
+      repository secret, which only the owner can add (decision 1); if none exists when this
+      ships, the criterion stays unchecked and passes to **P1-E**, whose canary needs the
+      same secret.
 - [ ] `memory-core`'s `test:eval` is gone. `grep -rn 'test:eval'` over `.github/`, every
       `package.json` and `turbo.json` returns nothing. `e2e.yml:39` sets
       `REQUIRE_INTEGRATION_ENV: '1'`, and its run on this pull request still reports
@@ -408,9 +414,14 @@ question 1, and it is not claimed.
 
 ## Risks and open questions
 
-**Open questions that change the scope. These must be answered before acceptance.**
+**Decided at review, 2026-09-26.** The three questions the draft left open, and the answer
+each got. The draft's reasoning is kept under each so the choice can be re-examined.
 
 1. **Is a `GOOGLE_API_KEY` repository secret added, and from which Google Cloud project?**
+   _Decided:_ that is the owner's call and not this PRD's, so the design does not wait on
+   it. The live job is written and conditional on the secret; the two criteria that need
+   it pass to P1-E if it is still absent at ship time. A separate project is recommended
+   so that CI does not spend the developer's daily twenty.
    There is no secret today. Without one, the live tier cannot pass two of the criteria
    above, and the tier ADR 0005 assigns to this PRD exists only as a job that fails every
    night. If the key comes from the same project as the developer key in `.env`, the
@@ -418,14 +429,18 @@ question 1, and it is not claimed.
    its own twenty. A billed key is the only way the 5×2 suite (about forty calls) runs
    within one day. If the answer is "free tier, separate project", the nightly runs one
    trial per task and the 5×2 rate goes to P1-D as stated in the Non-goals.
-2. **With no key, should the nightly go red, or skip with a visible notice?** The design
+2. **With no key, should the nightly go red, or skip with a visible notice?** _Decided:_
+   skip, but as a job GitHub marks _skipped_, never as a green job that did nothing, and
+   with the notice in the replay job's summary. A key that is present and produces the
+   wrong axes still goes red, which is the failure the precedent exists for. The design
    makes it go red, following the `REQUIRE_INTEGRATION_ENV` precedent: a scheduled job
    that is green without measuring anything is the failure that file was written to stop.
    The cost is a red nightly until question 1 is answered, and a red nightly that people
    learn to ignore is its own failure. The alternative is a job that ends green with a
    summary saying `live tier not run: no GOOGLE_API_KEY secret`. That is honest in the
    summary but misleading in the list of runs.
-3. **Should the 429 work stay here?** The Problem section shows that the defect P1-A handed
+3. **Should the 429 work stay here?** _Decided:_ it stays. P1-A handed it here, and a
+   split would create a PRD whose only verification is the same quota-exhausting run. The Problem section shows that the defect P1-A handed
    over mostly concerns the daily quota and the two retry layers, not `IO_RETRY`. It
    touches production code (`runs.service.ts`, `gemini-embedder.ts`), and the live half of
    its verification uses up one day's quota. Moving it to its own PRD would keep P1-C's

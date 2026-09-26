@@ -59,7 +59,7 @@ defect class), and a task runs at most as many trials as it has cassettes so tha
 recording is never averaged with itself. What this is not yet is a CI tier — P1-C owns
 that.
 
-**[P1-C](P1-C-tiered-eval-pipeline.md) is drafted, not accepted.** It replaces the nightly
+**[P1-C](P1-C-tiered-eval-pipeline.md) is accepted.** It replaces the nightly
 job, which runs the same 27 `memory-core` integration tests that `e2e.yml` already runs on
 every pull request, with two tiers. A replay tier runs on every pull request with no key
 and needs only the two service containers: measured 2026-09-26 on fresh containers with no
@@ -68,9 +68,9 @@ seed step, it takes 17s and passes every grader. A live tier runs nightly at abo
 repository has **no Actions secrets**, so the live tier has no key. A cassette miss and a
 failed grader **both exit 1**, the miss writes no report, and Turbo reduces any failing
 exit code to 1. The chat client **already retries a 429 six times** before `IO_RETRY` sees
-it, so the fix P1-A handed over (retry 429 in `IO_RETRY`) would make things worse. Its open
-questions, starting with whether and where a CI key comes from, have to be answered before
-it can be accepted.
+it, so the fix P1-A handed over (retry 429 in `IO_RETRY`) would make things worse. The live
+tier is written conditional on a repository secret, and shows as skipped, never as passed,
+until one exists.
 
 **Where the detail lives.** Each PRD carries its own risks, its divergences from the design
 that was reviewed, and — where a shipped record turned out to be wrong — the correction that
@@ -114,15 +114,15 @@ that `.github/workflows/agent-eval.yml` runs `yarn turbo test:eval`, which resol
 single integration suite in `packages/memory-core` that never invokes the agent — P1-C owns
 replacing it.
 
-| ID                                     | Title                                                         | Size | Status  |
-| -------------------------------------- | ------------------------------------------------------------- | ---- | ------- |
-| [P1-A](P1-A-eval-harness.md)           | `packages/eval-harness` — evaluation as a first-class package | L    | shipped |
-| [P1-B](P1-B-agent-cassette.md)         | `packages/agent-cassette` — decision-level record and replay  | L    | shipped |
-| [P1-C](P1-C-tiered-eval-pipeline.md)   | Tiered evaluation pipeline replacing the nightly stub         | M    | draft   |
-| P1-D                                   | Statistical regression gate with paired bootstrap             | M    | draft   |
-| P1-E                                   | Model-drift canary against pinned and floating model ids      | S    | draft   |
-| P1-F                                   | Cost, latency, and step budgets as CI assertions              | S    | draft   |
-| [P1-G](P1-G-task-axis-requirements.md) | Task-level axis requirements for the evaluation suite         | S    | shipped |
+| ID                                     | Title                                                         | Size | Status   |
+| -------------------------------------- | ------------------------------------------------------------- | ---- | -------- |
+| [P1-A](P1-A-eval-harness.md)           | `packages/eval-harness` — evaluation as a first-class package | L    | shipped  |
+| [P1-B](P1-B-agent-cassette.md)         | `packages/agent-cassette` — decision-level record and replay  | L    | shipped  |
+| [P1-C](P1-C-tiered-eval-pipeline.md)   | Tiered evaluation pipeline replacing the nightly stub         | M    | accepted |
+| P1-D                                   | Statistical regression gate with paired bootstrap             | M    | draft    |
+| P1-E                                   | Model-drift canary against pinned and floating model ids      | S    | draft    |
+| P1-F                                   | Cost, latency, and step budgets as CI assertions              | S    | draft    |
+| [P1-G](P1-G-task-axis-requirements.md) | Task-level axis requirements for the evaluation suite         | S    | shipped  |
 
 ## Tier 2 — Make the architecture real
 
