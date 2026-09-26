@@ -2,7 +2,7 @@
 id: P5-B
 title: Agent Development Kit portability appendix
 tier: 5
-status: draft
+status: accepted
 size: S
 depends_on: [P5-A]
 blocks: []
@@ -228,7 +228,9 @@ Written as observable conditions, not intentions:
 - **T5 depends on P5-A's v0.3 path.** If P5-A drops v0.3 compatibility, T5 needs ADK for
   Python, whose `a2a-sdk>=0.3.4,<2` range (`pyproject.toml` at v2.10.0) admits 1.x. That
   would bring Python into the trial. **Open question for review:** is a Python ADK client
-  acceptable for T5, or is TypeScript required?
+  acceptable for T5, or is TypeScript required? **Decided at review, 2026-09-26:** P5-A
+  keeps its v0.3 path, so T5 uses ADK for TypeScript. A Python client is acceptable only
+  as a fallback if that path fails, and the appendix says which one ran.
 - **Product names are in flux.** Agentspace, Agent Engine and Vertex AI have each been
   renamed or folded in within a year. The appendix uses the names on Google's pages as of
   its date and gives the former names once.

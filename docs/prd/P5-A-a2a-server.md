@@ -2,7 +2,7 @@
 id: P5-A
 title: Agent2Agent v1.0 server with a signed Agent Card
 tier: 5
-status: draft
+status: accepted
 size: L
 depends_on: []
 blocks: [P5-B]
@@ -492,10 +492,17 @@ on what this server does, and the five exceptions stay visible in a file.
   a service that serves without credentials. The mitigations are the `warn` log, a card
   that declares no security, and the compose stack running authenticated. **Open
   question for review:** keep open mode, or make the quickstart send a token and refuse
-  to boot without one.
+  to boot without one. **Decided at review, 2026-09-26: open mode stays.** The repository's
+  rule is that an unconfigured axis runs and a configured-but-broken one exits; refusing to
+  boot would make the no-`.env` quickstart the exception. The `warn` line and the
+  authenticated compose stack are what a reader sees instead.
 - **CTL-ACC-01 as worded cannot be closed by this PRD.** The split above changes P4-A's
   accepted catalogue. **Open question for review:** accept the split, or keep one row and
   leave it `planned` with no owner for the TLS half. It changes P4-A's scope, not this one's.
+  **Decided at review, 2026-09-26: split**, with encryption in transit `not-applicable` on
+  the stated ground that nothing is deployed and TLS terminates at the deploying
+  organization's ingress. P4-A's implementation or this one, whichever lands second, makes
+  the catalogue edit.
 - **The SDK's canonicalization departs from the spec.** It drops every empty value,
   including `REQUIRED` ones and an empty requirement list. The design avoids every empty
   value, and the two-verifier test catches a card that stops doing so. If the SDK is
