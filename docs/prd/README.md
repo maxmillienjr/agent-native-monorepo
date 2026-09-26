@@ -156,12 +156,12 @@ measuring whether the hybrid premise holds, and saying so in the standard vocabu
 Optional vertical. Demonstrates that the chassis holds up under the constraints a payer or
 provider actually operates under. Uses synthetic data only.
 
-| ID   | Title                                                        | Size | Status |
-| ---- | ------------------------------------------------------------ | ---- | ------ |
-| P3-A | Clinician-gate invariant enforced in the type system         | S    | draft  |
-| P3-B | Deterministic replay for audit reconstruction                | M    | draft  |
-| P3-C | Hash-chained, tamper-evident decision ledger                 | M    | draft  |
-| P3-D | Synthetic payer dataset and FHIR prior-authorization surface | L    | draft  |
+| ID                             | Title                                                        | Size | Status |
+| ------------------------------ | ------------------------------------------------------------ | ---- | ------ |
+| [P3-A](P3-A-clinician-gate.md) | Clinician-gate invariant enforced in the type system         | S    | draft  |
+| P3-B                           | Deterministic replay for audit reconstruction                | M    | draft  |
+| P3-C                           | Hash-chained, tamper-evident decision ledger                 | M    | draft  |
+| P3-D                           | Synthetic payer dataset and FHIR prior-authorization surface | L    | draft  |
 
 ## Tier 4 — Governance and agent security as code
 
@@ -192,6 +192,9 @@ P0-A ──▶ P2-A ──┬──▶ P1-A ──┬──▶ P1-B ──┬─
                 │           └──▶ P1-G
                 ├──▶ P3-B
                 └──▶ P4-C
+
+P3-A ──┬──▶ P3-C
+       └──▶ P3-D
 ```
 
 P2-A, P1-A and P1-B are all shipped, so everything hanging off them is unblocked —
@@ -205,9 +208,13 @@ token usage P2-C puts on inference spans. P2-C hangs off P1-B rather than P1-A a
 because its replay-axis design reads the cassette's recorded usage; both are shipped, so
 P2-C is unblocked.
 
-`P0-B`, `P3-A`, `P3-C`, `P4-A`, `P4-B`, `P5-A`, `P5-B`, and `P5-C` have no hard
+`P0-B`, `P3-A`, `P4-A`, `P4-B`, `P5-A`, `P5-B`, and `P5-C` have no hard
 predecessors and can be picked up whenever they are the most valuable next thing. P5-C
 was previously drawn as a predecessor of P2-A; it is not one. `retryPolicy`,
 `compile({ checkpointer })`, and a peer-compatible
 `@langchain/langgraph-checkpoint-postgres@0.1.3` are all available at the pinned
 `@langchain/langgraph@0.4.10`.
+
+P3-C and P3-D wait on P3-A. The ledger records the attestation an adverse determination
+carries, and the prior-authorization surface emits its results through the determination
+types, so both should be drafted against those types rather than invent their own.
