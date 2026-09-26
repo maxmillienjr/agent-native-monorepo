@@ -50,7 +50,9 @@
 
 - **OTel span:** An OpenTelemetry trace span measuring the duration and metadata of an
   operation. Each graph node produces one span.
-- **Trace:** A tree of spans representing one complete request.
+- **Trace:** A tree of spans sharing one trace id. At HEAD a run is not one trace: no span
+  encloses the graph and no instrumentation supplies a parent, so each node span is the
+  root of its own trace. P2-C adds the enclosing `invoke_agent` span.
 - **Correlation ID:** A UUID propagated across all services and log lines for a single
   request, set via `x-correlation-id` header or auto-generated.
 
