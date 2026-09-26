@@ -44,4 +44,5 @@ export {
   CassettePlayer,
   ReplayedError,
   diffLines,
+  type PlayerOptions,
 } from './player.js';
