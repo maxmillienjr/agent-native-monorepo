@@ -2724,7 +2724,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/sdk-trace@npm:2.11.0":
+"@opentelemetry/sdk-trace@npm:2.11.0, @opentelemetry/sdk-trace@npm:^2.11.0":
   version: 2.11.0
   resolution: "@opentelemetry/sdk-trace@npm:2.11.0"
   dependencies:
@@ -3046,9 +3046,11 @@ __metadata:
   resolution: "@repo/telemetry@workspace:packages/telemetry"
   dependencies:
     "@opentelemetry/api": "npm:^1.9.0"
+    "@opentelemetry/context-async-hooks": "npm:^2.11.0"
     "@opentelemetry/exporter-trace-otlp-http": "npm:^0.222.0"
     "@opentelemetry/resources": "npm:^2.11.0"
     "@opentelemetry/sdk-node": "npm:^0.222.0"
+    "@opentelemetry/sdk-trace": "npm:^2.11.0"
     "@opentelemetry/semantic-conventions": "npm:^1.43.0"
     "@repo/eslint-config": "workspace:*"
     "@repo/tsconfig": "workspace:*"
