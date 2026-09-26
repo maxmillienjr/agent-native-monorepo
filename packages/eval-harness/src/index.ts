@@ -111,3 +111,13 @@ export { renderMarkdownSummary } from './reporters/summary.js';
 
 // Retrieval metrics — a ranked list per query, not a trial, so not `Grader`s.
 export { recallAtK, reciprocalRank, ndcgAtK } from './retrieval/metrics.js';
+
+// Statistics — nothing here knows what a query is; P1-D needs the same interval.
+export {
+  DEFAULT_BOOTSTRAP_SEED,
+  mulberry32,
+  pairedBootstrap,
+  pairsToResolve,
+  type PairedBootstrapOptions,
+  type PairedBootstrapResult,
+} from './stats/paired-bootstrap.js';
