@@ -208,6 +208,10 @@ token usage P2-C puts on inference spans. P2-C hangs off P1-B rather than P1-A a
 because its replay-axis design reads the cassette's recorded usage; both are shipped, so
 P2-C is unblocked.
 
+P1-E is drawn under P1-C, whose nightly live job it reads, but it also depends on P1-B
+directly: its embedding baseline is the committed cassettes' vectors, and its decision
+comparison reads the cassette format.
+
 `P0-B`, `P3-A`, `P4-A`, `P4-B`, `P5-A`, `P5-B`, and `P5-C` have no hard
 predecessors and can be picked up whenever they are the most valuable next thing. P5-C
 was previously drawn as a predecessor of P2-A; it is not one. `retryPolicy`,
