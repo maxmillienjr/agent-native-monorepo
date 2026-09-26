@@ -47,7 +47,7 @@ message cannot tell the difference.
 
 Outcome reads go through `packages/memory-core` — `PgNeo4jMemoryInspector` — never through
 a connection this package opens. Reviewer checklist rule 4 is the rule; the reason is that
-`scripts/seed-eval-fixtures.mjs` recorded what hand-rolled SQL cost the last time.
+the nightly seed script, deleted in P1-C, recorded what hand-rolled SQL cost the last time.
 
 `entity_merged` is keyed on the run's own extraction rather than a count of `:Concept`
 nodes, because `mergeEntity` writes no episode onto a concept: a count cannot attribute one
@@ -97,9 +97,11 @@ disposable database.
 ## Dataset
 
 `datasets/memory-recall/` holds the task files. `EVAL_DATASETS_DIR` is exported so nothing
-has to spell the path — `scripts/seed-eval-fixtures.mjs` imports it, because the previous
-arrangement (a path literal pointing into `apps/agent-service/test/fixtures`) would have
-gone stale the moment the dataset moved, and a seed step that finds nothing reports success.
+has to spell the path. The nightly seed script that first imported it is gone, and the
+reason still holds: its previous arrangement (a path literal pointing into
+`apps/agent-service/test/fixtures`) went stale the moment the dataset moved, and a consumer
+that finds nothing reports success. A trial needs no seed step of its own — every trial
+applies its task's seed in `reset`, against the schema `MemoryModule` migrates on boot.
 
 ## Current results
 

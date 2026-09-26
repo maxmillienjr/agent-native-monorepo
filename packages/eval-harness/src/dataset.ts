@@ -90,8 +90,8 @@ export function capTrialsToCassettes<TOutcome>(
 /**
  * The task file format, superseding `run-fixture-001.json` while preserving it.
  *
- * `expectedSeeds` is retained as it was. The `assertions` block, which
- * `scripts/seed-eval-fixtures.mjs` read past and nothing executed, becomes a
+ * `expectedSeeds` is retained as it was. The `assertions` block, which the
+ * nightly seed script (since deleted) read past and nothing executed, becomes a
  * list of named code graders.
  */
 export const TaskSpecSchema = z.object({

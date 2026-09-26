@@ -98,9 +98,10 @@ export class AgentServiceHarness implements AgentHarness<MemoryOutcome> {
    * first write wins, so trial 2 would write no row and its `run_id` would
    * appear nowhere.
    *
-   * It also means `yarn eval` does not require `scripts/seed-eval-fixtures.mjs`
-   * to have run first. That script stays because the nightly workflow seeds
-   * before it runs anything, and P1-C owns that path.
+   * It also means a run needs no seeding step before it: an empty database,
+   * migrated by `MemoryModule` on boot, is enough. The nightly workflow's seed
+   * script existed for a suite that never read what it wrote, and P1-C deleted
+   * both.
    */
   async reset(task: Task<MemoryOutcome>): Promise<void> {
     const sessionId = (task.input as { sessionId: string }).sessionId;

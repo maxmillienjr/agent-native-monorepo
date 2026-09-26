@@ -39,8 +39,8 @@ function outcomeGrader(
 
 // --- Transcript assertions -------------------------------------------------
 // The three that were dormant in `run-fixture-001.json`: the file declared
-// them, `scripts/seed-eval-fixtures.mjs` read `expectedSeeds` and nothing else,
-// and no code ever evaluated them.
+// them, the nightly seed script (since deleted) read `expectedSeeds` and
+// nothing else, and no code ever evaluated them.
 
 export function retrievedContextMinLength(minimum: number): Grader<MemoryOutcome> {
   return transcriptGrader('retrieved_context_min_length', (transcript) => {
