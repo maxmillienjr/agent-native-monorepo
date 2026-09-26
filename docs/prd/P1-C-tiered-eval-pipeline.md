@@ -334,35 +334,58 @@ export function classifyRateLimit(error: unknown): RateLimit | undefined;
 Each criterion says which axis verifies it. "Stubbed transport" means `fetch` is replaced
 and no request leaves the process.
 
-- [ ] `agent-eval.yml` has a `replay` job that runs on `pull_request`, `push` to `main` and
+- [x] `agent-eval.yml` has a `replay` job that runs on `pull_request`, `push` to `main` and
       the schedule, with Postgres and Neo4j service containers,
       `EVAL_CASSETTE_MODE=replay`, and no reference to `secrets.GOOGLE_API_KEY`. **Model
       `replay` / memory `live`:** its run on the pull request that adds it runs one trial of
       each task, passes every grader, and shows the cassette set's `recordedAt` and `gitSha`
-      in the job summary.
-- [ ] That run reports no request to `generativelanguage.googleapis.com`. This is the
+      in the job summary. Run 36264081160, job `eval-replay`: `eval.done` logged
+      `"axes":"model=replay memory=live","passRate":1,"tasksRun":2,"tasksSkipped":[]`, and
+      the uploaded `eval-summary.md` reads "Replayed from 2 cassette(s) recorded
+      `2026-09-11T01:48:09.269Z` at `021c6f2…`".
+- [x] That run reports no request to `generativelanguage.googleapis.com`. This is the
       existing runtime watcher, not a new assertion. **Model `replay` / memory `live`.**
-- [ ] `EVAL_EXPECT_AXES` makes the runner refuse before the Nest context is built when the
+      The job log has no `eval.replay.live-call` line, and a reached request now aborts the
+      run before any report is written, so the uploaded `eval-report.json` is itself the
+      evidence.
+- [x] `EVAL_EXPECT_AXES` makes the runner refuse before the Nest context is built when the
       detected axes differ, with a message naming both sets of axes. It is declared on
       `turbo.json`'s `eval` task. Unit-tested for a match and a mismatch, and run locally
       as `GOOGLE_API_KEY= EVAL_EXPECT_AXES='model=live memory=live' yarn eval`, which must
       refuse without resetting a store. **Model `stub`, on purpose:** the refusal is what is
-      being tested, and no model call is made.
-- [ ] A replay against a stale cassette writes `eval-abort.json` and an `eval-summary.md`
+      being tested, and no model call is made. `axes.test.ts` › `assertExpectedAxes`; the
+      local run exited 1 with the message
+      `expected model=live memory=live, detected model=stub memory=live`, and logged no
+      `memory.postgres.ready` and no `run.traced.start` line.
+- [x] A replay against a stale cassette writes `eval-abort.json` and an `eval-summary.md`
       naming `CassetteMissError`, the diff and the re-record command. It writes no
       `eval-report.json` and exits non-zero. **Model `replay` / memory `live`**, using the
       hash-flip probe from the Problem section. Also run once in CI on a throwaway branch:
-      the job goes red and its summary reads `aborted`.
-- [ ] A graded failure still writes all three reports and exits 1. The existing behaviour is
+      the job goes red and its summary reads `aborted`. Locally, against empty containers:
+      exit 1, the directory held `eval-abort.json` and `eval-summary.md` only. In CI, run
+      36264380982 on a probe commit pushed to this branch and then dropped (the only branch
+      this work was allowed to push): `eval-replay` failed, and its artifact held the same
+      two files, the summary headed `## Eval — aborted`.
+- [x] A graded failure still writes all three reports and exits 1. The existing behaviour is
       asserted by a runner test, and that test also asserts that `eval-abort.json` is absent.
-- [ ] An aborted run's `eval-abort.json` lists the trials that completed before the abort.
-      Unit-tested with a harness whose second `run` throws.
-- [ ] `IO_RETRY` does not retry a `CassetteMissError`. Unit-tested, and the probe's log
-      shows one attempt where it currently shows three.
-- [ ] **Stubbed transport:** a chat `invoke` answered with a 429 whose details carry a
+      `run-suite.test.ts` › "writes all three reports for a graded failure". Also run:
+      `retrievedContextMinLength` raised to 99 in the task file, replayed, exit 1, three
+      reports, 50%, no abort file.
+- [x] An aborted run's `eval-abort.json` lists the trials that completed before the abort.
+      Unit-tested with a harness whose second `run` throws. `run-suite.test.ts` › "writes an
+      abort, not a report, when the second run throws". The probe on `tool-use-001`, the
+      second task, listed `memory-recall-001` trial 1 as passed.
+- [x] `IO_RETRY` does not retry a `CassetteMissError`. Unit-tested, and the probe's log
+      shows one attempt where it currently shows three. `graph.test.ts` › "does not retry a
+      cassette miss", which fails with `expected 3 to be 1` against the old policy. Both the
+      local probes and CI run 36264380982 logged no `Retrying task "plan"` line; the old
+      policy logged two.
+- [x] **Stubbed transport:** a chat `invoke` answered with a 429 whose details carry a
       per-day `QuotaFailure` makes **one** request. One answered with a 429 without those
       details still makes seven, which is unchanged. The embed path makes one request in
       both cases. Both paths surface `classifyRateLimit`'s answer in the abort summary.
+      `rate-limit.test.ts`, with a fake key and `fetch` stubbed: 1, 7 (fake timers) and 1,
+      1, and each case asserts the rendered abort summary's `Cause` line.
 - [ ] **Model `live` / memory `live`:** the classifier matches a real free-tier 429. The
       criterion above uses a synthetic body. Verified by one dispatch of the live job at
       `trials=3` (twenty-four calls against twenty) on a day nobody needs the key. The run
@@ -371,37 +394,49 @@ and no request leaves the process.
       different shape, this criterion stays unchecked and the classifier is fixed against
       the captured body. If no repository secret exists when this ships, the dispatch may
       be replaced by the same run made locally with the developer key, stated as such.
-- [ ] The `live` job runs only on `schedule` and `workflow_dispatch`, is in one concurrency
+      **Not run.** It spends a day's quota, so the owner schedules it; it stays with P1-C.
+- [x] The `live` job runs only on `schedule` and `workflow_dispatch`, is in one concurrency
       group, reads the key from `secrets.GOOGLE_API_KEY`, and sets
       `EVAL_EXPECT_AXES=model=live memory=live`. **With no secret configured**, the job is
       skipped by a condition on a preceding job's output (the `secrets` context is not
       readable in a job-level `if`), so the run list shows it as skipped rather than
       passed, and the replay job's summary says the live tier did not run for want of the
-      secret. **With a secret configured but the run on any other axis**, it fails before
-      any trial with the axis-expectation message. It must never go green on the stub axis.
+      secret. Dispatch run 36264269743: `eval-live-gate` success, `eval-live` skipped,
+      `eval-replay` success with `HAS_KEY: false` and `EVENT: workflow_dispatch` in its
+      summary step, the branch that writes "Live tier: did not run. There is no
+      `GOOGLE_API_KEY` repository secret".
+- [ ] **With a secret configured but the run on any other axis**, the `live` job fails before
+      any trial with the axis-expectation message, and never goes green on the stub axis.
+      Split from the criterion above, because it needs a repository secret, and there is
+      none. The refusal itself is verified locally (the third criterion). **Passes to
+      P1-E**, which takes it by name.
 - [ ] **Model `live` / memory `live`, in CI:** with the secret present, one nightly run
       runs both tasks, skips neither, and uploads the three reports and the recorded
       cassettes. This closes the criterion P1-G handed over (see below). It needs a
       repository secret, which only the owner can add (decision 1); if none exists when this
       ships, the criterion stays unchecked and passes to **P1-E**, whose canary needs the
-      same secret.
-- [ ] `memory-core`'s `test:eval` is gone. `grep -rn 'test:eval'` over `.github/`, every
+      same secret. **No secret exists; passes to P1-E.**
+- [x] `memory-core`'s `test:eval` is gone. `grep -rn 'test:eval'` over `.github/`, every
       `package.json` and `turbo.json` returns nothing. `e2e.yml:39` sets
       `REQUIRE_INTEGRATION_ENV: '1'`, and its run on this pull request still reports
-      `Test Files 5 passed (5)` from `@repo/memory-core`.
-- [ ] `scripts/seed-eval-fixtures.mjs` and `agent-eval.yml`'s seed step are deleted. The
+      `Test Files 5 passed (5)` from `@repo/memory-core`. Run 36264081118, job `e2e`. The
+      flag also had to be declared on `test:integration` in `turbo.json`; see below.
+- [x] `scripts/seed-eval-fixtures.mjs` and `agent-eval.yml`'s seed step are deleted. The
       comments that mention the script are updated: `agent-harness.ts:101-103`,
       `eval-harness/README.md:50` and `:100`, `eval-harness/src/outcome.ts:9`,
       `eval-harness/src/graders/code.ts:42`, `eval-harness/src/dataset.ts:94`,
       `memory-core/src/migrate.ts:22` and `memory-core/src/inspect/run-inspector.ts:34`.
-- [ ] Documentation this change makes false is corrected in the same pull request:
+      Outside `docs/prd/`, no tracked file names the script.
+- [x] Documentation this change makes false is corrected in the same pull request:
       `.context/conventions.md:37-38`, `:62-65`, `:104` and the `Eval` row;
       `packages/eval-harness/README.md:26-29` and `:160`, and `:129-132` in the same file,
       which still says `tool-use-001` has never run live (untrue since P1-G);
       `packages/memory-core/test/integration-env.ts:15`; the example in
       `.agents/prd-author.md:17`; and `docs/STATUS.md` rows 17 and 18. Those rows should
       name the tier that now runs each capability, and fix the `runs.service.ts:190`
-      citation, which is `:264` at HEAD.
+      citation, which is `:264` at HEAD. It is `:286` after this change, which adds
+      `createGeminiChat` above it. The root `README.md` said the same thing in two places
+      and is corrected too.
 
 **On P1-G's handed-over criterion.** P1-G left unchecked "On model `live` / memory
 `live`, both tasks run and neither is skipped", and gave it to P1-C. As written, P1-B's
@@ -411,6 +446,69 @@ text makes clear that what it had in mind was the 5×2 live suite. No criterion 
 states that goal. A shipped PRD is not edited, so the discrepancy is recorded here. The
 nightly criterion above closes the literal criterion in CI. The 5×2 live pass rate is open
 question 1, and it is not claimed.
+
+## What shipped, and where it diverged from the design
+
+Measured 2026-09-26. Every run below made no model call.
+
+| Run                                          | Where                    | Result                                         |
+| -------------------------------------------- | ------------------------ | ---------------------------------------------- |
+| replay, pull request                         | CI 36264081160           | green, 1 trial × 2 tasks, every grader passed  |
+| replay + gate, dispatch, no secret           | CI 36264269743           | green; `eval-live` skipped, not passed         |
+| replay, stale cassette (probe, then dropped) | CI 36264380982           | red; abort artifact, summary `aborted`         |
+| replay, stale cassette on each task          | local, empty containers  | exit 1; abort lists 0 and 1 completed trials   |
+| replay, grader threshold raised              | local                    | exit 1; three reports, 50%, no abort file      |
+| `EVAL_EXPECT_AXES` mismatch                  | local, `GOOGLE_API_KEY=` | exit 1 before the Nest context; no store touch |
+
+Where the build is not what the Design section describes:
+
+- **`REQUIRE_INTEGRATION_ENV` had to be declared on `test:integration`.** The Scope said the
+  flag "moves onto `e2e.yml:39`, so nothing it guaranteed is lost". Moved alone, it would
+  have been lost: the alias set it inside the script's own command, where Turbo never
+  looks, and a job-level variable is stripped by strict env mode unless the task declares
+  it. Probed: with the declaration removed, the flag set and no stores exported,
+  `yarn turbo test:integration` reported 5 files skipped and exited 0. With it, the run
+  fails naming both variables. `.context/conventions.md` now says so under the Turbo rule.
+- **`EVAL_OUTPUT_DIR` is set by a step, not in the job's `env`.** The `runner` context is
+  not available in job-level `env`, so `${{ runner.temp }}` there does not evaluate. The
+  first step of each job writes `$RUNNER_TEMP/eval-<tier>` to `$GITHUB_ENV`, which keeps
+  the path absolute.
+- **The key is on the `yarn eval` step, not the live job's `env`.** `yarn install` runs
+  package build scripts, and none of them needs it.
+- **Names follow the PRDs accepted after this one.** P1-D and P1-E were accepted while this
+  was in flight and name P1-C's pieces: P1-D makes `eval-replay` a required check and
+  forbids that job a condition that could skip it; P1-E's sketch reads `needs.gate.outputs.has_key`
+  and downloads one `eval-live` artifact. The jobs are `gate` (`eval-live-gate`),
+  `replay` (`eval-replay`) and `live` (`eval-live`), and the recorded cassettes travel
+  inside `eval-live` rather than as a second artifact.
+- **The replay job needs the gate, and carries `if: ${{ !cancelled() }}`.** Its summary
+  has to say whether the live tier had a key, and it cannot read the secret itself. A
+  plain `needs` would let a failed gate skip it, and a skipped job satisfies a required
+  check, which is the failure P1-D's rule exists for. The condition is there to prevent
+  that skip, not to add one.
+- **The live job deletes the committed cassettes before it records.** A trial that throws
+  writes no cassette, and a committed file left in its place would be indistinguishable in
+  the artifact from a fresh recording. That also answers the risk this PRD left open: the
+  recorder does not write a partial cassette for the trial that aborted
+  (`agent-harness.ts`, `close(completed)`), and it does write every trial that completed
+  before it.
+- **The abort is written by `runAndReport` (`run-suite.ts`), not by `main().catch`.** The
+  whole run is its body, so an error anywhere after the output directory is resolved — a
+  mode typo, an axis refusal, a store that will not connect — is written down with
+  whatever axes, provenance and trials were known. The directory is cleared of all four
+  files first, so a report from an earlier local run can never sit beside an abort. The
+  replay watcher's check moved ahead of report writing for the same rule; P1-D's criterion
+  about "a report written before the watcher throws" describes a state this runner no
+  longer produces. The abort's error is passed through `@repo/agent-cassette`'s
+  `redactDeep` before it is written, because the file is an uploaded artifact.
+- **The root `package.json` lost its two workspace dependencies.** `@repo/eval-harness`
+  and `@repo/memory-core` were there only so the seed script could import them.
+- **The Neo4j service containers gained a health check** (`cypher-shell … 'RETURN 1'`), so
+  a job does not start against a store that is still booting.
+
+The hash-flip probe's diff shows no `-` or `+` lines: the probe changes a recorded hash and
+leaves the recorded request alone, so the two requests are identical. A prompt edit, the
+case the summary is written for, shows the changed lines.
 
 ## Risks and open questions
 

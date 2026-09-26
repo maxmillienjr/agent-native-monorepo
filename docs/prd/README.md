@@ -22,7 +22,7 @@ request. `yarn lint:docs` fails CI when a PRD's status disagrees with its row be
 `pass@k` and `pass^k`, and every number names the axes that produced it. Measured
 2026-08-29 — model `stub` / memory `live`, 5 trials x 2 tasks: 50%, with `memory-recall-001`
 at 5/5 and `tool-use-001` at 0/5. That 0/5 is the stub axis's ceiling and not the agent's
-score: `runs.service.ts:264` returns `null` from `selectTool` for every input, so a task
+score: `runs.service.ts:286` returns `null` from `selectTool` for every input, so a task
 graded on making a tool call cannot pass there. On model `live` / memory `live`, one trial of
 `memory-recall-001` passed all eleven graders, and one trial of `tool-use-001` on 2026-09-10
 passed on three `web-search` selections with well-formed queries. One trial is not a pass
@@ -33,8 +33,8 @@ skips it rather than averaging the agent together with the fixture: the same com
 same axis now reports 100% over 5 trials x 1 task, re-measured 2026-09-10. That is a
 denominator change and not an improvement, which is why both numbers stay in
 `docs/STATUS.md` row 17 and why the skipped task is printed beside the rate in all three
-reports. What none of this is yet is a merge gate — P1-C wires evaluation into a pipeline,
-P1-D decides which failures should block.
+reports. It now runs in CI on every pull request, on the replay axis (P1-C, below). What
+none of this is yet is a merge gate — P1-D decides which failures should block.
 
 **Memory and model are independent axes, and neither falls back.** `GOOGLE_API_KEY` selects
 the model half; `DATABASE_URL` and `NEO4J_URI` select the memory half. Configured but
@@ -56,21 +56,25 @@ two seconds against the recording's eighty-three, makes no request to
 Read the number for what it is: a replayed `pass^k` is a frozen sample of that recording, it
 cannot catch the model getting worse (P1-E) or the client breaking (ADR 0005 names that
 defect class), and a task runs at most as many trials as it has cassettes so that one
-recording is never averaged with itself. What this is not yet is a CI tier — P1-C owns
-that.
+recording is never averaged with itself. It is now the pull-request tier P1-C runs.
 
-**[P1-C](P1-C-tiered-eval-pipeline.md) is accepted.** It replaces the nightly
-job, which runs the same 27 `memory-core` integration tests that `e2e.yml` already runs on
-every pull request, with two tiers. A replay tier runs on every pull request with no key
-and needs only the two service containers: measured 2026-09-26 on fresh containers with no
-seed step, it takes 17s and passes every grader. A live tier runs nightly at about eight
-`generateContent` calls. Three things the draft found by running, not by reading. The
-repository has **no Actions secrets**, so the live tier has no key. A cassette miss and a
-failed grader **both exit 1**, the miss writes no report, and Turbo reduces any failing
-exit code to 1. The chat client **already retries a 429 six times** before `IO_RETRY` sees
-it, so the fix P1-A handed over (retry 429 in `IO_RETRY`) would make things worse. The live
-tier is written conditional on a repository secret, and shows as skipped, never as passed,
-until one exists.
+**[P1-C](P1-C-tiered-eval-pipeline.md) is in progress**, tracked in
+[#56](https://github.com/maxmillienjr/agent-native-monorepo/issues/56), with its pull
+request open and green. `agent-eval.yml` no longer runs the memory integration suite: its
+`eval-replay` job runs the agent on every pull request, every push to `main` and nightly,
+against the committed cassettes and two service containers, with no key. Its `eval-live`
+job runs nightly and on dispatch only when a `GOOGLE_API_KEY` repository secret exists.
+There is none, so it shows as skipped, never passed, and the replay summary says why. Each
+job declares `EVAL_EXPECT_AXES`, so a job that lost its key or its mode refuses before a
+trial. A run that cannot complete now writes `eval-abort.json` and a summary headed
+`aborted`, with the trials that finished, and never `eval-report.json`. That is how a stale
+cassette differs from a failed grader, since Turbo reduces both exit codes to 1. A
+daily-quota 429 is terminal on both model paths, so the chat client makes one request
+instead of seven, and the abort names it. **Three criteria are open.** Two need a
+repository secret and pass to P1-E. The third, the classifier against a real free-tier
+429, spends a day's quota and waits for the owner to schedule it. Moving
+`REQUIRE_INTEGRATION_ENV` onto `e2e.yml` needed a `turbo.json` declaration the PRD did not
+foresee. Without it, strict env mode strips the flag, and the suite skips again.
 
 **[P2-B](P2-B-retrieval-ablation.md) is accepted** — the ablation ADR
 0002 has been waiting for. Drafting it found that the deployed graph path is close to
@@ -124,11 +128,11 @@ standing rule in `.context/conventions.md`, not a piece of work.
 
 ## Tier 1 — Evaluation in CI
 
-The repository's stated thesis. P1-A is shipped: `yarn eval` runs live trials against the
-real application context and reports `pass@k` and `pass^k` per axis. What is still true is
-that `.github/workflows/agent-eval.yml` runs `yarn turbo test:eval`, which resolves to a
-single integration suite in `packages/memory-core` that never invokes the agent — P1-C owns
-replacing it.
+The repository's stated thesis. P1-A is shipped: `yarn eval` runs trials against the real
+application context and reports `pass@k` and `pass^k` per axis. P1-C, in progress, runs it
+from `.github/workflows/agent-eval.yml`: on replayed model decisions on every pull request,
+and on the live model nightly once a repository secret exists. Nothing blocks a merge yet —
+P1-D owns that.
 
 | ID                                     | Title                                                         | Size | Status      |
 | -------------------------------------- | ------------------------------------------------------------- | ---- | ----------- |
