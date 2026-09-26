@@ -86,15 +86,26 @@ class DefaultAttemptHandler extends AsyncCaller {
 const defaultAttemptHandler = DefaultAttemptHandler.read();
 
 /**
- * The chat client's `onFailedAttempt`: a daily-quota 429 is terminal, and
- * everything else is decided exactly as LangChain's default decides it.
+ * The chat client's `onFailedAttempt`: a daily-quota 429 is terminal, any
+ * other 429 is retried, and everything that is not a 429 is decided exactly as
+ * LangChain's default decides it.
  *
- * Without it, `AsyncCaller` retries a 429 up to six times with exponential
- * backoff — measured at seven requests over 92 seconds for one `invoke` — and
- * against an exhausted daily quota every one of those requests is spent for
- * nothing. A transient 429 keeps the six retries it has always had.
+ * Without it, `AsyncCaller` at `@langchain/core` 0.3 retries a 429 up to six
+ * times with exponential backoff — measured at seven requests over 92 seconds
+ * for one `invoke` — and against an exhausted daily quota every one of those
+ * requests is spent for nothing. A transient 429 keeps the six retries it has
+ * always had.
+ *
+ * The retry for an unclassified 429 is explicit rather than delegated because
+ * the default changed underneath it. From `@langchain/core` 1.x the default
+ * reads a 429's message, and treats any that says "exceeded your current quota"
+ * or "billing" as terminal. Gemini's per-minute 429 says both, so delegating
+ * would make it stop on the first request, which a limit that resets within
+ * the minute does not warrant (P5-C, "What the implementation found").
  */
 export const stopOnDailyQuota: FailedAttemptHandler = (error: unknown) => {
-  if (classifyRateLimit(error) === 'daily-quota') throw error;
+  const rateLimit = classifyRateLimit(error);
+  if (rateLimit === 'daily-quota') throw error;
+  if (rateLimit === 'unclassified') return;
   return defaultAttemptHandler(error);
 };

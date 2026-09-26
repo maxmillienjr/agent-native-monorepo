@@ -133,6 +133,11 @@ describe('a 429 on the chat path', () => {
   it('still makes seven requests for a 429 without those details', async () => {
     // The client's six retries back off exponentially — 92 seconds when this
     // was measured with real timers — so the clock is faked and run forward.
+    //
+    // This is also the test that shows the client uses `stopOnDailyQuota` at
+    // all. From `@langchain/core` 1.x the default handler stops on the first
+    // request for a body that says "exceeded your current quota", so seven
+    // requests are only possible through the handler `createGeminiChat` injects.
     vi.useFakeTimers();
     fetchStub.mockImplementation(async () => tooManyRequests());
 
