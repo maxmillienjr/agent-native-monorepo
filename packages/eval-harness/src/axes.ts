@@ -70,6 +70,46 @@ export function describeAxes(axes: Axes): string {
   return `model=${axes.model} memory=${axes.memory}`;
 }
 
+/**
+ * The axes a job declared, and the axes it actually got, disagreeing.
+ *
+ * `detectAxes` falls back quietly by design: a clone with no key runs the stub
+ * set, which is what keeps `yarn eval` usable without a `.env`. In CI that same
+ * fallback is the failure. A live job whose secret is missing, or a replay job
+ * whose `EVAL_CASSETTE_MODE` Turbo stripped, runs the canned set, skips
+ * `tool-use-001` and reports 100% over one task — green, and measuring nothing.
+ * The precedent is `REQUIRE_INTEGRATION_ENV`: a variable that turns the quiet
+ * fallback into a named failure where the caller has said it must not happen.
+ */
+export class AxisExpectationError extends Error {
+  constructor(
+    readonly expected: string,
+    readonly detected: string,
+  ) {
+    super(
+      `eval refused to run: expected ${expected}, detected ${detected}. ` +
+        'EVAL_EXPECT_AXES names the axes this job exists to measure; check that ' +
+        'GOOGLE_API_KEY, EVAL_CASSETTE_MODE, DATABASE_URL and NEO4J_URI reached the process.',
+    );
+    this.name = 'AxisExpectationError';
+  }
+}
+
+/**
+ * Refuses when `EVAL_EXPECT_AXES` is set and differs from the detected axes.
+ *
+ * Compared against `describeAxes`'s own output, so the variable is written in
+ * the format every log line and report already prints. Unset or blank means no
+ * expectation, which is the local default.
+ */
+export function assertExpectedAxes(axes: Axes, env: NodeJS.ProcessEnv = process.env): void {
+  const expected = (env['EVAL_EXPECT_AXES'] ?? '').trim();
+  if (expected === '') return;
+
+  const detected = describeAxes(axes);
+  if (expected !== detected) throw new AxisExpectationError(expected, detected);
+}
+
 const accepted = <T>(requirement: AxisRequirement<T>): readonly T[] =>
   Array.isArray(requirement) ? requirement : [requirement as T];
 

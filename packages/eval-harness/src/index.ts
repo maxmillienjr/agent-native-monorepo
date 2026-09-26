@@ -43,6 +43,8 @@ export type { MemoryOutcome } from './outcome.js';
 export {
   detectAxes,
   describeAxes,
+  assertExpectedAxes,
+  AxisExpectationError,
   readCassetteMode,
   assertAxesSatisfy,
   skippedTasks,

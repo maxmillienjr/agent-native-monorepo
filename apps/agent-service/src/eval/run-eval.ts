@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import {
   EvalHarness,
   MEMORY_RECALL_DATASET_DIR,
+  assertExpectedAxes,
   capTrialsToCassettes,
   describeAxes,
   detectAxes,
@@ -59,6 +60,10 @@ async function main(): Promise<void> {
   const trials = Number(process.env['EVAL_TRIALS'] ?? 5);
   const outputDir = resolve(process.env['EVAL_OUTPUT_DIR'] ?? 'eval-results');
   const axes = detectAxes();
+
+  // Before the watcher, the cassettes and the Nest context: a job on the wrong
+  // axes must not reset a store or open a recording on its way to failing.
+  assertExpectedAxes(axes);
 
   const liveCalls =
     mode === 'replay'
