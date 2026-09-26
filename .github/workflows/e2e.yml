@@ -38,7 +38,7 @@ jobs:
 
       # REQUIRE_INTEGRATION_ENV turns a missing store variable into a failure
       # rather than 27 skipped tests and exit 0. It used to be set only by
-      # memory-core's nightly `test:eval` alias, which ran these same five files.
+      # memory-core's nightly alias of this script, which ran these same five files.
       - run: yarn turbo test:integration
         env:
           REQUIRE_INTEGRATION_ENV: '1'
