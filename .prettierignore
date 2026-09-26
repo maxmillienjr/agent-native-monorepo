@@ -8,3 +8,9 @@ coverage/
 # Recorded cassettes. They are artifacts of a live run, not source: reformatting
 # one edits a recording, and `yarn format` must not be a way to do that casually.
 packages/eval-harness/datasets/*/cassettes/
+
+# Recorded embeddings and the ablation's reports, for the same reason: the first
+# is a recording, and the second is compared byte for byte between runs.
+packages/eval-harness/datasets/*/recorded/
+packages/eval-harness/datasets/retrieval-ablation/reports/
+packages/eval-harness/datasets/retrieval-ablation/adjudication/

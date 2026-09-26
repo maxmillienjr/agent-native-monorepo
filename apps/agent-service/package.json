@@ -13,7 +13,8 @@
     "lint": "eslint src/",
     "test:service": "NODE_OPTIONS=--experimental-vm-modules jest",
     "test:unit": "vitest run",
-    "eval": "node dist/eval/run-eval.js"
+    "eval": "node dist/eval/run-eval.js",
+    "eval:retrieval": "node dist/eval/run-retrieval-ablation.js"
   },
   "dependencies": {
     "@langchain/core": "^0.3.0",

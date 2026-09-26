@@ -6,6 +6,7 @@ import { encodeFloat32Base64 } from '@repo/agent-cassette';
 import { EmbeddingRequestError } from '../agent/model/gemini-embedder.js';
 import {
   EmbeddingFileRefusedError,
+  readEmbeddingsMode,
   recordEmbeddings,
   replayEmbeddings,
   textKey,
@@ -227,5 +228,20 @@ describe('recordEmbeddings', () => {
     await expect(
       recordEmbeddings({ path, texts: ['one'], embed: async () => [1, 2], expected, gitSha: GIT }),
     ).rejects.toThrow(/returned 2 values, expected 4/);
+  });
+});
+
+describe('readEmbeddingsMode', () => {
+  it('defaults to replay, the recorded axis', () => {
+    expect(readEmbeddingsMode({})).toBe('replay');
+    expect(readEmbeddingsMode({ EVAL_EMBEDDINGS_MODE: '' })).toBe('replay');
+    expect(readEmbeddingsMode({ EVAL_EMBEDDINGS_MODE: 'record' })).toBe('record');
+    expect(readEmbeddingsMode({ EVAL_EMBEDDINGS_MODE: 'live' })).toBe('live');
+  });
+
+  it('refuses a value it does not know rather than picking an axis', () => {
+    expect(() => readEmbeddingsMode({ EVAL_EMBEDDINGS_MODE: 'recorded' })).toThrow(
+      /replay, record or live/,
+    );
   });
 });

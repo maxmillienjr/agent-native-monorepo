@@ -240,3 +240,20 @@ export async function recordEmbeddings(options: RecordOptions): Promise<RecordOu
 
   return { requested, alreadyRecorded, remaining: 0, rateLimited: false };
 }
+
+export type EmbeddingsMode = 'replay' | 'record' | 'live';
+
+/**
+ * `EVAL_EMBEDDINGS_MODE`: `replay` (the default, and the recorded axis),
+ * `record`, or `live`. An unknown value is refused rather than read as the
+ * default, for the reason `EVAL_CASSETTE_MODE` is: a typo that silently picks
+ * an axis is a run on the wrong axis.
+ */
+export function readEmbeddingsMode(env: NodeJS.ProcessEnv = process.env): EmbeddingsMode {
+  const raw = (env['EVAL_EMBEDDINGS_MODE'] ?? '').trim();
+  if (raw === '' || raw === 'replay') return 'replay';
+  if (raw === 'record' || raw === 'live') return raw;
+  throw new Error(
+    `EVAL_EMBEDDINGS_MODE must be replay, record or live; got ${JSON.stringify(raw)}`,
+  );
+}

@@ -17,6 +17,7 @@
     "test:e2e": "turbo test:e2e",
     "test:eval": "turbo test:eval",
     "eval": "turbo eval",
+    "eval:retrieval": "turbo eval:retrieval",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint:docs": "node scripts/lint-docs.mjs",
