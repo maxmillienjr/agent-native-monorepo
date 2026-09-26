@@ -2,11 +2,11 @@
 id: P2-C
 title: OpenTelemetry GenAI semantics, including evaluation events
 tier: 2
-status: accepted
+status: in-progress
 size: L
 depends_on: [P1-A, P1-B]
 blocks: [P1-F]
-issue: null
+issue: 74
 superseded_by: null
 controls: [CTL-OBS-01]
 ---

@@ -84,7 +84,7 @@ as well as the deployed path, and pre-registers what happens to ADR 0002 under e
 outcome. It also found that the tie-break P1-B added stops the vector query from using its
 HNSW index, a trade ADR 0006 now records.
 
-**[P2-C](P2-C-otel-genai-semantics.md) is accepted.** It found that a
+**[P2-C](P2-C-otel-genai-semantics.md) is in progress**, tracked in [#74](https://github.com/maxmillienjr/agent-native-monorepo/issues/74). It found that a
 run is seven single-span traces rather than one — no span encloses the graph, and no
 instrumentation supplies a parent — that two of the three `generateContent` calls drop
 their token usage before anything records it, and that the GenAI conventions it adopts
@@ -186,11 +186,11 @@ P1-D owns that.
 The three-tier memory model is instantiated and the graph is checkpointed. What remains is
 measuring whether the hybrid premise holds, and saying so in the standard vocabulary.
 
-| ID                                   | Title                                                            | Size | Status   |
-| ------------------------------------ | ---------------------------------------------------------------- | ---- | -------- |
-| [P2-A](P2-A-wire-memory-core.md)     | Wire memory-core into the service; add checkpointing and retry   | L    | shipped  |
-| [P2-B](P2-B-retrieval-ablation.md)   | Hybrid retrieval evaluation and the graph/vector/hybrid ablation | L    | accepted |
-| [P2-C](P2-C-otel-genai-semantics.md) | OpenTelemetry GenAI semantics, including evaluation events       | L    | accepted |
+| ID                                   | Title                                                            | Size | Status      |
+| ------------------------------------ | ---------------------------------------------------------------- | ---- | ----------- |
+| [P2-A](P2-A-wire-memory-core.md)     | Wire memory-core into the service; add checkpointing and retry   | L    | shipped     |
+| [P2-B](P2-B-retrieval-ablation.md)   | Hybrid retrieval evaluation and the graph/vector/hybrid ablation | L    | accepted    |
+| [P2-C](P2-C-otel-genai-semantics.md) | OpenTelemetry GenAI semantics, including evaluation events       | L    | in-progress |
 
 ## Tier 3 — Regulated-domain credibility
 
