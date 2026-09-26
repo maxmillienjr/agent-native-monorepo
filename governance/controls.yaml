@@ -305,9 +305,8 @@ controls:
       - { framework: owasp-asi-2026, ref: ASI02 }
 
   - id: CTL-HUM-01
-    title: No adverse determination is issued without a licensed clinician
-    status: planned
-    owner: P3-A
+    title: The agent cannot make or emit an adverse determination, and none exists without a clinician's attestation
+    status: implemented
     maps:
       - { framework: nist-ai-rmf-1.0, ref: MAP 3.5 }
       - { framework: nist-ai-rmf-1.0, ref: GOVERN 3.2 }
@@ -318,7 +317,25 @@ controls:
           file: docs/adr/0003-payer-domain-with-licensing-and-phi-as-the-boundary.md,
           heading: Decision,
         }
-    note: ADR 0003 states the constraint; P3-A makes it a type-level invariant.
+      - {
+          kind: symbol,
+          file: packages/determination/src/clinician.ts,
+          name: attestAdverseDetermination,
+        }
+      - kind: test
+        file: packages/determination/src/determination.test.ts
+        name: rejects kind denial, even when it carries an attestation
+        tier: unit
+      - kind: test
+        file: apps/agent-service/src/clinician-boundary.test.ts
+        name: rejects the clinician subpath inside the graph
+        tier: unit
+      - kind: test
+        file: apps/agent-service/src/agent/nodes/egress.node.test.ts
+        name: refuses a denial carried under a key it does not declare, rather than stripping it
+        tier: unit
+      - { kind: ci, workflow: ci.yml, job: ci, run: yarn turbo typecheck }
+    note: Delivered by P3-A, narrowed from "no adverse determination is issued without a licensed clinician" to what the types, the lint rule and the strict egress parse enforce. The typecheck step runs the type tests that make an unattested denial fail to compile. Nothing produces a determination until P3-D, the route that issues one is P3-E's, and binding an attestation to an authenticated, licensed reviewer is P3-C's.
 
   - id: CTL-AUD-01
     title: Each decision is recorded in a hash-chained, tamper-evident ledger
