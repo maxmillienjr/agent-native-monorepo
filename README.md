@@ -9,9 +9,9 @@ A Yarn 4 monorepo containing a NestJS 11 microservice that runs a LangGraph stat
 > **What is wired, and what is not.** All three memory tiers are live: `MemoryModule`
 > constructs the adapters and `RunsService` injects them, so a run reads from and writes to
 > Postgres, Neo4j and pgvector when `DATABASE_URL` and `NEO4J_URI` are set. What this
-> repository cannot claim is a gate — `packages/eval-harness` measures the agent and
-> `yarn eval` reports the numbers, but no evaluation blocks a merge. P1-C wires evaluation
-> into a pipeline, P1-D decides which failures should block.
+> repository cannot claim is a gate — `packages/eval-harness` measures the agent, and
+> `agent-eval.yml` runs it on every pull request on replayed model decisions, but no
+> evaluation blocks a merge. P1-D decides which failures should block.
 > [`docs/STATUS.md`](docs/STATUS.md) is the per-capability matrix, and it is the file to
 > trust when this README and the code disagree.
 
@@ -84,9 +84,10 @@ It exists to demonstrate architectural thinking in two domains that rarely overl
 Both lists are wired into the request path. `MemoryModule` constructs the adapters and
 `RunsService` injects them, so a run reads from and writes to Postgres, Neo4j and pgvector
 when `DATABASE_URL` and `NEO4J_URI` are set, and runs against a stub dependency set when
-they are not. The agent is measured, too — `yarn eval` runs live trials and reports `pass@k`
-and `pass^k`. What the repository still lacks is a gate on those numbers: P1-C wires
-evaluation into a pipeline, P1-D decides which failures should block. See
+they are not. The agent is measured, too — `yarn eval` runs trials and reports `pass@k` and
+`pass^k`, on every pull request against recorded model decisions and nightly against the
+live model once a key secret exists. What the repository still lacks is a gate on those
+numbers: P1-D decides which failures should block. See
 [`docs/STATUS.md`](docs/STATUS.md) before quoting this section back at the code.
 
 The agent's domain logic is intentionally trivial (a single system prompt: _"You are a helpful research assistant."_). The value is in the chassis — how the pieces connect, how memory is structured, how observability is wired, and how the monorepo scales.
