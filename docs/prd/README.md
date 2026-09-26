@@ -135,7 +135,7 @@ replacing it.
 | [P1-A](P1-A-eval-harness.md)           | `packages/eval-harness` — evaluation as a first-class package | L    | shipped  |
 | [P1-B](P1-B-agent-cassette.md)         | `packages/agent-cassette` — decision-level record and replay  | L    | shipped  |
 | [P1-C](P1-C-tiered-eval-pipeline.md)   | Tiered evaluation pipeline replacing the nightly stub         | M    | accepted |
-| P1-D                                   | Statistical regression gate with paired bootstrap             | M    | draft    |
+| [P1-D](P1-D-regression-gate.md)        | Statistical regression gate against committed baselines       | L    | accepted |
 | [P1-E](P1-E-model-drift-canary.md)     | Model-drift canary against pinned and floating model ids      | M    | accepted |
 | [P1-F](P1-F-cost-and-step-budgets.md)  | Cost, latency, and step budgets as CI assertions              | M    | accepted |
 | [P1-G](P1-G-task-axis-requirements.md) | Task-level axis requirements for the evaluation suite         | S    | shipped  |
