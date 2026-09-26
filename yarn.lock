@@ -1805,7 +1805,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/exporter-logs-otlp-http@npm:0.222.0":
+"@opentelemetry/exporter-logs-otlp-http@npm:0.222.0, @opentelemetry/exporter-logs-otlp-http@npm:^0.222.0":
   version: 0.222.0
   resolution: "@opentelemetry/exporter-logs-otlp-http@npm:0.222.0"
   dependencies:
@@ -2634,7 +2634,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/sdk-logs@npm:0.222.0":
+"@opentelemetry/sdk-logs@npm:0.222.0, @opentelemetry/sdk-logs@npm:^0.222.0":
   version: 0.222.0
   resolution: "@opentelemetry/sdk-logs@npm:0.222.0"
   dependencies:
@@ -3047,8 +3047,10 @@ __metadata:
   dependencies:
     "@opentelemetry/api": "npm:^1.9.0"
     "@opentelemetry/context-async-hooks": "npm:^2.11.0"
+    "@opentelemetry/exporter-logs-otlp-http": "npm:^0.222.0"
     "@opentelemetry/exporter-trace-otlp-http": "npm:^0.222.0"
     "@opentelemetry/resources": "npm:^2.11.0"
+    "@opentelemetry/sdk-logs": "npm:^0.222.0"
     "@opentelemetry/sdk-node": "npm:^0.222.0"
     "@opentelemetry/sdk-trace": "npm:^2.11.0"
     "@opentelemetry/semantic-conventions": "npm:^1.43.0"
