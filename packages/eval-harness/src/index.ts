@@ -124,3 +124,13 @@ export {
   renderAbortJson,
   renderAbortSummary,
 } from './reporters/abort.js';
+
+// Statistics — nothing here knows what a query is; P1-D needs the same interval.
+export {
+  DEFAULT_BOOTSTRAP_SEED,
+  mulberry32,
+  pairedBootstrap,
+  pairsToResolve,
+  type PairedBootstrapOptions,
+  type PairedBootstrapResult,
+} from './stats/paired-bootstrap.js';
