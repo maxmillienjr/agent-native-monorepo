@@ -414,6 +414,14 @@ fails with TS2344. No `vitest --typecheck` step is needed.
   against the annotation, the `Node` alias becomes redundant; keep it until that is shown.
   P5-C is accepted and may land first, so the implementation re-runs the return-type probe
   on whichever LangGraph version is on `main` and records the result.
+- **Amended at review, 2026-09-26, on P3-D's finding.** P3-D produces dispositions on a
+  second graph and returns them as FHIR, so a `disposition` channel on the chat graph and a
+  `disposition` field on `RunResponse` would never have a producer. Both move to P3-D.
+  P3-A keeps the package, the `./clinician` subpath and its lint rule, the `Node` alias,
+  the type tests — run against a fixture state annotation rather than the chat graph's — and
+  the strict egress parse of `RunResponse`, which is worth having without a disposition in
+  it. The implementation's first commit rewrites the Scope and the criteria that name the
+  chat-graph channel, and says so.
 
 ## References
 

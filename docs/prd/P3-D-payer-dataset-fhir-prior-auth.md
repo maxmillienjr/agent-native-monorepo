@@ -2,10 +2,10 @@
 id: P3-D
 title: Synthetic payer dataset and FHIR prior-authorization surface
 tier: 3
-status: draft
+status: accepted
 size: L
 depends_on: [P1-A, P1-B, P3-A]
-blocks: []
+blocks: [P3-E]
 issue: null
 superseded_by: null
 controls: [CTL-DATA-01]
@@ -88,7 +88,7 @@ to it, in that order. Each of the three is a criterion below.
 This PRD is the intake half of prior authorization: a request arrives, the clock starts,
 the agent reads the evidence against a policy, and the request is either approved or routed
 to a clinician in the same HTTP exchange. What happens to a routed request afterwards is the
-proposed follow-on P3-E (see Risks).
+follow-on P3-E (see Risks).
 
 - **A synthetic payer dataset.** One fictional payer, four medical policies keyed by HCPCS
   Level II codes, and 24 prior-authorization request bundles with per-criterion labels. Every
@@ -109,7 +109,7 @@ proposed follow-on P3-E (see Risks).
   cassette per task.
 - **`scripts/lint-data.mjs`**, the CPT and synthetic-data detector ADR 0003 asks for, run by
   `yarn lint:docs`. It moves CTL-DATA-01 from `procedural` to `implemented`.
-- **ADR 0007**, which records the code systems the repository may contain, extending ADR
+- **ADR 0008**, which records the code systems the repository may contain, extending ADR
   0003's decision without contradicting it.
 - **An HL7 FHIR Validator job**, run on pull requests that touch the payer data or the FHIR
   module. It gates the committed bundles and captured responses on base R4 and US Core
@@ -121,15 +121,15 @@ proposed follow-on P3-E (see Risks).
   `attestAdverseDetermination`, `Claim/$inquire`, and the overdue detection a clock implies.
   So a pended `ClaimResponse` from this PRD is terminal as far as the API is concerned. The
   case is checkpointed under its own thread id so that a successor can resume it.
-  **Proposed P3-E** owns all of it. P3-A handed the review surface to P3-D
+  **P3-E** owns all of it. P3-A handed the review surface to P3-D
   (`P3-A-clinician-gate.md:127-128`), so the split moves that hand-off, and the index has to
   record it (see Risks).
 - **Appeals.** P3-A assigned them here (`:140-142`). There is nothing to appeal until a
-  clinician can issue an adverse determination, which is P3-E. **Proposed P3-E**.
+  clinician can issue an adverse determination, which is P3-E. **P3-E**.
 - **Denials of any kind, including administrative ones.** A request from a member whose
   coverage is inactive would be denied on eligibility, not medical necessity. P3-A's type
   takes the stricter reading and requires an attestation for every adverse outcome
-  (`P3-A-clinician-gate.md:197-201`), so the agent refers it. **Proposed P3-E** owns
+  (`P3-A-clinician-gate.md:197-201`), so the agent refers it. **P3-E** owns
   the clinician who denies it.
 - **CRD and DTR.** Coverage Requirements Discovery and Documentation Templates and Rules sit
   upstream of PAS in the provider's workflow. The dataset carries the documentation a DTR
@@ -137,7 +137,7 @@ proposed follow-on P3-E (see Risks).
   questionnaire is built. **No successor is proposed.** A payer-side showcase gets its
   signal from the decision half, and a CRD service is a second product.
 - **X12 278 translation and a clearinghouse.** See "What is claimed" under Design. **No
-  successor.** ADR 0007 keeps X12 code values out of the repository.
+  successor.** ADR 0008 keeps X12 code values out of the repository.
 - **Exposing the surface through `apps/gateway`, and authenticating callers.** The gateway
   mounts one router (`server.ts:13`). P4-A decided at review that CTL-ACC-01 is planned
   under **P5-A**, whose A2A server covers the service's external surface
@@ -229,7 +229,7 @@ hand-edited into the output anyway. And its conditions and procedures are coded 
 CT (`http://snomed.info/sct` in `FhirR4.java`). NLM makes SNOMED CT free to use in the US
 under the UMLS licence. It does not settle whether the codes can be redistributed in a
 public repository ("Users should carefully read the license agreement before
-re-distributing any content"). So ADR 0007 leaves SNOMED CT off its list, and every
+re-distributing any content"). So ADR 0008 leaves SNOMED CT off its list, and every
 generated file would need recoding before `lint-data.mjs` passed. Synthea itself emits no
 CPT unless a user configures a code map. Its maintainers declined to ship one "due to
 licensing issues" (synthea issue #403). It is also a JDK 17 dependency. Hand-authored
@@ -272,7 +272,7 @@ published StructureDefinitions on 2026-09-26.
   through the `reviewAction` extension, which is bound to X12 code list 306. PAS's value
   sets say "All X12 work products are copyrighted", and the IG points implementers to X12
   for licensing. ADR 0003 does not mention X12. This PRD treats X12 code values the way ADR
-  0003 treats CPT (see ADR 0007 below), so no conformant PAS instance can be committed. The
+  0003 treats CPT (see ADR 0008 below), so no conformant PAS instance can be committed. The
   other required bindings can be met: `item.productOrService` admits HCPCS Level II,
   `diagnosis` admits ICD-10-CM, and `item.location[x]` admits CMS Place of Service codes.
 - **A PAS server must support subscriptions.** "Implementers SHALL support subscriptions to
@@ -547,7 +547,7 @@ different tests.
 under the two roots above, plus any tracked `.json` anywhere whose top level has a
 `resourceType`, so a FHIR fixture added elsewhere is still checked. For each file:
 
-- D1. Every `Coding.system` is on the ADR 0007 allowlist. `http://www.ama-assn.org/go/cpt`
+- D1. Every `Coding.system` is on the ADR 0008 allowlist. `http://www.ama-assn.org/go/cpt`
   fails by name, and an unknown system fails so that adding one is a decision a reviewer
   sees.
 - D2. A code under the HCPCS Level II system
@@ -599,7 +599,7 @@ construction. Layer 2 catches the obvious shapes everywhere else. Everything els
 P4-A's rules that is `implemented` (`P4-A-controls-as-code.md:144`). Whichever of P3-D and
 P4-A merges second moves the row.
 
-### ADR 0007: the code systems this repository may contain
+### ADR 0008: the code systems this repository may contain
 
 ADR 0003 names two permitted code systems and one forbidden one. D1 needs a complete list.
 The rule is that the list holds what the dataset needs and nothing else. A system is added
@@ -616,9 +616,9 @@ only after a reviewer reads its licence.
 | X12 code lists                   | `https://codesystem.x12.org/*`                                                         | forbidden  | "All X12 work products are copyrighted" (PAS value sets); X12 runs a licensing programme                                 |
 | NUBC                             | `https://www.nubc.org/*`                                                               | forbidden  | AHA copyright; use in software "must be properly licensed" (PAS IP statement)                                            |
 | SNOMED CT                        | `http://snomed.info/sct`                                                               | forbidden  | Free in the US under the UMLS licence; public redistribution not settled by NLM's text                                   |
-| LOINC, RxNorm                    | —                                                                                      | not listed | Both are usable with notice or attribution, and the dataset needs neither. Adding one is an ADR 0007 amendment           |
+| LOINC, RxNorm                    | —                                                                                      | not listed | Both are usable with notice or attribution, and the dataset needs neither. Adding one is an ADR 0008 amendment           |
 
-ADR 0007 extends ADR 0003 and does not contradict it: CPT stays forbidden, ICD-10-CM and
+ADR 0008 extends ADR 0003 and does not contradict it: CPT stays forbidden, ICD-10-CM and
 HCPCS Level II stay permitted, and the three new forbidden entries are licensed content, the
 boundary ADR 0003 draws. It does not supersede 0003.
 
@@ -645,7 +645,7 @@ Each criterion names the axis it is checked on where the model or the memory is 
       are in the workflow file.
 - [ ] The same job's PAS 2.2.1 report lists only errors on the X12-bound elements named in
       Design. A reviewer checks the job summary and finds no other error class.
-- [ ] ADR 0007 exists, is indexed in `docs/adr/README.md`, and names every system D1
+- [ ] ADR 0008 exists, is indexed in `docs/adr/README.md`, and names every system D1
       allows.
 - [ ] CTL-DATA-01 is `implemented` in `governance/controls.yaml` with the two anchors
       above, and the residual clause is a separate `procedural` control, in whichever of
@@ -717,8 +717,10 @@ Each criterion names the axis it is checked on where the model or the memory is 
   codes per item and the `ClaimResponse` one. PAS profile validation then moves from
   reported to gated, and the claim becomes "PAS 2.2.1 request and response profiles".
   Server conformance would still need subscriptions, which is P3-E. The decision belongs in
-  ADR 0007 whichever way it goes, and this draft recommends against it: the repository's
+  ADR 0008 whichever way it goes, and this draft recommends against it: the repository's
   boundary is licensed content, and X12 says its work products are copyrighted.
+  **Decided at review, 2026-09-26: no X12 code values.** The claim stays "shaped after
+  PAS 2.2.1".
 - **The size is L only after a split.** The whole of what P3-A handed over is intake,
   review, inquiry, appeals and the clock. Built at once, that is three to four weeks. This
   PRD is the intake half. Its estimate is about three days for the dataset and labels, two
@@ -732,19 +734,26 @@ Each criterion names the axis it is checked on where the model or the memory is 
   clinician route that calls `attestAdverseDetermination`, `Claim/$inquire`, overdue
   detection against `decisionDueBy`, and appeals. It is not in the index. If the split is
   accepted, the row and the P3-D → P3-E edge are added and the Non-goals above point at a
-  real id. If it is rejected, this PRD is not L.
+  real id. If it is rejected, this PRD is not L. **Decided at review, 2026-09-26: split
+  accepted.** P3-E is in the index as a draft with the P3-D → P3-E edge.
 - **P3-A's channel is on the chat graph, and the producer is not.** P3-A adds `disposition`
   to the chat graph's state and to `RunResponse` (`P3-A-clinician-gate.md:271-276`). This
   PRD produces a disposition on a second graph and returns it as FHIR, so P3-A's channel
   keeps no producer. The types, the `Node` alias and the lint rule carry over unchanged.
   The open question is whether P3-A, still unimplemented, should keep that channel at all.
-  That changes P3-A's scope, not this PRD's.
+  That changes P3-A's scope, not this PRD's. **Decided at review, 2026-09-26: it does not.**
+  The `disposition` channel and the `RunResponse` field move to this PRD's graph and FHIR
+  mapping; P3-A keeps the package, the `Node` alias, the lint rule, the type tests and the
+  strict egress parse, and its type tests run against a fixture state. P3-A records the
+  amendment.
 - **Splitting CTL-DATA-01.** P4-A's rules have no partial status. The detector enforces CPT
   and synthetic identifiers in payer data. It cannot enforce "no proprietary payer content"
   or real PHI outside payer data. Marking the whole row `implemented` would be the ticked
   box with a caveat that `.agents/prd-author.md` forbids. So this PRD proposes that
   CTL-DATA-01 narrows to what the detector checks and a new CTL-DATA-02 keeps the rest as
-  `procedural`. That edits P4-A's catalogue, which is accepted and not shipped.
+  `procedural`. That edits P4-A's catalogue, which is accepted and not shipped. **Decided
+  at review, 2026-09-26: split**, made in this PRD's implementation against whatever
+  `governance/controls.yaml` holds by then.
 - **The SB 1120 reading is a portfolio's, not counsel's.** It is stated as a reading with
   the invariants it rests on, and the fallback is a one-line policy change. Neither DMHC nor
   CDI guidance defines "delay". If either does, the reading is revisited against the text.
@@ -765,9 +774,10 @@ Each criterion names the axis it is checked on where the model or the memory is 
   assumption. WHO holds the ICD-10 copyright, and its licensing FAQ tells users of national
   modifications to contact the modifying authority, which is NCHS for ICD-10-CM. HL7's own
   guides use ICD-10-CM codes in published examples, and CDC distributes the files at no
-  cost. Neither of those is a licence. ADR 0007 has to cite an NCHS or CMS statement, or
+  cost. Neither of those is a licence. ADR 0008 has to cite an NCHS or CMS statement, or
   narrow the permission to what one says. If the answer is restrictive, ADR 0003 is wrong,
-  and so are the diagnoses and service codes in this dataset.
+  and so are the diagnoses and service codes in this dataset. That research is the first
+  task of the implementation, before any dataset file is written.
 - **CMS-0057-F's dates could move.** As of CMS's rule page modified 2026-08-31, no 2026
   rule has changed the 2027-01-01 API date or the 2026-01-01 timeframes. Reports of
   enforcement deferral are secondary and unconfirmed. `decisionDueBy` encodes the

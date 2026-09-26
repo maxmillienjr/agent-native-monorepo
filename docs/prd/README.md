@@ -161,7 +161,8 @@ provider actually operates under. Uses synthetic data only.
 | [P3-A](P3-A-clinician-gate.md)                | Clinician-gate invariant enforced in the type system         | S    | accepted |
 | [P3-B](P3-B-audit-replay.md)                  | Deterministic replay for audit reconstruction                | L    | accepted |
 | [P3-C](P3-C-decision-ledger.md)               | Hash-chained, tamper-evident decision ledger                 | L    | accepted |
-| [P3-D](P3-D-payer-dataset-fhir-prior-auth.md) | Synthetic payer dataset and FHIR prior-authorization surface | L    | draft    |
+| [P3-D](P3-D-payer-dataset-fhir-prior-auth.md) | Synthetic payer dataset and FHIR prior-authorization surface | L    | accepted |
+| P3-E                                          | Clinician review queue, `$inquire` and the decision clock    | M    | draft    |
 
 ## Tier 4 — Governance and agent security as code
 
@@ -194,7 +195,7 @@ P0-A ──▶ P2-A ──┬──▶ P1-A ──┬──▶ P1-B ──┬─
                 └──▶ P4-C
 
 P3-A ──┬──▶ P3-C
-       └──▶ P3-D
+       └──▶ P3-D ──▶ P3-E
 ```
 
 P2-A, P1-A and P1-B are all shipped, so everything hanging off them is unblocked —
