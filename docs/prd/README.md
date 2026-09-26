@@ -180,7 +180,7 @@ provider actually operates under. Uses synthetic data only.
 
 | ID                           | Title                                            | Size | Status   |
 | ---------------------------- | ------------------------------------------------ | ---- | -------- |
-| P5-A                         | Agent2Agent v1.0 server with a signed Agent Card | M    | draft    |
+| [P5-A](P5-A-a2a-server.md)   | Agent2Agent v1.0 server with a signed Agent Card | L    | draft    |
 | P5-B                         | Agent Development Kit portability appendix       | S    | draft    |
 | [P5-C](P5-C-langgraph-1x.md) | Upgrade to LangGraph 1.x                         | S    | accepted |
 
