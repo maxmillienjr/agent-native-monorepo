@@ -13,8 +13,8 @@ stores from an empty database: one run leaves episodic rows, `:Concept` and `:Fa
 `semantic_facts` rows and checkpoints under the runId its own response returned.
 
 **`docs/STATUS.md` is the authority on any capability sentence, including the ones above.**
-Eighteen rows, each with a status, a file and a line — fifteen `implemented`, one
-`planned`, one `stubbed`, one `removed`, none `broken`. The rule that keeps it true is in
+Twenty rows, each with a status and evidence cited by name — fifteen `implemented`, one
+`planned`, three `stubbed`, one `removed`, none `broken`. The rule that keeps it true is in
 `.context/conventions.md`: a change that moves a row moves it there in the same pull
 request. `yarn lint:docs` fails CI when a PRD's status disagrees with its row below.
 
@@ -115,6 +115,20 @@ became terminal. It now retries them itself, and the client waits out a per-minu
 again, as it did at 0.x. One live `tool-use-001` trial is still open: the only live run
 predates that fix, and it stopped on a per-minute 429.
 
+**[P3-A](P3-A-clinician-gate.md) has shipped**, tracked in
+[#75](https://github.com/maxmillienjr/agent-native-monorepo/issues/75). ADR 0003's rule
+that the agent must not make an adverse determination now has a mechanism.
+`@repo/determination` types the agent's output as an approval or a referral, and the one
+constructor for a denial needs a clinician's attestation. That constructor sits behind a
+`./clinician` subpath, which a lint rule bars from the graph. Type tests fail
+`yarn turbo typecheck` if an unattested denial compiles, and every run response is now
+parsed strictly on the way out. On review, the chat graph's `disposition` channel moved to
+P3-D, so nothing produces a disposition yet, and `docs/STATUS.md` row 20 says `stubbed`.
+LangGraph still does not check what a node returns, at 0.4.10 or at 1.4.18. Implementing
+this found that the `Node` alias misses an undeclared key returned beside a declared one;
+an explicit return type catches it. CTL-HUM-01 is `implemented`, with its title narrowed to
+what is enforced.
+
 **Where the detail lives.** Each PRD carries its own risks, its divergences from the design
 that was reviewed, and — where a shipped record turned out to be wrong — the correction that
 followed. P2-A is the one to read first: it shipped, was reopened the same day when two of
@@ -183,14 +197,14 @@ measuring whether the hybrid premise holds, and saying so in the standard vocabu
 Optional vertical. Demonstrates that the chassis holds up under the constraints a payer or
 provider actually operates under. Uses synthetic data only.
 
-| ID                                            | Title                                                         | Size | Status      |
-| --------------------------------------------- | ------------------------------------------------------------- | ---- | ----------- |
-| [P3-A](P3-A-clinician-gate.md)                | Clinician-gate invariant enforced in the type system          | S    | in-progress |
-| [P3-B](P3-B-audit-replay.md)                  | Deterministic replay for audit reconstruction                 | L    | accepted    |
-| [P3-C](P3-C-decision-ledger.md)               | Hash-chained, tamper-evident decision ledger                  | L    | accepted    |
-| [P3-D](P3-D-payer-dataset-fhir-prior-auth.md) | Synthetic payer dataset and FHIR prior-authorization surface  | L    | accepted    |
-| [P3-E](P3-E-clinician-review-queue.md)        | Clinician review queue, `$inquire` and the decision clock     | M    | accepted    |
-| P3-F                                          | Appeals: reconsideration lifecycle for adverse determinations | M    | draft       |
+| ID                                            | Title                                                         | Size | Status   |
+| --------------------------------------------- | ------------------------------------------------------------- | ---- | -------- |
+| [P3-A](P3-A-clinician-gate.md)                | Clinician-gate invariant enforced in the type system          | S    | shipped  |
+| [P3-B](P3-B-audit-replay.md)                  | Deterministic replay for audit reconstruction                 | L    | accepted |
+| [P3-C](P3-C-decision-ledger.md)               | Hash-chained, tamper-evident decision ledger                  | L    | accepted |
+| [P3-D](P3-D-payer-dataset-fhir-prior-auth.md) | Synthetic payer dataset and FHIR prior-authorization surface  | L    | accepted |
+| [P3-E](P3-E-clinician-review-queue.md)        | Clinician review queue, `$inquire` and the decision clock     | M    | accepted |
+| P3-F                                          | Appeals: reconsideration lifecycle for adverse determinations | M    | draft    |
 
 ## Tier 4 — Governance and agent security as code
 
