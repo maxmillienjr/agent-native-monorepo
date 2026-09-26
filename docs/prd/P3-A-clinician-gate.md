@@ -2,11 +2,11 @@
 id: P3-A
 title: Clinician-gate invariant enforced in the type system
 tier: 3
-status: accepted
+status: in-progress
 size: S
 depends_on: []
 blocks: [P3-C, P3-D, P3-E]
-issue: null
+issue: 75
 superseded_by: null
 controls: [CTL-HUM-01]
 ---
@@ -100,28 +100,32 @@ is checkable in thirty seconds by reading one type test.
 
 ## Scope
 
+_Scope, Design and the criteria below apply the review amendment recorded as the last item
+under Risks: the `disposition` channel and the `RunResponse` field it would have filled
+belong to P3-D._
+
 - `packages/determination` (`@repo/determination`): the determination types, their Zod
   schemas, and two entry points — `.` for everything the agent may use, and `./clinician`
   for the one constructor that produces an adverse determination.
-- A `disposition` channel on the graph state, typed so it can hold an automated approval or
-  a referral to a clinician and nothing else.
-- Explicit `Promise<Partial<AgentState>>` return types on the seven wrappers in
-  `graph/graph.ts`, so an inline node is checked the way a node file already is.
-- `RunResponse` gains an optional `disposition`, and `buildRunResponse` parses its result
-  through a strict `RunResponseSchema`, so the invariant is enforced on the bytes that leave
-  the service and not only on the types that produced them.
+- A `Node` return-type alias, and explicit `Promise<Partial<AgentState>>` return types on
+  the seven wrappers in `graph/graph.ts`, so an inline node is checked the way a node file
+  already is.
+- `buildRunResponse` parses its result through a strict `RunResponseSchema`, so what leaves
+  the service is checked on the bytes and not only on the types that produced them.
 - An ESLint `no-restricted-imports` rule forbidding `@repo/determination/clinician` under
   `apps/agent-service/src/agent/**`, with a test that proves it fires.
-- Type-level tests (`*.test-d.ts`) checked by `yarn turbo typecheck`, and runtime tests for
-  the schemas and the egress parse.
+- Type-level tests (`*.test-d.ts`) checked by `yarn turbo typecheck` — the graph's against a
+  fixture state annotation that has a `disposition` channel — and runtime tests for the
+  schemas and the egress parse.
 - `.context/conventions.md` and `.agents/reviewer.md` rule 9 name the `./clinician`
   subpath as the one deliberate exception to "everything exports through `src/index.ts`",
   and `docs/STATUS.md` gains a row.
 
 ### Non-goals
 
-- **Anything that produces a disposition.** No node in this PRD writes `disposition`; the
-  channel exists, is typed, and is gated, and stays `undefined` on every run. A toy producer
+- **Anything that produces or carries a disposition.** No graph in this PRD has a
+  `disposition` channel and `RunResponse` has no `disposition` field; both are P3-D's, on
+  its own graph and FHIR mapping (see the amendment at the foot of this file). A toy producer
   would be a prior-authorization workflow with no request, no criteria and no data behind
   it — the thing ADR 0003 calls worse than none. **P3-D** owns the producer, the synthetic
   requests it reads, and the FHIR surface that returns the result.
@@ -270,12 +274,8 @@ a stored determination without being able to mint one.
 
 ### The graph
 
-`state.ts` gains `disposition: AgentDispositionSchema.optional()` on `AgentStateSchema`, and
-`graph.ts` gains `disposition: Annotation<AgentState['disposition']>` beside `extraction`
-(`graph.ts:37-40` explains why both are needed). `WorkingMemorySchema` in `memory-core` is
-not touched — `extraction` sets the precedent of a field that lives only on
-`AgentStateSchema`. No node is named `disposition`, so the channel-name collision in
-`.context/workflows.md:49-58` does not arise.
+_Amended at review: the chat graph gains no `disposition` channel. P3-D adds one to its own
+graph, typed with this PRD's `AgentDisposition` and `Node`._
 
 Because LangGraph does not check an inline node's return — at 0.4.10, and still at 1.4.18
 when P5-C re-ran the probe on 2026-09-26 — each wrapper in
@@ -288,9 +288,10 @@ type Node = (state: AgentState) => Promise<Partial<AgentState>>;
 That turns "a node cannot put a denial in state" from a convention every node file happens
 to follow into a property of the one place nodes are registered. Checked on 2026-09-26: an
 async arrow typed `Node` — or checked with `satisfies Node` inline in `addNode` — that
-returns `{ disposition: denial }` or `{ determination: denial }` fails with TS2322. Adding the channel changes
-no prompt and no seam request, so no cassette needs re-recording (`.context/conventions.md`
-lists what does).
+returns `{ disposition: denial }` or `{ determination: denial }` fails with TS2322. The type
+test proves this against a fixture state annotation that declares a `disposition` channel,
+since the chat graph's does not. Typing the wrappers changes no prompt and no seam request,
+so no cassette needs re-recording (`.context/conventions.md` lists what does).
 
 ### The boundary: what types cannot do
 
@@ -302,22 +303,24 @@ The runtime check is the one that holds:
 export const RunResponseSchema = z
   .object({
     // … existing fields …
-    disposition: AgentDispositionSchema.optional(),
   })
   .strict();
 ```
 
-`AgentDispositionSchema` is a discriminated union on `kind` with two members; `denial` and
-`partial-approval` are not among them, so parsing a response that carries one throws.
-`.strict()` turns an unknown key into an error rather than a silent strip — without it, a
-denial placed under any other key would be removed from the response and the defect would
-never surface. `buildRunResponse` ends in `RunResponseSchema.parse(...)`. Both `execute`
+_Amended at review: `RunResponse` gains no `disposition` field; P3-D's FHIR mapping parses
+its disposition through `AgentDispositionSchema` instead._ `AgentDispositionSchema` is a
+discriminated union on `kind` with two members; `denial` and `partial-approval` are not
+among them, so parsing a value that carries one throws. `.strict()` turns an unknown key into
+an error rather than a silent strip — without it, a denial placed under any key the schema
+does not declare would be removed from the response and the defect would never surface.
+`buildRunResponse` ends in `RunResponseSchema.parse(...)`. Both `execute`
 (`runs.service.ts:294`) and `executeTraced` (`runs.service.ts:335`) build their response
-through it, so the eval harness exercises the same check the HTTP path does. A restored checkpoint reaches egress by
-the same route, so a tampered `disposition` in Postgres is caught there too.
+through it, so the eval harness exercises the same check the HTTP path does. A restored
+checkpoint reaches egress by the same route, so a tampered value in Postgres that breaks the
+contract is caught there too.
 
 SSE frames carry a node name and nothing else (`runs.service.ts:360-364`), so
-`POST /runs/stream` has no disposition to leak and needs no change.
+`POST /runs/stream` needs no change.
 
 ### How CI runs the type tests
 
@@ -345,9 +348,10 @@ fails with TS2344. No `vitest --typecheck` step is needed.
 - [ ] The same file asserts with `expectTypeOf` that no export of `.` returns a type
       assignable to `AdverseDetermination`, by mapping over `typeof import('./index.js')`.
 - [ ] `apps/agent-service/src/agent/graph/disposition.test-d.ts` fails `yarn turbo typecheck`
-      if a function typed `Node` can return `{ disposition: <AdverseDetermination> }`, or an
-      undeclared key such as `{ determination: … }`, or if importing
-      `@repo/determination/dist/clinician.js` resolves.
+      if a function typed `Node` over a fixture state annotation with a `disposition`
+      channel can return `{ disposition: <AdverseDetermination> }`, or an undeclared key
+      such as `{ determination: … }`, or if importing `@repo/determination/dist/clinician.js`
+      resolves.
 - [ ] Every `@ts-expect-error` in both files carries a one-line reason, and the pull request
       records one mutation run per file: the guarded error removed, `yarn turbo typecheck`
       failing with TS2578, the mutation reverted.
@@ -356,8 +360,10 @@ fails with TS2344. No `vitest --typecheck` step is needed.
       `kind: 'partial-approval'`; `attestAdverseDetermination` rejects an attestation whose
       `attestedAt` is not an ISO-8601 timestamp with an offset.
 - [ ] `buildRunResponse` parses through `RunResponseSchema`, which is `.strict()`. A unit test
-      passes a state whose `disposition` holds a cast `AdverseDetermination` and asserts the
-      parse throws; a second passes an extra top-level key and asserts the same.
+      passes a state whose `retrievedContext` holds a cast item that breaks
+      `RetrievedContextItemSchema` and asserts `buildRunResponse` throws; a second asserts
+      that `RunResponseSchema` throws on an extra top-level `disposition` key holding a cast
+      `AdverseDetermination`, which a non-strict schema would have stripped.
 - [ ] `yarn turbo test:service` passes unchanged, including `runs.e2e-spec.ts:62`, which parses
       the response independently. Model `stub` / memory `stub`.
 - [ ] `EVAL_CASSETTE_MODE=replay yarn eval` on memory `live` produces the same per-grader
@@ -370,7 +376,8 @@ fails with TS2344. No `vitest --typecheck` step is needed.
 - [ ] `.context/conventions.md:19` and `.agents/reviewer.md:33` name `./clinician` as the one
       entry point deliberately absent from a barrel, and say why.
 - [ ] `docs/STATUS.md` has a row for the clinician gate, status `stubbed`, owner P3-D: the
-      gate runs on every response, and nothing yet writes the channel it guards.
+      types, the lint rule and the strict egress parse exist, and no graph yet produces a
+      disposition.
 - [ ] No fixture contains a CPT code, a real NPI, or anything that is not labelled synthetic.
 - [ ] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
       pass.

@@ -183,14 +183,14 @@ measuring whether the hybrid premise holds, and saying so in the standard vocabu
 Optional vertical. Demonstrates that the chassis holds up under the constraints a payer or
 provider actually operates under. Uses synthetic data only.
 
-| ID                                            | Title                                                         | Size | Status   |
-| --------------------------------------------- | ------------------------------------------------------------- | ---- | -------- |
-| [P3-A](P3-A-clinician-gate.md)                | Clinician-gate invariant enforced in the type system          | S    | accepted |
-| [P3-B](P3-B-audit-replay.md)                  | Deterministic replay for audit reconstruction                 | L    | accepted |
-| [P3-C](P3-C-decision-ledger.md)               | Hash-chained, tamper-evident decision ledger                  | L    | accepted |
-| [P3-D](P3-D-payer-dataset-fhir-prior-auth.md) | Synthetic payer dataset and FHIR prior-authorization surface  | L    | accepted |
-| [P3-E](P3-E-clinician-review-queue.md)        | Clinician review queue, `$inquire` and the decision clock     | M    | accepted |
-| P3-F                                          | Appeals: reconsideration lifecycle for adverse determinations | M    | draft    |
+| ID                                            | Title                                                         | Size | Status      |
+| --------------------------------------------- | ------------------------------------------------------------- | ---- | ----------- |
+| [P3-A](P3-A-clinician-gate.md)                | Clinician-gate invariant enforced in the type system          | S    | in-progress |
+| [P3-B](P3-B-audit-replay.md)                  | Deterministic replay for audit reconstruction                 | L    | accepted    |
+| [P3-C](P3-C-decision-ledger.md)               | Hash-chained, tamper-evident decision ledger                  | L    | accepted    |
+| [P3-D](P3-D-payer-dataset-fhir-prior-auth.md) | Synthetic payer dataset and FHIR prior-authorization surface  | L    | accepted    |
+| [P3-E](P3-E-clinician-review-queue.md)        | Clinician review queue, `$inquire` and the decision clock     | M    | accepted    |
+| P3-F                                          | Appeals: reconsideration lifecycle for adverse determinations | M    | draft       |
 
 ## Tier 4 — Governance and agent security as code
 
