@@ -193,3 +193,11 @@ export {
   type LiveTaskArms,
   type LiveVerdict,
 } from './gate/compare-live.js';
+export {
+  gateBlocks,
+  renderGateJson,
+  renderGateSection,
+  renderPool,
+  type GateResult,
+  type GateVerdict,
+} from './gate/render.js';
