@@ -105,6 +105,16 @@ citation fails the lint. Rows 3 and 11 were still citing lines that no longer he
 they named when they migrated. A green check
 means the evidence exists, not that it is sufficient, and the matrix says so in its header.
 
+**[P5-C](P5-C-langgraph-1x.md) is in progress**, tracked in [#61](https://github.com/maxmillienjr/agent-native-monorepo/issues/61).
+The service now runs on `@langchain/langgraph@1.4.18` and `@langchain/core@1.2.12`. Every
+offline gate passes, the replay is identical to the one at 0.x, and checkpoints resume across
+the upgrade in both directions. The upgrade changed one behaviour. At `core` 1.x, LangChain's
+default retry handler stops on any 429 whose message mentions quota or billing, and every
+Gemini 429 does. P1-C's `stopOnDailyQuota` handed non-daily 429s to that default, so they
+became terminal. It now retries them itself, and the client waits out a per-minute 429
+again, as it did at 0.x. One live `tool-use-001` trial is still open: the only live run
+predates that fix, and it stopped on a per-minute 429.
+
 **Where the detail lives.** Each PRD carries its own risks, its divergences from the design
 that was reviewed, and — where a shipped record turned out to be wrong — the correction that
 followed. P2-A is the one to read first: it shipped, was reopened the same day when two of
