@@ -137,7 +137,7 @@ START → ingress → retrieve → plan → act ⟲ (loop) → distill → refle
   checkpointer can resume from, and the write adapters are idempotent (Cypher MERGE,
   pgvector upsert on content hash) so that a resumed node is safe to re-run.
 - **Both halves are switched on.** `buildAgentGraph` compiles with the `PostgresSaver` when
-  one is configured (`graph/graph.ts:107`) and `IO_RETRY` is attached to the five I/O nodes.
+  one is configured (`graph/graph.ts:84`) and `IO_RETRY` is attached to the five I/O nodes.
   ADR 0001 records the choice of checkpointer and why it is not the same thing as durable
   execution: resume, not exactly-once.
 

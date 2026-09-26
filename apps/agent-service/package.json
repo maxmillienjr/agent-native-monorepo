@@ -26,6 +26,7 @@
     "@nestjs/platform-express": "^11.2.3",
     "@repo/agent-cassette": "workspace:*",
     "@repo/agent-contracts": "workspace:*",
+    "@repo/determination": "workspace:*",
     "@repo/eval-harness": "workspace:*",
     "@repo/memory-core": "workspace:*",
     "@repo/shared-types": "workspace:*",

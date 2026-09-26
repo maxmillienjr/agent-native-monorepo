@@ -2907,6 +2907,7 @@ __metadata:
     "@opentelemetry/sdk-trace-base": "npm:^2.11.0"
     "@repo/agent-cassette": "workspace:*"
     "@repo/agent-contracts": "workspace:*"
+    "@repo/determination": "workspace:*"
     "@repo/eslint-config": "workspace:*"
     "@repo/eval-harness": "workspace:*"
     "@repo/memory-core": "workspace:*"
@@ -2948,7 +2949,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@repo/determination@workspace:packages/determination":
+"@repo/determination@workspace:*, @repo/determination@workspace:packages/determination":
   version: 0.0.0-use.local
   resolution: "@repo/determination@workspace:packages/determination"
   dependencies:
