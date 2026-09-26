@@ -180,10 +180,10 @@ Retention is unbounded: there is no expiry column and no cleanup job. Writes ups
 
 The `reflect` node writes Postgres, then Neo4j, then pgvector, in three sequential loops. Each write is replay-safe — the episodic natural key, Cypher `MERGE`, and pgvector upsert on a content hash — and `reflect` reads its extraction from state rather than deriving it, so a retried attempt writes exactly what the first attempt wrote. The three are still not atomic together: a crash between them leaves the indices disagreeing until the retry, not permanently. That guarantee is convergence under replay, not exactly-once; [ADR 0001](docs/adr/0001-langgraph-over-a-durable-execution-engine.md) explains why the stronger one was not bought, and an outbox would be a new PRD.
 
-| Index            | Technology | What It Stores                                   | Retrieval Pattern                    |
-| ---------------- | ---------- | ------------------------------------------------ | ------------------------------------ |
-| Knowledge Graph  | Neo4j 5    | Entities (`:Concept`, `:Fact`) and relationships | Bounded multi-hop Cypher traversal   |
-| Dense Embeddings | pgvector   | Distilled fact embeddings (768-dim, HNSW)        | Cosine similarity via `<=>` operator |
+| Index            | Technology | What It Stores                                   | Retrieval Pattern                  |
+| ---------------- | ---------- | ------------------------------------------------ | ---------------------------------- |
+| Knowledge Graph  | Neo4j 5    | Entities (`:Concept`, `:Fact`) and relationships | Bounded multi-hop Cypher traversal |
+| Dense Embeddings | pgvector   | Distilled fact embeddings (768-dim)              | Exact cosine similarity via `<=>`  |
 
 **Why both?** Dense search finds semantically similar facts (paraphrase, synonym variants) but cannot follow relational chains. Graph traversal follows explicit relationships (A→B→C) but misses paraphrase variants. Together, they provide complementary recall paths that reduce false negatives. The reasoning is recorded in [ADR 0002](docs/adr/0002-neo4j-and-pgvector-rather-than-one-store.md), which also notes that the premise is unmeasured until P2-B builds the ablation.
 

@@ -31,9 +31,10 @@
 
 - **`vector` column type:** Postgres column storing fixed-dimension float arrays.
 - **`<=>` operator:** Cosine distance operator for similarity search.
-- **HNSW index:** Approximate nearest neighbor index for fast vector search. Not built
-  here — `semantic_facts` carries no index on `embedding`, so every `<=>` query is a
-  sequential scan.
+- **HNSW index:** Approximate nearest neighbor index for fast vector search.
+  `semantic_facts_embedding_hnsw` exists and no query uses it: both `<=>` queries break
+  distance ties on the content hash, which an HNSW scan cannot serve, so every `<=>` query
+  is a sequential scan and a sort. ADR 0006 records why.
 - **Content hash:** SHA-256 of fact text, used as upsert key for idempotent writes.
 
 ## Retrieval

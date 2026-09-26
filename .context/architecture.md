@@ -76,9 +76,11 @@ Two complementary indices, both written by the `reflect` node:
   `:RELATES_TO` between concepts. Enables symbolic multi-hop traversal for explainable
   relational recall. Uniqueness constraints on `:Concept(id)` and `:Fact(contentHash)` are
   installed at boot — `MERGE` is not an upsert without them.
-- **pgvector Collection:** Dense embeddings on an HNSW index with `vector_cosine_ops`.
-  Enables cosine similarity search for paraphrase and synonym recall. Scoped to the
-  requesting session unless the query opts out.
+- **pgvector Collection:** Dense embeddings, searched by exact cosine distance with the
+  content hash as a tiebreaker. Enables cosine similarity search for paraphrase and synonym
+  recall. Scoped to the requesting session unless the query opts out. The column carries an
+  HNSW index (`vector_cosine_ops`) that the tiebroken query cannot use — ADR 0006 records
+  that trade.
 
 The dimension is one exported constant, `EMBEDDING_DIMENSIONS`, and every schema, DDL,
 fixture and stub derives from it. It is 768 because pgvector refuses an HNSW index above
