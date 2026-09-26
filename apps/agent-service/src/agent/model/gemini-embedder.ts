@@ -1,15 +1,39 @@
+import { z } from 'zod';
 import { EMBEDDING_DIMENSIONS, EMBEDDING_MODEL, l2Normalize } from '@repo/memory-core';
 
 const ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models';
 
-/** Carries the HTTP status so the graph's `retryOn` can tell a 4xx from a 5xx. */
+/**
+ * Carries the HTTP status so the graph's `retryOn` can tell a 4xx from a 5xx,
+ * and the response's `google.rpc` details so `classifyRateLimit` can tell a
+ * daily quota from any other 429.
+ *
+ * `errorDetails` is the field name `@google/generative-ai` uses for the same
+ * thing on the chat path, so one classifier reads both.
+ */
 export class EmbeddingRequestError extends Error {
   constructor(
     message: string,
     readonly status: number,
+    readonly errorDetails?: readonly unknown[],
   ) {
     super(message);
     this.name = 'EmbeddingRequestError';
+  }
+}
+
+/** The Google API error envelope, as far as anything here reads it. */
+const ErrorBodySchema = z.object({
+  error: z.object({ details: z.array(z.unknown()).optional() }).passthrough(),
+});
+
+function errorDetailsOf(body: string): unknown[] | undefined {
+  try {
+    const parsed = ErrorBodySchema.safeParse(JSON.parse(body));
+    return parsed.success ? parsed.data.error.details : undefined;
+  } catch {
+    // Not JSON: a proxy's HTML page, an empty body. The status still stands.
+    return undefined;
   }
 }
 
@@ -40,9 +64,11 @@ export function createGeminiEmbedder(apiKey: string): (text: string) => Promise<
     });
 
     if (!response.ok) {
+      const body = await response.text();
       throw new EmbeddingRequestError(
-        `embedContent failed: ${response.status} ${await response.text()}`,
+        `embedContent failed: ${response.status} ${body}`,
         response.status,
+        errorDetailsOf(body),
       );
     }
 
