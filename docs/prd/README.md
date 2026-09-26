@@ -72,7 +72,7 @@ it, so the fix P1-A handed over (retry 429 in `IO_RETRY`) would make things wors
 tier is written conditional on a repository secret, and shows as skipped, never as passed,
 until one exists.
 
-**[P2-B](P2-B-retrieval-ablation.md) is drafted and awaiting review** — the ablation ADR
+**[P2-B](P2-B-retrieval-ablation.md) is accepted** — the ablation ADR
 0002 has been waiting for. Drafting it found that the deployed graph path is close to
 unreachable: the seed linker deletes `_`, and 34 of the 41 entity ids in the two live
 extractions contain one. The draft therefore measures the store with the linker taken out
@@ -137,11 +137,11 @@ replacing it.
 The three-tier memory model is instantiated and the graph is checkpointed. What remains is
 measuring whether the hybrid premise holds, and saying so in the standard vocabulary.
 
-| ID                                 | Title                                                            | Size | Status  |
-| ---------------------------------- | ---------------------------------------------------------------- | ---- | ------- |
-| [P2-A](P2-A-wire-memory-core.md)   | Wire memory-core into the service; add checkpointing and retry   | L    | shipped |
-| [P2-B](P2-B-retrieval-ablation.md) | Hybrid retrieval evaluation and the graph/vector/hybrid ablation | L    | draft   |
-| P2-C                               | OpenTelemetry GenAI semantics, including evaluation events       | M    | draft   |
+| ID                                 | Title                                                            | Size | Status   |
+| ---------------------------------- | ---------------------------------------------------------------- | ---- | -------- |
+| [P2-A](P2-A-wire-memory-core.md)   | Wire memory-core into the service; add checkpointing and retry   | L    | shipped  |
+| [P2-B](P2-B-retrieval-ablation.md) | Hybrid retrieval evaluation and the graph/vector/hybrid ablation | L    | accepted |
+| P2-C                               | OpenTelemetry GenAI semantics, including evaluation events       | M    | draft    |
 
 ## Tier 3 — Regulated-domain credibility
 

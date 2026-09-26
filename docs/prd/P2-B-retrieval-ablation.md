@@ -2,7 +2,7 @@
 id: P2-B
 title: Hybrid retrieval evaluation and the graph/vector/hybrid ablation
 tier: 2
-status: draft
+status: accepted
 size: L
 depends_on: [P1-A, P1-B, P2-A]
 blocks: []
@@ -252,7 +252,7 @@ export const LabelledQuerySchema = z.object({
 });
 ```
 
-Four strata, 30 queries each, 120 in all, fixed now:
+Four strata, 50 queries each, 200 in all, fixed now:
 
 | Stratum             | Constructed so that                                                                                       | Favours by design |
 | ------------------- | --------------------------------------------------------------------------------------------------------- | ----------------- |
@@ -263,7 +263,7 @@ Four strata, 30 queries each, 120 in all, fixed now:
 
 Two strata favour vector, one favours graph, one favours neither, and the table says so,
 because a synthetic set is always constructed toward something and the defence is to name
-what. The headline number is the unweighted mean over all 120 queries; the per-stratum
+what. The headline number is the unweighted mean over all 200 queries; the per-stratum
 table is reported beside it and is the one a reader should trust over the headline.
 
 ### Labels, and keeping them from being circular
@@ -434,7 +434,7 @@ range is printed next to it.
 Stated here, accepted with this PRD, before any number exists, so that the number cannot
 move the rule:
 
-- **Metric:** `Recall@10` over all 120 queries, pre-adjudication labels.
+- **Metric:** `Recall@10` over all 200 queries, pre-adjudication labels.
 - **Comparison:** `hybrid` against the better of `vector` and `graph`.
 - **Hybrid earns its keep** if the point difference is at least **+0.05** and the lower
   bound of the 95% paired bootstrap interval is above 0.
@@ -525,7 +525,7 @@ no network.
 - [ ] The paired bootstrap returns identical intervals for identical input and seed, exactly
       `[0, 0]` for two identical systems, and an interval excluding 0 for a fixture in which
       one system wins on every query. **Pure.**
-- [ ] The retrieval dataset loads and validates: 120 queries, 30 per stratum; every
+- [ ] The retrieval dataset loads and validates: 200 queries, 50 per stratum; every
       `relevant` handle and every `goldSeeds` id resolves; no two facts share text. **Pure.**
 - [ ] The dataset commit precedes the embedding-file commit in `git log`, and the report
       prints the dataset's sha256. **Reviewer, from history.**
@@ -576,12 +576,13 @@ no network.
   that justifies the operational cost"
   (`0002-neo4j-and-pgvector-rather-than-one-store.md:37-38`). It has to be agreed before
   acceptance, because agreeing it after the run is the thing pre-registration prevents.
-  **Open question for review.**
-- **120 queries may be too few to decide.** With a per-query standard deviation σ in the
-  paired difference, the interval's half-width is about 1.96σ/√120. At σ = 0.3 that is
-  ±0.054 — the same size as the margin. The rule has an `inconclusive` outcome for exactly
-  this, and the report prints σ and the n that would resolve it. Growing the set later is
-  allowed; relabelling it is not.
+  **Agreed at review, 2026-09-26: +0.05 stands.**
+- **The query count decides how often the answer is `inconclusive`.** With a per-query
+  standard deviation σ in the paired difference, the interval's half-width is about
+  1.96σ/√n. The draft proposed 120 queries, which at σ = 0.3 gives ±0.054 — the same size as
+  the margin. **Raised at review, 2026-09-26, to 200 (50 per stratum)**, which gives ±0.042
+  at the same σ. The rule keeps its `inconclusive` outcome, and the report prints σ and the
+  n that would resolve it. Growing the set later is allowed; relabelling it is not.
 - **The corpus's id convention decides the primary `graph` number.** Taken from 41 ids in
   two live extractions, which is thin evidence of what the model does in general. The
   oracle conditions are independent of it; the primary ones are not.
@@ -589,10 +590,15 @@ no network.
   instead of hand-authoring extractions.** That graph would be exactly what production
   writes, ids and all, but costs one `generateContent` per episode — about fifty, over
   three days of quota — and makes the corpus depend on a stochastic extraction that labels
-  would then have to follow. This PRD proposes hand-authored episodes. **Open question
-  for review; it changes the size.**
-- **Who adjudicates the pooled candidates.** Proposed: the repository owner, because the
-  implementing session wrote the labels and cannot be blind to them. **Open question.**
+  would then have to follow. **Decided at review, 2026-09-26: hand-authored episodes.** A
+  `distill`-built corpus is a separate measurement of the extractor, not of the stores, and
+  is unowned until this PRD's ADR says the linker or the extraction is the work.
+- **Who adjudicates the pooled candidates.** The implementing session wrote the labels and
+  cannot be blind to them. **Decided at review, 2026-09-26:** a separate agent session that
+  is given each query and the shuffled, source-stripped pool, and never the labels, the
+  condition names or the corpus file. The report says the adjudicator was a model and not a
+  person, and names the model, because pooled adjudication by a model is weaker evidence
+  than by a domain expert and a reader should be able to discount it.
 - **Vector search is a sequential scan since #44.** Found while drafting this PRD and
   outside its scope. It does not bias the ablation — exact search is the best the vector
   path can do, and its latency is labelled — but the index is built and never used, and
@@ -608,7 +614,7 @@ no network.
 - **Sizing.** `L`, against the index's `M`. The graph path with more than a handful of
   facts has never run in this repository, and `.agents/prd-author.md` says to size code
   that has never run as unknown. The known work — a seed-format change, a 300-fact corpus and
-  120 closed-answer queries written by hand, a resumable recorder, eight conditions, and an
+  200 closed-answer queries written by hand, a resumable recorder, eight conditions, and an
   ADR — is already past five days before the first surprise.
 
 ## References
