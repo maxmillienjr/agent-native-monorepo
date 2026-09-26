@@ -108,3 +108,6 @@ export { EvalHarness, trialsFor, type EvalHarnessOptions } from './harness.js';
 export { renderJsonReport } from './reporters/json.js';
 export { renderJUnitReport } from './reporters/junit.js';
 export { renderMarkdownSummary } from './reporters/summary.js';
+
+// Retrieval metrics — a ranked list per query, not a trial, so not `Grader`s.
+export { recallAtK, reciprocalRank, ndcgAtK } from './retrieval/metrics.js';
