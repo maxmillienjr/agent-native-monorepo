@@ -6,7 +6,7 @@ import type { AgentState } from './state.js';
  * LangGraph does not check a node's return value against the state
  * annotation: an inline `addNode('x', async () => ({ anything: 42 }))`
  * compiles, whether the key is undeclared or the value is the wrong type.
- * Checked on `@langchain/langgraph` 0.4.10 (P3-A). A function typed `Node`
+ * Checked on `@langchain/langgraph` 0.4.10 and 1.4.18 (P3-A). A function typed `Node`
  * fails instead — TS2322 for a wrong value or a key the state does not have.
  *
  * One case needs more than the alias. An undeclared key returned beside a

@@ -383,10 +383,12 @@ fails with TS2344. No `vitest --typecheck` step is needed.
 - [x] `EVAL_CASSETTE_MODE=replay yarn eval` on memory `live` produces the same per-grader
       results as on `main` — every response in that run now passes through the egress parse.
       Model `replay` / memory `live`. No model-`live` run is claimed; this PRD changes no
-      prompt, and P1-C owns live runs. Run 2026-09-26 against throwaway Postgres and Neo4j
-      containers, once on the branch and once on `main` at `51184f6`. Both runs passed 2 of
-      2 tasks, and all 21 grader results matched in label and score. The only difference
-      was the run ids quoted in the explanations.
+      prompt, and P1-C owns live runs. Run 2026-09-26 on LangGraph 1.4.18, against fresh
+      throwaway Postgres and Neo4j containers started for the run, once on the branch
+      rebased onto `main` and once on `main` at `7cd79d9`. Both runs passed 2 of 2
+      tasks, and all 21 grader results matched in label, score and explanation once run ids
+      are masked. An earlier pair on 0.4.10 matched too. Its stores were shared by
+      accident with another session's script, so it is not the evidence cited here.
 - [x] A Vitest test lints an import of `@repo/determination/clinician` at a path under
       `src/agent/` and gets exactly one `no-restricted-imports` error, and at a path under
       `src/runs/` gets none. It is `src/clinician-boundary.test.ts`, and it checks that
@@ -415,11 +417,14 @@ subject once the field was gone. It forges a `retrievedContext` item instead, wh
 `buildRunResponse` does read, and checks the strict schema directly for an undeclared
 `disposition` key.
 
-**The probe, re-run on the version on `main`.** P5-C had not landed, so that version is
-still `@langchain/langgraph` 0.4.10. On 2026-09-26 an untyped inline node returning
-`{ disposition: denial }`, `{ determination: denial }` or `{ disposition: 42 }` compiled.
-The same bodies typed `Node`, or checked with `satisfies Node`, failed with TS2322. The
-alias stays. P5-C should re-run this probe after its bump.
+**The probe, re-run on both versions `main` held.** On 2026-09-26, on
+`@langchain/langgraph` 0.4.10, an untyped inline node returning `{ disposition: denial }`,
+`{ determination: denial }` or `{ disposition: 42 }` compiled. The same bodies typed
+`Node`, or checked with `satisfies Node`, failed with TS2322. P5-C's upgrade merged while
+this was in review, and the probe was run again on 1.4.18 after the rebase. All four
+untyped nodes still compiled, including one that returned a declared key beside an
+undeclared one, and the typed nodes failed as before. P5-C's own probe on 1.4.18 reached
+the same result. The alias stays.
 
 **`Node` alone misses one case.** Design says a node typed `Node` that returns an
 undeclared key fails. That holds only when every key it returns is undeclared, where TS2322
