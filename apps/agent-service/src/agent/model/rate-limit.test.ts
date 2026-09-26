@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { abortError, renderAbortSummary } from '@repo/eval-harness';
 import { createGeminiChat } from '../../runs/runs.service.js';
+import { explainAbort } from '../../eval/abort-cause.js';
 import { createGeminiEmbedder } from './gemini-embedder.js';
 import { classifyRateLimit } from './rate-limit.js';
 
@@ -43,6 +45,29 @@ function tooManyRequests(details?: unknown[]): Response {
     status: 429,
     statusText: 'Too Many Requests',
     headers: { 'content-type': 'application/json' },
+  });
+}
+
+/** The abort summary a run ending on this error would publish, after two finished trials. */
+function abortSummaryFor(error: unknown): string {
+  const progress = {
+    completed: [0, 1].map((index) => ({
+      taskId: 'memory-recall-001',
+      index,
+      runId: `run-${index}`,
+      passed: true,
+      failedGraders: [],
+    })),
+  };
+  const cause = explainAbort(error, progress);
+  return renderAbortSummary({
+    suite: 'memory-recall',
+    startedAt: '2026-09-26T00:00:00.000Z',
+    abortedAt: '2026-09-26T00:01:00.000Z',
+    axes: { model: 'live', memory: 'live' },
+    error: abortError(error),
+    ...(cause === undefined ? {} : { cause }),
+    completedTrials: progress.completed,
   });
 }
 
@@ -99,6 +124,10 @@ describe('a 429 on the chat path', () => {
 
     expect(fetchStub).toHaveBeenCalledTimes(1);
     expect(classifyRateLimit(error)).toBe('daily-quota');
+    expect(abortSummaryFor(error)).toContain(
+      '**Cause (`daily-quota`):** daily `generateContent` quota exhausted after 2 completed trials ' +
+        '(`GenerateRequestsPerDayPerProjectPerModel-FreeTier`)',
+    );
   });
 
   it('still makes seven requests for a 429 without those details', async () => {
@@ -120,6 +149,7 @@ describe('a 429 on the chat path', () => {
 
     expect(fetchStub).toHaveBeenCalledTimes(7);
     expect(classifyRateLimit(error)).toBe('unclassified');
+    expect(abortSummaryFor(error)).toContain('**Cause (`rate-limit-unclassified`):**');
   });
 });
 
@@ -144,6 +174,9 @@ describe('a 429 on the embed path', () => {
 
     expect(fetchStub).toHaveBeenCalledTimes(1);
     expect(classifyRateLimit(error)).toBe('daily-quota');
+    expect(abortSummaryFor(error)).toContain(
+      '**Cause (`daily-quota`):** daily `embedContent` quota exhausted after 2 completed trials',
+    );
   });
 
   it('makes one request for a 429 without those details too', async () => {
@@ -155,5 +188,6 @@ describe('a 429 on the embed path', () => {
 
     expect(fetchStub).toHaveBeenCalledTimes(1);
     expect(classifyRateLimit(error)).toBe('unclassified');
+    expect(abortSummaryFor(error)).toContain('**Cause (`rate-limit-unclassified`):**');
   });
 });
