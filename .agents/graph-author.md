@@ -13,34 +13,36 @@ You are a specialized agent for scaffolding new LangGraph nodes in this monorepo
 Every node must follow this structure:
 
 ```typescript
-import { getTracer } from '@repo/telemetry';
+import { withNodeSpan } from '@repo/telemetry';
 import type { AgentState } from '../graph/state.js';
 
-const tracer = getTracer('agent-service');
-
 export async function myNewNode(state: AgentState): Promise<Partial<AgentState>> {
-  return tracer.startActiveSpan('agent.node.my-new', async (span) => {
-    try {
-      span.setAttribute('run_id', state.runId);
-      span.setAttribute('session_id', state.sessionId);
+  return withNodeSpan('my-new', async (span) => {
+    span.setAttribute('run_id', state.runId);
+    span.setAttribute('session_id', state.sessionId);
 
-      // Node logic here — operate on state, return partial updates
+    // Node logic here — operate on state, return partial updates
 
-      return {
-        // Only the state fields this node modifies
-      };
-    } finally {
-      span.end();
-    }
+    return {
+      // Only the state fields this node modifies
+    };
   });
 }
 ```
+
+`withNodeSpan` names the span `agent.node.my-new`, ends it, and records `error.type` and
+ERROR status if the node throws. The span joins the run's trace under its `invoke_agent`
+root on its own.
 
 ## Rules
 
 - **Return type is `Partial<AgentState>`** — only include fields the node modifies.
 - **OTel span is mandatory** — named `agent.node.<kebab-name>`.
-- **Span attributes** must include `run_id` and `session_id` at minimum.
+- **Span attributes** must include `run_id` and `session_id` at minimum, and every key must
+  be on `ALLOWED_SPAN_ATTRIBUTES` in `packages/telemetry/src/genai.ts`. Add a new key there
+  only when its value is not content: nothing the user or the model wrote, and no id the
+  model extracted.
+- **No token usage on the node span** — the model client's inference span carries it.
 - **No direct database calls** — use `@repo/memory-core` interfaces.
 - **No `console.log`** — use the structured logger.
 - **No `any`** — use `unknown` + Zod parse at boundaries.

@@ -157,6 +157,25 @@ single sample as a reliability measurement. Every report names the set's `record
 `.context/conventions.md` lists what invalidates a set. The short version: a prompt edit
 moves the request hash, every replay misses, and `CassetteMissError` prints the diff.
 
+## Evaluation events
+
+After grading a trial, `EvalHarness` emits one OpenTelemetry `gen_ai.evaluation.result`
+event per grader result. An event is a log record emitted through the Logs API, not a span
+event: `Span.addEvent` is the API OTEP 4430 deprecates, and the GenAI conventions define
+the evaluation result as an event in the Logs data model. Each record carries
+`gen_ai.evaluation.name`, `.score.value`, `.score.label` and, when the grader wrote one,
+`.explanation`, plus the task, the trial index, the grader kind and both axes, so a
+replayed `pass` can never be averaged with a live one downstream.
+
+The record's trace and span id are the trial's `invoke_agent` span, rebuilt from the
+transcript's root `SpanRecord`. The run has finished by the time it is graded, and a log
+record carries ids rather than a live span, so that is allowed. A transcript with no spans
+gets unparented events. The API is a no-op until an SDK registers a logger provider.
+`yarn eval` registers one, logs how many events it emitted beside how many grader results
+the report holds, and exports both spans and events over OTLP when
+`OTEL_EXPORTER_OTLP_ENDPOINT` is set. `eval-report.json` names the conventions commit the
+spans and events follow, as `genAiSemconvCommit`.
+
 ## What this package does not do
 
 - **Reading a cassette.** This package resolves their paths and counts them; it never opens
@@ -168,8 +187,10 @@ moves the request hash, every replay misses, and `CassetteMissError` prints the 
   failures should block a merge is P1-D.
 - **Retrieval-quality metrics** (`Recall@k`, `nDCG`, `MRR`). P2-B, built on the `Grader`
   interface defined here.
-- **Span collection.** `Transcript.spans` is part of the contract and is not populated;
-  P2-C emits GenAI evaluation events.
+- **Span collection.** `Transcript.spans` is filled by the adapter, not by this package.
+  `apps/agent-service` keeps the evaluation process's spans in memory and hands each trial
+  the spans of its own run's trace, which is how every trial in `eval-report.json` carries
+  its `invoke_agent` tree on every axis.
 - **A live model grader.** `ModelGrader` refuses a judge from the system under test's own
   family without a written opt-in, and the agent is Gemini on both paths that matter — so
   using one needs a second credential this repository does not ask for. The refusal and the

@@ -12,8 +12,10 @@ against the project's conventions.
    query result) validates with a Zod schema. Types are inferred via `z.infer<>`, never
    duplicated manually.
 
-3. **OTel Spans:** Any new graph node must be wrapped in an OTel span via
-   `getTracer().startActiveSpan('agent.node.<name>')`.
+3. **OTel Spans:** Any new graph node must be wrapped in `withNodeSpan('<name>', ...)` from
+   `@repo/telemetry`, which opens `agent.node.<name>`. A new span attribute must be added
+   to `ALLOWED_SPAN_ATTRIBUTES` in the same change; reject one whose value is content —
+   a prompt, a completion, a tool argument or result, or an id the model extracted.
 
 4. **Memory Encapsulation:** No direct database calls (Postgres, Neo4j, pgvector) outside
    `packages/memory-core`. All memory writes go through the memory-core facade.
