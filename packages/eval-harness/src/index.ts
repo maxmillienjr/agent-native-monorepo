@@ -65,6 +65,7 @@ export {
   episodicRowWritten,
   entityMerged,
   factsPersistedToBothIndices,
+  retrievedFromSource,
 } from './graders/code.js';
 export {
   ModelGrader,
@@ -103,6 +104,8 @@ export {
   loadTaskSpec,
   loadSuite,
   loadMemoryRecallSuite,
+  readTaskFilter,
+  selectTasks,
 } from './dataset.js';
 
 // The vector a seeded fact is stored with.
@@ -118,6 +121,109 @@ export { emitEvaluationResults, rootSpanRecord } from './telemetry.js';
 export { renderJsonReport } from './reporters/json.js';
 export { renderJUnitReport } from './reporters/junit.js';
 export { renderMarkdownSummary } from './reporters/summary.js';
+
+// Retrieval metrics — a ranked list per query, not a trial, so not `Grader`s.
+export { recallAtK, reciprocalRank, ndcgAtK } from './retrieval/metrics.js';
+
+// The retrieval-ablation dataset: corpus, labelled queries, and the checks
+// that hold each stratum to its declared construction.
+export {
+  RETRIEVAL_ABLATION_DATASET_DIR,
+  CorpusSchema,
+  CorpusEpisodeSchema,
+  LabelledQuerySchema,
+  QuerySetSchema,
+  STRATA,
+  StratumSchema,
+  adjacency,
+  buildRetrievalDataset,
+  datasetProblems,
+  datasetSha256,
+  graphFacts,
+  loadRetrievalDataset,
+  mentionCounts,
+  sha256Hex,
+  strataProblems,
+  textsToEmbed,
+  wordJaccard,
+  type Corpus,
+  type CorpusEpisode,
+  type CorpusFact,
+  type GraphFactSeed,
+  type GraphShape,
+  type LabelledQuery,
+  type RetrievalDataset,
+  type Stratum,
+} from './retrieval/dataset.js';
+
+// The ablation's arithmetic and its report.
+export {
+  DECISION_MARGIN,
+  GRAPH_READER_LIMIT,
+  K_VALUES,
+  TIE_SALTS,
+  applyDecisionRule,
+  buildPool,
+  conditionScores,
+  fusionReproduced,
+  limitCut,
+  meanScores,
+  percentile,
+  provenance,
+  queryIndex,
+  reachableFacts,
+  resortTies,
+  scoreList,
+  summarizeCondition,
+  type ConditionKind,
+  type ConditionSummary,
+  type K,
+  type Labels,
+  type LimitCut,
+  type MetricMeans,
+  type PoolCandidate,
+  type PoolKeyEntry,
+  type PoolQuery,
+  type ProvenanceSplit,
+  type QueryScores,
+  type RawCondition,
+  type RawQueryResult,
+  type RuleOutcome,
+  type SeedSource,
+  type TieRange,
+} from './retrieval/evaluate.js';
+export {
+  ADJUDICATION_DIR,
+  DecisionsFileSchema,
+  POOL_INSTRUCTIONS,
+  PoolCandidatesFileSchema,
+  PoolKeyFileSchema,
+  adjudicatedLabels,
+  adjudicationPaths,
+  renderPoolFiles,
+  type DecisionsFile,
+} from './retrieval/adjudication.js';
+export {
+  buildAblationReport,
+  renderAblationJson,
+  renderAblationMarkdown,
+  type AblationInput,
+  type AblationReport,
+  type AdjudicationSummary,
+  type Comparison,
+  type LabelSetReport,
+} from './retrieval/report.js';
+
+// Statistics — nothing here knows what a query is; P1-D needs the same interval.
+export {
+  DEFAULT_BOOTSTRAP_SEED,
+  mulberry32,
+  pairedBootstrap,
+  pairsToResolve,
+  type PairedBootstrapOptions,
+  type PairedBootstrapResult,
+} from './stats/paired-bootstrap.js';
+
 export {
   abortError,
   completedTrial,

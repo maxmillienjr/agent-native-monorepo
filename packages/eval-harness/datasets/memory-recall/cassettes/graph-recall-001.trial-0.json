@@ -1,0 +1,192 @@
+{
+  "header": {
+    "formatVersion": 1,
+    "taskId": "graph-recall-001",
+    "trialIndex": 0,
+    "recordedAt": "2026-09-26T19:26:34.957Z",
+    "gitSha": "5aca9f9a8f1b988b20f0a968a65be2a575841dcd",
+    "axes": {
+      "model": "live",
+      "memory": "live"
+    },
+    "chatModel": "gemini-2.5-flash",
+    "embeddingModel": "gemini-embedding-001",
+    "embeddingDimensions": 768
+  },
+  "decisions": [
+    {
+      "seam": "embed",
+      "requestHash": "ec81ca459397845ed6e684198ccc6ad7826c40835dc7a785f348098e06ffb908",
+      "request": {
+        "text": "What do my notes say about LangGraph checkpoints?"
+      },
+      "response": {
+        "kind": "vector",
+        "float32Base64": "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"
+      },
+      "latencyMs": 295
+    },
+    {
+      "seam": "plan.callLlm",
+      "requestHash": "58675b01ffd969863c7aa6c63d049164a8b7dbdbca8c8d5f1cdd88975cd4ba7a",
+      "request": {
+        "systemPrompt": "You are a helpful research assistant.",
+        "userPrompt": "user: What do my notes say about LangGraph checkpoints?\n\nRelevant context:\n- [pgvector] A checkpointed run can resume from its last completed step after a crash.\n- [neo4j] LangGraph checkpoints are written after every node, keyed by the run's thread id.\n\nBased on the above, create a plan to address the user's request."
+      },
+      "response": {
+        "kind": "value",
+        "value": {
+          "content": "Here's what your notes say about LangGraph checkpoints:\n\nYour notes indicate that LangGraph checkpoints serve a crucial purpose: they allow a run to **resume from its last completed step after a crash**.\n\nSpecifically, they are **written after every node** and are **keyed by the run's thread ID**.",
+          "tokenCounts": {
+            "prompt": 88,
+            "completion": 64
+          }
+        }
+      },
+      "tokenCounts": {
+        "prompt": 88,
+        "completion": 64
+      },
+      "latencyMs": 1675
+    },
+    {
+      "seam": "act.selectTool",
+      "requestHash": "250ce3552841d5f5fb41f6bc26c6aefcd34d3aad760553bf8172c72b43bc2acd",
+      "request": {
+        "plan": "Here's what your notes say about LangGraph checkpoints:\n\nYour notes indicate that LangGraph checkpoints serve a crucial purpose: they allow a run to **resume from its last completed step after a crash**.\n\nSpecifically, they are **written after every node** and are **keyed by the run's thread ID**.",
+        "toolNames": [
+          "web-search"
+        ]
+      },
+      "response": {
+        "kind": "value",
+        "value": null
+      },
+      "latencyMs": 554
+    },
+    {
+      "seam": "distill.extractEntities",
+      "requestHash": "84c566e04f788dc9238863ed2ab8924f894e95deab2c836c96eff44ada39e21d",
+      "request": {
+        "context": "user: What do my notes say about LangGraph checkpoints?\nassistant: Here's what your notes say about LangGraph checkpoints:\n\nYour notes indicate that LangGraph checkpoints serve a crucial purpose: they allow a run to **resume from its last completed step after a crash**.\n\nSpecifically, they are **written after every node** and are **keyed by the run's thread ID**."
+      },
+      "response": {
+        "kind": "value",
+        "value": {
+          "entities": [
+            {
+              "id": "langgraph_checkpoints",
+              "label": "LangGraph Checkpoints",
+              "description": "Mechanism in LangGraph for resuming runs."
+            },
+            {
+              "id": "run",
+              "label": "Run",
+              "description": "An execution of a LangGraph workflow."
+            },
+            {
+              "id": "last_completed_step",
+              "label": "Last Completed Step",
+              "description": "The final successfully executed step within a run before an interruption."
+            },
+            {
+              "id": "crash",
+              "label": "Crash",
+              "description": "An unexpected termination or failure of a system or process."
+            },
+            {
+              "id": "node",
+              "label": "Node",
+              "description": "A processing step or unit within a LangGraph workflow."
+            },
+            {
+              "id": "thread_id",
+              "label": "Run's Thread ID",
+              "description": "A unique identifier associated with a specific run's thread."
+            }
+          ],
+          "relationships": [
+            {
+              "fromId": "langgraph_checkpoints",
+              "toId": "run",
+              "type": "ALLOWS_RESUMPTION_OF",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "run",
+              "toId": "last_completed_step",
+              "type": "RESUMES_FROM",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "langgraph_checkpoints",
+              "toId": "crash",
+              "type": "MITIGATES_IMPACT_OF",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "langgraph_checkpoints",
+              "toId": "node",
+              "type": "WRITTEN_AFTER_EVERY",
+              "confidence": 0.9
+            },
+            {
+              "fromId": "langgraph_checkpoints",
+              "toId": "thread_id",
+              "type": "KEYED_BY",
+              "confidence": 0.9
+            }
+          ],
+          "facts": [
+            {
+              "text": "LangGraph checkpoints allow a run to resume from its last completed step after a crash."
+            },
+            {
+              "text": "LangGraph checkpoints are written after every node."
+            },
+            {
+              "text": "LangGraph checkpoints are keyed by the run's thread ID."
+            }
+          ]
+        }
+      },
+      "latencyMs": 3474
+    },
+    {
+      "seam": "embed",
+      "requestHash": "96239d1acd70c4a6a7f399daa0bdc64f1a66231915b8b9ab2d753493d53661e0",
+      "request": {
+        "text": "LangGraph checkpoints allow a run to resume from its last completed step after a crash."
+      },
+      "response": {
+        "kind": "vector",
+        "float32Base64": "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"
+      },
+      "latencyMs": 173
+    },
+    {
+      "seam": "embed",
+      "requestHash": "b6f5ca7bfce524c43bafc5d3d6928860e39eab711100c9cfac7b2251355d3822",
+      "request": {
+        "text": "LangGraph checkpoints are written after every node."
+      },
+      "response": {
+        "kind": "vector",
+        "float32Base64": "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"
+      },
+      "latencyMs": 178
+    },
+    {
+      "seam": "embed",
+      "requestHash": "24ebb6d52214ba540655a315b13c0248e9251a08154dfabb82e7294fe1c252bc",
+      "request": {
+        "text": "LangGraph checkpoints are keyed by the run's thread ID."
+      },
+      "response": {
+        "kind": "vector",
+        "float32Base64": "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"
+      },
+      "latencyMs": 175
+    }
+  ]
+}

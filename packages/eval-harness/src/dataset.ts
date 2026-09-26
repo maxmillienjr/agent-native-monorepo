@@ -17,6 +17,7 @@ import {
   tokenCountsPositive,
   episodicRowWritten,
   entityMerged,
+  retrievedFromSource,
 } from './graders/code.js';
 import { trajectoryGraders } from './graders/trajectory.js';
 
@@ -119,7 +120,7 @@ export const TaskSpecSchema = z.object({
    * reads the declaration next to the assertion it qualifies.
    */
   requires: AxisRequirementsSchema.optional(),
-  expectedSeeds: TaskSeedsSchema.default({ neo4j: [], relationships: [], pgvector: [] }),
+  expectedSeeds: TaskSeedsSchema.default({}),
   expectedOutcome: OutcomeSchema,
   assertions: z.object({
     retrievedContextMinLength: z.number().int().nonnegative().optional(),
@@ -129,6 +130,8 @@ export const TaskSpecSchema = z.object({
     episodicRowsMin: z.number().int().nonnegative().optional(),
     /** `reflect` MERGEd at least this many of the concepts `distill` produced. */
     mergedConceptsMin: z.number().int().nonnegative().optional(),
+    /** At least one retrieved candidate carries this `source`; see `retrievedFromSource`. */
+    retrievedFromSource: z.enum(['neo4j', 'pgvector']).optional(),
   }),
   /**
    * The reference the trajectory graders score against, and the threshold each
@@ -164,6 +167,7 @@ export function buildGraders(spec: TaskSpec): Grader<MemoryOutcome>[] {
   if (a.tokenCountsPositive === true) graders.push(tokenCountsPositive());
   if (a.episodicRowsMin !== undefined) graders.push(episodicRowWritten(a.episodicRowsMin));
   if (a.mergedConceptsMin !== undefined) graders.push(entityMerged(a.mergedConceptsMin));
+  if (a.retrievedFromSource !== undefined) graders.push(retrievedFromSource(a.retrievedFromSource));
 
   if (spec.expectedTrajectory) {
     graders.push(...trajectoryGraders<MemoryOutcome>(spec.expectedTrajectory));
@@ -213,6 +217,47 @@ export function loadSuite(
     tasks: files.map((file) => taskFromSpec(loadTaskSpec(join(directory, file)))),
     trialsPerTask,
   };
+}
+
+/**
+ * `EVAL_TASKS`: a comma-separated list of task ids, or unset for all of them.
+ *
+ * It exists because recording is per suite. Adding one task and recording its
+ * cassette would otherwise re-record every other task's too — spending their
+ * `generateContent` calls against a 20-request daily quota and replacing
+ * cassettes that were fine.
+ */
+export function readTaskFilter(env: NodeJS.ProcessEnv = process.env): string[] | undefined {
+  const raw = env['EVAL_TASKS']?.trim();
+  if (raw === undefined || raw === '') return undefined;
+  return raw
+    .split(',')
+    .map((id) => id.trim())
+    .filter((id) => id !== '');
+}
+
+/**
+ * The suite narrowed to the named tasks, in suite order.
+ *
+ * An id the suite does not hold is refused rather than ignored: a typo that
+ * selected nothing would run an empty suite, and one that selected less than
+ * intended would report a rate over the wrong tasks.
+ */
+export function selectTasks<TOutcome>(
+  suite: Suite<TOutcome>,
+  ids: readonly string[] | undefined,
+): Suite<TOutcome> {
+  if (ids === undefined) return suite;
+  const known = new Set(suite.tasks.map((task) => task.id));
+  const unknown = ids.filter((id) => !known.has(id));
+  if (unknown.length > 0) {
+    throw new Error(`EVAL_TASKS names task(s) the suite does not hold: ${unknown.join(', ')}`);
+  }
+  const wanted = new Set(ids);
+  const tasks = suite.tasks.filter((task) => wanted.has(task.id));
+  // The selection goes into the name, which every reporter prints, so a rate
+  // over a narrowed suite never reads as a rate over the whole one.
+  return { ...suite, name: `${suite.name} [${tasks.map((t) => t.id).join(', ')}]`, tasks };
 }
 
 /** The shipped suite's name, readable before it loads so an abort can name it. */

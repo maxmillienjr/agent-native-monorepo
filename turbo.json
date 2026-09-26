@@ -52,7 +52,21 @@
         "EVAL_CASSETTE_MODE",
         "EVAL_EXPECT_AXES",
         "OTEL_EXPORTER_OTLP_ENDPOINT",
-        "LOG_LEVEL"
+        "LOG_LEVEL",
+        "EVAL_TASKS"
+      ]
+    },
+    "eval:retrieval": {
+      "dependsOn": ["build"],
+      "cache": false,
+      "env": [
+        "GOOGLE_API_KEY",
+        "DATABASE_URL",
+        "NEO4J_URI",
+        "NEO4J_USER",
+        "NEO4J_PASSWORD",
+        "EVAL_OUTPUT_DIR",
+        "EVAL_EMBEDDINGS_MODE"
       ]
     },
     "clean": {

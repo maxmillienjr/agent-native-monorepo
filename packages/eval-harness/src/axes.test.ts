@@ -152,7 +152,7 @@ describe('skippedTasks', () => {
     id,
     description: id,
     input: {},
-    seeds: { neo4j: [], relationships: [], pgvector: [] },
+    seeds: { neo4j: [], relationships: [], pgvector: [], graphFacts: [] },
     graders: [],
     ...(requires ? { requires } : {}),
   });

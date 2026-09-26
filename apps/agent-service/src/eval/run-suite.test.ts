@@ -50,7 +50,7 @@ const suite: Suite<FakeOutcome> = {
       id: 'task-001',
       description: 'a task',
       input: {},
-      seeds: { neo4j: [], relationships: [], pgvector: [] },
+      seeds: { neo4j: [], relationships: [], pgvector: [], graphFacts: [] },
       graders: [wroteSomething],
     },
   ],

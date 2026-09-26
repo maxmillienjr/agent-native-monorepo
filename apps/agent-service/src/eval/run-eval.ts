@@ -10,6 +10,8 @@ import {
   detectAxes,
   loadMemoryRecallSuite,
   readCassetteMode,
+  readTaskFilter,
+  selectTasks,
   skippedTasks,
   trialsFor,
   type Axes,
@@ -229,7 +231,7 @@ function prepare(
   decks: TrialDecks | undefined;
   replay: ReplayProvenance | undefined;
 } {
-  const suite = loadMemoryRecallSuite(trials);
+  const suite = selectTasks(loadMemoryRecallSuite(trials), readTaskFilter());
 
   if (mode === 'off') return { suite, decks: undefined, replay: undefined };
 

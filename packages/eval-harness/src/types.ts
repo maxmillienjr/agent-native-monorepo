@@ -236,6 +236,25 @@ export const TaskSeedsSchema = z.object({
       }),
     )
     .default([]),
+  /**
+   * Facts written to the graph only, each linked by `MENTIONS` to the concepts
+   * in `entityIds`.
+   *
+   * Without it no task can reach the graph retriever: `expandFromSeeds`
+   * returns `:Fact` nodes, and `neo4j` and `relationships` write none. A fact
+   * here and not in `pgvector` is one only the graph can return, which is what
+   * lets a grader attribute it.
+   */
+  graphFacts: z
+    .array(
+      z.object({
+        contentHash: z.string(),
+        text: z.string(),
+        episodeId: z.string().uuid(),
+        entityIds: z.array(z.string()).min(1),
+      }),
+    )
+    .default([]),
 });
 export type TaskSeeds = z.infer<typeof TaskSeedsSchema>;
 

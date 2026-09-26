@@ -166,6 +166,7 @@ export const ALLOWED_SPAN_ATTRIBUTES: ReadonlySet<string> = new Set<string>([
   'conceptCount',
   'relationshipCount',
   'factCount',
+  'graphFactCount',
   'seedConceptCount',
   'seedFactCount',
   'episodeRowsForRun',

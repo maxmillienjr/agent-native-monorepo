@@ -3,11 +3,18 @@ import type { RetrievalFacade } from '@repo/memory-core';
 import type { AgentState } from '../graph/state.js';
 
 /**
- * Lightweight entity extraction from query text.
- * In production, this would use an NER model; here we extract
- * capitalized multi-word phrases as candidate entity IDs.
+ * The seed linker: the graph retriever's only way in from a query.
+ *
+ * It keeps capitalized words longer than two characters, lowercases them and
+ * deletes every character outside `[a-z0-9-]`. It does not match concepts:
+ * each word becomes a candidate id on its own, so `Prior Authorization` is
+ * `["prior", "authorization"]`, and an id containing `_` — which the live
+ * extraction writes for most entities — can never be produced.
+ *
+ * Exported for P2-B's ablation, which measures this function as deployed. A
+ * copy there would measure a linker nobody runs.
  */
-function extractSeedEntityIds(messages: AgentState['messages']): string[] {
+export function extractSeedEntityIds(messages: AgentState['messages']): string[] {
   const lastUserMessage = [...messages].reverse().find((m) => m.role === 'user');
   if (!lastUserMessage) return [];
 

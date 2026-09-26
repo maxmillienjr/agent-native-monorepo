@@ -100,9 +100,11 @@
 
 ## Testing
 
-Each tier has one command, and all five run in CI. Eval runs twice in `agent-eval.yml`: on
-the replay axis on every pull request, every push to `main` and nightly, and on the live
-axis nightly and on dispatch when a `GOOGLE_API_KEY` repository secret exists.
+Each tier has one command, and the first five run in CI. Eval runs twice in
+`agent-eval.yml`: on the replay axis on every pull request, every push to `main` and
+nightly, and on the live axis nightly and on dispatch when a `GOOGLE_API_KEY` repository
+secret exists. `eval:retrieval` runs in no pipeline: P2-B left the choice of tier to P1-C,
+which shipped before the command existed.
 
 | Tier        | Runner                 | Command                       | Scope                                                    |
 | ----------- | ---------------------- | ----------------------------- | -------------------------------------------------------- |
@@ -111,6 +113,7 @@ axis nightly and on dispatch when a `GOOGLE_API_KEY` repository secret exists.
 | Integration | Vitest                 | `yarn turbo test:integration` | Real Postgres/Neo4j — never mock a database              |
 | E2E         | Playwright             | `yarn turbo test:e2e`         | Browser against the full `docker compose` stack          |
 | Eval        | `@repo/eval-harness`   | `yarn eval`                   | Agent trials against real stores, model replayed or live |
+| Retrieval   | `@repo/eval-harness`   | `yarn eval:retrieval`         | The P2-B ablation: real stores, recorded embeddings      |
 
 - **Service tests need `--experimental-vm-modules`**, which the `test:service` script
   already carries. Jest's ESM support requires it, and without it every import in a spec
@@ -217,6 +220,29 @@ axis nightly and on dispatch when a `GOOGLE_API_KEY` repository secret exists.
   explicit, because from `@langchain/core` 1.x LangChain's default handler stops on
   Gemini's quota wording. At 1.x the wait is proven by `rate-limit.test.ts` against a
   stubbed `fetch` and has not been observed live (P5-C, "What the implementation found").
+- **Retrieval labels are written, not computed, and they are frozen before the first
+  run.** `yarn eval:retrieval` scores the graph/vector/hybrid ablation against
+  `packages/eval-harness/datasets/retrieval-ablation/queries.json`. Every label there is a
+  human-authored judgement that a fact's text answers the question — never "cosine above a
+  threshold" or "reachable from the seed", which would make one of the measured systems
+  correct by definition. The dataset commit precedes the embedding commit, every report
+  prints the dataset's sha256, and a label is never edited after a run. Missing labels are
+  found by pooling and blind adjudication, which adds to `adjudication/` in its own commit
+  and leaves the pre-registered set untouched.
+- **An embedding file is recorded against a model, a width and a dataset, and replays
+  nothing else.** `recorded/embeddings.json` pins `EMBEDDING_MODEL`,
+  `EMBEDDING_DIMENSIONS` and the dataset sha256 in its header, and replay refuses a
+  mismatch or a missing vector rather than calling the embedder. Re-record it with
+  `EVAL_EMBEDDINGS_MODE=record yarn eval:retrieval` when any of the three moves — a query
+  or label edit moves the third. The recorder is resumable and stops on the first 429:
+  the free tier allows about 100 `embedContent` requests a minute per model, so a full
+  recording of the 535 texts takes six invocations a minute apart. Its default,
+  `EVAL_EMBEDDINGS_MODE` unset, makes no request to the model host and fails if one is
+  made.
+- **`EVAL_TASKS` narrows `yarn eval` to named tasks.** Recording is per suite, so adding
+  one task and recording its cassette otherwise re-records every other cassette and
+  spends their `generateContent` calls. An unknown id is refused, and the selection is
+  printed in the suite name.
 - **A retriever's `ORDER BY` needs a unique secondary key.** Both semantic readers produce
   ties by construction — `expandFromSeeds` scores on hop distance, and the eval harness
   seeds every fact in a task with one vector — and an untied order is decided by whatever

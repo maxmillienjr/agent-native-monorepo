@@ -12,6 +12,8 @@ import {
   countCassettes,
   loadMemoryRecallSuite,
   loadSuite,
+  readTaskFilter,
+  selectTasks,
   taskFromSpec,
 } from './dataset.js';
 import { skippedTasks } from './axes.js';
@@ -88,6 +90,18 @@ describe('the shipped dataset', () => {
     expect(task.requires).toEqual({ model: ['live', 'replay'] });
   });
 
+  it('grades graph-recall-001 on a graph-only fact reaching the prompt', () => {
+    const task = loadMemoryRecallSuite().tasks.find((t) => t.id === 'graph-recall-001')!;
+    expect(task.graders.map((g) => g.name)).toContain('retrieved_from_source');
+    // The fact the grader looks for exists in the graph and nowhere else.
+    const [graphFact] = task.seeds.graphFacts;
+    expect(graphFact?.entityIds).toEqual(['langgraph']);
+    expect(task.seeds.neo4j.map((c) => c.id)).toContain('langgraph');
+    expect(task.seeds.pgvector.map((f) => f.contentHash)).not.toContain(graphFact?.contentHash);
+    // It runs on every model axis; the stub axis cannot move retrieval.
+    expect(task.requires).toBeUndefined();
+  });
+
   it('leaves a task that declared nothing without a requirement', () => {
     const task = loadMemoryRecallSuite().tasks.find((t) => t.id === 'memory-recall-001')!;
     expect(task.requires).toBeUndefined();
@@ -131,12 +145,60 @@ describe('the shipped dataset', () => {
         sessionId: '550e8400-e29b-41d4-a716-446655440000',
         messages: [{ role: 'user', content: 'hello' }],
       },
-      expectedSeeds: { neo4j: [], relationships: [], pgvector: [] },
+      expectedSeeds: { neo4j: [], relationships: [], pgvector: [], graphFacts: [] },
       expectedOutcome: 'success',
       assertions: { outcomeMustBe: 'success' },
     });
 
     expect(task.graders.map((g) => g.name)).toEqual(['outcome_must_be']);
+  });
+
+  it('defaults graphFacts to empty, so a task that predates it parses unchanged', () => {
+    const spec = TaskSpecSchema.parse({
+      ...minimalSpec,
+      expectedSeeds: { neo4j: [], relationships: [], pgvector: [] },
+    });
+    expect(spec.expectedSeeds.graphFacts).toEqual([]);
+    expect(TaskSpecSchema.parse(minimalSpec).expectedSeeds.graphFacts).toEqual([]);
+  });
+
+  it('accepts graph facts, each naming at least one concept to mention', () => {
+    const graphFact = {
+      contentHash: 'sha256-graph-fact',
+      text: 'Only the graph holds this.',
+      episodeId: '550e8400-e29b-41d4-a716-446655440010',
+      entityIds: ['langgraph'],
+    };
+    const spec = TaskSpecSchema.parse({
+      ...minimalSpec,
+      expectedSeeds: { graphFacts: [graphFact] },
+    });
+    expect(spec.expectedSeeds.graphFacts).toEqual([graphFact]);
+
+    // A graph fact that mentions nothing is unreachable by `expandFromSeeds`,
+    // so a task that declares one is declaring a seed that cannot be read.
+    expect(() =>
+      TaskSpecSchema.parse({
+        ...minimalSpec,
+        expectedSeeds: { graphFacts: [{ ...graphFact, entityIds: [] }] },
+      }),
+    ).toThrow();
+  });
+
+  it('narrows the suite to EVAL_TASKS, in suite order', () => {
+    const ids = readTaskFilter({ EVAL_TASKS: ' tool-use-001, graph-recall-001 ' });
+    expect(ids).toEqual(['tool-use-001', 'graph-recall-001']);
+    const narrowed = selectTasks(loadMemoryRecallSuite(), ids);
+    expect(narrowed.tasks.map((t) => t.id)).toEqual(['graph-recall-001', 'tool-use-001']);
+    expect(narrowed.name).toBe('memory-recall [graph-recall-001, tool-use-001]');
+    expect(readTaskFilter({})).toBeUndefined();
+    expect(selectTasks(loadMemoryRecallSuite(), undefined).tasks).toHaveLength(3);
+  });
+
+  it('refuses an EVAL_TASKS id the suite does not hold', () => {
+    expect(() => selectTasks(loadMemoryRecallSuite(), ['graph-recall-01'])).toThrow(
+      /does not hold: graph-recall-01/,
+    );
   });
 
   it('refuses a dataset directory with no task files in it', () => {
@@ -213,10 +275,14 @@ describe('the cassette directory', () => {
     }
   });
 
-  it('leaves the shipped suite at exactly two tasks', () => {
+  it('leaves the shipped suite at exactly three tasks', () => {
     // The regression the subdirectory exists to prevent, asserted against the
     // real dataset rather than a fixture of it.
-    expect(loadMemoryRecallSuite().tasks).toHaveLength(2);
+    expect(loadMemoryRecallSuite().tasks.map((task) => task.id)).toEqual([
+      'graph-recall-001',
+      'memory-recall-001',
+      'tool-use-001',
+    ]);
     expect(cassettesDir(MEMORY_RECALL_DATASET_DIR)).toBe(
       join(MEMORY_RECALL_DATASET_DIR, 'cassettes'),
     );

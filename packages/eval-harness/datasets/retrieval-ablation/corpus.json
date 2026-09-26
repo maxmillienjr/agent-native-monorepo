@@ -1,0 +1,3518 @@
+{
+  "sessionId": "3c9e7a14-2b58-4f06-8d1e-6a4b2c0f9e71",
+  "episodes": [
+    {
+      "episodeId": "b9f5e217-b6a6-52ae-a6dc-aee9dd3739aa",
+      "entities": [
+        {
+          "id": "payer_harbor_mutual",
+          "label": "Harbor Mutual",
+          "description": "Regional mutual health insurer owned by its policyholders"
+        },
+        {
+          "id": "plan_harbor_mutual_silver",
+          "label": "Harbor Mutual Silver",
+          "description": "Mid-tier individual and small-group plan"
+        },
+        {
+          "id": "network_bayline",
+          "label": "Bayline Provider Network",
+          "description": "Provider network in the northern coastal region"
+        },
+        {
+          "id": "vendor_kestrel_review",
+          "label": "Kestrel Review Services",
+          "description": "Delegated utilization review vendor"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "payer_harbor_mutual",
+          "toId": "plan_harbor_mutual_silver",
+          "type": "OFFERS",
+          "confidence": 0.95
+        },
+        {
+          "fromId": "plan_harbor_mutual_silver",
+          "toId": "network_bayline",
+          "type": "USES_NETWORK",
+          "confidence": 0.9
+        },
+        {
+          "fromId": "plan_harbor_mutual_silver",
+          "toId": "vendor_kestrel_review",
+          "type": "DELEGATES_REVIEW_TO",
+          "confidence": 0.9
+        }
+      ],
+      "facts": [
+        {
+          "id": "e01-f1",
+          "text": "Harbor Mutual Silver has an individual deductible of 1,800 dollars per plan year.",
+          "mentions": ["plan_harbor_mutual_silver"]
+        },
+        {
+          "id": "e01-f2",
+          "text": "Harbor Mutual Silver charges a 45 dollar copay for a specialist office visit.",
+          "mentions": ["plan_harbor_mutual_silver"]
+        },
+        {
+          "id": "e01-f3",
+          "text": "Harbor Mutual Silver members see in-network providers through the Bayline Provider Network.",
+          "mentions": ["plan_harbor_mutual_silver", "network_bayline"]
+        },
+        {
+          "id": "e01-f4",
+          "text": "Harbor Mutual Silver sends prior authorization clinical reviews to Kestrel Review Services under a delegated agreement.",
+          "mentions": ["plan_harbor_mutual_silver", "vendor_kestrel_review"]
+        },
+        {
+          "id": "e01-f5",
+          "text": "Harbor Mutual Silver covers out-of-network care only for emergencies.",
+          "mentions": ["plan_harbor_mutual_silver"]
+        },
+        {
+          "id": "e01-f6",
+          "text": "Harbor Mutual sells the Silver plan on both the individual and small-group markets.",
+          "mentions": ["payer_harbor_mutual", "plan_harbor_mutual_silver"]
+        },
+        {
+          "id": "e01-f7",
+          "text": "Harbor Mutual Silver member ID cards list the plan's customer service number on the back.",
+          "mentions": ["plan_harbor_mutual_silver"]
+        },
+        {
+          "id": "e01-f8",
+          "text": "Harbor Mutual Silver covers generic prescriptions at a 15 dollar copay.",
+          "mentions": ["plan_harbor_mutual_silver"]
+        },
+        {
+          "id": "e01-f9",
+          "text": "Harbor Mutual Silver renews coverage automatically unless the member cancels.",
+          "mentions": ["plan_harbor_mutual_silver"]
+        }
+      ]
+    },
+    {
+      "episodeId": "ff97e978-e0d8-51f4-88e8-00817413e63e",
+      "entities": [
+        {
+          "id": "payer_harbor_mutual",
+          "label": "Harbor Mutual",
+          "description": "Regional mutual health insurer owned by its policyholders"
+        },
+        {
+          "id": "dept_harbor_provider_relations",
+          "label": "Harbor Mutual Provider Relations",
+          "description": "Provider support department"
+        },
+        {
+          "id": "form_ap_3",
+          "label": "Form AP-3",
+          "description": "Provider claim appeal form"
+        },
+        {
+          "id": "plan_harbor_mutual_silver",
+          "label": "Harbor Mutual Silver",
+          "description": "Mid-tier individual and small-group plan"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "payer_harbor_mutual",
+          "toId": "dept_harbor_provider_relations",
+          "type": "HAS_DEPARTMENT",
+          "confidence": 0.9
+        },
+        {
+          "fromId": "form_ap_3",
+          "toId": "dept_harbor_provider_relations",
+          "type": "SUBMITTED_TO",
+          "confidence": 0.9
+        },
+        {
+          "fromId": "payer_harbor_mutual",
+          "toId": "plan_harbor_mutual_silver",
+          "type": "OFFERS",
+          "confidence": 0.95
+        }
+      ],
+      "facts": [
+        {
+          "id": "e02-f1",
+          "text": "Harbor Mutual Silver must decide an urgent pre-service appeal within 72 hours of receiving it.",
+          "mentions": ["plan_harbor_mutual_silver"]
+        },
+        {
+          "id": "e02-f2",
+          "text": "Harbor Mutual Silver resolves standard pre-service appeals within 30 calendar days.",
+          "mentions": ["plan_harbor_mutual_silver"]
+        },
+        {
+          "id": "e02-f3",
+          "text": "A Harbor Mutual Silver member has 180 days from a denial notice to file an internal appeal.",
+          "mentions": ["plan_harbor_mutual_silver"]
+        },
+        {
+          "id": "e02-f4",
+          "text": "Providers appealing a Harbor Mutual claim decision send Form AP-3 to Harbor Mutual Provider Relations.",
+          "mentions": ["form_ap_3", "dept_harbor_provider_relations", "payer_harbor_mutual"]
+        },
+        {
+          "id": "e02-f5",
+          "text": "Harbor Mutual Provider Relations acknowledges a provider appeal in writing within five business days.",
+          "mentions": ["dept_harbor_provider_relations"]
+        },
+        {
+          "id": "e02-f6",
+          "text": "Harbor Mutual Silver members may request an external review once the internal appeal is exhausted.",
+          "mentions": ["plan_harbor_mutual_silver"]
+        }
+      ]
+    },
+    {
+      "episodeId": "dc97a70b-7784-5b42-856b-5300361026f1",
+      "entities": [
+        {
+          "id": "payer_harbor_mutual",
+          "label": "Harbor Mutual",
+          "description": "Regional mutual health insurer owned by its policyholders"
+        },
+        {
+          "id": "plan_harbor_mutual_bronze_flex",
+          "label": "Harbor Mutual Bronze Flex",
+          "description": "High-deductible plan paired with a savings account"
+        },
+        {
+          "id": "network_bayline",
+          "label": "Bayline Provider Network",
+          "description": "Provider network in the northern coastal region"
+        },
+        {
+          "id": "vendor_kestrel_review",
+          "label": "Kestrel Review Services",
+          "description": "Delegated utilization review vendor"
+        },
+        {
+          "id": "plan_harbor_mutual_silver",
+          "label": "Harbor Mutual Silver",
+          "description": "Mid-tier individual and small-group plan"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "payer_harbor_mutual",
+          "toId": "plan_harbor_mutual_bronze_flex",
+          "type": "OFFERS",
+          "confidence": 0.95
+        },
+        {
+          "fromId": "plan_harbor_mutual_bronze_flex",
+          "toId": "network_bayline",
+          "type": "USES_NETWORK",
+          "confidence": 0.9
+        },
+        {
+          "fromId": "plan_harbor_mutual_bronze_flex",
+          "toId": "vendor_kestrel_review",
+          "type": "DELEGATES_REVIEW_TO",
+          "confidence": 0.9
+        }
+      ],
+      "facts": [
+        {
+          "id": "e03-f1",
+          "text": "Harbor Mutual Bronze Flex has an individual deductible of 4,200 dollars per plan year.",
+          "mentions": ["plan_harbor_mutual_bronze_flex"]
+        },
+        {
+          "id": "e03-f2",
+          "text": "Harbor Mutual Bronze Flex pairs with a health savings account and applies most copays only after the deductible is met.",
+          "mentions": ["plan_harbor_mutual_bronze_flex"]
+        },
+        {
+          "id": "e03-f3",
+          "text": "Harbor Mutual Bronze Flex covers two telehealth visits per year at no cost before the deductible.",
+          "mentions": ["plan_harbor_mutual_bronze_flex"]
+        },
+        {
+          "id": "e03-f4",
+          "text": "Harbor Mutual Bronze Flex uses the same Bayline Provider Network as the Silver plan.",
+          "mentions": [
+            "plan_harbor_mutual_bronze_flex",
+            "network_bayline",
+            "plan_harbor_mutual_silver"
+          ]
+        },
+        {
+          "id": "e03-f5",
+          "text": "Harbor Mutual Bronze Flex routes prior authorization reviews to Kestrel Review Services.",
+          "mentions": ["plan_harbor_mutual_bronze_flex", "vendor_kestrel_review"]
+        },
+        {
+          "id": "e03-f6",
+          "text": "Harbor Mutual Bronze Flex charges a 350 dollar copay for an emergency room visit after the deductible.",
+          "mentions": ["plan_harbor_mutual_bronze_flex"]
+        },
+        {
+          "id": "e03-f7",
+          "text": "Harbor Mutual Bronze Flex caps annual out-of-pocket costs at 7,500 dollars.",
+          "mentions": ["plan_harbor_mutual_bronze_flex"]
+        },
+        {
+          "id": "e03-f8",
+          "text": "Harbor Mutual Bronze Flex covers preventive screenings before the deductible.",
+          "mentions": ["plan_harbor_mutual_bronze_flex"]
+        }
+      ]
+    },
+    {
+      "episodeId": "f47ce57f-5d9c-505e-87e4-78f400c296ef",
+      "entities": [
+        {
+          "id": "payer_harbor_mutual",
+          "label": "Harbor Mutual",
+          "description": "Regional mutual health insurer owned by its policyholders"
+        },
+        {
+          "id": "vendor_corvane_claims",
+          "label": "Corvane Claims Exchange",
+          "description": "Electronic claims clearinghouse"
+        },
+        {
+          "id": "system_claimsdesk",
+          "label": "ClaimsDesk",
+          "description": "Provider claims status portal"
+        },
+        {
+          "id": "plan_harbor_mutual_silver",
+          "label": "Harbor Mutual Silver",
+          "description": "Mid-tier individual and small-group plan"
+        },
+        {
+          "id": "plan_harbor_mutual_bronze_flex",
+          "label": "Harbor Mutual Bronze Flex",
+          "description": "High-deductible plan paired with a savings account"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "payer_harbor_mutual",
+          "toId": "vendor_corvane_claims",
+          "type": "CLAIMS_ROUTED_THROUGH",
+          "confidence": 0.9
+        },
+        {
+          "fromId": "payer_harbor_mutual",
+          "toId": "system_claimsdesk",
+          "type": "USES_PORTAL",
+          "confidence": 0.8
+        },
+        {
+          "fromId": "payer_harbor_mutual",
+          "toId": "plan_harbor_mutual_silver",
+          "type": "OFFERS",
+          "confidence": 0.95
+        },
+        {
+          "fromId": "payer_harbor_mutual",
+          "toId": "plan_harbor_mutual_bronze_flex",
+          "type": "OFFERS",
+          "confidence": 0.95
+        }
+      ],
+      "facts": [
+        {
+          "id": "e04-f1",
+          "text": "Harbor Mutual requires in-network providers to file claims within 90 days of the date of service.",
+          "mentions": ["payer_harbor_mutual"]
+        },
+        {
+          "id": "e04-f2",
+          "text": "Harbor Mutual routes all electronic claims through Corvane Claims Exchange.",
+          "mentions": ["payer_harbor_mutual", "vendor_corvane_claims"]
+        },
+        {
+          "id": "e04-f3",
+          "text": "Harbor Mutual pays clean electronic claims within 21 days of receipt.",
+          "mentions": ["payer_harbor_mutual"]
+        },
+        {
+          "id": "e04-f4",
+          "text": "Harbor Mutual accepts corrected claims for up to 60 days after the original remittance.",
+          "mentions": ["payer_harbor_mutual"]
+        },
+        {
+          "id": "e04-f5",
+          "text": "Harbor Mutual providers check claim status in ClaimsDesk rather than by phone.",
+          "mentions": ["payer_harbor_mutual", "system_claimsdesk"]
+        },
+        {
+          "id": "e04-f6",
+          "text": "Harbor Mutual Silver and Harbor Mutual Bronze Flex claims share one payer identifier.",
+          "mentions": ["plan_harbor_mutual_silver", "plan_harbor_mutual_bronze_flex"]
+        }
+      ]
+    },
+    {
+      "episodeId": "a7e8ed4d-5c1d-5a13-a673-ec11054842bf",
+      "entities": [
+        {
+          "id": "system_authtrack",
+          "label": "AuthTrack",
+          "description": "Prior authorization tracking portal"
+        },
+        {
+          "id": "vendor_kestrel_review",
+          "label": "Kestrel Review Services",
+          "description": "Delegated utilization review vendor"
+        },
+        {
+          "id": "form_pa_7",
+          "label": "Form PA-7",
+          "description": "Prior authorization request form"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "system_authtrack",
+          "toId": "vendor_kestrel_review",
+          "type": "OPERATED_BY",
+          "confidence": 0.95
+        },
+        {
+          "fromId": "form_pa_7",
+          "toId": "vendor_kestrel_review",
+          "type": "SUBMITTED_TO",
+          "confidence": 0.9
+        }
+      ],
+      "facts": [
+        {
+          "id": "e05-f1",
+          "text": "Kestrel Review Services issues standard prior authorization decisions within five business days of a complete request.",
+          "mentions": ["vendor_kestrel_review"]
+        },
+        {
+          "id": "e05-f2",
+          "text": "Kestrel Review Services accepts urgent review requests by fax or through AuthTrack, but not by email.",
+          "mentions": ["vendor_kestrel_review", "system_authtrack"]
+        },
+        {
+          "id": "e05-f3",
+          "text": "Kestrel Review Services decides urgent prior authorization requests within 24 hours.",
+          "mentions": ["vendor_kestrel_review"]
+        },
+        {
+          "id": "e05-f4",
+          "text": "Kestrel Review Services closes a request as incomplete when requested clinical notes are not received within three business days.",
+          "mentions": ["vendor_kestrel_review"]
+        },
+        {
+          "id": "e05-f5",
+          "text": "Kestrel Review Services requires Form PA-7 for every paper prior authorization request.",
+          "mentions": ["vendor_kestrel_review", "form_pa_7"]
+        },
+        {
+          "id": "e05-f6",
+          "text": "Kestrel Review Services staffs its intake line from 7 a.m. to 7 p.m. Eastern on weekdays.",
+          "mentions": ["vendor_kestrel_review"]
+        }
+      ]
+    },
+    {
+      "episodeId": "f629fa89-f833-5d73-b536-2d82f90d581f",
+      "entities": [
+        {
+          "id": "vendor_kestrel_review",
+          "label": "Kestrel Review Services",
+          "description": "Delegated utilization review vendor"
+        }
+      ],
+      "relationships": [],
+      "facts": [
+        {
+          "id": "e06-f1",
+          "text": "Kestrel Review Services offers a peer-to-peer conversation with the reviewing physician for up to 14 days after an adverse decision.",
+          "mentions": ["vendor_kestrel_review"]
+        },
+        {
+          "id": "e06-f2",
+          "text": "Kestrel Review Services assigns behavioral health requests to reviewers licensed in behavioral health.",
+          "mentions": ["vendor_kestrel_review"]
+        },
+        {
+          "id": "e06-f3",
+          "text": "Kestrel Review Services audits five percent of its completed reviews each month for consistency.",
+          "mentions": ["vendor_kestrel_review"]
+        },
+        {
+          "id": "e06-f4",
+          "text": "Kestrel Review Services sends the ordering clinician a written rationale with every adverse decision.",
+          "mentions": ["vendor_kestrel_review"]
+        },
+        {
+          "id": "e06-f5",
+          "text": "A peer-to-peer request to Kestrel Review Services must come from the ordering clinician rather than office staff.",
+          "mentions": ["vendor_kestrel_review"]
+        },
+        {
+          "id": "e06-f6",
+          "text": "Kestrel Review Services publishes its review criteria to contracted clinicians on request.",
+          "mentions": ["vendor_kestrel_review"]
+        },
+        {
+          "id": "e06-f7",
+          "text": "Kestrel Review Services is accredited for utilization management.",
+          "mentions": ["vendor_kestrel_review"]
+        }
+      ]
+    },
+    {
+      "episodeId": "3c3a55b6-f988-5cda-9b03-8344d850bf3b",
+      "entities": [
+        {
+          "id": "system_authtrack",
+          "label": "AuthTrack",
+          "description": "Prior authorization tracking portal"
+        },
+        {
+          "id": "vendor_kestrel_review",
+          "label": "Kestrel Review Services",
+          "description": "Delegated utilization review vendor"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "system_authtrack",
+          "toId": "vendor_kestrel_review",
+          "type": "OPERATED_BY",
+          "confidence": 0.95
+        }
+      ],
+      "facts": [
+        {
+          "id": "e07-f1",
+          "text": "AuthTrack shows the status of a prior authorization request within one hour of submission.",
+          "mentions": ["system_authtrack"]
+        },
+        {
+          "id": "e07-f2",
+          "text": "AuthTrack accepts attachments of up to 25 megabytes per request.",
+          "mentions": ["system_authtrack"]
+        },
+        {
+          "id": "e07-f3",
+          "text": "AuthTrack sends an email alert to the submitter when a request moves to pending information.",
+          "mentions": ["system_authtrack"]
+        },
+        {
+          "id": "e07-f4",
+          "text": "AuthTrack accounts are issued per clinic, and each clinic may have up to ten users.",
+          "mentions": ["system_authtrack"]
+        },
+        {
+          "id": "e07-f5",
+          "text": "AuthTrack is offline for maintenance every Sunday from midnight to 4 a.m.",
+          "mentions": ["system_authtrack"]
+        },
+        {
+          "id": "e07-f6",
+          "text": "AuthTrack keeps a full history of every change made to a request.",
+          "mentions": ["system_authtrack"]
+        },
+        {
+          "id": "e07-f7",
+          "text": "AuthTrack lets a clinic copy a previous request to start a new one.",
+          "mentions": ["system_authtrack"]
+        }
+      ]
+    },
+    {
+      "episodeId": "19fd8c9e-1826-5ad0-b096-0e4ce38961a2",
+      "entities": [
+        {
+          "id": "payer_cedarline_health",
+          "label": "Cedarline Health",
+          "description": "Commercial health plan operator"
+        },
+        {
+          "id": "plan_cedarline_gold_access",
+          "label": "Cedarline Gold Access",
+          "description": "Low-deductible commercial plan"
+        },
+        {
+          "id": "network_summit_crest",
+          "label": "Summit Crest Network",
+          "description": "Large multi-hospital provider network"
+        },
+        {
+          "id": "vendor_pinegate_pharmacy",
+          "label": "Pinegate Pharmacy Solutions",
+          "description": "Pharmacy benefit manager"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "payer_cedarline_health",
+          "toId": "plan_cedarline_gold_access",
+          "type": "OFFERS",
+          "confidence": 0.95
+        },
+        {
+          "fromId": "plan_cedarline_gold_access",
+          "toId": "network_summit_crest",
+          "type": "USES_NETWORK",
+          "confidence": 0.9
+        },
+        {
+          "fromId": "plan_cedarline_gold_access",
+          "toId": "vendor_pinegate_pharmacy",
+          "type": "PHARMACY_BENEFIT_BY",
+          "confidence": 0.9
+        }
+      ],
+      "facts": [
+        {
+          "id": "e08-f1",
+          "text": "Cedarline Gold Access has an individual deductible of 750 dollars per plan year.",
+          "mentions": ["plan_cedarline_gold_access"]
+        },
+        {
+          "id": "e08-f2",
+          "text": "Cedarline Gold Access charges a 30 dollar copay for a specialist visit, with no referral needed.",
+          "mentions": ["plan_cedarline_gold_access"]
+        },
+        {
+          "id": "e08-f3",
+          "text": "Cedarline Gold Access members use the Summit Crest Network for in-network care.",
+          "mentions": ["plan_cedarline_gold_access", "network_summit_crest"]
+        },
+        {
+          "id": "e08-f4",
+          "text": "Cedarline Gold Access pharmacy benefits are administered by Pinegate Pharmacy Solutions.",
+          "mentions": ["plan_cedarline_gold_access", "vendor_pinegate_pharmacy"]
+        },
+        {
+          "id": "e08-f5",
+          "text": "Cedarline Gold Access covers out-of-network services at 60 percent after a separate deductible.",
+          "mentions": ["plan_cedarline_gold_access"]
+        },
+        {
+          "id": "e08-f6",
+          "text": "Cedarline Health reviews prior authorization requests for Gold Access in house rather than through a vendor.",
+          "mentions": ["payer_cedarline_health", "plan_cedarline_gold_access"]
+        },
+        {
+          "id": "e08-f7",
+          "text": "Cedarline Gold Access charges a 20 dollar copay for primary care visits.",
+          "mentions": ["plan_cedarline_gold_access"]
+        }
+      ]
+    },
+    {
+      "episodeId": "c5cb440e-01a2-56be-87e8-aa35cb030c61",
+      "entities": [
+        {
+          "id": "payer_cedarline_health",
+          "label": "Cedarline Health",
+          "description": "Commercial health plan operator"
+        },
+        {
+          "id": "plan_cedarline_gold_access",
+          "label": "Cedarline Gold Access",
+          "description": "Low-deductible commercial plan"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "payer_cedarline_health",
+          "toId": "plan_cedarline_gold_access",
+          "type": "OFFERS",
+          "confidence": 0.95
+        }
+      ],
+      "facts": [
+        {
+          "id": "e09-f1",
+          "text": "Cedarline Gold Access decides standard prior authorization requests within seven calendar days.",
+          "mentions": ["plan_cedarline_gold_access"]
+        },
+        {
+          "id": "e09-f2",
+          "text": "Cedarline Gold Access requires prior authorization for outpatient MRI and CT scans.",
+          "mentions": ["plan_cedarline_gold_access"]
+        },
+        {
+          "id": "e09-f3",
+          "text": "Cedarline Gold Access must resolve an urgent appeal within 48 hours.",
+          "mentions": ["plan_cedarline_gold_access"]
+        },
+        {
+          "id": "e09-f4",
+          "text": "Cedarline Gold Access gives members 60 days from a denial to file an appeal.",
+          "mentions": ["plan_cedarline_gold_access"]
+        },
+        {
+          "id": "e09-f5",
+          "text": "Cedarline Gold Access does not require prior authorization for the first twelve physical therapy visits.",
+          "mentions": ["plan_cedarline_gold_access"]
+        },
+        {
+          "id": "e09-f6",
+          "text": "Cedarline Gold Access members can view their authorization history in the member portal.",
+          "mentions": ["plan_cedarline_gold_access"]
+        },
+        {
+          "id": "e09-f7",
+          "text": "Cedarline Gold Access covers urgent care at a 35 dollar copay.",
+          "mentions": ["plan_cedarline_gold_access"]
+        }
+      ]
+    },
+    {
+      "episodeId": "daa7d27f-e258-5a14-a98b-e9d416f1ed8f",
+      "entities": [
+        {
+          "id": "payer_cedarline_health",
+          "label": "Cedarline Health",
+          "description": "Commercial health plan operator"
+        },
+        {
+          "id": "plan_cedarline_essential",
+          "label": "Cedarline Essential",
+          "description": "Referral-based commercial plan"
+        },
+        {
+          "id": "network_summit_crest",
+          "label": "Summit Crest Network",
+          "description": "Large multi-hospital provider network"
+        },
+        {
+          "id": "vendor_sablefield_imaging",
+          "label": "Sablefield Imaging Benefits",
+          "description": "Imaging benefit manager"
+        },
+        {
+          "id": "program_mindful_access",
+          "label": "Mindful Access",
+          "description": "Behavioral health access program"
+        },
+        {
+          "id": "region_inland_valley",
+          "label": "Inland Valley service area",
+          "description": "Inland service area"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "payer_cedarline_health",
+          "toId": "plan_cedarline_essential",
+          "type": "OFFERS",
+          "confidence": 0.95
+        },
+        {
+          "fromId": "plan_cedarline_essential",
+          "toId": "network_summit_crest",
+          "type": "USES_NETWORK",
+          "confidence": 0.9
+        },
+        {
+          "fromId": "plan_cedarline_essential",
+          "toId": "vendor_sablefield_imaging",
+          "type": "IMAGING_REVIEW_BY",
+          "confidence": 0.9
+        },
+        {
+          "fromId": "plan_cedarline_essential",
+          "toId": "program_mindful_access",
+          "type": "OFFERS_PROGRAM",
+          "confidence": 0.85
+        },
+        {
+          "fromId": "plan_cedarline_essential",
+          "toId": "region_inland_valley",
+          "type": "SOLD_IN",
+          "confidence": 0.9
+        }
+      ],
+      "facts": [
+        {
+          "id": "e10-f1",
+          "text": "Cedarline Essential has an individual deductible of 3,000 dollars per plan year.",
+          "mentions": ["plan_cedarline_essential"]
+        },
+        {
+          "id": "e10-f2",
+          "text": "Cedarline Essential requires a primary care referral before any specialist visit.",
+          "mentions": ["plan_cedarline_essential"]
+        },
+        {
+          "id": "e10-f3",
+          "text": "Cedarline Essential sends imaging prior authorization requests to Sablefield Imaging Benefits.",
+          "mentions": ["plan_cedarline_essential", "vendor_sablefield_imaging"]
+        },
+        {
+          "id": "e10-f4",
+          "text": "Cedarline Essential enrolls members with depression diagnoses in the Mindful Access program.",
+          "mentions": ["plan_cedarline_essential", "program_mindful_access"]
+        },
+        {
+          "id": "e10-f5",
+          "text": "Cedarline Essential charges a 25 dollar copay for generic prescriptions.",
+          "mentions": ["plan_cedarline_essential"]
+        },
+        {
+          "id": "e10-f6",
+          "text": "Cedarline Essential is sold only in the Inland Valley service area.",
+          "mentions": ["plan_cedarline_essential", "region_inland_valley"]
+        },
+        {
+          "id": "e10-f7",
+          "text": "Cedarline Essential members use the Summit Crest Network.",
+          "mentions": ["plan_cedarline_essential", "network_summit_crest"]
+        }
+      ]
+    },
+    {
+      "episodeId": "e62f34dc-b80e-531c-9a9c-8917ae0ed47e",
+      "entities": [
+        {
+          "id": "payer_cedarline_health",
+          "label": "Cedarline Health",
+          "description": "Commercial health plan operator"
+        },
+        {
+          "id": "plan_cedarline_essential",
+          "label": "Cedarline Essential",
+          "description": "Referral-based commercial plan"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "payer_cedarline_health",
+          "toId": "plan_cedarline_essential",
+          "type": "OFFERS",
+          "confidence": 0.95
+        }
+      ],
+      "facts": [
+        {
+          "id": "e11-f1",
+          "text": "Cedarline Essential caps a member's annual out-of-pocket costs at 8,700 dollars.",
+          "mentions": ["plan_cedarline_essential"]
+        },
+        {
+          "id": "e11-f2",
+          "text": "Cedarline Essential charges 40 dollars for an urgent care visit.",
+          "mentions": ["plan_cedarline_essential"]
+        },
+        {
+          "id": "e11-f3",
+          "text": "Cedarline Essential covers a yearly eye exam but not glasses.",
+          "mentions": ["plan_cedarline_essential"]
+        },
+        {
+          "id": "e11-f4",
+          "text": "Cedarline Essential members have 90 days after a denial notice to file an appeal.",
+          "mentions": ["plan_cedarline_essential"]
+        },
+        {
+          "id": "e11-f5",
+          "text": "Cedarline Essential telehealth visits cost 10 dollars.",
+          "mentions": ["plan_cedarline_essential"]
+        },
+        {
+          "id": "e11-f6",
+          "text": "Cedarline Essential sends members a printed provider directory on request.",
+          "mentions": ["plan_cedarline_essential"]
+        },
+        {
+          "id": "e11-f7",
+          "text": "Cedarline Essential covers emergency care at any hospital, in network or not.",
+          "mentions": ["plan_cedarline_essential"]
+        }
+      ]
+    },
+    {
+      "episodeId": "fcb837ed-2542-5ea1-b919-a2d545bc453d",
+      "entities": [
+        {
+          "id": "form_cr_4",
+          "label": "Form CR-4",
+          "description": "Provider credentialing application"
+        },
+        {
+          "id": "committee_cedarline_credentialing",
+          "label": "Cedarline Credentialing Committee",
+          "description": "Provider credentialing committee"
+        },
+        {
+          "id": "payer_cedarline_health",
+          "label": "Cedarline Health",
+          "description": "Commercial health plan operator"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "form_cr_4",
+          "toId": "committee_cedarline_credentialing",
+          "type": "REVIEWED_BY",
+          "confidence": 0.9
+        },
+        {
+          "fromId": "committee_cedarline_credentialing",
+          "toId": "payer_cedarline_health",
+          "type": "BELONGS_TO",
+          "confidence": 0.95
+        }
+      ],
+      "facts": [
+        {
+          "id": "e12-f1",
+          "text": "The Cedarline Credentialing Committee meets on the second Tuesday of each month.",
+          "mentions": ["committee_cedarline_credentialing"]
+        },
+        {
+          "id": "e12-f2",
+          "text": "Providers applying to Cedarline Health submit Form CR-4 with a copy of their malpractice coverage.",
+          "mentions": ["form_cr_4", "payer_cedarline_health"]
+        },
+        {
+          "id": "e12-f3",
+          "text": "The Cedarline Credentialing Committee recredentials every provider every 36 months.",
+          "mentions": ["committee_cedarline_credentialing"]
+        },
+        {
+          "id": "e12-f4",
+          "text": "Form CR-4 is returned unprocessed if its attestation page is more than 90 days old.",
+          "mentions": ["form_cr_4"]
+        },
+        {
+          "id": "e12-f5",
+          "text": "The Cedarline Credentialing Committee requires primary source verification of board certification.",
+          "mentions": ["committee_cedarline_credentialing"]
+        },
+        {
+          "id": "e12-f6",
+          "text": "A provider turned down by the Cedarline Credentialing Committee may reapply after twelve months.",
+          "mentions": ["committee_cedarline_credentialing"]
+        },
+        {
+          "id": "e12-f7",
+          "text": "The Cedarline Credentialing Committee reviews site visit results for new primary care offices.",
+          "mentions": ["committee_cedarline_credentialing"]
+        },
+        {
+          "id": "e12-f8",
+          "text": "Form CR-4 asks for five years of work history.",
+          "mentions": ["form_cr_4"]
+        }
+      ]
+    },
+    {
+      "episodeId": "9e99fe0d-90b2-56f1-b67e-9e1b56724d42",
+      "entities": [
+        {
+          "id": "dept_cedarline_member_services",
+          "label": "Cedarline Member Services",
+          "description": "Member support department"
+        },
+        {
+          "id": "payer_cedarline_health",
+          "label": "Cedarline Health",
+          "description": "Commercial health plan operator"
+        },
+        {
+          "id": "form_gr_2",
+          "label": "Form GR-2",
+          "description": "Member grievance form"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "dept_cedarline_member_services",
+          "toId": "payer_cedarline_health",
+          "type": "BELONGS_TO",
+          "confidence": 0.95
+        },
+        {
+          "fromId": "form_gr_2",
+          "toId": "dept_cedarline_member_services",
+          "type": "SUBMITTED_TO",
+          "confidence": 0.9
+        }
+      ],
+      "facts": [
+        {
+          "id": "e13-f1",
+          "text": "Cedarline Member Services answers calls from 8 a.m. to 8 p.m. seven days a week from October through March.",
+          "mentions": ["dept_cedarline_member_services"]
+        },
+        {
+          "id": "e13-f2",
+          "text": "Members file a grievance with Cedarline Health by sending Form GR-2 to Cedarline Member Services.",
+          "mentions": ["form_gr_2", "dept_cedarline_member_services", "payer_cedarline_health"]
+        },
+        {
+          "id": "e13-f3",
+          "text": "Cedarline Member Services resolves a standard grievance within 30 days.",
+          "mentions": ["dept_cedarline_member_services"]
+        },
+        {
+          "id": "e13-f4",
+          "text": "Form GR-2 can be submitted by mail, by fax, or through the member portal.",
+          "mentions": ["form_gr_2"]
+        },
+        {
+          "id": "e13-f5",
+          "text": "Cedarline Member Services offers interpreter support in more than 150 languages.",
+          "mentions": ["dept_cedarline_member_services"]
+        },
+        {
+          "id": "e13-f6",
+          "text": "Form GR-2 asks the member to describe the problem and the outcome they want.",
+          "mentions": ["form_gr_2"]
+        },
+        {
+          "id": "e13-f7",
+          "text": "Cedarline Member Services can mail a replacement ID card within five business days.",
+          "mentions": ["dept_cedarline_member_services"]
+        },
+        {
+          "id": "e13-f8",
+          "text": "Form GR-2 is available in large print on request.",
+          "mentions": ["form_gr_2"]
+        }
+      ]
+    },
+    {
+      "episodeId": "e9c36bf0-93bf-57fe-bbb4-873f667ab143",
+      "entities": [
+        {
+          "id": "network_summit_crest",
+          "label": "Summit Crest Network",
+          "description": "Large multi-hospital provider network"
+        }
+      ],
+      "relationships": [],
+      "facts": [
+        {
+          "id": "e14-f1",
+          "text": "Summit Crest Network updates its online provider directory every 30 days.",
+          "mentions": ["network_summit_crest"]
+        },
+        {
+          "id": "e14-f2",
+          "text": "Summit Crest Network requires specialists to become board certified within five years of finishing residency.",
+          "mentions": ["network_summit_crest"]
+        },
+        {
+          "id": "e14-f3",
+          "text": "Summit Crest Network includes 14 hospitals and about 2,300 physicians.",
+          "mentions": ["network_summit_crest"]
+        },
+        {
+          "id": "e14-f4",
+          "text": "Summit Crest Network providers must give 90 days notice before leaving the network.",
+          "mentions": ["network_summit_crest"]
+        },
+        {
+          "id": "e14-f5",
+          "text": "Summit Crest Network guarantees a routine primary care appointment within ten business days.",
+          "mentions": ["network_summit_crest"]
+        },
+        {
+          "id": "e14-f6",
+          "text": "Summit Crest Network lists each physician's hospital affiliations in its directory.",
+          "mentions": ["network_summit_crest"]
+        },
+        {
+          "id": "e14-f7",
+          "text": "Summit Crest Network pays its hospitals bundled rates for joint replacements.",
+          "mentions": ["network_summit_crest"]
+        }
+      ]
+    },
+    {
+      "episodeId": "c257b6c9-72e7-5cf4-8819-13f2e199491f",
+      "entities": [
+        {
+          "id": "network_bayline",
+          "label": "Bayline Provider Network",
+          "description": "Provider network in the northern coastal region"
+        },
+        {
+          "id": "region_coastal_north",
+          "label": "Coastal North service area",
+          "description": "Service area along the northern coast"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "network_bayline",
+          "toId": "region_coastal_north",
+          "type": "COVERS",
+          "confidence": 0.9
+        }
+      ],
+      "facts": [
+        {
+          "id": "e15-f1",
+          "text": "Bayline Provider Network covers the Coastal North service area.",
+          "mentions": ["network_bayline", "region_coastal_north"]
+        },
+        {
+          "id": "e15-f2",
+          "text": "Bayline Provider Network lets members self-refer to in-network OB-GYNs.",
+          "mentions": ["network_bayline"]
+        },
+        {
+          "id": "e15-f3",
+          "text": "Bayline Provider Network publishes directory corrections within 48 hours of a report.",
+          "mentions": ["network_bayline"]
+        },
+        {
+          "id": "e15-f4",
+          "text": "Bayline Provider Network requires its urgent care centers to stay open until at least 9 p.m.",
+          "mentions": ["network_bayline"]
+        },
+        {
+          "id": "e15-f5",
+          "text": "Bayline Provider Network sends transplant cases to an out-of-area center of excellence.",
+          "mentions": ["network_bayline"]
+        },
+        {
+          "id": "e15-f6",
+          "text": "Bayline Provider Network credentialing takes about 60 days from a complete application.",
+          "mentions": ["network_bayline"]
+        },
+        {
+          "id": "e15-f7",
+          "text": "Bayline Provider Network added three community health centers last year.",
+          "mentions": ["network_bayline"]
+        }
+      ]
+    },
+    {
+      "episodeId": "12eea7b4-e527-5f7f-9894-f9af62d3d72a",
+      "entities": [
+        {
+          "id": "network_riverbend",
+          "label": "Riverbend Care Alliance",
+          "description": "Capitated provider network"
+        },
+        {
+          "id": "region_inland_valley",
+          "label": "Inland Valley service area",
+          "description": "Inland service area"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "network_riverbend",
+          "toId": "region_inland_valley",
+          "type": "COVERS",
+          "confidence": 0.9
+        }
+      ],
+      "facts": [
+        {
+          "id": "e16-f1",
+          "text": "Riverbend Care Alliance covers the Inland Valley service area.",
+          "mentions": ["network_riverbend", "region_inland_valley"]
+        },
+        {
+          "id": "e16-f2",
+          "text": "Riverbend Care Alliance requires members to choose a primary care physician within 30 days of enrollment.",
+          "mentions": ["network_riverbend"]
+        },
+        {
+          "id": "e16-f3",
+          "text": "Riverbend Care Alliance pays its primary care physicians a monthly capitation rate.",
+          "mentions": ["network_riverbend"]
+        },
+        {
+          "id": "e16-f4",
+          "text": "Riverbend Care Alliance runs two after-hours clinics that stay open until midnight.",
+          "mentions": ["network_riverbend"]
+        },
+        {
+          "id": "e16-f5",
+          "text": "Riverbend Care Alliance providers must answer secure messages within two business days.",
+          "mentions": ["network_riverbend"]
+        },
+        {
+          "id": "e16-f6",
+          "text": "Riverbend Care Alliance shares one electronic health record across all of its clinics.",
+          "mentions": ["network_riverbend"]
+        }
+      ]
+    },
+    {
+      "episodeId": "47fcfa10-947f-570f-ad7d-88a04d2f40a0",
+      "entities": [
+        {
+          "id": "payer_quillmark",
+          "label": "Quillmark Health Partners",
+          "description": "Payer offering senior and family plans"
+        },
+        {
+          "id": "plan_quillmark_senior_advantage",
+          "label": "Quillmark Senior Advantage",
+          "description": "Plan for members aged 65 and over"
+        },
+        {
+          "id": "network_riverbend",
+          "label": "Riverbend Care Alliance",
+          "description": "Capitated provider network"
+        },
+        {
+          "id": "vendor_pinegate_pharmacy",
+          "label": "Pinegate Pharmacy Solutions",
+          "description": "Pharmacy benefit manager"
+        },
+        {
+          "id": "vendor_tallowood_nurse_line",
+          "label": "Tallowood Nurse Advice",
+          "description": "Nurse advice line vendor"
+        },
+        {
+          "id": "vendor_fennick_rides",
+          "label": "Fennick Ride Services",
+          "description": "Non-emergency transportation vendor"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "payer_quillmark",
+          "toId": "plan_quillmark_senior_advantage",
+          "type": "OFFERS",
+          "confidence": 0.95
+        },
+        {
+          "fromId": "plan_quillmark_senior_advantage",
+          "toId": "network_riverbend",
+          "type": "USES_NETWORK",
+          "confidence": 0.9
+        },
+        {
+          "fromId": "plan_quillmark_senior_advantage",
+          "toId": "vendor_pinegate_pharmacy",
+          "type": "PHARMACY_BENEFIT_BY",
+          "confidence": 0.9
+        },
+        {
+          "fromId": "plan_quillmark_senior_advantage",
+          "toId": "vendor_tallowood_nurse_line",
+          "type": "NURSE_LINE_BY",
+          "confidence": 0.85
+        },
+        {
+          "fromId": "plan_quillmark_senior_advantage",
+          "toId": "vendor_fennick_rides",
+          "type": "TRANSPORTATION_BY",
+          "confidence": 0.85
+        }
+      ],
+      "facts": [
+        {
+          "id": "e17-f1",
+          "text": "Quillmark Senior Advantage has no deductible for medical services.",
+          "mentions": ["plan_quillmark_senior_advantage"]
+        },
+        {
+          "id": "e17-f2",
+          "text": "Quillmark Senior Advantage charges a 20 dollar specialist copay.",
+          "mentions": ["plan_quillmark_senior_advantage"]
+        },
+        {
+          "id": "e17-f3",
+          "text": "Quillmark Senior Advantage members use the Riverbend Care Alliance network.",
+          "mentions": ["plan_quillmark_senior_advantage", "network_riverbend"]
+        },
+        {
+          "id": "e17-f4",
+          "text": "Quillmark Senior Advantage pharmacy benefits run through Pinegate Pharmacy Solutions.",
+          "mentions": ["plan_quillmark_senior_advantage", "vendor_pinegate_pharmacy"]
+        },
+        {
+          "id": "e17-f5",
+          "text": "Quillmark Senior Advantage includes a nurse advice line operated by Tallowood Nurse Advice.",
+          "mentions": ["plan_quillmark_senior_advantage", "vendor_tallowood_nurse_line"]
+        },
+        {
+          "id": "e17-f6",
+          "text": "Quillmark Senior Advantage covers up to 24 one-way rides a year to medical appointments through Fennick Ride Services.",
+          "mentions": ["plan_quillmark_senior_advantage", "vendor_fennick_rides"]
+        },
+        {
+          "id": "e17-f7",
+          "text": "Quillmark Senior Advantage caps annual out-of-pocket costs at 5,900 dollars.",
+          "mentions": ["plan_quillmark_senior_advantage"]
+        }
+      ]
+    },
+    {
+      "episodeId": "30c2deff-2dd4-5c32-9a03-a8150fab9523",
+      "entities": [
+        {
+          "id": "payer_quillmark",
+          "label": "Quillmark Health Partners",
+          "description": "Payer offering senior and family plans"
+        },
+        {
+          "id": "plan_quillmark_senior_advantage",
+          "label": "Quillmark Senior Advantage",
+          "description": "Plan for members aged 65 and over"
+        },
+        {
+          "id": "program_homeward_transitions",
+          "label": "Homeward Transitions",
+          "description": "Post-discharge transitions of care program"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "payer_quillmark",
+          "toId": "plan_quillmark_senior_advantage",
+          "type": "OFFERS",
+          "confidence": 0.95
+        },
+        {
+          "fromId": "plan_quillmark_senior_advantage",
+          "toId": "program_homeward_transitions",
+          "type": "OFFERS_PROGRAM",
+          "confidence": 0.85
+        }
+      ],
+      "facts": [
+        {
+          "id": "e18-f1",
+          "text": "Quillmark Senior Advantage includes a 500 dollar yearly allowance for dental services.",
+          "mentions": ["plan_quillmark_senior_advantage"]
+        },
+        {
+          "id": "e18-f2",
+          "text": "Quillmark Senior Advantage gives members a 50 dollar quarterly allowance for over-the-counter items.",
+          "mentions": ["plan_quillmark_senior_advantage"]
+        },
+        {
+          "id": "e18-f3",
+          "text": "Quillmark Senior Advantage enrolls members discharged after a heart failure admission in Homeward Transitions.",
+          "mentions": ["plan_quillmark_senior_advantage", "program_homeward_transitions"]
+        },
+        {
+          "id": "e18-f4",
+          "text": "Quillmark Senior Advantage covers a yearly hearing exam and one hearing aid every three years.",
+          "mentions": ["plan_quillmark_senior_advantage"]
+        },
+        {
+          "id": "e18-f5",
+          "text": "Quillmark Senior Advantage members can switch primary care physicians once a month.",
+          "mentions": ["plan_quillmark_senior_advantage"]
+        },
+        {
+          "id": "e18-f6",
+          "text": "Quillmark Senior Advantage issues an expedited appeal decision within 72 hours.",
+          "mentions": ["plan_quillmark_senior_advantage"]
+        },
+        {
+          "id": "e18-f7",
+          "text": "Quillmark Senior Advantage includes a fitness benefit that pays for a gym membership.",
+          "mentions": ["plan_quillmark_senior_advantage"]
+        }
+      ]
+    },
+    {
+      "episodeId": "91f09a52-dca5-52a6-b78d-2af9ad1ed793",
+      "entities": [
+        {
+          "id": "payer_quillmark",
+          "label": "Quillmark Health Partners",
+          "description": "Payer offering senior and family plans"
+        },
+        {
+          "id": "plan_quillmark_family_choice",
+          "label": "Quillmark Family Choice",
+          "description": "Family coverage plan"
+        },
+        {
+          "id": "network_riverbend",
+          "label": "Riverbend Care Alliance",
+          "description": "Capitated provider network"
+        },
+        {
+          "id": "vendor_pinegate_pharmacy",
+          "label": "Pinegate Pharmacy Solutions",
+          "description": "Pharmacy benefit manager"
+        },
+        {
+          "id": "program_clearpath_maternity",
+          "label": "Clearpath Maternity",
+          "description": "Maternity care management program"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "payer_quillmark",
+          "toId": "plan_quillmark_family_choice",
+          "type": "OFFERS",
+          "confidence": 0.95
+        },
+        {
+          "fromId": "plan_quillmark_family_choice",
+          "toId": "network_riverbend",
+          "type": "USES_NETWORK",
+          "confidence": 0.9
+        },
+        {
+          "fromId": "plan_quillmark_family_choice",
+          "toId": "vendor_pinegate_pharmacy",
+          "type": "PHARMACY_BENEFIT_BY",
+          "confidence": 0.9
+        },
+        {
+          "fromId": "plan_quillmark_family_choice",
+          "toId": "program_clearpath_maternity",
+          "type": "OFFERS_PROGRAM",
+          "confidence": 0.85
+        }
+      ],
+      "facts": [
+        {
+          "id": "e19-f1",
+          "text": "Quillmark Family Choice has a family deductible of 5,000 dollars.",
+          "mentions": ["plan_quillmark_family_choice"]
+        },
+        {
+          "id": "e19-f2",
+          "text": "Quillmark Family Choice covers pediatric well visits with no copay.",
+          "mentions": ["plan_quillmark_family_choice"]
+        },
+        {
+          "id": "e19-f3",
+          "text": "Quillmark Family Choice offers the Clearpath Maternity program to pregnant members.",
+          "mentions": ["plan_quillmark_family_choice", "program_clearpath_maternity"]
+        },
+        {
+          "id": "e19-f4",
+          "text": "Pinegate Pharmacy Solutions administers the Quillmark Family Choice drug formulary.",
+          "mentions": ["plan_quillmark_family_choice", "vendor_pinegate_pharmacy"]
+        },
+        {
+          "id": "e19-f5",
+          "text": "Quillmark Family Choice members use the Riverbend Care Alliance network.",
+          "mentions": ["plan_quillmark_family_choice", "network_riverbend"]
+        },
+        {
+          "id": "e19-f6",
+          "text": "Quillmark Family Choice covers orthodontics for children under 19 at 50 percent.",
+          "mentions": ["plan_quillmark_family_choice"]
+        },
+        {
+          "id": "e19-f7",
+          "text": "Quillmark Family Choice charges a 25 dollar specialist copay.",
+          "mentions": ["plan_quillmark_family_choice"]
+        }
+      ]
+    },
+    {
+      "episodeId": "bf7ea088-2695-59aa-b561-674c1c6e5509",
+      "entities": [
+        {
+          "id": "payer_quillmark",
+          "label": "Quillmark Health Partners",
+          "description": "Payer offering senior and family plans"
+        },
+        {
+          "id": "plan_quillmark_family_choice",
+          "label": "Quillmark Family Choice",
+          "description": "Family coverage plan"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "payer_quillmark",
+          "toId": "plan_quillmark_family_choice",
+          "type": "OFFERS",
+          "confidence": 0.95
+        }
+      ],
+      "facts": [
+        {
+          "id": "e20-f1",
+          "text": "Quillmark Family Choice requires claims within 180 days of the date of service.",
+          "mentions": ["plan_quillmark_family_choice"]
+        },
+        {
+          "id": "e20-f2",
+          "text": "Quillmark Family Choice resolves a standard post-service appeal within 60 days.",
+          "mentions": ["plan_quillmark_family_choice"]
+        },
+        {
+          "id": "e20-f3",
+          "text": "Quillmark Family Choice charges a 15 dollar copay for a behavioral health visit.",
+          "mentions": ["plan_quillmark_family_choice"]
+        },
+        {
+          "id": "e20-f4",
+          "text": "Quillmark Family Choice covers two routine dental cleanings a year for children.",
+          "mentions": ["plan_quillmark_family_choice"]
+        },
+        {
+          "id": "e20-f5",
+          "text": "Quillmark Family Choice members add a newborn by notifying the plan within 60 days of birth.",
+          "mentions": ["plan_quillmark_family_choice"]
+        },
+        {
+          "id": "e20-f6",
+          "text": "Quillmark Family Choice mails a new member ID card for each covered dependent.",
+          "mentions": ["plan_quillmark_family_choice"]
+        },
+        {
+          "id": "e20-f7",
+          "text": "Quillmark Family Choice covers urgent care visits at a 30 dollar copay.",
+          "mentions": ["plan_quillmark_family_choice"]
+        }
+      ]
+    },
+    {
+      "episodeId": "7377e2e2-906b-5744-ba94-9db470b6c192",
+      "entities": [
+        {
+          "id": "committee_quillmark_pt",
+          "label": "Quillmark Pharmacy and Therapeutics Committee",
+          "description": "Formulary review committee"
+        },
+        {
+          "id": "payer_quillmark",
+          "label": "Quillmark Health Partners",
+          "description": "Payer offering senior and family plans"
+        },
+        {
+          "id": "drugclass_glp1",
+          "label": "GLP-1 receptor agonists",
+          "description": "Drug class used for type 2 diabetes"
+        },
+        {
+          "id": "vendor_pinegate_pharmacy",
+          "label": "Pinegate Pharmacy Solutions",
+          "description": "Pharmacy benefit manager"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "committee_quillmark_pt",
+          "toId": "payer_quillmark",
+          "type": "BELONGS_TO",
+          "confidence": 0.95
+        },
+        {
+          "fromId": "committee_quillmark_pt",
+          "toId": "drugclass_glp1",
+          "type": "SET_STEP_THERAPY_FOR",
+          "confidence": 0.85
+        },
+        {
+          "fromId": "vendor_pinegate_pharmacy",
+          "toId": "committee_quillmark_pt",
+          "type": "IMPLEMENTS_DECISIONS_OF",
+          "confidence": 0.8
+        }
+      ],
+      "facts": [
+        {
+          "id": "e21-f1",
+          "text": "The Quillmark Pharmacy and Therapeutics Committee meets quarterly to review the formulary.",
+          "mentions": ["committee_quillmark_pt"]
+        },
+        {
+          "id": "e21-f2",
+          "text": "The Quillmark Pharmacy and Therapeutics Committee placed GLP-1 receptor agonists on step therapy after metformin.",
+          "mentions": ["committee_quillmark_pt", "drugclass_glp1"]
+        },
+        {
+          "id": "e21-f3",
+          "text": "Pinegate Pharmacy Solutions puts Quillmark formulary changes into effect within 30 days of a committee decision.",
+          "mentions": ["vendor_pinegate_pharmacy", "committee_quillmark_pt"]
+        },
+        {
+          "id": "e21-f4",
+          "text": "The Quillmark Pharmacy and Therapeutics Committee includes two practicing pharmacists and five physicians.",
+          "mentions": ["committee_quillmark_pt"]
+        },
+        {
+          "id": "e21-f5",
+          "text": "The Quillmark Pharmacy and Therapeutics Committee notifies members of formulary changes 60 days before they take effect.",
+          "mentions": ["committee_quillmark_pt"]
+        },
+        {
+          "id": "e21-f6",
+          "text": "The Quillmark Pharmacy and Therapeutics Committee reviews each newly approved drug within 180 days of its market launch.",
+          "mentions": ["committee_quillmark_pt"]
+        }
+      ]
+    },
+    {
+      "episodeId": "4357eefd-a79f-5771-8304-fa40976044c1",
+      "entities": [
+        {
+          "id": "vendor_pinegate_pharmacy",
+          "label": "Pinegate Pharmacy Solutions",
+          "description": "Pharmacy benefit manager"
+        }
+      ],
+      "relationships": [],
+      "facts": [
+        {
+          "id": "e22-f1",
+          "text": "Pinegate Pharmacy Solutions fills mail-order prescriptions in 90-day supplies.",
+          "mentions": ["vendor_pinegate_pharmacy"]
+        },
+        {
+          "id": "e22-f2",
+          "text": "Pinegate Pharmacy Solutions decides a standard formulary exception request within 72 hours.",
+          "mentions": ["vendor_pinegate_pharmacy"]
+        },
+        {
+          "id": "e22-f3",
+          "text": "Pinegate Pharmacy Solutions decides an expedited formulary exception within 24 hours.",
+          "mentions": ["vendor_pinegate_pharmacy"]
+        },
+        {
+          "id": "e22-f4",
+          "text": "Pinegate Pharmacy Solutions dispenses specialty drugs through its own specialty pharmacy.",
+          "mentions": ["vendor_pinegate_pharmacy"]
+        },
+        {
+          "id": "e22-f5",
+          "text": "Pinegate Pharmacy Solutions allows an early refill once the member has used 75 percent of a supply.",
+          "mentions": ["vendor_pinegate_pharmacy"]
+        },
+        {
+          "id": "e22-f6",
+          "text": "Pinegate Pharmacy Solutions runs a pharmacist help line around the clock.",
+          "mentions": ["vendor_pinegate_pharmacy"]
+        },
+        {
+          "id": "e22-f7",
+          "text": "Pinegate Pharmacy Solutions contracts with most large retail pharmacy chains.",
+          "mentions": ["vendor_pinegate_pharmacy"]
+        },
+        {
+          "id": "e22-f8",
+          "text": "Pinegate Pharmacy Solutions ships mail-order prescriptions in unmarked, temperature-controlled packaging.",
+          "mentions": ["vendor_pinegate_pharmacy"]
+        }
+      ]
+    },
+    {
+      "episodeId": "0c00a418-9365-5545-aa0d-03badf0d974c",
+      "entities": [
+        {
+          "id": "vendor_tallowood_nurse_line",
+          "label": "Tallowood Nurse Advice",
+          "description": "Nurse advice line vendor"
+        }
+      ],
+      "relationships": [],
+      "facts": [
+        {
+          "id": "e23-f1",
+          "text": "Tallowood Nurse Advice answers calls 24 hours a day, including holidays.",
+          "mentions": ["vendor_tallowood_nurse_line"]
+        },
+        {
+          "id": "e23-f2",
+          "text": "Tallowood Nurse Advice nurses can schedule a same-day telehealth visit when symptoms warrant it.",
+          "mentions": ["vendor_tallowood_nurse_line"]
+        },
+        {
+          "id": "e23-f3",
+          "text": "Tallowood Nurse Advice sends a summary of each call to the member's primary care physician.",
+          "mentions": ["vendor_tallowood_nurse_line"]
+        },
+        {
+          "id": "e23-f4",
+          "text": "Tallowood Nurse Advice staffs its line with registered nurses only.",
+          "mentions": ["vendor_tallowood_nurse_line"]
+        },
+        {
+          "id": "e23-f5",
+          "text": "Tallowood Nurse Advice keeps call recordings for seven years.",
+          "mentions": ["vendor_tallowood_nurse_line"]
+        },
+        {
+          "id": "e23-f6",
+          "text": "Tallowood Nurse Advice can transfer callers directly to a poison control center.",
+          "mentions": ["vendor_tallowood_nurse_line"]
+        }
+      ]
+    },
+    {
+      "episodeId": "33bb95c4-3ceb-576c-b874-d1cbd8354bfa",
+      "entities": [
+        {
+          "id": "vendor_fennick_rides",
+          "label": "Fennick Ride Services",
+          "description": "Non-emergency transportation vendor"
+        }
+      ],
+      "relationships": [],
+      "facts": [
+        {
+          "id": "e24-f1",
+          "text": "Fennick Ride Services needs 48 hours notice to schedule a ride.",
+          "mentions": ["vendor_fennick_rides"]
+        },
+        {
+          "id": "e24-f2",
+          "text": "Fennick Ride Services provides wheelchair-accessible vans on request.",
+          "mentions": ["vendor_fennick_rides"]
+        },
+        {
+          "id": "e24-f3",
+          "text": "Fennick Ride Services allows one companion to ride with the member at no charge.",
+          "mentions": ["vendor_fennick_rides"]
+        },
+        {
+          "id": "e24-f4",
+          "text": "Fennick Ride Services drivers wait up to 15 minutes at pickup before marking a no-show.",
+          "mentions": ["vendor_fennick_rides"]
+        },
+        {
+          "id": "e24-f5",
+          "text": "Fennick Ride Services does not cover trips to a pharmacy unless they are combined with an appointment.",
+          "mentions": ["vendor_fennick_rides"]
+        },
+        {
+          "id": "e24-f6",
+          "text": "Fennick Ride Services sends a text message when the driver is ten minutes away.",
+          "mentions": ["vendor_fennick_rides"]
+        }
+      ]
+    },
+    {
+      "episodeId": "eed74cbb-9516-56d6-a05e-015b331f5df7",
+      "entities": [
+        {
+          "id": "vendor_sablefield_imaging",
+          "label": "Sablefield Imaging Benefits",
+          "description": "Imaging benefit manager"
+        }
+      ],
+      "relationships": [],
+      "facts": [
+        {
+          "id": "e25-f1",
+          "text": "Sablefield Imaging Benefits decides routine imaging requests within two business days.",
+          "mentions": ["vendor_sablefield_imaging"]
+        },
+        {
+          "id": "e25-f2",
+          "text": "Sablefield Imaging Benefits requires six weeks of conservative treatment before approving a lumbar spine MRI.",
+          "mentions": ["vendor_sablefield_imaging"]
+        },
+        {
+          "id": "e25-f3",
+          "text": "Sablefield Imaging Benefits accepts requests only through its web portal or by phone.",
+          "mentions": ["vendor_sablefield_imaging"]
+        },
+        {
+          "id": "e25-f4",
+          "text": "Sablefield Imaging Benefits does not review imaging performed in an emergency department.",
+          "mentions": ["vendor_sablefield_imaging"]
+        },
+        {
+          "id": "e25-f5",
+          "text": "Sablefield Imaging Benefits approvals are valid for 60 days.",
+          "mentions": ["vendor_sablefield_imaging"]
+        },
+        {
+          "id": "e25-f6",
+          "text": "Sablefield Imaging Benefits suggests lower-cost imaging sites when a request is approved.",
+          "mentions": ["vendor_sablefield_imaging"]
+        },
+        {
+          "id": "e25-f7",
+          "text": "Sablefield Imaging Benefits reviews requests for PET scans as well as MRI and CT.",
+          "mentions": ["vendor_sablefield_imaging"]
+        }
+      ]
+    },
+    {
+      "episodeId": "bd45475e-6814-51e3-a2a9-b93b8a1883f2",
+      "entities": [
+        {
+          "id": "system_claimsdesk",
+          "label": "ClaimsDesk",
+          "description": "Provider claims status portal"
+        },
+        {
+          "id": "vendor_corvane_claims",
+          "label": "Corvane Claims Exchange",
+          "description": "Electronic claims clearinghouse"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "system_claimsdesk",
+          "toId": "vendor_corvane_claims",
+          "type": "OPERATED_BY",
+          "confidence": 0.95
+        }
+      ],
+      "facts": [
+        {
+          "id": "e26-f1",
+          "text": "Corvane Claims Exchange sends an acknowledgment for each electronic claim within 24 hours.",
+          "mentions": ["vendor_corvane_claims"]
+        },
+        {
+          "id": "e26-f2",
+          "text": "Corvane Claims Exchange rejects a claim at the front end when the member ID does not match the payer's eligibility file.",
+          "mentions": ["vendor_corvane_claims"]
+        },
+        {
+          "id": "e26-f3",
+          "text": "Corvane Claims Exchange operates ClaimsDesk, the portal providers use for claim status.",
+          "mentions": ["vendor_corvane_claims", "system_claimsdesk"]
+        },
+        {
+          "id": "e26-f4",
+          "text": "Corvane Claims Exchange charges providers nothing for claims sent to contracted payers.",
+          "mentions": ["vendor_corvane_claims"]
+        },
+        {
+          "id": "e26-f5",
+          "text": "Corvane Claims Exchange keeps rejected claims visible for 30 days before purging them.",
+          "mentions": ["vendor_corvane_claims"]
+        },
+        {
+          "id": "e26-f6",
+          "text": "Corvane Claims Exchange supports batch uploads of up to 5,000 claims at a time.",
+          "mentions": ["vendor_corvane_claims"]
+        }
+      ]
+    },
+    {
+      "episodeId": "8804976a-aed2-5745-ab80-2387d4311345",
+      "entities": [
+        {
+          "id": "system_claimsdesk",
+          "label": "ClaimsDesk",
+          "description": "Provider claims status portal"
+        },
+        {
+          "id": "vendor_corvane_claims",
+          "label": "Corvane Claims Exchange",
+          "description": "Electronic claims clearinghouse"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "system_claimsdesk",
+          "toId": "vendor_corvane_claims",
+          "type": "OPERATED_BY",
+          "confidence": 0.95
+        }
+      ],
+      "facts": [
+        {
+          "id": "e27-f1",
+          "text": "ClaimsDesk shows remittance advice for the past 18 months.",
+          "mentions": ["system_claimsdesk"]
+        },
+        {
+          "id": "e27-f2",
+          "text": "ClaimsDesk requires two-factor sign-in for every user.",
+          "mentions": ["system_claimsdesk"]
+        },
+        {
+          "id": "e27-f3",
+          "text": "ClaimsDesk lets a provider submit a corrected claim by editing the original.",
+          "mentions": ["system_claimsdesk"]
+        },
+        {
+          "id": "e27-f4",
+          "text": "ClaimsDesk exports claim status reports as spreadsheets once a day.",
+          "mentions": ["system_claimsdesk"]
+        },
+        {
+          "id": "e27-f5",
+          "text": "ClaimsDesk sessions time out after 20 minutes of inactivity.",
+          "mentions": ["system_claimsdesk"]
+        }
+      ]
+    },
+    {
+      "episodeId": "62c71379-23d8-5f13-8f37-c611943735fb",
+      "entities": [
+        {
+          "id": "payer_brightwater",
+          "label": "Brightwater Assurance",
+          "description": "Employer group health insurer"
+        },
+        {
+          "id": "plan_brightwater_select_ppo",
+          "label": "Brightwater Select PPO",
+          "description": "Employer preferred provider plan"
+        },
+        {
+          "id": "network_summit_crest",
+          "label": "Summit Crest Network",
+          "description": "Large multi-hospital provider network"
+        },
+        {
+          "id": "vendor_kestrel_review",
+          "label": "Kestrel Review Services",
+          "description": "Delegated utilization review vendor"
+        },
+        {
+          "id": "vendor_sablefield_imaging",
+          "label": "Sablefield Imaging Benefits",
+          "description": "Imaging benefit manager"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "payer_brightwater",
+          "toId": "plan_brightwater_select_ppo",
+          "type": "OFFERS",
+          "confidence": 0.95
+        },
+        {
+          "fromId": "plan_brightwater_select_ppo",
+          "toId": "network_summit_crest",
+          "type": "USES_NETWORK",
+          "confidence": 0.9
+        },
+        {
+          "fromId": "plan_brightwater_select_ppo",
+          "toId": "vendor_kestrel_review",
+          "type": "DELEGATES_REVIEW_TO",
+          "confidence": 0.9
+        },
+        {
+          "fromId": "plan_brightwater_select_ppo",
+          "toId": "vendor_sablefield_imaging",
+          "type": "IMAGING_REVIEW_BY",
+          "confidence": 0.9
+        }
+      ],
+      "facts": [
+        {
+          "id": "e28-f1",
+          "text": "Brightwater Select PPO has an individual deductible of 1,200 dollars.",
+          "mentions": ["plan_brightwater_select_ppo"]
+        },
+        {
+          "id": "e28-f2",
+          "text": "Brightwater Select PPO covers out-of-network care at 70 percent after the deductible.",
+          "mentions": ["plan_brightwater_select_ppo"]
+        },
+        {
+          "id": "e28-f3",
+          "text": "Brightwater Select PPO members use the Summit Crest Network in network.",
+          "mentions": ["plan_brightwater_select_ppo", "network_summit_crest"]
+        },
+        {
+          "id": "e28-f4",
+          "text": "Brightwater Select PPO delegates prior authorization reviews to Kestrel Review Services.",
+          "mentions": ["plan_brightwater_select_ppo", "vendor_kestrel_review"]
+        },
+        {
+          "id": "e28-f5",
+          "text": "Brightwater Select PPO sends advanced imaging requests to Sablefield Imaging Benefits.",
+          "mentions": ["plan_brightwater_select_ppo", "vendor_sablefield_imaging"]
+        },
+        {
+          "id": "e28-f6",
+          "text": "Brightwater Select PPO charges a 50 dollar specialist copay.",
+          "mentions": ["plan_brightwater_select_ppo"]
+        },
+        {
+          "id": "e28-f7",
+          "text": "Brightwater Select PPO caps annual out-of-pocket costs at 6,500 dollars.",
+          "mentions": ["plan_brightwater_select_ppo"]
+        }
+      ]
+    },
+    {
+      "episodeId": "837761c5-4151-5098-a54b-24ba3fdf2cea",
+      "entities": [
+        {
+          "id": "payer_brightwater",
+          "label": "Brightwater Assurance",
+          "description": "Employer group health insurer"
+        },
+        {
+          "id": "vendor_corvane_claims",
+          "label": "Corvane Claims Exchange",
+          "description": "Electronic claims clearinghouse"
+        },
+        {
+          "id": "plan_brightwater_select_ppo",
+          "label": "Brightwater Select PPO",
+          "description": "Employer preferred provider plan"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "payer_brightwater",
+          "toId": "vendor_corvane_claims",
+          "type": "CLAIMS_ROUTED_THROUGH",
+          "confidence": 0.9
+        },
+        {
+          "fromId": "payer_brightwater",
+          "toId": "plan_brightwater_select_ppo",
+          "type": "OFFERS",
+          "confidence": 0.95
+        }
+      ],
+      "facts": [
+        {
+          "id": "e29-f1",
+          "text": "Brightwater Select PPO allows claims up to 365 days after the date of service.",
+          "mentions": ["plan_brightwater_select_ppo"]
+        },
+        {
+          "id": "e29-f2",
+          "text": "Brightwater Assurance routes its claims through Corvane Claims Exchange.",
+          "mentions": ["payer_brightwater", "vendor_corvane_claims"]
+        },
+        {
+          "id": "e29-f3",
+          "text": "Brightwater Select PPO pays out-of-network providers the plan's allowed amount, and members may be balance billed.",
+          "mentions": ["plan_brightwater_select_ppo"]
+        },
+        {
+          "id": "e29-f4",
+          "text": "Brightwater Select PPO resolves an urgent appeal within 36 hours.",
+          "mentions": ["plan_brightwater_select_ppo"]
+        },
+        {
+          "id": "e29-f5",
+          "text": "Brightwater Select PPO covers chiropractic care for up to 20 visits a year.",
+          "mentions": ["plan_brightwater_select_ppo"]
+        },
+        {
+          "id": "e29-f6",
+          "text": "Brightwater Select PPO charges a 75 dollar copay for urgent care.",
+          "mentions": ["plan_brightwater_select_ppo"]
+        }
+      ]
+    },
+    {
+      "episodeId": "2a5c25c8-23af-5c9a-8f93-31b189dea0ce",
+      "entities": [
+        {
+          "id": "payer_brightwater",
+          "label": "Brightwater Assurance",
+          "description": "Employer group health insurer"
+        },
+        {
+          "id": "plan_brightwater_basic_hmo",
+          "label": "Brightwater Basic HMO",
+          "description": "Employer health maintenance plan"
+        },
+        {
+          "id": "network_bayline",
+          "label": "Bayline Provider Network",
+          "description": "Provider network in the northern coastal region"
+        },
+        {
+          "id": "program_breathe_easy",
+          "label": "Breathe Easy",
+          "description": "Asthma management program"
+        },
+        {
+          "id": "vendor_sablefield_imaging",
+          "label": "Sablefield Imaging Benefits",
+          "description": "Imaging benefit manager"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "payer_brightwater",
+          "toId": "plan_brightwater_basic_hmo",
+          "type": "OFFERS",
+          "confidence": 0.95
+        },
+        {
+          "fromId": "plan_brightwater_basic_hmo",
+          "toId": "network_bayline",
+          "type": "USES_NETWORK",
+          "confidence": 0.9
+        },
+        {
+          "fromId": "plan_brightwater_basic_hmo",
+          "toId": "program_breathe_easy",
+          "type": "OFFERS_PROGRAM",
+          "confidence": 0.85
+        },
+        {
+          "fromId": "plan_brightwater_basic_hmo",
+          "toId": "vendor_sablefield_imaging",
+          "type": "IMAGING_REVIEW_BY",
+          "confidence": 0.9
+        }
+      ],
+      "facts": [
+        {
+          "id": "e30-f1",
+          "text": "Brightwater Basic HMO requires a referral from the primary care physician for every specialist visit.",
+          "mentions": ["plan_brightwater_basic_hmo"]
+        },
+        {
+          "id": "e30-f2",
+          "text": "Brightwater Basic HMO has no deductible for in-network services.",
+          "mentions": ["plan_brightwater_basic_hmo"]
+        },
+        {
+          "id": "e30-f3",
+          "text": "Brightwater Basic HMO members use the Bayline Provider Network.",
+          "mentions": ["plan_brightwater_basic_hmo", "network_bayline"]
+        },
+        {
+          "id": "e30-f4",
+          "text": "Brightwater Basic HMO offers the Breathe Easy asthma program.",
+          "mentions": ["plan_brightwater_basic_hmo", "program_breathe_easy"]
+        },
+        {
+          "id": "e30-f5",
+          "text": "Brightwater Basic HMO sends imaging authorizations to Sablefield Imaging Benefits.",
+          "mentions": ["plan_brightwater_basic_hmo", "vendor_sablefield_imaging"]
+        },
+        {
+          "id": "e30-f6",
+          "text": "Brightwater Basic HMO charges a 10 dollar primary care copay.",
+          "mentions": ["plan_brightwater_basic_hmo"]
+        },
+        {
+          "id": "e30-f7",
+          "text": "Brightwater Basic HMO charges a 30 dollar specialist copay once a referral is on file.",
+          "mentions": ["plan_brightwater_basic_hmo"]
+        }
+      ]
+    },
+    {
+      "episodeId": "031028f0-d38b-504c-a0ab-b6311d639a39",
+      "entities": [
+        {
+          "id": "payer_brightwater",
+          "label": "Brightwater Assurance",
+          "description": "Employer group health insurer"
+        },
+        {
+          "id": "plan_brightwater_basic_hmo",
+          "label": "Brightwater Basic HMO",
+          "description": "Employer health maintenance plan"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "payer_brightwater",
+          "toId": "plan_brightwater_basic_hmo",
+          "type": "OFFERS",
+          "confidence": 0.95
+        }
+      ],
+      "facts": [
+        {
+          "id": "e31-f1",
+          "text": "Brightwater Basic HMO does not cover out-of-network care except emergencies and urgent care while traveling.",
+          "mentions": ["plan_brightwater_basic_hmo"]
+        },
+        {
+          "id": "e31-f2",
+          "text": "Brightwater Basic HMO charges 150 dollars for an emergency room visit, waived if the member is admitted.",
+          "mentions": ["plan_brightwater_basic_hmo"]
+        },
+        {
+          "id": "e31-f3",
+          "text": "Brightwater Basic HMO covers generic drugs at a 5 dollar copay.",
+          "mentions": ["plan_brightwater_basic_hmo"]
+        },
+        {
+          "id": "e31-f4",
+          "text": "Brightwater Basic HMO allows members to change their primary care physician once a quarter.",
+          "mentions": ["plan_brightwater_basic_hmo"]
+        },
+        {
+          "id": "e31-f5",
+          "text": "Brightwater Basic HMO resolves a standard appeal within 30 days of receipt.",
+          "mentions": ["plan_brightwater_basic_hmo"]
+        },
+        {
+          "id": "e31-f6",
+          "text": "Brightwater Basic HMO covers a yearly eye exam.",
+          "mentions": ["plan_brightwater_basic_hmo"]
+        }
+      ]
+    },
+    {
+      "episodeId": "31b8767b-4102-5448-9439-2f6b28b76196",
+      "entities": [
+        {
+          "id": "dept_brightwater_siu",
+          "label": "Brightwater Special Investigations Unit",
+          "description": "Fraud investigation department"
+        },
+        {
+          "id": "payer_brightwater",
+          "label": "Brightwater Assurance",
+          "description": "Employer group health insurer"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "dept_brightwater_siu",
+          "toId": "payer_brightwater",
+          "type": "BELONGS_TO",
+          "confidence": 0.95
+        }
+      ],
+      "facts": [
+        {
+          "id": "e32-f1",
+          "text": "The Brightwater Special Investigations Unit reviews any provider whose billing volume doubles within a quarter.",
+          "mentions": ["dept_brightwater_siu"]
+        },
+        {
+          "id": "e32-f2",
+          "text": "The Brightwater Special Investigations Unit runs an anonymous tip line for suspected fraud.",
+          "mentions": ["dept_brightwater_siu"]
+        },
+        {
+          "id": "e32-f3",
+          "text": "The Brightwater Special Investigations Unit may place a provider on prepayment review for up to 90 days.",
+          "mentions": ["dept_brightwater_siu"]
+        },
+        {
+          "id": "e32-f4",
+          "text": "Brightwater Assurance reports confirmed fraud cases to the state within 30 days.",
+          "mentions": ["payer_brightwater"]
+        },
+        {
+          "id": "e32-f5",
+          "text": "The Brightwater Special Investigations Unit trains claims staff on fraud indicators every year.",
+          "mentions": ["dept_brightwater_siu"]
+        },
+        {
+          "id": "e32-f6",
+          "text": "The Brightwater Special Investigations Unit recovered overpayments from 12 providers last year.",
+          "mentions": ["dept_brightwater_siu"]
+        }
+      ]
+    },
+    {
+      "episodeId": "b8860070-b0cd-5521-81cd-1a022c4c59e2",
+      "entities": [
+        {
+          "id": "payer_orrin_valley",
+          "label": "Orrin Valley Health Plan",
+          "description": "Community nonprofit health plan"
+        },
+        {
+          "id": "plan_orrin_valley_community",
+          "label": "Orrin Valley Community Plan",
+          "description": "Low-cost community plan"
+        },
+        {
+          "id": "network_riverbend",
+          "label": "Riverbend Care Alliance",
+          "description": "Capitated provider network"
+        },
+        {
+          "id": "vendor_pinegate_pharmacy",
+          "label": "Pinegate Pharmacy Solutions",
+          "description": "Pharmacy benefit manager"
+        },
+        {
+          "id": "vendor_fennick_rides",
+          "label": "Fennick Ride Services",
+          "description": "Non-emergency transportation vendor"
+        },
+        {
+          "id": "vendor_tallowood_nurse_line",
+          "label": "Tallowood Nurse Advice",
+          "description": "Nurse advice line vendor"
+        },
+        {
+          "id": "program_homeward_transitions",
+          "label": "Homeward Transitions",
+          "description": "Post-discharge transitions of care program"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "payer_orrin_valley",
+          "toId": "plan_orrin_valley_community",
+          "type": "OFFERS",
+          "confidence": 0.95
+        },
+        {
+          "fromId": "plan_orrin_valley_community",
+          "toId": "network_riverbend",
+          "type": "USES_NETWORK",
+          "confidence": 0.9
+        },
+        {
+          "fromId": "plan_orrin_valley_community",
+          "toId": "vendor_pinegate_pharmacy",
+          "type": "PHARMACY_BENEFIT_BY",
+          "confidence": 0.9
+        },
+        {
+          "fromId": "plan_orrin_valley_community",
+          "toId": "vendor_fennick_rides",
+          "type": "TRANSPORTATION_BY",
+          "confidence": 0.85
+        },
+        {
+          "fromId": "plan_orrin_valley_community",
+          "toId": "vendor_tallowood_nurse_line",
+          "type": "NURSE_LINE_BY",
+          "confidence": 0.85
+        },
+        {
+          "fromId": "plan_orrin_valley_community",
+          "toId": "program_homeward_transitions",
+          "type": "OFFERS_PROGRAM",
+          "confidence": 0.85
+        }
+      ],
+      "facts": [
+        {
+          "id": "e33-f1",
+          "text": "Orrin Valley Community Plan charges no copays for primary care.",
+          "mentions": ["plan_orrin_valley_community"]
+        },
+        {
+          "id": "e33-f2",
+          "text": "Orrin Valley Community Plan members use the Riverbend Care Alliance network.",
+          "mentions": ["plan_orrin_valley_community", "network_riverbend"]
+        },
+        {
+          "id": "e33-f3",
+          "text": "Orrin Valley Community Plan pharmacy benefits are managed by Pinegate Pharmacy Solutions.",
+          "mentions": ["plan_orrin_valley_community", "vendor_pinegate_pharmacy"]
+        },
+        {
+          "id": "e33-f4",
+          "text": "Orrin Valley Community Plan includes transportation to appointments through Fennick Ride Services.",
+          "mentions": ["plan_orrin_valley_community", "vendor_fennick_rides"]
+        },
+        {
+          "id": "e33-f5",
+          "text": "Orrin Valley Community Plan members call Tallowood Nurse Advice with after-hours questions.",
+          "mentions": ["plan_orrin_valley_community", "vendor_tallowood_nurse_line"]
+        },
+        {
+          "id": "e33-f6",
+          "text": "Orrin Valley Community Plan refers members leaving the hospital after heart failure to Homeward Transitions.",
+          "mentions": ["plan_orrin_valley_community", "program_homeward_transitions"]
+        }
+      ]
+    },
+    {
+      "episodeId": "27757343-2ce5-5259-9f80-f24c031f7331",
+      "entities": [
+        {
+          "id": "payer_orrin_valley",
+          "label": "Orrin Valley Health Plan",
+          "description": "Community nonprofit health plan"
+        },
+        {
+          "id": "plan_orrin_valley_community",
+          "label": "Orrin Valley Community Plan",
+          "description": "Low-cost community plan"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "payer_orrin_valley",
+          "toId": "plan_orrin_valley_community",
+          "type": "OFFERS",
+          "confidence": 0.95
+        }
+      ],
+      "facts": [
+        {
+          "id": "e34-f1",
+          "text": "Orrin Valley Community Plan renews eligibility every twelve months.",
+          "mentions": ["plan_orrin_valley_community"]
+        },
+        {
+          "id": "e34-f2",
+          "text": "Orrin Valley Community Plan covers two adult dental cleanings a year.",
+          "mentions": ["plan_orrin_valley_community"]
+        },
+        {
+          "id": "e34-f3",
+          "text": "Orrin Valley Community Plan requires claims within 120 days of the date of service.",
+          "mentions": ["plan_orrin_valley_community"]
+        },
+        {
+          "id": "e34-f4",
+          "text": "Orrin Valley Community Plan charges a 3 dollar copay for brand-name prescriptions.",
+          "mentions": ["plan_orrin_valley_community"]
+        },
+        {
+          "id": "e34-f5",
+          "text": "Orrin Valley Community Plan covers eyeglasses once every two years.",
+          "mentions": ["plan_orrin_valley_community"]
+        },
+        {
+          "id": "e34-f6",
+          "text": "Orrin Valley Community Plan sends renewal packets 45 days before eligibility ends.",
+          "mentions": ["plan_orrin_valley_community"]
+        },
+        {
+          "id": "e34-f7",
+          "text": "Orrin Valley Community Plan requires members to fill prescriptions at in-network pharmacies.",
+          "mentions": ["plan_orrin_valley_community"]
+        }
+      ]
+    },
+    {
+      "episodeId": "66df21d1-a365-5f77-9425-cbdabb74343c",
+      "entities": [
+        {
+          "id": "payer_orrin_valley",
+          "label": "Orrin Valley Health Plan",
+          "description": "Community nonprofit health plan"
+        },
+        {
+          "id": "plan_orrin_valley_premier",
+          "label": "Orrin Valley Premier",
+          "description": "Premium plan with broad coverage"
+        },
+        {
+          "id": "network_summit_crest",
+          "label": "Summit Crest Network",
+          "description": "Large multi-hospital provider network"
+        },
+        {
+          "id": "vendor_kestrel_review",
+          "label": "Kestrel Review Services",
+          "description": "Delegated utilization review vendor"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "payer_orrin_valley",
+          "toId": "plan_orrin_valley_premier",
+          "type": "OFFERS",
+          "confidence": 0.95
+        },
+        {
+          "fromId": "plan_orrin_valley_premier",
+          "toId": "network_summit_crest",
+          "type": "USES_NETWORK",
+          "confidence": 0.9
+        },
+        {
+          "fromId": "plan_orrin_valley_premier",
+          "toId": "vendor_kestrel_review",
+          "type": "DELEGATES_REVIEW_TO",
+          "confidence": 0.9
+        }
+      ],
+      "facts": [
+        {
+          "id": "e35-f1",
+          "text": "Orrin Valley Premier has an individual deductible of 500 dollars.",
+          "mentions": ["plan_orrin_valley_premier"]
+        },
+        {
+          "id": "e35-f2",
+          "text": "Orrin Valley Premier members use the Summit Crest Network.",
+          "mentions": ["plan_orrin_valley_premier", "network_summit_crest"]
+        },
+        {
+          "id": "e35-f3",
+          "text": "Orrin Valley Premier sends prior authorization reviews to Kestrel Review Services.",
+          "mentions": ["plan_orrin_valley_premier", "vendor_kestrel_review"]
+        },
+        {
+          "id": "e35-f4",
+          "text": "Orrin Valley Premier covers acupuncture for up to twelve visits a year.",
+          "mentions": ["plan_orrin_valley_premier"]
+        },
+        {
+          "id": "e35-f5",
+          "text": "Orrin Valley Premier charges a 35 dollar specialist copay.",
+          "mentions": ["plan_orrin_valley_premier"]
+        },
+        {
+          "id": "e35-f6",
+          "text": "Orrin Valley Premier includes emergency coverage worldwide.",
+          "mentions": ["plan_orrin_valley_premier"]
+        },
+        {
+          "id": "e35-f7",
+          "text": "Orrin Valley Premier covers a yearly vision exam with a 10 dollar copay.",
+          "mentions": ["plan_orrin_valley_premier"]
+        }
+      ]
+    },
+    {
+      "episodeId": "2541dbc3-106a-5f49-89d2-07bad73b78a4",
+      "entities": [
+        {
+          "id": "payer_orrin_valley",
+          "label": "Orrin Valley Health Plan",
+          "description": "Community nonprofit health plan"
+        },
+        {
+          "id": "vendor_corvane_claims",
+          "label": "Corvane Claims Exchange",
+          "description": "Electronic claims clearinghouse"
+        },
+        {
+          "id": "plan_orrin_valley_premier",
+          "label": "Orrin Valley Premier",
+          "description": "Premium plan with broad coverage"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "payer_orrin_valley",
+          "toId": "vendor_corvane_claims",
+          "type": "CLAIMS_ROUTED_THROUGH",
+          "confidence": 0.9
+        },
+        {
+          "fromId": "payer_orrin_valley",
+          "toId": "plan_orrin_valley_premier",
+          "type": "OFFERS",
+          "confidence": 0.95
+        }
+      ],
+      "facts": [
+        {
+          "id": "e36-f1",
+          "text": "Orrin Valley Premier requires claims within 90 days of the date of service.",
+          "mentions": ["plan_orrin_valley_premier"]
+        },
+        {
+          "id": "e36-f2",
+          "text": "Orrin Valley Health Plan sends its claims through Corvane Claims Exchange.",
+          "mentions": ["payer_orrin_valley", "vendor_corvane_claims"]
+        },
+        {
+          "id": "e36-f3",
+          "text": "Orrin Valley Premier resolves an urgent appeal within 24 hours.",
+          "mentions": ["plan_orrin_valley_premier"]
+        },
+        {
+          "id": "e36-f4",
+          "text": "Orrin Valley Premier caps annual out-of-pocket costs at 4,000 dollars.",
+          "mentions": ["plan_orrin_valley_premier"]
+        },
+        {
+          "id": "e36-f5",
+          "text": "Orrin Valley Premier covers a private hospital room when one is available, at no extra cost.",
+          "mentions": ["plan_orrin_valley_premier"]
+        },
+        {
+          "id": "e36-f6",
+          "text": "Orrin Valley Premier charges a 15 dollar copay for primary care.",
+          "mentions": ["plan_orrin_valley_premier"]
+        }
+      ]
+    },
+    {
+      "episodeId": "8d6e0eee-221c-537e-8664-ec0c9019d33e",
+      "entities": [
+        {
+          "id": "committee_orrin_valley_quality",
+          "label": "Orrin Valley Quality Council",
+          "description": "Quality improvement council"
+        },
+        {
+          "id": "payer_orrin_valley",
+          "label": "Orrin Valley Health Plan",
+          "description": "Community nonprofit health plan"
+        },
+        {
+          "id": "program_homeward_transitions",
+          "label": "Homeward Transitions",
+          "description": "Post-discharge transitions of care program"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "committee_orrin_valley_quality",
+          "toId": "payer_orrin_valley",
+          "type": "BELONGS_TO",
+          "confidence": 0.95
+        },
+        {
+          "fromId": "committee_orrin_valley_quality",
+          "toId": "program_homeward_transitions",
+          "type": "SPONSORS",
+          "confidence": 0.85
+        }
+      ],
+      "facts": [
+        {
+          "id": "e37-f1",
+          "text": "The Orrin Valley Quality Council reviews hospital readmission rates every quarter.",
+          "mentions": ["committee_orrin_valley_quality"]
+        },
+        {
+          "id": "e37-f2",
+          "text": "The Orrin Valley Quality Council sponsors the Homeward Transitions program.",
+          "mentions": ["committee_orrin_valley_quality", "program_homeward_transitions"]
+        },
+        {
+          "id": "e37-f3",
+          "text": "The Orrin Valley Quality Council publishes a member satisfaction report every spring.",
+          "mentions": ["committee_orrin_valley_quality"]
+        },
+        {
+          "id": "e37-f4",
+          "text": "The Orrin Valley Quality Council includes two member representatives.",
+          "mentions": ["committee_orrin_valley_quality"]
+        },
+        {
+          "id": "e37-f5",
+          "text": "Orrin Valley Health Plan set a goal of cutting 30-day readmissions by ten percent.",
+          "mentions": ["payer_orrin_valley"]
+        },
+        {
+          "id": "e37-f6",
+          "text": "The Orrin Valley Quality Council tracks childhood immunization rates.",
+          "mentions": ["committee_orrin_valley_quality"]
+        }
+      ]
+    },
+    {
+      "episodeId": "c497fa48-11f5-55d1-ae76-ea7864675a6a",
+      "entities": [
+        {
+          "id": "plan_harbor_mutual_silver",
+          "label": "Harbor Mutual Silver",
+          "description": "Mid-tier individual and small-group plan"
+        },
+        {
+          "id": "program_steady_steps",
+          "label": "Steady Steps",
+          "description": "Diabetes self-management program"
+        },
+        {
+          "id": "plan_harbor_mutual_bronze_flex",
+          "label": "Harbor Mutual Bronze Flex",
+          "description": "High-deductible plan paired with a savings account"
+        },
+        {
+          "id": "code_e11_9",
+          "label": "E11.9",
+          "description": "Type 2 diabetes mellitus without complications"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "plan_harbor_mutual_silver",
+          "toId": "program_steady_steps",
+          "type": "OFFERS_PROGRAM",
+          "confidence": 0.85
+        },
+        {
+          "fromId": "plan_harbor_mutual_bronze_flex",
+          "toId": "program_steady_steps",
+          "type": "OFFERS_PROGRAM",
+          "confidence": 0.85
+        },
+        {
+          "fromId": "program_steady_steps",
+          "toId": "code_e11_9",
+          "type": "TARGETS",
+          "confidence": 0.9
+        }
+      ],
+      "facts": [
+        {
+          "id": "e38-f1",
+          "text": "Steady Steps enrolls adults with type 2 diabetes who have had an A1c test in the past year.",
+          "mentions": ["program_steady_steps"]
+        },
+        {
+          "id": "e38-f2",
+          "text": "Steady Steps provides twelve coaching calls over six months.",
+          "mentions": ["program_steady_steps"]
+        },
+        {
+          "id": "e38-f3",
+          "text": "Steady Steps ships participants a glucose meter and test strips at no cost.",
+          "mentions": ["program_steady_steps"]
+        },
+        {
+          "id": "e38-f4",
+          "text": "Steady Steps is available to Harbor Mutual Silver and Harbor Mutual Bronze Flex members.",
+          "mentions": [
+            "program_steady_steps",
+            "plan_harbor_mutual_silver",
+            "plan_harbor_mutual_bronze_flex"
+          ]
+        },
+        {
+          "id": "e38-f5",
+          "text": "Steady Steps finds eligible members from claims that carry diagnosis code E11.9.",
+          "mentions": ["program_steady_steps", "code_e11_9"]
+        },
+        {
+          "id": "e38-f6",
+          "text": "Steady Steps participants who complete the program receive a 100 dollar gift card.",
+          "mentions": ["program_steady_steps"]
+        },
+        {
+          "id": "e38-f7",
+          "text": "Steady Steps coaches are certified diabetes educators.",
+          "mentions": ["program_steady_steps"]
+        }
+      ]
+    },
+    {
+      "episodeId": "063b8263-0d73-5101-b7cd-30531bbebd0d",
+      "entities": [
+        {
+          "id": "plan_quillmark_family_choice",
+          "label": "Quillmark Family Choice",
+          "description": "Family coverage plan"
+        },
+        {
+          "id": "program_clearpath_maternity",
+          "label": "Clearpath Maternity",
+          "description": "Maternity care management program"
+        },
+        {
+          "id": "code_o24_410",
+          "label": "O24.410",
+          "description": "Gestational diabetes mellitus in pregnancy, diet controlled"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "plan_quillmark_family_choice",
+          "toId": "program_clearpath_maternity",
+          "type": "OFFERS_PROGRAM",
+          "confidence": 0.85
+        },
+        {
+          "fromId": "program_clearpath_maternity",
+          "toId": "code_o24_410",
+          "type": "TARGETS",
+          "confidence": 0.9
+        }
+      ],
+      "facts": [
+        {
+          "id": "e39-f1",
+          "text": "Clearpath Maternity assigns each participant a nurse care manager by the twentieth week of pregnancy.",
+          "mentions": ["program_clearpath_maternity"]
+        },
+        {
+          "id": "e39-f2",
+          "text": "Clearpath Maternity covers a breast pump and two lactation consultations.",
+          "mentions": ["program_clearpath_maternity"]
+        },
+        {
+          "id": "e39-f3",
+          "text": "Clearpath Maternity adds members whose claims show code O24.410 to a gestational diabetes track.",
+          "mentions": ["program_clearpath_maternity", "code_o24_410"]
+        },
+        {
+          "id": "e39-f4",
+          "text": "Clearpath Maternity continues follow-up calls for eight weeks after delivery.",
+          "mentions": ["program_clearpath_maternity"]
+        },
+        {
+          "id": "e39-f5",
+          "text": "Clearpath Maternity pays a 50 dollar incentive for completing a postpartum visit within 60 days.",
+          "mentions": ["program_clearpath_maternity"]
+        },
+        {
+          "id": "e39-f6",
+          "text": "Clearpath Maternity offers childbirth classes by video.",
+          "mentions": ["program_clearpath_maternity"]
+        }
+      ]
+    },
+    {
+      "episodeId": "aaab354c-122a-51a6-a713-e581c10bc496",
+      "entities": [
+        {
+          "id": "plan_brightwater_basic_hmo",
+          "label": "Brightwater Basic HMO",
+          "description": "Employer health maintenance plan"
+        },
+        {
+          "id": "program_breathe_easy",
+          "label": "Breathe Easy",
+          "description": "Asthma management program"
+        },
+        {
+          "id": "code_j45_40",
+          "label": "J45.40",
+          "description": "Moderate persistent asthma, uncomplicated"
+        },
+        {
+          "id": "drugclass_inhaled_corticosteroids",
+          "label": "inhaled corticosteroids",
+          "description": "Controller medication class for asthma"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "plan_brightwater_basic_hmo",
+          "toId": "program_breathe_easy",
+          "type": "OFFERS_PROGRAM",
+          "confidence": 0.85
+        },
+        {
+          "fromId": "program_breathe_easy",
+          "toId": "code_j45_40",
+          "type": "TARGETS",
+          "confidence": 0.9
+        },
+        {
+          "fromId": "program_breathe_easy",
+          "toId": "drugclass_inhaled_corticosteroids",
+          "type": "WAIVES_COPAY_FOR",
+          "confidence": 0.8
+        }
+      ],
+      "facts": [
+        {
+          "id": "e40-f1",
+          "text": "Breathe Easy enrolls members with diagnosis code J45.40 on two or more claims in a year.",
+          "mentions": ["program_breathe_easy", "code_j45_40"]
+        },
+        {
+          "id": "e40-f2",
+          "text": "Breathe Easy waives the copay for inhaled corticosteroids for enrolled members.",
+          "mentions": ["program_breathe_easy", "drugclass_inhaled_corticosteroids"]
+        },
+        {
+          "id": "e40-f3",
+          "text": "Breathe Easy sends a respiratory therapist for one home visit to look for triggers.",
+          "mentions": ["program_breathe_easy"]
+        },
+        {
+          "id": "e40-f4",
+          "text": "Breathe Easy provides a spacer and a peak flow meter to each participant.",
+          "mentions": ["program_breathe_easy"]
+        },
+        {
+          "id": "e40-f5",
+          "text": "Breathe Easy reviews each participant's asthma action plan every six months.",
+          "mentions": ["program_breathe_easy"]
+        },
+        {
+          "id": "e40-f6",
+          "text": "Breathe Easy sends participants a reminder before the start of allergy season.",
+          "mentions": ["program_breathe_easy"]
+        }
+      ]
+    },
+    {
+      "episodeId": "e08aeb53-babc-5348-8018-c82a0c6c584f",
+      "entities": [
+        {
+          "id": "program_homeward_transitions",
+          "label": "Homeward Transitions",
+          "description": "Post-discharge transitions of care program"
+        },
+        {
+          "id": "code_i50_9",
+          "label": "I50.9",
+          "description": "Heart failure, unspecified"
+        },
+        {
+          "id": "committee_orrin_valley_quality",
+          "label": "Orrin Valley Quality Council",
+          "description": "Quality improvement council"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "program_homeward_transitions",
+          "toId": "code_i50_9",
+          "type": "TARGETS",
+          "confidence": 0.9
+        },
+        {
+          "fromId": "committee_orrin_valley_quality",
+          "toId": "program_homeward_transitions",
+          "type": "SPONSORS",
+          "confidence": 0.85
+        }
+      ],
+      "facts": [
+        {
+          "id": "e41-f1",
+          "text": "Homeward Transitions calls each member within 48 hours of hospital discharge.",
+          "mentions": ["program_homeward_transitions"]
+        },
+        {
+          "id": "e41-f2",
+          "text": "Homeward Transitions targets members admitted with diagnosis code I50.9.",
+          "mentions": ["program_homeward_transitions", "code_i50_9"]
+        },
+        {
+          "id": "e41-f3",
+          "text": "Homeward Transitions reconciles the member's medications at a home visit within seven days.",
+          "mentions": ["program_homeward_transitions"]
+        },
+        {
+          "id": "e41-f4",
+          "text": "Homeward Transitions provides a scale and asks members to report their weight daily for 30 days.",
+          "mentions": ["program_homeward_transitions"]
+        },
+        {
+          "id": "e41-f5",
+          "text": "Homeward Transitions lasts 30 days after discharge.",
+          "mentions": ["program_homeward_transitions"]
+        },
+        {
+          "id": "e41-f6",
+          "text": "Homeward Transitions is staffed by nurses and social workers.",
+          "mentions": ["program_homeward_transitions"]
+        }
+      ]
+    },
+    {
+      "episodeId": "b0639daa-dfae-566c-8173-3ee071c4db5e",
+      "entities": [
+        {
+          "id": "plan_cedarline_essential",
+          "label": "Cedarline Essential",
+          "description": "Referral-based commercial plan"
+        },
+        {
+          "id": "program_mindful_access",
+          "label": "Mindful Access",
+          "description": "Behavioral health access program"
+        },
+        {
+          "id": "code_f32_1",
+          "label": "F32.1",
+          "description": "Major depressive disorder, single episode, moderate"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "plan_cedarline_essential",
+          "toId": "program_mindful_access",
+          "type": "OFFERS_PROGRAM",
+          "confidence": 0.85
+        },
+        {
+          "fromId": "program_mindful_access",
+          "toId": "code_f32_1",
+          "type": "TARGETS",
+          "confidence": 0.9
+        }
+      ],
+      "facts": [
+        {
+          "id": "e42-f1",
+          "text": "Mindful Access guarantees a first therapy appointment within seven days of a request.",
+          "mentions": ["program_mindful_access"]
+        },
+        {
+          "id": "e42-f2",
+          "text": "Mindful Access identifies members through claims coded F32.1.",
+          "mentions": ["program_mindful_access", "code_f32_1"]
+        },
+        {
+          "id": "e42-f3",
+          "text": "Mindful Access offers video therapy sessions in the evening and on weekends.",
+          "mentions": ["program_mindful_access"]
+        },
+        {
+          "id": "e42-f4",
+          "text": "Mindful Access covers up to 20 therapy sessions a year with no copay.",
+          "mentions": ["program_mindful_access"]
+        },
+        {
+          "id": "e42-f5",
+          "text": "Mindful Access screens participants with a depression questionnaire every 90 days.",
+          "mentions": ["program_mindful_access"]
+        },
+        {
+          "id": "e42-f6",
+          "text": "Mindful Access lets members choose between a therapist and a psychiatric nurse practitioner.",
+          "mentions": ["program_mindful_access"]
+        }
+      ]
+    },
+    {
+      "episodeId": "bce4be04-e4e4-501e-ad00-602dfb7c58e8",
+      "entities": [
+        {
+          "id": "form_pa_7",
+          "label": "Form PA-7",
+          "description": "Prior authorization request form"
+        },
+        {
+          "id": "vendor_kestrel_review",
+          "label": "Kestrel Review Services",
+          "description": "Delegated utilization review vendor"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "form_pa_7",
+          "toId": "vendor_kestrel_review",
+          "type": "SUBMITTED_TO",
+          "confidence": 0.9
+        }
+      ],
+      "facts": [
+        {
+          "id": "e43-f1",
+          "text": "Form PA-7 requires the ordering clinician's national provider identifier.",
+          "mentions": ["form_pa_7"]
+        },
+        {
+          "id": "e43-f2",
+          "text": "Form PA-7 must include the diagnosis code and the planned date of service.",
+          "mentions": ["form_pa_7"]
+        },
+        {
+          "id": "e43-f3",
+          "text": "A Form PA-7 sent without clinical notes is treated as incomplete.",
+          "mentions": ["form_pa_7"]
+        },
+        {
+          "id": "e43-f4",
+          "text": "Form PA-7 was revised in March to add a field for urgency.",
+          "mentions": ["form_pa_7"]
+        }
+      ]
+    },
+    {
+      "episodeId": "4e8bb644-ca66-5842-b979-1863693edff8",
+      "entities": [
+        {
+          "id": "form_ap_3",
+          "label": "Form AP-3",
+          "description": "Provider claim appeal form"
+        },
+        {
+          "id": "dept_harbor_provider_relations",
+          "label": "Harbor Mutual Provider Relations",
+          "description": "Provider support department"
+        },
+        {
+          "id": "payer_harbor_mutual",
+          "label": "Harbor Mutual",
+          "description": "Regional mutual health insurer owned by its policyholders"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "form_ap_3",
+          "toId": "dept_harbor_provider_relations",
+          "type": "SUBMITTED_TO",
+          "confidence": 0.9
+        },
+        {
+          "fromId": "dept_harbor_provider_relations",
+          "toId": "payer_harbor_mutual",
+          "type": "BELONGS_TO",
+          "confidence": 0.95
+        }
+      ],
+      "facts": [
+        {
+          "id": "e44-f1",
+          "text": "Form AP-3 must be filed within 90 days of the claim decision being appealed.",
+          "mentions": ["form_ap_3"]
+        },
+        {
+          "id": "e44-f2",
+          "text": "Form AP-3 requires a copy of the remittance advice that shows the denial.",
+          "mentions": ["form_ap_3"]
+        },
+        {
+          "id": "e44-f3",
+          "text": "Harbor Mutual Provider Relations holds a quarterly webinar on billing changes.",
+          "mentions": ["dept_harbor_provider_relations"]
+        },
+        {
+          "id": "e44-f4",
+          "text": "Harbor Mutual Provider Relations assigns each large practice a named representative.",
+          "mentions": ["dept_harbor_provider_relations"]
+        },
+        {
+          "id": "e44-f5",
+          "text": "Harbor Mutual Provider Relations answers provider email within two business days.",
+          "mentions": ["dept_harbor_provider_relations"]
+        },
+        {
+          "id": "e44-f6",
+          "text": "Harbor Mutual Provider Relations publishes a monthly provider newsletter.",
+          "mentions": ["dept_harbor_provider_relations"]
+        },
+        {
+          "id": "e44-f7",
+          "text": "Form AP-3 has a section for the provider's written argument.",
+          "mentions": ["form_ap_3"]
+        }
+      ]
+    },
+    {
+      "episodeId": "5532f43d-6fb0-5fd4-9118-e4a26d2f4714",
+      "entities": [
+        {
+          "id": "payer_harbor_mutual",
+          "label": "Harbor Mutual",
+          "description": "Regional mutual health insurer owned by its policyholders"
+        }
+      ],
+      "relationships": [],
+      "facts": [
+        {
+          "id": "e45-f1",
+          "text": "Harbor Mutual is owned by its policyholders and has no outside shareholders.",
+          "mentions": ["payer_harbor_mutual"]
+        },
+        {
+          "id": "e45-f2",
+          "text": "Harbor Mutual starts the plan year for individual members on January 1.",
+          "mentions": ["payer_harbor_mutual"]
+        },
+        {
+          "id": "e45-f3",
+          "text": "Harbor Mutual lets members pay premiums by automatic bank draft at no fee.",
+          "mentions": ["payer_harbor_mutual"]
+        },
+        {
+          "id": "e45-f4",
+          "text": "Harbor Mutual sends an explanation of benefits within ten days of processing a claim.",
+          "mentions": ["payer_harbor_mutual"]
+        },
+        {
+          "id": "e45-f5",
+          "text": "Harbor Mutual gives members a 31-day grace period for late premium payments.",
+          "mentions": ["payer_harbor_mutual"]
+        },
+        {
+          "id": "e45-f6",
+          "text": "Harbor Mutual has its headquarters in a harbor town on the northern coast.",
+          "mentions": ["payer_harbor_mutual"]
+        }
+      ]
+    },
+    {
+      "episodeId": "7f94b639-0bfe-5368-b504-b76a4c2ac918",
+      "entities": [
+        {
+          "id": "payer_cedarline_health",
+          "label": "Cedarline Health",
+          "description": "Commercial health plan operator"
+        }
+      ],
+      "relationships": [],
+      "facts": [
+        {
+          "id": "e46-f1",
+          "text": "Cedarline Health operates in three states.",
+          "mentions": ["payer_cedarline_health"]
+        },
+        {
+          "id": "e46-f2",
+          "text": "Cedarline Health processes paper claims within 30 days.",
+          "mentions": ["payer_cedarline_health"]
+        },
+        {
+          "id": "e46-f3",
+          "text": "Cedarline Health requires claims within 180 days of the date of service.",
+          "mentions": ["payer_cedarline_health"]
+        },
+        {
+          "id": "e46-f4",
+          "text": "Cedarline Health holds open enrollment from November 1 to December 15.",
+          "mentions": ["payer_cedarline_health"]
+        },
+        {
+          "id": "e46-f5",
+          "text": "Cedarline Health publishes its drug formulary on the first business day of each quarter.",
+          "mentions": ["payer_cedarline_health"]
+        },
+        {
+          "id": "e46-f6",
+          "text": "Cedarline Health sells individual plans on the state exchange.",
+          "mentions": ["payer_cedarline_health"]
+        }
+      ]
+    },
+    {
+      "episodeId": "67fe65d6-7267-52f0-bb4b-356860f6540a",
+      "entities": [
+        {
+          "id": "payer_quillmark",
+          "label": "Quillmark Health Partners",
+          "description": "Payer offering senior and family plans"
+        },
+        {
+          "id": "region_coastal_north",
+          "label": "Coastal North service area",
+          "description": "Service area along the northern coast"
+        },
+        {
+          "id": "region_inland_valley",
+          "label": "Inland Valley service area",
+          "description": "Inland service area"
+        },
+        {
+          "id": "plan_quillmark_senior_advantage",
+          "label": "Quillmark Senior Advantage",
+          "description": "Plan for members aged 65 and over"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "payer_quillmark",
+          "toId": "region_coastal_north",
+          "type": "SERVES",
+          "confidence": 0.8
+        },
+        {
+          "fromId": "payer_quillmark",
+          "toId": "region_inland_valley",
+          "type": "SERVES",
+          "confidence": 0.8
+        },
+        {
+          "fromId": "payer_quillmark",
+          "toId": "plan_quillmark_senior_advantage",
+          "type": "OFFERS",
+          "confidence": 0.95
+        }
+      ],
+      "facts": [
+        {
+          "id": "e47-f1",
+          "text": "Quillmark Health Partners serves members in the Inland Valley and Coastal North service areas.",
+          "mentions": ["payer_quillmark", "region_inland_valley", "region_coastal_north"]
+        },
+        {
+          "id": "e47-f2",
+          "text": "Quillmark Health Partners requires electronic funds transfer for provider payments.",
+          "mentions": ["payer_quillmark"]
+        },
+        {
+          "id": "e47-f3",
+          "text": "Quillmark Health Partners pays clean claims within 14 days.",
+          "mentions": ["payer_quillmark"]
+        },
+        {
+          "id": "e47-f4",
+          "text": "Quillmark Health Partners mails members a welcome kit within ten days of enrollment.",
+          "mentions": ["payer_quillmark"]
+        },
+        {
+          "id": "e47-f5",
+          "text": "Quillmark Health Partners completes an annual health risk assessment for every Senior Advantage member.",
+          "mentions": ["payer_quillmark", "plan_quillmark_senior_advantage"]
+        },
+        {
+          "id": "e47-f6",
+          "text": "Quillmark Health Partners has a member advisory group that meets twice a year.",
+          "mentions": ["payer_quillmark"]
+        }
+      ]
+    },
+    {
+      "episodeId": "78fac8de-ff23-50aa-a5f7-e7649af12e28",
+      "entities": [
+        {
+          "id": "payer_brightwater",
+          "label": "Brightwater Assurance",
+          "description": "Employer group health insurer"
+        },
+        {
+          "id": "plan_brightwater_select_ppo",
+          "label": "Brightwater Select PPO",
+          "description": "Employer preferred provider plan"
+        },
+        {
+          "id": "plan_brightwater_basic_hmo",
+          "label": "Brightwater Basic HMO",
+          "description": "Employer health maintenance plan"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "payer_brightwater",
+          "toId": "plan_brightwater_select_ppo",
+          "type": "OFFERS",
+          "confidence": 0.95
+        },
+        {
+          "fromId": "payer_brightwater",
+          "toId": "plan_brightwater_basic_hmo",
+          "type": "OFFERS",
+          "confidence": 0.95
+        }
+      ],
+      "facts": [
+        {
+          "id": "e48-f1",
+          "text": "Brightwater Assurance sells plans only to employer groups with at least ten employees.",
+          "mentions": ["payer_brightwater"]
+        },
+        {
+          "id": "e48-f2",
+          "text": "Brightwater Assurance renews employer contracts every July.",
+          "mentions": ["payer_brightwater"]
+        },
+        {
+          "id": "e48-f3",
+          "text": "Brightwater Assurance offers a wellness incentive of up to 300 dollars for completing a health screening.",
+          "mentions": ["payer_brightwater"]
+        },
+        {
+          "id": "e48-f4",
+          "text": "Brightwater Assurance pays clean claims within 30 days.",
+          "mentions": ["payer_brightwater"]
+        },
+        {
+          "id": "e48-f5",
+          "text": "Brightwater Assurance lets employer groups choose between the Select PPO and the Basic HMO.",
+          "mentions": [
+            "payer_brightwater",
+            "plan_brightwater_select_ppo",
+            "plan_brightwater_basic_hmo"
+          ]
+        },
+        {
+          "id": "e48-f6",
+          "text": "Brightwater Assurance sells dental coverage as a separate product.",
+          "mentions": ["payer_brightwater"]
+        }
+      ]
+    },
+    {
+      "episodeId": "0fa5a073-64a3-5a21-8dfd-7318b2165fbd",
+      "entities": [
+        {
+          "id": "payer_orrin_valley",
+          "label": "Orrin Valley Health Plan",
+          "description": "Community nonprofit health plan"
+        },
+        {
+          "id": "region_inland_valley",
+          "label": "Inland Valley service area",
+          "description": "Inland service area"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "payer_orrin_valley",
+          "toId": "region_inland_valley",
+          "type": "SERVES",
+          "confidence": 0.8
+        }
+      ],
+      "facts": [
+        {
+          "id": "e49-f1",
+          "text": "Orrin Valley Health Plan is a nonprofit governed by a community board.",
+          "mentions": ["payer_orrin_valley"]
+        },
+        {
+          "id": "e49-f2",
+          "text": "Orrin Valley Health Plan pays clean claims within 15 days.",
+          "mentions": ["payer_orrin_valley"]
+        },
+        {
+          "id": "e49-f3",
+          "text": "Orrin Valley Health Plan offers member materials in English, Spanish and Vietnamese.",
+          "mentions": ["payer_orrin_valley"]
+        },
+        {
+          "id": "e49-f4",
+          "text": "Orrin Valley Health Plan runs a walk-in member service center in the Inland Valley service area.",
+          "mentions": ["payer_orrin_valley", "region_inland_valley"]
+        },
+        {
+          "id": "e49-f5",
+          "text": "Orrin Valley Health Plan's board meets on the first Monday of every other month.",
+          "mentions": ["payer_orrin_valley"]
+        },
+        {
+          "id": "e49-f6",
+          "text": "Orrin Valley Health Plan employs community health workers in each county it serves.",
+          "mentions": ["payer_orrin_valley"]
+        }
+      ]
+    },
+    {
+      "episodeId": "3a52d5b3-5a07-52ee-9d79-aab8178587bd",
+      "entities": [
+        {
+          "id": "region_coastal_north",
+          "label": "Coastal North service area",
+          "description": "Service area along the northern coast"
+        },
+        {
+          "id": "region_inland_valley",
+          "label": "Inland Valley service area",
+          "description": "Inland service area"
+        }
+      ],
+      "relationships": [],
+      "facts": [
+        {
+          "id": "e50-f1",
+          "text": "The Coastal North service area includes six counties along the northern coast.",
+          "mentions": ["region_coastal_north"]
+        },
+        {
+          "id": "e50-f2",
+          "text": "The Inland Valley service area has the highest share of members over 65 of any service area.",
+          "mentions": ["region_inland_valley"]
+        },
+        {
+          "id": "e50-f3",
+          "text": "The Coastal North service area has a shortage of in-network dermatologists.",
+          "mentions": ["region_coastal_north"]
+        },
+        {
+          "id": "e50-f4",
+          "text": "The Inland Valley service area is served by two hospitals with trauma centers.",
+          "mentions": ["region_inland_valley"]
+        },
+        {
+          "id": "e50-f5",
+          "text": "Members in the Inland Valley service area often travel long distances to see specialists.",
+          "mentions": ["region_inland_valley"]
+        }
+      ]
+    },
+    {
+      "episodeId": "7cf989d7-0e6a-55b7-b122-73f762169481",
+      "entities": [
+        {
+          "id": "code_e11_9",
+          "label": "E11.9",
+          "description": "Type 2 diabetes mellitus without complications"
+        },
+        {
+          "id": "code_o24_410",
+          "label": "O24.410",
+          "description": "Gestational diabetes mellitus in pregnancy, diet controlled"
+        },
+        {
+          "id": "code_j45_40",
+          "label": "J45.40",
+          "description": "Moderate persistent asthma, uncomplicated"
+        },
+        {
+          "id": "code_i50_9",
+          "label": "I50.9",
+          "description": "Heart failure, unspecified"
+        },
+        {
+          "id": "code_f32_1",
+          "label": "F32.1",
+          "description": "Major depressive disorder, single episode, moderate"
+        }
+      ],
+      "relationships": [],
+      "facts": [
+        {
+          "id": "e51-f1",
+          "text": "E11.9 is the code for type 2 diabetes mellitus without complications.",
+          "mentions": ["code_e11_9"]
+        },
+        {
+          "id": "e51-f2",
+          "text": "O24.410 is used for gestational diabetes that is controlled by diet.",
+          "mentions": ["code_o24_410"]
+        },
+        {
+          "id": "e51-f3",
+          "text": "J45.40 describes moderate persistent asthma without complications.",
+          "mentions": ["code_j45_40"]
+        },
+        {
+          "id": "e51-f4",
+          "text": "I50.9 is an unspecified heart failure code, and reviewers ask for a more specific code when the record supports one.",
+          "mentions": ["code_i50_9"]
+        },
+        {
+          "id": "e51-f5",
+          "text": "F32.1 describes a single episode of moderate major depressive disorder.",
+          "mentions": ["code_f32_1"]
+        }
+      ]
+    },
+    {
+      "episodeId": "a88e55cb-3855-5787-8f62-2089bc39bc41",
+      "entities": [
+        {
+          "id": "vendor_pinegate_pharmacy",
+          "label": "Pinegate Pharmacy Solutions",
+          "description": "Pharmacy benefit manager"
+        },
+        {
+          "id": "drugclass_glp1",
+          "label": "GLP-1 receptor agonists",
+          "description": "Drug class used for type 2 diabetes"
+        },
+        {
+          "id": "drugclass_inhaled_corticosteroids",
+          "label": "inhaled corticosteroids",
+          "description": "Controller medication class for asthma"
+        }
+      ],
+      "relationships": [
+        {
+          "fromId": "vendor_pinegate_pharmacy",
+          "toId": "drugclass_glp1",
+          "type": "LIMITS_SUPPLY_OF",
+          "confidence": 0.8
+        },
+        {
+          "fromId": "vendor_pinegate_pharmacy",
+          "toId": "drugclass_inhaled_corticosteroids",
+          "type": "PREFERS",
+          "confidence": 0.8
+        }
+      ],
+      "facts": [
+        {
+          "id": "e52-f1",
+          "text": "Pinegate Pharmacy Solutions limits GLP-1 receptor agonists to a 30-day supply at retail pharmacies.",
+          "mentions": ["vendor_pinegate_pharmacy", "drugclass_glp1"]
+        },
+        {
+          "id": "e52-f2",
+          "text": "Inhaled corticosteroids sit on the preferred generic tier of the Pinegate formulary.",
+          "mentions": ["drugclass_inhaled_corticosteroids", "vendor_pinegate_pharmacy"]
+        },
+        {
+          "id": "e52-f3",
+          "text": "GLP-1 receptor agonists prescribed only for weight loss are excluded from the Pinegate formulary.",
+          "mentions": ["drugclass_glp1", "vendor_pinegate_pharmacy"]
+        },
+        {
+          "id": "e52-f4",
+          "text": "Pinegate Pharmacy Solutions sends a refill reminder seven days before a maintenance supply runs out.",
+          "mentions": ["vendor_pinegate_pharmacy"]
+        }
+      ]
+    }
+  ]
+}

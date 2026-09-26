@@ -1,0 +1,1404 @@
+{
+  "queries": [
+    {
+      "id": "paraphrase-001",
+      "stratum": "paraphrase",
+      "text": "What share of finished reviews does Kestrel Review Services re-check every month?",
+      "relevant": ["e06-f3"],
+      "goldSeeds": ["vendor_kestrel_review"]
+    },
+    {
+      "id": "paraphrase-002",
+      "stratum": "paraphrase",
+      "text": "Which paper document does Kestrel Review Services insist on when an authorization request arrives by mail?",
+      "relevant": ["e05-f5"],
+      "goldSeeds": ["vendor_kestrel_review"]
+    },
+    {
+      "id": "paraphrase-003",
+      "stratum": "paraphrase",
+      "text": "How soon after I send something does AuthTrack display where it stands?",
+      "relevant": ["e07-f1"],
+      "goldSeeds": ["system_authtrack"]
+    },
+    {
+      "id": "paraphrase-004",
+      "stratum": "paraphrase",
+      "text": "What is the largest file I can attach in AuthTrack?",
+      "relevant": ["e07-f2"],
+      "goldSeeds": ["system_authtrack"]
+    },
+    {
+      "id": "paraphrase-005",
+      "stratum": "paraphrase",
+      "text": "When is AuthTrack down for upkeep?",
+      "relevant": ["e07-f5"],
+      "goldSeeds": ["system_authtrack"]
+    },
+    {
+      "id": "paraphrase-006",
+      "stratum": "paraphrase",
+      "text": "How many staff logins can one practice have on AuthTrack?",
+      "relevant": ["e07-f4"],
+      "goldSeeds": ["system_authtrack"]
+    },
+    {
+      "id": "paraphrase-007",
+      "stratum": "paraphrase",
+      "text": "When does the Cedarline Credentialing Committee hold its monthly session?",
+      "relevant": ["e12-f1"],
+      "goldSeeds": ["committee_cedarline_credentialing"]
+    },
+    {
+      "id": "paraphrase-008",
+      "stratum": "paraphrase",
+      "text": "If the Cedarline Credentialing Committee rejects a doctor, how long before they can try again?",
+      "relevant": ["e12-f6"],
+      "goldSeeds": ["committee_cedarline_credentialing"]
+    },
+    {
+      "id": "paraphrase-009",
+      "stratum": "paraphrase",
+      "text": "Does the Cedarline Credentialing Committee confirm a specialty board credential with the issuing board itself?",
+      "relevant": ["e12-f5"],
+      "goldSeeds": ["committee_cedarline_credentialing"]
+    },
+    {
+      "id": "paraphrase-010",
+      "stratum": "paraphrase",
+      "text": "What proof of liability insurance goes along with Form CR-4?",
+      "relevant": ["e12-f2"],
+      "goldSeeds": ["form_cr_4"]
+    },
+    {
+      "id": "paraphrase-011",
+      "stratum": "paraphrase",
+      "text": "How old can the signed statement on Form CR-4 be before the application bounces back?",
+      "relevant": ["e12-f4"],
+      "goldSeeds": ["form_cr_4"]
+    },
+    {
+      "id": "paraphrase-012",
+      "stratum": "paraphrase",
+      "text": "During which months can you reach Cedarline Member Services every day of the week?",
+      "relevant": ["e13-f1"],
+      "goldSeeds": ["dept_cedarline_member_services"]
+    },
+    {
+      "id": "paraphrase-013",
+      "stratum": "paraphrase",
+      "text": "Can Cedarline Member Services get someone on the phone who speaks my language?",
+      "relevant": ["e13-f5"],
+      "goldSeeds": ["dept_cedarline_member_services"]
+    },
+    {
+      "id": "paraphrase-014",
+      "stratum": "paraphrase",
+      "text": "What are the ways to hand in Form GR-2?",
+      "relevant": ["e13-f4"],
+      "goldSeeds": ["form_gr_2"]
+    },
+    {
+      "id": "paraphrase-015",
+      "stratum": "paraphrase",
+      "text": "What does Form GR-2 want a member to write down?",
+      "relevant": ["e13-f6"],
+      "goldSeeds": ["form_gr_2"]
+    },
+    {
+      "id": "paraphrase-016",
+      "stratum": "paraphrase",
+      "text": "How long after training ends do Summit Crest Network specialists have to earn their board credential?",
+      "relevant": ["e14-f2"],
+      "goldSeeds": ["network_summit_crest"]
+    },
+    {
+      "id": "paraphrase-017",
+      "stratum": "paraphrase",
+      "text": "Where do Bayline Provider Network patients go for an organ transplant?",
+      "relevant": ["e15-f5"],
+      "goldSeeds": ["network_bayline"]
+    },
+    {
+      "id": "paraphrase-018",
+      "stratum": "paraphrase",
+      "text": "How does Riverbend Care Alliance compensate its family doctors?",
+      "relevant": ["e16-f3"],
+      "goldSeeds": ["network_riverbend"]
+    },
+    {
+      "id": "paraphrase-019",
+      "stratum": "paraphrase",
+      "text": "Where are high-cost specialty medications dispensed for Pinegate Pharmacy Solutions members?",
+      "relevant": ["e22-f4"],
+      "goldSeeds": ["vendor_pinegate_pharmacy"]
+    },
+    {
+      "id": "paraphrase-020",
+      "stratum": "paraphrase",
+      "text": "Can a Tallowood Nurse Advice nurse book a video appointment for today?",
+      "relevant": ["e23-f2"],
+      "goldSeeds": ["vendor_tallowood_nurse_line"]
+    },
+    {
+      "id": "paraphrase-021",
+      "stratum": "paraphrase",
+      "text": "Is everyone answering the phones at Tallowood Nurse Advice an RN?",
+      "relevant": ["e23-f4"],
+      "goldSeeds": ["vendor_tallowood_nurse_line"]
+    },
+    {
+      "id": "paraphrase-022",
+      "stratum": "paraphrase",
+      "text": "How long does Tallowood Nurse Advice hold on to recorded calls?",
+      "relevant": ["e23-f5"],
+      "goldSeeds": ["vendor_tallowood_nurse_line"]
+    },
+    {
+      "id": "paraphrase-023",
+      "stratum": "paraphrase",
+      "text": "Does Fennick Ride Services have vehicles that fit a wheelchair?",
+      "relevant": ["e24-f2"],
+      "goldSeeds": ["vendor_fennick_rides"]
+    },
+    {
+      "id": "paraphrase-024",
+      "stratum": "paraphrase",
+      "text": "How long will a Fennick Ride Services driver wait before counting a missed pickup?",
+      "relevant": ["e24-f4"],
+      "goldSeeds": ["vendor_fennick_rides"]
+    },
+    {
+      "id": "paraphrase-025",
+      "stratum": "paraphrase",
+      "text": "Will Fennick Ride Services take a member just to collect medications?",
+      "relevant": ["e24-f5"],
+      "goldSeeds": ["vendor_fennick_rides"]
+    },
+    {
+      "id": "paraphrase-026",
+      "stratum": "paraphrase",
+      "text": "How can a clinic get a request to Sablefield Imaging Benefits?",
+      "relevant": ["e25-f3"],
+      "goldSeeds": ["vendor_sablefield_imaging"]
+    },
+    {
+      "id": "paraphrase-027",
+      "stratum": "paraphrase",
+      "text": "How far back can I look at payment remittances in ClaimsDesk?",
+      "relevant": ["e27-f1"],
+      "goldSeeds": ["system_claimsdesk"]
+    },
+    {
+      "id": "paraphrase-028",
+      "stratum": "paraphrase",
+      "text": "Does ClaimsDesk make users verify their login with a second step?",
+      "relevant": ["e27-f2"],
+      "goldSeeds": ["system_claimsdesk"]
+    },
+    {
+      "id": "paraphrase-029",
+      "stratum": "paraphrase",
+      "text": "How do I fix a claim I already sent using ClaimsDesk?",
+      "relevant": ["e27-f3"],
+      "goldSeeds": ["system_claimsdesk"]
+    },
+    {
+      "id": "paraphrase-030",
+      "stratum": "paraphrase",
+      "text": "What makes the Brightwater Special Investigations Unit take a closer look at a provider?",
+      "relevant": ["e32-f1"],
+      "goldSeeds": ["dept_brightwater_siu"]
+    },
+    {
+      "id": "paraphrase-031",
+      "stratum": "paraphrase",
+      "text": "Is there a way to tip off the Brightwater Special Investigations Unit without giving my name?",
+      "relevant": ["e32-f2"],
+      "goldSeeds": ["dept_brightwater_siu"]
+    },
+    {
+      "id": "paraphrase-032",
+      "stratum": "paraphrase",
+      "text": "How long can the Brightwater Special Investigations Unit hold a provider's payments for checking?",
+      "relevant": ["e32-f3"],
+      "goldSeeds": ["dept_brightwater_siu"]
+    },
+    {
+      "id": "paraphrase-033",
+      "stratum": "paraphrase",
+      "text": "How often does the Orrin Valley Quality Council look at patients returning to the hospital?",
+      "relevant": ["e37-f1"],
+      "goldSeeds": ["committee_orrin_valley_quality"]
+    },
+    {
+      "id": "paraphrase-034",
+      "stratum": "paraphrase",
+      "text": "When does the Orrin Valley Quality Council release its survey of how happy members are?",
+      "relevant": ["e37-f3"],
+      "goldSeeds": ["committee_orrin_valley_quality"]
+    },
+    {
+      "id": "paraphrase-035",
+      "stratum": "paraphrase",
+      "text": "Do members themselves sit on the Orrin Valley Quality Council?",
+      "relevant": ["e37-f4"],
+      "goldSeeds": ["committee_orrin_valley_quality"]
+    },
+    {
+      "id": "paraphrase-036",
+      "stratum": "paraphrase",
+      "text": "Does Steady Steps require a recent blood sugar lab test before someone can join?",
+      "relevant": ["e38-f1"],
+      "goldSeeds": ["program_steady_steps"]
+    },
+    {
+      "id": "paraphrase-037",
+      "stratum": "paraphrase",
+      "text": "What does Clearpath Maternity pay someone who shows up for a checkup after giving birth?",
+      "relevant": ["e39-f5"],
+      "goldSeeds": ["program_clearpath_maternity"]
+    },
+    {
+      "id": "paraphrase-038",
+      "stratum": "paraphrase",
+      "text": "Do people in Breathe Easy pay anything for their controller inhalers?",
+      "relevant": ["e40-f2"],
+      "goldSeeds": ["program_breathe_easy"]
+    },
+    {
+      "id": "paraphrase-039",
+      "stratum": "paraphrase",
+      "text": "When does Homeward Transitions go over a member's medicines in person?",
+      "relevant": ["e41-f3"],
+      "goldSeeds": ["program_homeward_transitions"]
+    },
+    {
+      "id": "paraphrase-040",
+      "stratum": "paraphrase",
+      "text": "Can Mindful Access counseling happen on a video call after work?",
+      "relevant": ["e42-f3"],
+      "goldSeeds": ["program_mindful_access"]
+    },
+    {
+      "id": "paraphrase-041",
+      "stratum": "paraphrase",
+      "text": "Which clinician number has to appear on Form PA-7?",
+      "relevant": ["e43-f1"],
+      "goldSeeds": ["form_pa_7"]
+    },
+    {
+      "id": "paraphrase-042",
+      "stratum": "paraphrase",
+      "text": "What changed on Form PA-7 in the spring revision?",
+      "relevant": ["e43-f4"],
+      "goldSeeds": ["form_pa_7"]
+    },
+    {
+      "id": "paraphrase-043",
+      "stratum": "paraphrase",
+      "text": "What is the last day to send Form AP-3?",
+      "relevant": ["e44-f1"],
+      "goldSeeds": ["form_ap_3"]
+    },
+    {
+      "id": "paraphrase-044",
+      "stratum": "paraphrase",
+      "text": "Which document has to be attached to Form AP-3?",
+      "relevant": ["e44-f2"],
+      "goldSeeds": ["form_ap_3"]
+    },
+    {
+      "id": "paraphrase-045",
+      "stratum": "paraphrase",
+      "text": "How often does Harbor Mutual Provider Relations run online sessions about billing updates?",
+      "relevant": ["e44-f3"],
+      "goldSeeds": ["dept_harbor_provider_relations"]
+    },
+    {
+      "id": "paraphrase-046",
+      "stratum": "paraphrase",
+      "text": "Does Harbor Mutual Provider Relations give big practices a dedicated contact person?",
+      "relevant": ["e44-f4"],
+      "goldSeeds": ["dept_harbor_provider_relations"]
+    },
+    {
+      "id": "paraphrase-047",
+      "stratum": "paraphrase",
+      "text": "Who owns Harbor Mutual?",
+      "relevant": ["e45-f1"],
+      "goldSeeds": ["payer_harbor_mutual"]
+    },
+    {
+      "id": "paraphrase-048",
+      "stratum": "paraphrase",
+      "text": "In how many states does Cedarline Health do business?",
+      "relevant": ["e46-f1"],
+      "goldSeeds": ["payer_cedarline_health"]
+    },
+    {
+      "id": "paraphrase-049",
+      "stratum": "paraphrase",
+      "text": "What is the smallest employer Brightwater Assurance will sell coverage to?",
+      "relevant": ["e48-f1"],
+      "goldSeeds": ["payer_brightwater"]
+    },
+    {
+      "id": "paraphrase-050",
+      "stratum": "paraphrase",
+      "text": "Who oversees Orrin Valley Health Plan?",
+      "relevant": ["e49-f1"],
+      "goldSeeds": ["payer_orrin_valley"]
+    },
+    {
+      "id": "relational-001",
+      "stratum": "relational",
+      "text": "How many business days does the prior authorization reviewer for Harbor Mutual Silver take on a standard request?",
+      "relevant": ["e05-f1"],
+      "goldSeeds": ["plan_harbor_mutual_silver"]
+    },
+    {
+      "id": "relational-002",
+      "stratum": "relational",
+      "text": "Can a clinic email an urgent authorization request for Brightwater Select PPO?",
+      "relevant": ["e05-f2"],
+      "goldSeeds": ["plan_brightwater_select_ppo"]
+    },
+    {
+      "id": "relational-003",
+      "stratum": "relational",
+      "text": "How quickly are urgent prior authorization requests decided for Orrin Valley Premier?",
+      "relevant": ["e05-f3"],
+      "goldSeeds": ["plan_orrin_valley_premier"]
+    },
+    {
+      "id": "relational-004",
+      "stratum": "relational",
+      "text": "For Harbor Mutual Bronze Flex, how long after a denial can the doctor ask to speak with the reviewing physician?",
+      "relevant": ["e06-f1"],
+      "goldSeeds": ["plan_harbor_mutual_bronze_flex"]
+    },
+    {
+      "id": "relational-005",
+      "stratum": "relational",
+      "text": "How many business days does Harbor Mutual Silver's review vendor wait for requested clinical notes before closing a request?",
+      "relevant": ["e05-f4"],
+      "goldSeeds": ["plan_harbor_mutual_silver"]
+    },
+    {
+      "id": "relational-006",
+      "stratum": "relational",
+      "text": "What hours is the authorization intake line open for Orrin Valley Premier requests?",
+      "relevant": ["e05-f6"],
+      "goldSeeds": ["plan_orrin_valley_premier"]
+    },
+    {
+      "id": "relational-007",
+      "stratum": "relational",
+      "text": "Who reviews behavioral health authorization requests for Brightwater Select PPO?",
+      "relevant": ["e06-f2"],
+      "goldSeeds": ["plan_brightwater_select_ppo"]
+    },
+    {
+      "id": "relational-008",
+      "stratum": "relational",
+      "text": "Does the review vendor for Harbor Mutual Bronze Flex explain its denials in writing?",
+      "relevant": ["e06-f4"],
+      "goldSeeds": ["plan_harbor_mutual_bronze_flex"]
+    },
+    {
+      "id": "relational-009",
+      "stratum": "relational",
+      "text": "Who is allowed to request a peer-to-peer call on an Orrin Valley Premier denial?",
+      "relevant": ["e06-f5"],
+      "goldSeeds": ["plan_orrin_valley_premier"]
+    },
+    {
+      "id": "relational-010",
+      "stratum": "relational",
+      "text": "Can Harbor Mutual Silver members see an OB-GYN without a referral?",
+      "relevant": ["e15-f2"],
+      "goldSeeds": ["plan_harbor_mutual_silver"]
+    },
+    {
+      "id": "relational-011",
+      "stratum": "relational",
+      "text": "How fast is a directory error fixed for Brightwater Basic HMO doctors once it is reported?",
+      "relevant": ["e15-f3"],
+      "goldSeeds": ["plan_brightwater_basic_hmo"]
+    },
+    {
+      "id": "relational-012",
+      "stratum": "relational",
+      "text": "How late must urgent care centers stay open for Harbor Mutual Bronze Flex members?",
+      "relevant": ["e15-f4"],
+      "goldSeeds": ["plan_harbor_mutual_bronze_flex"]
+    },
+    {
+      "id": "relational-013",
+      "stratum": "relational",
+      "text": "How long does it take a new doctor to get credentialed into the network Brightwater Basic HMO uses?",
+      "relevant": ["e15-f6"],
+      "goldSeeds": ["plan_brightwater_basic_hmo"]
+    },
+    {
+      "id": "relational-014",
+      "stratum": "relational",
+      "text": "How often is the provider directory refreshed for Cedarline Gold Access?",
+      "relevant": ["e14-f1"],
+      "goldSeeds": ["plan_cedarline_gold_access"]
+    },
+    {
+      "id": "relational-015",
+      "stratum": "relational",
+      "text": "How soon can an Orrin Valley Premier member expect a routine primary care appointment?",
+      "relevant": ["e14-f5"],
+      "goldSeeds": ["plan_orrin_valley_premier"]
+    },
+    {
+      "id": "relational-016",
+      "stratum": "relational",
+      "text": "How much notice must a doctor give before leaving the Cedarline Essential network?",
+      "relevant": ["e14-f4"],
+      "goldSeeds": ["plan_cedarline_essential"]
+    },
+    {
+      "id": "relational-017",
+      "stratum": "relational",
+      "text": "How many hospitals are in the network used by Brightwater Select PPO?",
+      "relevant": ["e14-f3"],
+      "goldSeeds": ["plan_brightwater_select_ppo"]
+    },
+    {
+      "id": "relational-018",
+      "stratum": "relational",
+      "text": "How soon after enrolling must a Quillmark Family Choice member pick a primary care physician?",
+      "relevant": ["e16-f2"],
+      "goldSeeds": ["plan_quillmark_family_choice"]
+    },
+    {
+      "id": "relational-019",
+      "stratum": "relational",
+      "text": "Are there late-night clinics available to Orrin Valley Community Plan members?",
+      "relevant": ["e16-f4"],
+      "goldSeeds": ["plan_orrin_valley_community"]
+    },
+    {
+      "id": "relational-020",
+      "stratum": "relational",
+      "text": "How quickly do doctors in the Quillmark Senior Advantage network reply to secure messages?",
+      "relevant": ["e16-f5"],
+      "goldSeeds": ["plan_quillmark_senior_advantage"]
+    },
+    {
+      "id": "relational-021",
+      "stratum": "relational",
+      "text": "How many days' supply does mail order provide for Cedarline Gold Access prescriptions?",
+      "relevant": ["e22-f1"],
+      "goldSeeds": ["plan_cedarline_gold_access"]
+    },
+    {
+      "id": "relational-022",
+      "stratum": "relational",
+      "text": "How long does a standard formulary exception take for Quillmark Family Choice?",
+      "relevant": ["e22-f2"],
+      "goldSeeds": ["plan_quillmark_family_choice"]
+    },
+    {
+      "id": "relational-023",
+      "stratum": "relational",
+      "text": "When can an Orrin Valley Community Plan member refill a prescription early?",
+      "relevant": ["e22-f5"],
+      "goldSeeds": ["plan_orrin_valley_community"]
+    },
+    {
+      "id": "relational-024",
+      "stratum": "relational",
+      "text": "Is there a pharmacist available overnight for Quillmark Senior Advantage members?",
+      "relevant": ["e22-f6"],
+      "goldSeeds": ["plan_quillmark_senior_advantage"]
+    },
+    {
+      "id": "relational-025",
+      "stratum": "relational",
+      "text": "How fast is an expedited drug exception decided for Orrin Valley Community Plan?",
+      "relevant": ["e22-f3"],
+      "goldSeeds": ["plan_orrin_valley_community"]
+    },
+    {
+      "id": "relational-026",
+      "stratum": "relational",
+      "text": "How long does an imaging review take for Cedarline Essential?",
+      "relevant": ["e25-f1"],
+      "goldSeeds": ["plan_cedarline_essential"]
+    },
+    {
+      "id": "relational-027",
+      "stratum": "relational",
+      "text": "What must a Brightwater Basic HMO member try before a lumbar spine MRI is approved?",
+      "relevant": ["e25-f2"],
+      "goldSeeds": ["plan_brightwater_basic_hmo"]
+    },
+    {
+      "id": "relational-028",
+      "stratum": "relational",
+      "text": "How long is an imaging approval good for under Brightwater Select PPO?",
+      "relevant": ["e25-f5"],
+      "goldSeeds": ["plan_brightwater_select_ppo"]
+    },
+    {
+      "id": "relational-029",
+      "stratum": "relational",
+      "text": "Does a scan done in the emergency room need imaging review for Cedarline Essential members?",
+      "relevant": ["e25-f4"],
+      "goldSeeds": ["plan_cedarline_essential"]
+    },
+    {
+      "id": "relational-030",
+      "stratum": "relational",
+      "text": "Is the nurse line for Quillmark Senior Advantage open on holidays?",
+      "relevant": ["e23-f1"],
+      "goldSeeds": ["plan_quillmark_senior_advantage"]
+    },
+    {
+      "id": "relational-031",
+      "stratum": "relational",
+      "text": "Will the after-hours nurse for Orrin Valley Community Plan let my doctor know I called?",
+      "relevant": ["e23-f3"],
+      "goldSeeds": ["plan_orrin_valley_community"]
+    },
+    {
+      "id": "relational-032",
+      "stratum": "relational",
+      "text": "How much notice is needed to book a ride to a Quillmark Senior Advantage appointment?",
+      "relevant": ["e24-f1"],
+      "goldSeeds": ["plan_quillmark_senior_advantage"]
+    },
+    {
+      "id": "relational-033",
+      "stratum": "relational",
+      "text": "Can someone come along with an Orrin Valley Community Plan member on a ride to an appointment?",
+      "relevant": ["e24-f3"],
+      "goldSeeds": ["plan_orrin_valley_community"]
+    },
+    {
+      "id": "relational-034",
+      "stratum": "relational",
+      "text": "How quickly are electronic claims acknowledged for Harbor Mutual?",
+      "relevant": ["e26-f1"],
+      "goldSeeds": ["payer_harbor_mutual"]
+    },
+    {
+      "id": "relational-035",
+      "stratum": "relational",
+      "text": "Why would a Brightwater Assurance claim be rejected before it ever reaches the payer?",
+      "relevant": ["e26-f2"],
+      "goldSeeds": ["payer_brightwater"]
+    },
+    {
+      "id": "relational-036",
+      "stratum": "relational",
+      "text": "How long does a rejected Orrin Valley Health Plan claim stay visible before it is purged?",
+      "relevant": ["e26-f5"],
+      "goldSeeds": ["payer_orrin_valley"]
+    },
+    {
+      "id": "relational-037",
+      "stratum": "relational",
+      "text": "How many coaching calls come with the Harbor Mutual Silver diabetes program?",
+      "relevant": ["e38-f2"],
+      "goldSeeds": ["plan_harbor_mutual_silver"]
+    },
+    {
+      "id": "relational-038",
+      "stratum": "relational",
+      "text": "Does the diabetes program for Harbor Mutual Bronze Flex supply a glucose meter?",
+      "relevant": ["e38-f3"],
+      "goldSeeds": ["plan_harbor_mutual_bronze_flex"]
+    },
+    {
+      "id": "relational-039",
+      "stratum": "relational",
+      "text": "How long after delivery does the Quillmark Family Choice maternity program keep calling?",
+      "relevant": ["e39-f4"],
+      "goldSeeds": ["plan_quillmark_family_choice"]
+    },
+    {
+      "id": "relational-040",
+      "stratum": "relational",
+      "text": "Is a breast pump covered by the maternity program offered with Quillmark Family Choice?",
+      "relevant": ["e39-f2"],
+      "goldSeeds": ["plan_quillmark_family_choice"]
+    },
+    {
+      "id": "relational-041",
+      "stratum": "relational",
+      "text": "Does the Brightwater Basic HMO asthma program include a visit to the home?",
+      "relevant": ["e40-f3"],
+      "goldSeeds": ["plan_brightwater_basic_hmo"]
+    },
+    {
+      "id": "relational-042",
+      "stratum": "relational",
+      "text": "How soon after discharge does the Quillmark Senior Advantage heart failure follow-up program call the member?",
+      "relevant": ["e41-f1"],
+      "goldSeeds": ["plan_quillmark_senior_advantage"]
+    },
+    {
+      "id": "relational-043",
+      "stratum": "relational",
+      "text": "How long does the Orrin Valley Community Plan post-discharge program last?",
+      "relevant": ["e41-f5"],
+      "goldSeeds": ["plan_orrin_valley_community"]
+    },
+    {
+      "id": "relational-044",
+      "stratum": "relational",
+      "text": "How quickly can a Cedarline Essential member get a first therapy appointment through its behavioral health program?",
+      "relevant": ["e42-f1"],
+      "goldSeeds": ["plan_cedarline_essential"]
+    },
+    {
+      "id": "relational-045",
+      "stratum": "relational",
+      "text": "How many therapy sessions does the Cedarline Essential depression program cover?",
+      "relevant": ["e42-f4"],
+      "goldSeeds": ["plan_cedarline_essential"]
+    },
+    {
+      "id": "relational-046",
+      "stratum": "relational",
+      "text": "What does the program for members coded E11.9 give people who finish it?",
+      "relevant": ["e38-f6"],
+      "goldSeeds": ["code_e11_9"]
+    },
+    {
+      "id": "relational-047",
+      "stratum": "relational",
+      "text": "How often is the asthma action plan reviewed in the program for J45.40 members?",
+      "relevant": ["e40-f5"],
+      "goldSeeds": ["code_j45_40"]
+    },
+    {
+      "id": "relational-048",
+      "stratum": "relational",
+      "text": "What does the program for members admitted with I50.9 ask them to track at home?",
+      "relevant": ["e41-f4"],
+      "goldSeeds": ["code_i50_9"]
+    },
+    {
+      "id": "relational-049",
+      "stratum": "relational",
+      "text": "How often are participants screened in the program that finds members through F32.1 claims?",
+      "relevant": ["e42-f5"],
+      "goldSeeds": ["code_f32_1"]
+    },
+    {
+      "id": "relational-050",
+      "stratum": "relational",
+      "text": "When is a nurse care manager assigned in the program that tracks O24.410?",
+      "relevant": ["e39-f1"],
+      "goldSeeds": ["code_o24_410"]
+    },
+    {
+      "id": "entity-distractor-001",
+      "stratum": "entity-distractor",
+      "text": "What is the deductible on Harbor Mutual Silver?",
+      "relevant": ["e01-f1"],
+      "goldSeeds": ["plan_harbor_mutual_silver"]
+    },
+    {
+      "id": "entity-distractor-002",
+      "stratum": "entity-distractor",
+      "text": "How long does Harbor Mutual Silver have to decide an urgent appeal?",
+      "relevant": ["e02-f1"],
+      "goldSeeds": ["plan_harbor_mutual_silver"]
+    },
+    {
+      "id": "entity-distractor-003",
+      "stratum": "entity-distractor",
+      "text": "How long does a Harbor Mutual Silver member have to file an internal appeal after a denial?",
+      "relevant": ["e02-f3"],
+      "goldSeeds": ["plan_harbor_mutual_silver"]
+    },
+    {
+      "id": "entity-distractor-004",
+      "stratum": "entity-distractor",
+      "text": "Does Harbor Mutual Silver pay for out-of-network care?",
+      "relevant": ["e01-f5"],
+      "goldSeeds": ["plan_harbor_mutual_silver"]
+    },
+    {
+      "id": "entity-distractor-005",
+      "stratum": "entity-distractor",
+      "text": "What does Harbor Mutual Bronze Flex charge for an emergency room visit?",
+      "relevant": ["e03-f6"],
+      "goldSeeds": ["plan_harbor_mutual_bronze_flex"]
+    },
+    {
+      "id": "entity-distractor-006",
+      "stratum": "entity-distractor",
+      "text": "Are telehealth visits free on Harbor Mutual Bronze Flex?",
+      "relevant": ["e03-f3"],
+      "goldSeeds": ["plan_harbor_mutual_bronze_flex"]
+    },
+    {
+      "id": "entity-distractor-007",
+      "stratum": "entity-distractor",
+      "text": "What kind of savings account goes with Harbor Mutual Bronze Flex?",
+      "relevant": ["e03-f2"],
+      "goldSeeds": ["plan_harbor_mutual_bronze_flex"]
+    },
+    {
+      "id": "entity-distractor-008",
+      "stratum": "entity-distractor",
+      "text": "What is the individual deductible for Harbor Mutual Bronze Flex?",
+      "relevant": ["e03-f1"],
+      "goldSeeds": ["plan_harbor_mutual_bronze_flex"]
+    },
+    {
+      "id": "entity-distractor-009",
+      "stratum": "entity-distractor",
+      "text": "Does Cedarline Gold Access need prior authorization for a CT scan?",
+      "relevant": ["e09-f2"],
+      "goldSeeds": ["plan_cedarline_gold_access"]
+    },
+    {
+      "id": "entity-distractor-010",
+      "stratum": "entity-distractor",
+      "text": "How quickly must Cedarline Gold Access resolve an urgent appeal?",
+      "relevant": ["e09-f3"],
+      "goldSeeds": ["plan_cedarline_gold_access"]
+    },
+    {
+      "id": "entity-distractor-011",
+      "stratum": "entity-distractor",
+      "text": "How much of an out-of-network bill does Cedarline Gold Access cover?",
+      "relevant": ["e08-f5"],
+      "goldSeeds": ["plan_cedarline_gold_access"]
+    },
+    {
+      "id": "entity-distractor-012",
+      "stratum": "entity-distractor",
+      "text": "Does Cedarline Gold Access require authorization for physical therapy?",
+      "relevant": ["e09-f5"],
+      "goldSeeds": ["plan_cedarline_gold_access"]
+    },
+    {
+      "id": "entity-distractor-013",
+      "stratum": "entity-distractor",
+      "text": "Do Cedarline Essential members need a referral to see a specialist?",
+      "relevant": ["e10-f2"],
+      "goldSeeds": ["plan_cedarline_essential"]
+    },
+    {
+      "id": "entity-distractor-014",
+      "stratum": "entity-distractor",
+      "text": "What is the out-of-pocket maximum on Cedarline Essential?",
+      "relevant": ["e11-f1"],
+      "goldSeeds": ["plan_cedarline_essential"]
+    },
+    {
+      "id": "entity-distractor-015",
+      "stratum": "entity-distractor",
+      "text": "Does Cedarline Essential pay for glasses?",
+      "relevant": ["e11-f3"],
+      "goldSeeds": ["plan_cedarline_essential"]
+    },
+    {
+      "id": "entity-distractor-016",
+      "stratum": "entity-distractor",
+      "text": "Where can someone buy Cedarline Essential?",
+      "relevant": ["e10-f6"],
+      "goldSeeds": ["plan_cedarline_essential"]
+    },
+    {
+      "id": "entity-distractor-017",
+      "stratum": "entity-distractor",
+      "text": "How much dental coverage does Quillmark Senior Advantage include each year?",
+      "relevant": ["e18-f1"],
+      "goldSeeds": ["plan_quillmark_senior_advantage"]
+    },
+    {
+      "id": "entity-distractor-018",
+      "stratum": "entity-distractor",
+      "text": "Does Quillmark Senior Advantage cover hearing aids?",
+      "relevant": ["e18-f4"],
+      "goldSeeds": ["plan_quillmark_senior_advantage"]
+    },
+    {
+      "id": "entity-distractor-019",
+      "stratum": "entity-distractor",
+      "text": "How often can a Quillmark Senior Advantage member change primary care doctors?",
+      "relevant": ["e18-f5"],
+      "goldSeeds": ["plan_quillmark_senior_advantage"]
+    },
+    {
+      "id": "entity-distractor-020",
+      "stratum": "entity-distractor",
+      "text": "How many rides to appointments does Quillmark Senior Advantage cover?",
+      "relevant": ["e17-f6"],
+      "goldSeeds": ["plan_quillmark_senior_advantage"]
+    },
+    {
+      "id": "entity-distractor-021",
+      "stratum": "entity-distractor",
+      "text": "Does Quillmark Family Choice cover braces for kids?",
+      "relevant": ["e19-f6"],
+      "goldSeeds": ["plan_quillmark_family_choice"]
+    },
+    {
+      "id": "entity-distractor-022",
+      "stratum": "entity-distractor",
+      "text": "How long does a Quillmark Family Choice member have to add a newborn?",
+      "relevant": ["e20-f5"],
+      "goldSeeds": ["plan_quillmark_family_choice"]
+    },
+    {
+      "id": "entity-distractor-023",
+      "stratum": "entity-distractor",
+      "text": "What is the copay for a behavioral health visit on Quillmark Family Choice?",
+      "relevant": ["e20-f3"],
+      "goldSeeds": ["plan_quillmark_family_choice"]
+    },
+    {
+      "id": "entity-distractor-024",
+      "stratum": "entity-distractor",
+      "text": "What is the deductible for a family on Quillmark Family Choice?",
+      "relevant": ["e19-f1"],
+      "goldSeeds": ["plan_quillmark_family_choice"]
+    },
+    {
+      "id": "entity-distractor-025",
+      "stratum": "entity-distractor",
+      "text": "How many chiropractic visits does Brightwater Select PPO allow?",
+      "relevant": ["e29-f5"],
+      "goldSeeds": ["plan_brightwater_select_ppo"]
+    },
+    {
+      "id": "entity-distractor-026",
+      "stratum": "entity-distractor",
+      "text": "Can an out-of-network provider balance bill a Brightwater Select PPO member?",
+      "relevant": ["e29-f3"],
+      "goldSeeds": ["plan_brightwater_select_ppo"]
+    },
+    {
+      "id": "entity-distractor-027",
+      "stratum": "entity-distractor",
+      "text": "How long do providers have to submit Brightwater Select PPO claims?",
+      "relevant": ["e29-f1"],
+      "goldSeeds": ["plan_brightwater_select_ppo"]
+    },
+    {
+      "id": "entity-distractor-028",
+      "stratum": "entity-distractor",
+      "text": "What is the specialist copay on Brightwater Select PPO?",
+      "relevant": ["e28-f6"],
+      "goldSeeds": ["plan_brightwater_select_ppo"]
+    },
+    {
+      "id": "entity-distractor-029",
+      "stratum": "entity-distractor",
+      "text": "What does an emergency room visit cost on Brightwater Basic HMO?",
+      "relevant": ["e31-f2"],
+      "goldSeeds": ["plan_brightwater_basic_hmo"]
+    },
+    {
+      "id": "entity-distractor-030",
+      "stratum": "entity-distractor",
+      "text": "How often can a Brightwater Basic HMO member switch primary care physicians?",
+      "relevant": ["e31-f4"],
+      "goldSeeds": ["plan_brightwater_basic_hmo"]
+    },
+    {
+      "id": "entity-distractor-031",
+      "stratum": "entity-distractor",
+      "text": "What is the copay for generic drugs on Brightwater Basic HMO?",
+      "relevant": ["e31-f3"],
+      "goldSeeds": ["plan_brightwater_basic_hmo"]
+    },
+    {
+      "id": "entity-distractor-032",
+      "stratum": "entity-distractor",
+      "text": "Does Brightwater Basic HMO have a deductible?",
+      "relevant": ["e30-f2"],
+      "goldSeeds": ["plan_brightwater_basic_hmo"]
+    },
+    {
+      "id": "entity-distractor-033",
+      "stratum": "entity-distractor",
+      "text": "How often does Orrin Valley Community Plan recheck eligibility?",
+      "relevant": ["e34-f1"],
+      "goldSeeds": ["plan_orrin_valley_community"]
+    },
+    {
+      "id": "entity-distractor-034",
+      "stratum": "entity-distractor",
+      "text": "What does Orrin Valley Community Plan charge for brand-name drugs?",
+      "relevant": ["e34-f4"],
+      "goldSeeds": ["plan_orrin_valley_community"]
+    },
+    {
+      "id": "entity-distractor-035",
+      "stratum": "entity-distractor",
+      "text": "How often does Orrin Valley Community Plan cover new eyeglasses?",
+      "relevant": ["e34-f5"],
+      "goldSeeds": ["plan_orrin_valley_community"]
+    },
+    {
+      "id": "entity-distractor-036",
+      "stratum": "entity-distractor",
+      "text": "What is the claim filing deadline for Orrin Valley Community Plan?",
+      "relevant": ["e34-f3"],
+      "goldSeeds": ["plan_orrin_valley_community"]
+    },
+    {
+      "id": "entity-distractor-037",
+      "stratum": "entity-distractor",
+      "text": "Does Orrin Valley Premier cover acupuncture?",
+      "relevant": ["e35-f4"],
+      "goldSeeds": ["plan_orrin_valley_premier"]
+    },
+    {
+      "id": "entity-distractor-038",
+      "stratum": "entity-distractor",
+      "text": "Is emergency care covered outside the country on Orrin Valley Premier?",
+      "relevant": ["e35-f6"],
+      "goldSeeds": ["plan_orrin_valley_premier"]
+    },
+    {
+      "id": "entity-distractor-039",
+      "stratum": "entity-distractor",
+      "text": "What is the out-of-pocket limit on Orrin Valley Premier?",
+      "relevant": ["e36-f4"],
+      "goldSeeds": ["plan_orrin_valley_premier"]
+    },
+    {
+      "id": "entity-distractor-040",
+      "stratum": "entity-distractor",
+      "text": "How fast does Orrin Valley Premier decide an urgent appeal?",
+      "relevant": ["e36-f3"],
+      "goldSeeds": ["plan_orrin_valley_premier"]
+    },
+    {
+      "id": "entity-distractor-041",
+      "stratum": "entity-distractor",
+      "text": "How quickly does Harbor Mutual pay a clean electronic claim?",
+      "relevant": ["e04-f3"],
+      "goldSeeds": ["payer_harbor_mutual"]
+    },
+    {
+      "id": "entity-distractor-042",
+      "stratum": "entity-distractor",
+      "text": "How long is the grace period for a late Harbor Mutual premium?",
+      "relevant": ["e45-f5"],
+      "goldSeeds": ["payer_harbor_mutual"]
+    },
+    {
+      "id": "entity-distractor-043",
+      "stratum": "entity-distractor",
+      "text": "How fast does Kestrel Review Services decide an urgent prior authorization?",
+      "relevant": ["e05-f3"],
+      "goldSeeds": ["vendor_kestrel_review"]
+    },
+    {
+      "id": "entity-distractor-044",
+      "stratum": "entity-distractor",
+      "text": "What hours is the Kestrel Review Services intake line staffed?",
+      "relevant": ["e05-f6"],
+      "goldSeeds": ["vendor_kestrel_review"]
+    },
+    {
+      "id": "entity-distractor-045",
+      "stratum": "entity-distractor",
+      "text": "When does Pinegate Pharmacy Solutions send a refill reminder?",
+      "relevant": ["e52-f4"],
+      "goldSeeds": ["vendor_pinegate_pharmacy"]
+    },
+    {
+      "id": "entity-distractor-046",
+      "stratum": "entity-distractor",
+      "text": "How much of a GLP-1 medication can Pinegate Pharmacy Solutions dispense at a retail pharmacy?",
+      "relevant": ["e52-f1"],
+      "goldSeeds": ["vendor_pinegate_pharmacy"]
+    },
+    {
+      "id": "entity-distractor-047",
+      "stratum": "entity-distractor",
+      "text": "How quickly does Brightwater Assurance pay clean claims?",
+      "relevant": ["e48-f4"],
+      "goldSeeds": ["payer_brightwater"]
+    },
+    {
+      "id": "entity-distractor-048",
+      "stratum": "entity-distractor",
+      "text": "How quickly does Orrin Valley Health Plan pay clean claims?",
+      "relevant": ["e49-f2"],
+      "goldSeeds": ["payer_orrin_valley"]
+    },
+    {
+      "id": "entity-distractor-049",
+      "stratum": "entity-distractor",
+      "text": "When is open enrollment for Cedarline Health?",
+      "relevant": ["e46-f4"],
+      "goldSeeds": ["payer_cedarline_health"]
+    },
+    {
+      "id": "entity-distractor-050",
+      "stratum": "entity-distractor",
+      "text": "How quickly does Quillmark Health Partners pay clean claims?",
+      "relevant": ["e47-f3"],
+      "goldSeeds": ["payer_quillmark"]
+    },
+    {
+      "id": "no-entity-001",
+      "stratum": "no-entity",
+      "text": "which plan gives members an allowance for over-the-counter items?",
+      "relevant": ["e18-f2"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-002",
+      "stratum": "no-entity",
+      "text": "which plan charges nothing for primary care visits?",
+      "relevant": ["e33-f1"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-003",
+      "stratum": "no-entity",
+      "text": "which plan covers two routine dental cleanings a year for children?",
+      "relevant": ["e20-f4"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-004",
+      "stratum": "no-entity",
+      "text": "is there a plan that pays for a private hospital room?",
+      "relevant": ["e36-f5"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-005",
+      "stratum": "no-entity",
+      "text": "which plan covers two adult teeth cleanings a year?",
+      "relevant": ["e34-f2"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-006",
+      "stratum": "no-entity",
+      "text": "which plan is sold on both the individual and small-group markets?",
+      "relevant": ["e01-f6"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-007",
+      "stratum": "no-entity",
+      "text": "which plan covers urgent care while you're traveling out of network?",
+      "relevant": ["e31-f1"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-008",
+      "stratum": "no-entity",
+      "text": "how long after the original remittance can a corrected claim still be sent?",
+      "relevant": ["e04-f4"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-009",
+      "stratum": "no-entity",
+      "text": "how often do providers have to be recredentialed?",
+      "relevant": ["e12-f3"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-010",
+      "stratum": "no-entity",
+      "text": "how long does it take to resolve a standard member grievance?",
+      "relevant": ["e13-f3"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-011",
+      "stratum": "no-entity",
+      "text": "which plans decide urgent appeals within 72 hours?",
+      "relevant": ["e02-f1", "e18-f6"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-012",
+      "stratum": "no-entity",
+      "text": "how often does the pharmacy and therapeutics committee meet?",
+      "relevant": ["e21-f1"],
+      "goldSeeds": ["committee_quillmark_pt"]
+    },
+    {
+      "id": "no-entity-013",
+      "stratum": "no-entity",
+      "text": "who sits on the pharmacy and therapeutics committee?",
+      "relevant": ["e21-f4"],
+      "goldSeeds": ["committee_quillmark_pt"]
+    },
+    {
+      "id": "no-entity-014",
+      "stratum": "no-entity",
+      "text": "how much warning do members get before a formulary change takes effect?",
+      "relevant": ["e21-f5"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-015",
+      "stratum": "no-entity",
+      "text": "which drug class requires trying metformin first?",
+      "relevant": ["e21-f2"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-016",
+      "stratum": "no-entity",
+      "text": "are weight-loss drugs on the formulary?",
+      "relevant": ["e52-f3"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-017",
+      "stratum": "no-entity",
+      "text": "what tier are steroid inhalers on?",
+      "relevant": ["e52-f2"],
+      "goldSeeds": ["drugclass_inhaled_corticosteroids"]
+    },
+    {
+      "id": "no-entity-018",
+      "stratum": "no-entity",
+      "text": "who runs the portal providers use to check claim status?",
+      "relevant": ["e26-f3"],
+      "goldSeeds": ["system_claimsdesk"]
+    },
+    {
+      "id": "no-entity-019",
+      "stratum": "no-entity",
+      "text": "can claim status reports be downloaded as a spreadsheet?",
+      "relevant": ["e27-f4"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-020",
+      "stratum": "no-entity",
+      "text": "how soon does confirmed fraud have to be reported to the state?",
+      "relevant": ["e32-f4"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-021",
+      "stratum": "no-entity",
+      "text": "what is the target for reducing 30-day readmissions?",
+      "relevant": ["e37-f5"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-022",
+      "stratum": "no-entity",
+      "text": "what two details about the planned service must go on a prior authorization form?",
+      "relevant": ["e43-f2"],
+      "goldSeeds": ["form_pa_7"]
+    },
+    {
+      "id": "no-entity-023",
+      "stratum": "no-entity",
+      "text": "when does the plan year start for individual members?",
+      "relevant": ["e45-f2"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-024",
+      "stratum": "no-entity",
+      "text": "can premiums be paid by automatic bank draft?",
+      "relevant": ["e45-f3"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-025",
+      "stratum": "no-entity",
+      "text": "how soon after a claim is processed does the explanation of benefits arrive?",
+      "relevant": ["e45-f4"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-026",
+      "stratum": "no-entity",
+      "text": "how long does it take to process a paper claim?",
+      "relevant": ["e46-f2"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-027",
+      "stratum": "no-entity",
+      "text": "on which day each quarter is the drug formulary published?",
+      "relevant": ["e46-f5"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-028",
+      "stratum": "no-entity",
+      "text": "which insurer requires electronic funds transfer for paying providers?",
+      "relevant": ["e47-f2"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-029",
+      "stratum": "no-entity",
+      "text": "how soon after enrollment is a welcome kit mailed?",
+      "relevant": ["e47-f4"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-030",
+      "stratum": "no-entity",
+      "text": "who gets an annual health risk assessment?",
+      "relevant": ["e47-f5"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-031",
+      "stratum": "no-entity",
+      "text": "in which month are employer contracts renewed?",
+      "relevant": ["e48-f2"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-032",
+      "stratum": "no-entity",
+      "text": "how much can a member earn for completing a health screening?",
+      "relevant": ["e48-f3"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-033",
+      "stratum": "no-entity",
+      "text": "which languages are member materials printed in?",
+      "relevant": ["e49-f3"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-034",
+      "stratum": "no-entity",
+      "text": "is there a walk-in office where members can get help in person?",
+      "relevant": ["e49-f4"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-035",
+      "stratum": "no-entity",
+      "text": "how often does the community board meet?",
+      "relevant": ["e49-f5"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-036",
+      "stratum": "no-entity",
+      "text": "how many counties are in the northern coastal service area?",
+      "relevant": ["e50-f1"],
+      "goldSeeds": ["region_coastal_north"]
+    },
+    {
+      "id": "no-entity-037",
+      "stratum": "no-entity",
+      "text": "which service area has the largest share of members over 65?",
+      "relevant": ["e50-f2"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-038",
+      "stratum": "no-entity",
+      "text": "where is there a shortage of in-network dermatologists?",
+      "relevant": ["e50-f3"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-039",
+      "stratum": "no-entity",
+      "text": "which service area has two hospitals with trauma centers?",
+      "relevant": ["e50-f4"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-040",
+      "stratum": "no-entity",
+      "text": "what is the diagnosis code for type 2 diabetes without complications?",
+      "relevant": ["e51-f1"],
+      "goldSeeds": ["code_e11_9"]
+    },
+    {
+      "id": "no-entity-041",
+      "stratum": "no-entity",
+      "text": "which diagnosis code means gestational diabetes controlled by diet alone?",
+      "relevant": ["e51-f2"],
+      "goldSeeds": ["code_o24_410"]
+    },
+    {
+      "id": "no-entity-042",
+      "stratum": "no-entity",
+      "text": "what do reviewers ask for when a record uses an unspecified heart failure code?",
+      "relevant": ["e51-f4"],
+      "goldSeeds": ["code_i50_9"]
+    },
+    {
+      "id": "no-entity-043",
+      "stratum": "no-entity",
+      "text": "which code describes a single moderate episode of major depression?",
+      "relevant": ["e51-f5"],
+      "goldSeeds": ["code_f32_1"]
+    },
+    {
+      "id": "no-entity-044",
+      "stratum": "no-entity",
+      "text": "what code is used for moderate persistent asthma?",
+      "relevant": ["e51-f3"],
+      "goldSeeds": ["code_j45_40"]
+    },
+    {
+      "id": "no-entity-045",
+      "stratum": "no-entity",
+      "text": "which network covers the northern coast?",
+      "relevant": ["e15-f1"],
+      "goldSeeds": ["region_coastal_north"]
+    },
+    {
+      "id": "no-entity-046",
+      "stratum": "no-entity",
+      "text": "can a member ask for an outside review after the internal appeals are used up?",
+      "relevant": ["e02-f6"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-047",
+      "stratum": "no-entity",
+      "text": "which plan reviews standard prior authorizations in seven calendar days?",
+      "relevant": ["e09-f1"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-048",
+      "stratum": "no-entity",
+      "text": "which insurer handles prior authorization reviews itself instead of using a vendor?",
+      "relevant": ["e08-f6"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-049",
+      "stratum": "no-entity",
+      "text": "which plan charges ten dollars for a telehealth visit?",
+      "relevant": ["e11-f5"],
+      "goldSeeds": []
+    },
+    {
+      "id": "no-entity-050",
+      "stratum": "no-entity",
+      "text": "which plan decides urgent appeals within 36 hours?",
+      "relevant": ["e29-f4"],
+      "goldSeeds": []
+    }
+  ]
+}

@@ -115,13 +115,20 @@ export class AgentServiceHarness implements AgentHarness<MemoryOutcome> {
     await this.seeds.restoreToSeed({
       sessionId,
       conceptIds: task.seeds.neo4j.map((concept) => concept.id),
-      contentHashes: task.seeds.pgvector.map((fact) => fact.contentHash),
+      // Both indices' hashes, because the Neo4j half of the restore keeps a
+      // `:Fact` only if its hash is listed — a graph fact left off this list is
+      // deleted by the reset that is supposed to preserve it.
+      contentHashes: [
+        ...task.seeds.pgvector.map((fact) => fact.contentHash),
+        ...task.seeds.graphFacts.map((fact) => fact.contentHash),
+      ],
     });
 
     await this.seeds.applySeed({
       concepts: task.seeds.neo4j,
       relationships: task.seeds.relationships,
       facts: task.seeds.pgvector.map((fact) => ({ ...fact, embedding: fixtureEmbedding() })),
+      graphFacts: task.seeds.graphFacts,
     });
   }
 
