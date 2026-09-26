@@ -180,6 +180,17 @@ export {
   type TieRange,
 } from './retrieval/evaluate.js';
 export {
+  ADJUDICATION_DIR,
+  DecisionsFileSchema,
+  POOL_INSTRUCTIONS,
+  PoolCandidatesFileSchema,
+  PoolKeyFileSchema,
+  adjudicatedLabels,
+  adjudicationPaths,
+  renderPoolFiles,
+  type DecisionsFile,
+} from './retrieval/adjudication.js';
+export {
   buildAblationReport,
   renderAblationJson,
   renderAblationMarkdown,
