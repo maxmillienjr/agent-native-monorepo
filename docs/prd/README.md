@@ -173,11 +173,11 @@ provider actually operates under. Uses synthetic data only.
 
 ## Tier 5 — Interoperability
 
-| ID   | Title                                            | Size | Status |
-| ---- | ------------------------------------------------ | ---- | ------ |
-| P5-A | Agent2Agent v1.0 server with a signed Agent Card | M    | draft  |
-| P5-B | Agent Development Kit portability appendix       | S    | draft  |
-| P5-C | Upgrade to LangGraph 1.x                         | S    | draft  |
+| ID                           | Title                                            | Size | Status |
+| ---------------------------- | ------------------------------------------------ | ---- | ------ |
+| P5-A                         | Agent2Agent v1.0 server with a signed Agent Card | M    | draft  |
+| P5-B                         | Agent Development Kit portability appendix       | S    | draft  |
+| [P5-C](P5-C-langgraph-1x.md) | Upgrade to LangGraph 1.x                         | S    | draft  |
 
 ## Sequencing
 
