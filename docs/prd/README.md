@@ -178,11 +178,11 @@ provider actually operates under. Uses synthetic data only.
 
 ## Tier 5 — Interoperability
 
-| ID                           | Title                                            | Size | Status   |
-| ---------------------------- | ------------------------------------------------ | ---- | -------- |
-| [P5-A](P5-A-a2a-server.md)   | Agent2Agent v1.0 server with a signed Agent Card | L    | draft    |
-| P5-B                         | Agent Development Kit portability appendix       | S    | draft    |
-| [P5-C](P5-C-langgraph-1x.md) | Upgrade to LangGraph 1.x                         | S    | accepted |
+| ID                              | Title                                            | Size | Status   |
+| ------------------------------- | ------------------------------------------------ | ---- | -------- |
+| [P5-A](P5-A-a2a-server.md)      | Agent2Agent v1.0 server with a signed Agent Card | L    | draft    |
+| [P5-B](P5-B-adk-portability.md) | Agent Development Kit portability appendix       | S    | draft    |
+| [P5-C](P5-C-langgraph-1x.md)    | Upgrade to LangGraph 1.x                         | S    | accepted |
 
 ## Sequencing
 
@@ -200,6 +200,8 @@ P0-A ──▶ P2-A ──▶ P1-A ──┬──▶ P1-B ──┬──▶ P1
 
 P3-A ──┬──▶ P3-C
        └──▶ P3-D ──▶ P3-E
+
+P5-A ──▶ P5-B
 ```
 
 P2-A, P1-A and P1-B are all shipped, so everything hanging off them is unblocked —
@@ -227,12 +229,17 @@ evaluation task; it still depends on P2-A (ADR 0001's second obligation) and on 
 Neither PRD depends on the other. Whichever of them lands second re-records the other's
 cassettes, and both say what that costs.
 
-`P0-B`, `P3-A`, `P4-A`, `P5-A`, `P5-B`, and `P5-C` have no hard
+`P0-B`, `P3-A`, `P4-A`, `P5-A`, and `P5-C` have no hard
 predecessors and can be picked up whenever they are the most valuable next thing. P5-C
 was previously drawn as a predecessor of P2-A; it is not one. `retryPolicy`,
 `compile({ checkpointer })`, and a peer-compatible
 `@langchain/langgraph-checkpoint-postgres@0.1.3` are all available at the pinned
 `@langchain/langgraph@0.4.10`.
+
+P5-B waits on P5-A. The appendix recommends integrating with an ADK estate over A2A
+rather than porting, and the one trial step that checks that recommendation needs P5-A's
+server — its authentication and its v0.3 compatibility, which is what ADK for TypeScript
+2.1.0 speaks.
 
 P3-C and P3-D wait on P3-A. The ledger records the attestation an adverse determination
 carries, and the prior-authorization surface emits its results through the determination
