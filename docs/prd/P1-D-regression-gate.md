@@ -2,7 +2,7 @@
 id: P1-D
 title: Statistical regression gate against committed baselines
 tier: 1
-status: draft
+status: accepted
 size: L
 depends_on: [P1-A, P1-C]
 blocks: []
@@ -328,7 +328,7 @@ question are not independent.
 ### The decision rule, pre-registered
 
 This is stated before any live number exists, in the same way P2-B does it
-(`P2-B-retrieval-ablation.md:433-444`). The proposed margin is δ = 0.10 on Δ. The interval
+(`P2-B-retrieval-ablation.md:433-444`). The margin is δ = 0.20 on Δ, decided at review; the draft proposed 0.10, and the table below shows why it moved. The interval
 is a 95% percentile interval over 10,000 seeded resamples.
 
 - **`regressed`**: the floor is met, `Δ ≤ −δ`, and the upper bound is below 0.
@@ -371,8 +371,9 @@ and K = 2. The floor applies on top of that. Each trial of both tasks costs 8
 | 0.20 | 0.9         | 18                 | 144                             | 18                     |
 | 0.20 | 1.0         | 15 (floor)         | 120                             | 15                     |
 
-Stated plainly, at P1-C's nightly rate of one trial per task, a live `held` at δ = 0.10
-takes one to two and a half months per epoch, and any re-record starts a new epoch. **Until
+Stated plainly, at P1-C's nightly rate of one trial per task, a live `held` at δ = 0.20
+takes two and a half to three weeks per epoch (at 0.10 it would have taken one to two and a
+half months), and any re-record starts a new epoch. **Until
 then the verdict is `insufficient-evidence`, and the summary prints the trials each task
 still needs.** What would change that is a billed key or a separate project, which is P1-C's
 decision 1 and belongs to the owner. A `workflow_dispatch` with `trials` set to n then
@@ -521,9 +522,11 @@ no model.
 - [ ] `compareLive` returns `insufficient-evidence` whenever any task has fewer than
       `⌈3/δ⌉` trials in either arm, whatever the interval, and `incomparable` for mismatched
       task sets. It picks `tasks-random` at K ≥ 20 and names the regime. **Pure.**
-- [ ] A seeded simulation test of the rule at δ = 0.10, K = 2, 400 simulations: with no
-      change at p = 0.9 and n = 71, `held` ≥ 75% and `regressed` ≤ 5%. With p dropping
-      from 0.9 to 0.7, `regressed` ≥ 95%. With n = 5, `insufficient-evidence` is 100%.
+- [ ] A seeded simulation test of the rule at δ = 0.20, K = 2, 400 simulations: with no
+      change at p = 0.9 and n = 18, `held` ≥ 75% and `regressed` ≤ 5%. With p dropping
+      from 0.9 to 0.5, `regressed` ≥ 95%. With n = 5, `insufficient-evidence` is 100%.
+      The thresholds are the simulation's to confirm; if 400 seeded runs miss one, the
+      criterion reports the measured rate and the rule is revisited, not the threshold.
       **Pure.**
 - [ ] **Model `live` / memory `live`:** `EVAL_GATE=live` exits 0 on a run with a failed
       trial and a verdict other than `regressed`, and appends a tally that validates
@@ -551,22 +554,32 @@ no model.
 
 ## Risks and open questions
 
-**Open questions that change scope.** These need an answer before acceptance.
+**Open questions, decided at review 2026-09-26.**
 
 1. **The margin δ, and therefore how long `insufficient-evidence` lasts.** 0.10 is the
    proposal. The table above shows its price: 30 to 71 nights per epoch on the free tier.
    δ = 0.20 halves or better the wait and can only detect a drop of twenty points. Like
-   P2-B's margin, it has to be agreed before any live number exists.
+   P2-B's margin, it has to be agreed before any live number exists. _Decided: δ = 0.20._
+   On two tasks at one live trial a night, 0.10 would leave the live half reading
+   `insufficient-evidence` for up to ten weeks after every re-record, a gate nobody could
+   read. The replay half is exact either way. Tightening δ is a later decision made with
+   the pooled data in hand, recorded as a change to this PRD's successor, never an edit to
+   a verdict already issued.
 2. **The store for live evidence.** The proposal is the orphan `eval-history` branch,
    written by the nightly with `contents: write`. The alternatives are artifacts only (90
    days, which is shorter than one epoch at δ = 0.10), release assets, or a third-party
    store (rejected above). If the answer is "artifacts only", the pooling criterion is
    unreachable at δ = 0.10, and the live half of this PRD shrinks to single-run reporting.
+   _Decided: the orphan `eval-history` branch_, as proposed.
 3. **Who grows the suite.** The `tasks-random` regime is built and tested on synthetic data,
    and nothing will exercise it on real data until 20 tasks exist. The recommendation is a
    new Tier 1 PRD that owns the task set: which failure modes it covers and how its tasks
    get recorded, which costs quota. The alternative is to leave `tasks-random` out and
-   state the gap.
+   state the gap. _Decided: no new PRD._ The suite grows through the PRDs that already add
+   tasks — P2-B's `graph-recall-001`, P3-D's prior-authorization tasks, P4-B's red-team
+   cases and P4-C's second tool — and `tasks-random` is built and tested now so that it
+   switches on when the count reaches 20, rather than being designed then. Whether it ever
+   reaches 20 is stated in the report, not assumed.
 
 **Risks.**
 
