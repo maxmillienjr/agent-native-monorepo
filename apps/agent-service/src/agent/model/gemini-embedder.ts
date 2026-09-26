@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { EMBEDDING_DIMENSIONS, EMBEDDING_MODEL, l2Normalize } from '@repo/memory-core';
+import { withInferenceSpan } from '@repo/telemetry';
 
 const ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models';
 
@@ -52,36 +53,46 @@ function errorDetailsOf(body: string): unknown[] | undefined {
  * against exactly 1.0 for the native output.
  */
 export function createGeminiEmbedder(apiKey: string): (text: string) => Promise<number[]> {
-  return async (text: string): Promise<number[]> => {
-    const response = await fetch(`${ENDPOINT}/${EMBEDDING_MODEL}:embedContent`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-goog-api-key': apiKey },
-      body: JSON.stringify({
-        model: `models/${EMBEDDING_MODEL}`,
-        content: { parts: [{ text }] },
-        outputDimensionality: EMBEDDING_DIMENSIONS,
-      }),
+  const request = {
+    operation: 'embeddings',
+    model: EMBEDDING_MODEL,
+    seam: 'embed',
+    dimensions: EMBEDDING_DIMENSIONS,
+  } as const;
+
+  // One embeddings span per call. It records no usage: the response has no
+  // usage block, and a count that was never reported is not written as zero.
+  return (text: string): Promise<number[]> =>
+    withInferenceSpan(request, async () => {
+      const response = await fetch(`${ENDPOINT}/${EMBEDDING_MODEL}:embedContent`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-goog-api-key': apiKey },
+        body: JSON.stringify({
+          model: `models/${EMBEDDING_MODEL}`,
+          content: { parts: [{ text }] },
+          outputDimensionality: EMBEDDING_DIMENSIONS,
+        }),
+      });
+
+      if (!response.ok) {
+        const body = await response.text();
+        throw new EmbeddingRequestError(
+          `embedContent failed: ${response.status} ${body}`,
+          response.status,
+          errorDetailsOf(body),
+        );
+      }
+
+      const body = (await response.json()) as { embedding?: { values?: number[] } };
+      const values = body.embedding?.values;
+
+      if (!Array.isArray(values) || values.length !== EMBEDDING_DIMENSIONS) {
+        throw new EmbeddingRequestError(
+          `embedContent returned ${values?.length ?? 0} values, expected ${EMBEDDING_DIMENSIONS}`,
+          502,
+        );
+      }
+
+      return l2Normalize(values);
     });
-
-    if (!response.ok) {
-      const body = await response.text();
-      throw new EmbeddingRequestError(
-        `embedContent failed: ${response.status} ${body}`,
-        response.status,
-        errorDetailsOf(body),
-      );
-    }
-
-    const body = (await response.json()) as { embedding?: { values?: number[] } };
-    const values = body.embedding?.values;
-
-    if (!Array.isArray(values) || values.length !== EMBEDDING_DIMENSIONS) {
-      throw new EmbeddingRequestError(
-        `embedContent returned ${values?.length ?? 0} values, expected ${EMBEDDING_DIMENSIONS}`,
-        502,
-      );
-    }
-
-    return l2Normalize(values);
-  };
 }

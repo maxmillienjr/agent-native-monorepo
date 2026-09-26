@@ -12,11 +12,11 @@ import {
   type RetrievalFacade,
 } from '@repo/memory-core';
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
-import { SystemMessage, HumanMessage } from '@langchain/core/messages';
 import { buildAgentGraph, type GraphDeps } from '../agent/graph/graph.js';
 import { buildRunResponse } from '../agent/nodes/egress.node.js';
 import type { AgentState } from '../agent/graph/state.js';
 import { createGeminiEmbedder } from '../agent/model/gemini-embedder.js';
+import { invokeChat, type ChatRequest } from '../agent/model/gemini-chat.js';
 import { stopOnDailyQuota } from '../agent/model/rate-limit.js';
 import { EXTRACTION_PROMPT, parseExtraction } from '../agent/model/extraction.js';
 import {
@@ -231,24 +231,16 @@ export class RunsService {
     const prose = createGeminiChat(apiKey);
     const json = createGeminiChat(apiKey, { json: true });
 
+    // Each call names its seam, so the inference span says which decision it
+    // paid for — the cassette's vocabulary, which is what P1-F attributes by.
     const callWith =
-      (llm: ChatGoogleGenerativeAI) => async (systemPrompt: string, userPrompt: string) => {
-        const response = await llm.invoke([
-          new SystemMessage(systemPrompt),
-          new HumanMessage(userPrompt),
-        ]);
-        const meta = response.usage_metadata;
-        return {
-          content: typeof response.content === 'string' ? response.content : '',
-          tokenCounts: {
-            prompt: meta?.input_tokens ?? 0,
-            completion: meta?.output_tokens ?? 0,
-          },
-        };
-      };
+      (llm: ChatGoogleGenerativeAI, request: Omit<ChatRequest, 'model'>) =>
+      (systemPrompt: string, userPrompt: string) =>
+        invokeChat(llm, { model: CHAT_MODEL, ...request }, systemPrompt, userPrompt);
 
-    const callLlm = callWith(prose);
-    const callJson = callWith(json);
+    const callLlm = callWith(prose, { seam: 'plan.callLlm', json: false });
+    const callSelect = callWith(json, { seam: 'act.selectTool', json: true });
+    const callExtract = callWith(json, { seam: 'distill.extractEntities', json: true });
 
     return {
       plan: { callLlm },
@@ -256,7 +248,7 @@ export class RunsService {
         tools: defaultTools(),
         selectTool: async (plan, tools) => {
           const toolNames = tools.map((t) => t.name).join(', ');
-          const response = await callJson(
+          const response = await callSelect(
             'You select the best tool for a task. Respond with JSON: {"toolName": "...", "input": ...} or null if no tool is needed.',
             `Plan: ${plan}\nAvailable tools: ${toolNames}`,
           );
@@ -269,7 +261,7 @@ export class RunsService {
       },
       distill: {
         extractEntities: async (context: string) => {
-          const response = await callJson(EXTRACTION_PROMPT, context);
+          const response = await callExtract(EXTRACTION_PROMPT, context);
           return parseExtraction(response.content);
         },
       },
