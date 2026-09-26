@@ -1,4 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
+import { logs } from '@opentelemetry/api-logs';
+import {
+  InMemoryLogRecordExporter,
+  LoggerProvider,
+  SimpleLogRecordProcessor,
+} from '@opentelemetry/sdk-logs';
+import { GENAI_SEMCONV } from '@repo/telemetry/genai';
 import { EvalHarness } from './harness.js';
 import { AxisRequirementError } from './axes.js';
 import { ModelGrader } from './graders/model.js';
@@ -350,5 +357,110 @@ describe('replay provenance', () => {
 
     expect(report.replay).toBeUndefined();
     expect(Object.keys(report)).not.toContain('replay');
+  });
+});
+
+/**
+ * One `gen_ai.evaluation.result` log record per grader result, carrying the
+ * trace and span id of the run it judged.
+ */
+describe('evaluation events', () => {
+  const exporter = new InMemoryLogRecordExporter();
+  const ROOT = { traceId: 'a'.repeat(32), spanId: 'b'.repeat(16) };
+
+  beforeAll(() => {
+    logs.setGlobalLoggerProvider(
+      new LoggerProvider({ processors: [new SimpleLogRecordProcessor({ exporter })] }),
+    );
+  });
+
+  beforeEach(() => exporter.reset());
+
+  /** A transcript whose spans arrive children first, as an exporter sees them. */
+  const withSpans = (base: Transcript): Transcript => ({
+    ...base,
+    spans: [
+      {
+        name: 'agent.node.ingress',
+        kind: 'internal',
+        traceId: ROOT.traceId,
+        spanId: 'c'.repeat(16),
+        parentSpanId: ROOT.spanId,
+        startTimeUnixMs: 1,
+        durationMs: 1,
+        status: 'unset',
+        attributes: {},
+      },
+      {
+        name: 'invoke_agent agent-service',
+        kind: 'internal',
+        traceId: ROOT.traceId,
+        spanId: ROOT.spanId,
+        startTimeUnixMs: 0,
+        durationMs: 3,
+        status: 'unset',
+        attributes: { 'gen_ai.operation.name': 'invoke_agent' },
+      },
+    ],
+  });
+
+  const explained: Grader<FakeOutcome> = {
+    name: 'explained',
+    kind: 'model',
+    grade: async () => ({ value: 0, label: 'fail', explanation: 'the answer was ungrounded' }),
+  };
+
+  it('emits one per grader result, parented to the trial’s invoke_agent span', async () => {
+    const agent = fakeAgent(liveAxes, [{ wrote: true }, { wrote: true }], []);
+    const report = await new EvalHarness<FakeOutcome>({
+      agent: { ...agent, run: async (t) => withSpans(await agent.run(t)) },
+      suite: { name: 's', tasks: [task([alwaysPasses, explained])], trialsPerTask: 2 },
+    }).run();
+
+    const records = exporter.getFinishedLogRecords();
+    const results = report.tasks.flatMap((t) => t.trials.flatMap((trial) => trial.results));
+    expect(records).toHaveLength(results.length);
+    expect(records).toHaveLength(4);
+
+    for (const record of records) {
+      expect(record.eventName).toBe('gen_ai.evaluation.result');
+      expect(record.spanContext?.traceId).toBe(ROOT.traceId);
+      expect(record.spanContext?.spanId).toBe(ROOT.spanId);
+    }
+
+    expect(records[1]!.attributes).toEqual({
+      'gen_ai.evaluation.name': 'explained',
+      'gen_ai.evaluation.score.value': 0,
+      'gen_ai.evaluation.score.label': 'fail',
+      'gen_ai.evaluation.explanation': 'the answer was ungrounded',
+      'agent_native.eval.task_id': 'memory-recall-001',
+      'agent_native.eval.trial_index': 0,
+      'agent_native.eval.grader_kind': 'model',
+      'agent_native.model_axis': 'live',
+      'agent_native.memory_axis': 'live',
+    });
+    // No explanation, no key: absent is not an empty string.
+    expect(records[0]!.attributes['gen_ai.evaluation.explanation']).toBeUndefined();
+    expect(records[3]!.attributes['agent_native.eval.trial_index']).toBe(1);
+  });
+
+  it('emits unparented events, and no error, for a transcript with no spans', async () => {
+    await new EvalHarness<FakeOutcome>({
+      agent: fakeAgent(liveAxes, [{ wrote: true }], []),
+      suite: { name: 's', tasks: [task([alwaysPasses])], trialsPerTask: 1 },
+    }).run();
+
+    const records = exporter.getFinishedLogRecords();
+    expect(records).toHaveLength(1);
+    expect(records[0]!.spanContext).toBeUndefined();
+  });
+
+  it('names the conventions commit the events and spans follow in the report', async () => {
+    const report = await new EvalHarness<FakeOutcome>({
+      agent: fakeAgent(liveAxes, [{ wrote: true }], []),
+      suite: { name: 's', tasks: [task([alwaysPasses])], trialsPerTask: 1 },
+    }).run();
+
+    expect(report.genAiSemconvCommit).toBe(GENAI_SEMCONV.commit);
   });
 });

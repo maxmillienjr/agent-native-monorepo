@@ -1,5 +1,7 @@
+import { GENAI_SEMCONV } from '@repo/telemetry/genai';
 import { assertAxesSatisfy, skippedTasks } from './axes.js';
 import { ModelGrader } from './graders/model.js';
+import { emitEvaluationResults } from './telemetry.js';
 import type {
   AgentHarness,
   Axes,
@@ -141,6 +143,10 @@ export class EvalHarness<TOutcome> {
           passed: results.every((result) => result.score.label === 'pass'),
         };
 
+        // Before `onTrial`, so a caller counting what reached its exporter
+        // sees this trial's events when it hears about the trial.
+        emitEvaluationResults(trial, axes);
+
         trials.push(trial);
         this.options.onTrial?.(trial);
       }
@@ -168,6 +174,7 @@ export class EvalHarness<TOutcome> {
           : allTrials.filter((trial) => trial.passed).length / allTrials.length,
       skipped,
       uncalibratedGraders: uncalibrated(running),
+      genAiSemconvCommit: GENAI_SEMCONV.commit,
     };
   }
 }

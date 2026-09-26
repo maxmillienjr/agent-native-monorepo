@@ -54,6 +54,7 @@ const report: SuiteReport = {
   passRate: 0.5,
   skipped: [],
   uncalibratedGraders: ['answer_is_grounded'],
+  genAiSemconvCommit: 'e57c543b4889619eb2a05702471937db5119165d',
 };
 
 /** The stub-axis shape: one task ran, one was not measurable here. */
@@ -149,6 +150,16 @@ describe('renderMarkdownSummary', () => {
   it('says nothing about skips when there were none', () => {
     expect(renderMarkdownSummary(report)).not.toContain('Not run on these axes');
     expect(renderMarkdownSummary(report)).toContain('overall pass rate 50%**\n');
+  });
+
+  it('names the GenAI conventions commit the report’s spans and events follow', () => {
+    expect(renderMarkdownSummary(report)).toContain(
+      'GenAI semantic conventions at `e57c543b4889619eb2a05702471937db5119165d`',
+    );
+    expect(JSON.parse(renderJsonReport(report))).toMatchObject({
+      axes: report.axes,
+      genAiSemconvCommit: 'e57c543b4889619eb2a05702471937db5119165d',
+    });
   });
 
   it('reports each grader’s pass rate', () => {

@@ -2977,9 +2977,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@repo/eval-harness@workspace:packages/eval-harness"
   dependencies:
+    "@opentelemetry/api": "npm:^1.9.0"
+    "@opentelemetry/api-logs": "npm:^0.222.0"
+    "@opentelemetry/sdk-logs": "npm:^0.222.0"
     "@repo/eslint-config": "workspace:*"
     "@repo/memory-core": "workspace:*"
     "@repo/shared-types": "workspace:*"
+    "@repo/telemetry": "workspace:*"
     "@repo/tsconfig": "workspace:*"
     "@types/node": "npm:^22.20.1"
     eslint: "npm:^9.39.5"

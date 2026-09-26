@@ -111,6 +111,9 @@ export { fixtureEmbedding } from './fixture-embedding.js';
 // Runner.
 export { EvalHarness, trialsFor, type EvalHarnessOptions } from './harness.js';
 
+// The `gen_ai.evaluation.result` events the runner emits for every grader result.
+export { emitEvaluationResults, rootSpanRecord } from './telemetry.js';
+
 // Reporters.
 export { renderJsonReport } from './reporters/json.js';
 export { renderJUnitReport } from './reporters/junit.js';
