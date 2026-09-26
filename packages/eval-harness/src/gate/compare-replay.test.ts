@@ -201,6 +201,14 @@ describe('the replay baseline file', () => {
       replayBaseline({ ...recorded, axes: { model: 'live', memory: 'live' } }, DIGEST),
     ).toThrow(/model axis `live`/);
   });
+
+  it('keeps the conventions commit as provenance, and does not compare it', () => {
+    const baseline = replayBaseline({ ...recorded, genAiSemconvCommit: 'abc123' }, DIGEST);
+    expect(baseline.semconvCommit).toBe('abc123');
+    expect(renderReplayBaseline(baseline)).toContain('  "semconvCommit": "abc123",\n');
+    const bumped = { ...recorded, genAiSemconvCommit: 'def456' };
+    expect(compareReplay(bumped, baseline, DIGEST).verdict).toBe('match');
+  });
 });
 
 describe('the cassette digest', () => {

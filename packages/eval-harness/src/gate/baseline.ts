@@ -30,6 +30,8 @@ export const GradedReportSchema = z
     startedAt: z.string(),
     axes: z.object({ model: z.string(), memory: z.string() }),
     replay: z.object({ recordedAt: z.string(), gitSha: z.string() }).optional(),
+    /** P2-C: the GenAI semantic-conventions commit the run's spans and events follow. */
+    genAiSemconvCommit: z.string().optional(),
     tasks: z
       .array(
         z.object({
@@ -83,7 +85,12 @@ export const ReplayBaselineSchema = z.object({
   cassetteDigest: z.string(),
   recordedAt: z.string(),
   gitSha: z.string(),
-  /** P2-C's semantic-conventions commit, once `SuiteReport` carries one. */
+  /**
+   * P2-C's semantic-conventions commit, from `SuiteReport.genAiSemconvCommit`. Provenance
+   * only: it is not compared, because a conventions bump renames span attributes and moves
+   * no grader result, and it is here so that two baselines on either side of one can be
+   * told apart.
+   */
   semconvCommit: z.string().optional(),
   cells: z.array(ReplayCellSchema),
 });
@@ -147,6 +154,9 @@ export function replayBaseline(report: GradedReport, cassetteDigest: string): Re
     cassetteDigest,
     recordedAt: report.replay.recordedAt,
     gitSha: report.replay.gitSha,
+    ...(report.genAiSemconvCommit === undefined
+      ? {}
+      : { semconvCommit: report.genAiSemconvCommit }),
     cells: replayCells(report),
   };
 }
