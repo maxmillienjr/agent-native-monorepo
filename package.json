@@ -16,6 +16,7 @@
     "test:integration": "turbo test:integration",
     "test:e2e": "turbo test:e2e",
     "eval": "turbo eval",
+    "eval:promote-live": "turbo build --filter=@repo/agent-service... --output-logs=errors-only && yarn workspace @repo/agent-service eval:promote-live",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint:docs": "node scripts/lint-docs.mjs && node --test 'scripts/*.test.mjs'",

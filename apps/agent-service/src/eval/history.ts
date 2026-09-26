@@ -91,6 +91,11 @@ export function openHistory(options: {
   readonly dir: string;
   readonly remote?: string;
   readonly branch?: string;
+  /**
+   * False for a reader. Only the nightly starts the branch; a promotion run
+   * against a remote that has none must say so, not leave an empty local one.
+   */
+  readonly create?: boolean;
 }): 'existing' | 'created' {
   const remote = options.remote ?? 'origin';
   const branch = options.branch ?? HISTORY_BRANCH;
@@ -100,6 +105,11 @@ export function openHistory(options: {
     git(options.repoDir, ['fetch', '--quiet', remote, `+refs/heads/${branch}:${tracking}`]);
   } catch (error) {
     if (!/couldn't find remote ref/i.test(stderrOf(error))) throw error;
+    if (options.create === false) {
+      throw new Error(
+        `${remote} has no ${branch} branch yet; the first nightly live run creates it`,
+      );
+    }
     git(options.repoDir, ['worktree', 'add', '--quiet', '--orphan', '-b', branch, options.dir]);
     return 'created';
   }

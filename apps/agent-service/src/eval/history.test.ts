@@ -138,6 +138,9 @@ describe('the eval-history writer', () => {
     const dir = join(root, 'history-1');
     openHistory({ repoDir: repo, dir });
     expect(publishHistory({ dir })).toEqual({ status: 'nothing' });
+    expect(() =>
+      openHistory({ repoDir: clone('reader'), dir: join(root, 'reader-h'), create: false }),
+    ).toThrow(/no eval-history branch yet/);
 
     const once = tally('2026-09-27T03:00:00.000Z', 'a'.repeat(40), [true]);
     writeTally(dir, once);
