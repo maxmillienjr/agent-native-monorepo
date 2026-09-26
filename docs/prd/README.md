@@ -159,8 +159,8 @@ provider actually operates under. Uses synthetic data only.
 | ID                              | Title                                                        | Size | Status   |
 | ------------------------------- | ------------------------------------------------------------ | ---- | -------- |
 | [P3-A](P3-A-clinician-gate.md)  | Clinician-gate invariant enforced in the type system         | S    | accepted |
-| [P3-B](P3-B-audit-replay.md)    | Deterministic replay for audit reconstruction                | L    | draft    |
-| [P3-C](P3-C-decision-ledger.md) | Hash-chained, tamper-evident decision ledger                 | L    | draft    |
+| [P3-B](P3-B-audit-replay.md)    | Deterministic replay for audit reconstruction                | L    | accepted |
+| [P3-C](P3-C-decision-ledger.md) | Hash-chained, tamper-evident decision ledger                 | L    | accepted |
 | P3-D                            | Synthetic payer dataset and FHIR prior-authorization surface | L    | draft    |
 
 ## Tier 4 — Governance and agent security as code

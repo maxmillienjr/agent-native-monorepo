@@ -2,7 +2,7 @@
 id: P3-B
 title: Deterministic replay for audit reconstruction
 tier: 3
-status: draft
+status: accepted
 size: L
 depends_on: [P2-A, P1-B]
 blocks: [P3-C]
@@ -358,11 +358,18 @@ references by `run_id`, so no content goes on a span (P3-C records that decision
 - **Open question — retention.** Keep everything (this draft), or add a prune command
   bounded by a retention period? Deleting a record is an integrity event: if review wants
   one, P3-C must record deletions as ledger entries, and this PRD grows by one command.
+  **Decided at review, 2026-09-26: keep everything; no prune command.** Retention is a
+  policy the deploying organization sets, and it goes in "Before real data" with the note
+  that a prune must be a ledger event when it is built.
 - **Open question — fail open or closed on a record write.** This draft fails the run if
   opening the record fails (before any work is done) and logs, without failing, if a later
   append fails, leaving `finished_at` null so the gap is queryable. A payer deployment may
   want every run without a complete record to fail; that changes the error contract of
-  `POST /runs`.
+  `POST /runs`. **Decided at review, 2026-09-26: split by path.** A run that produces a
+  recommendation or a determination (P3-A's types, P3-D's graph) fails closed: a decision
+  that cannot be recorded is not returned. The chat path keeps this draft's behaviour, the
+  visible gap. The error contract change is scoped to the regulated path and documented
+  with it.
 - **The regulatory reading is a portfolio's, not counsel's.** § 164.316(b)(2)(i)'s six years
   applies to the documentation the Security Rule requires, not to every log line, and this
   PRD does not claim otherwise.

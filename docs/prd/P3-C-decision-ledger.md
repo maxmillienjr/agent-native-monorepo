@@ -2,7 +2,7 @@
 id: P3-C
 title: Hash-chained, tamper-evident decision ledger
 tier: 3
-status: draft
+status: accepted
 size: L
 depends_on: [P3-A, P3-B]
 blocks: []
@@ -403,10 +403,13 @@ determinations noted as P3-D's.
   the signature field survives either way; who holds the key changes.
 - **Open question — should a failed `run.recorded` append fail the run?** This draft says no
   and makes the gap visible. A reviewer who reads § 164.312(b) as requiring the record may
-  want the opposite, at the cost of availability.
+  want the opposite, at the cost of availability. **Decided at review, 2026-09-26:** the
+  same split as P3-B — fail closed on the path that produces a recommendation or a
+  determination, a visible gap on the chat path.
 - **Open question — one TSA or two.** A single TSA is a single party whose key compromise
   or collusion defeats the anchor. Anchoring to two independent TSAs doubles the calls and
-  removes that; this draft uses one.
+  removes that; this draft uses one. **Decided at review, 2026-09-26: one**, with two named
+  in "Before real data" as the production posture.
 - **P2-C's text still names the ledger as the content store.** This PRD resolves it the
   other way — the run record is the store, the ledger commits to it — and the correction
   lives here, not in P2-C.
