@@ -20,6 +20,49 @@ export interface PgvectorReader {
   ): Promise<RetrievalCandidate[]>;
 }
 
+const isScoped = (scope: PgvectorSearchScope): boolean =>
+  scope.sessionId !== undefined && scope.crossSession !== true;
+
+/**
+ * The one statement `searchByCosine` runs, as text and parameters.
+ *
+ * Built in one place so that `explainSearchByCosine` plans exactly the query
+ * the reader executes: a plan of a hand-copied string is a plan of a query
+ * nobody runs.
+ */
+function cosineSearch(
+  queryEmbedding: number[],
+  topK: number,
+  scope: PgvectorSearchScope,
+): [string, unknown[]] {
+  // content_hash is the secondary sort key in both variants, and both is
+  // the point — the two strings differ only in the WHERE clause, so a
+  // tiebreaker added to one of them is a tiebreaker the other silently
+  // lacks. Cosine distance is not a total order over this table: the eval
+  // harness seeds every fact in a task with one vector, and identical
+  // vectors are at identical distance from any query. content_hash is the
+  // primary key, so ordering on it after the distance is total, and it is
+  // the key the Neo4j reader breaks its own tie on and rrfMerge fuses on.
+  return isScoped(scope)
+    ? [
+        `SELECT content_hash, text, episode_id,
+                1 - (embedding <=> $1::vector) AS score
+         FROM semantic_facts
+         WHERE session_id = $3
+         ORDER BY embedding <=> $1::vector, content_hash
+         LIMIT $2`,
+        [toSql(queryEmbedding), topK, scope.sessionId],
+      ]
+    : [
+        `SELECT content_hash, text, episode_id,
+                1 - (embedding <=> $1::vector) AS score
+         FROM semantic_facts
+         ORDER BY embedding <=> $1::vector, content_hash
+         LIMIT $2`,
+        [toSql(queryEmbedding), topK],
+      ];
+}
+
 export class PgPgvectorReader implements PgvectorReader {
   constructor(private readonly pool: pg.Pool) {}
 
@@ -40,32 +83,9 @@ export class PgPgvectorReader implements PgvectorReader {
         // can only see the current session cannot demonstrate long-term
         // memory. The real boundary is a tenant; this repository has no tenant
         // concept yet, so the choice is made visible at the call site instead.
-        const scoped = scope.sessionId !== undefined && scope.crossSession !== true;
-        span.setAttribute('crossSession', !scoped);
+        span.setAttribute('crossSession', !isScoped(scope));
 
-        // content_hash is the secondary sort key in both variants, and both is
-        // the point — the two strings differ only in the WHERE clause, so a
-        // tiebreaker added to one of them is a tiebreaker the other silently
-        // lacks. Cosine distance is not a total order over this table: the eval
-        // harness seeds every fact in a task with one vector, and identical
-        // vectors are at identical distance from any query. content_hash is the
-        // primary key, so ordering on it after the distance is total, and it is
-        // the key the Neo4j reader breaks its own tie on and rrfMerge fuses on.
-        const result = await this.pool.query(
-          scoped
-            ? `SELECT content_hash, text, episode_id,
-                      1 - (embedding <=> $1::vector) AS score
-               FROM semantic_facts
-               WHERE session_id = $3
-               ORDER BY embedding <=> $1::vector, content_hash
-               LIMIT $2`
-            : `SELECT content_hash, text, episode_id,
-                      1 - (embedding <=> $1::vector) AS score
-               FROM semantic_facts
-               ORDER BY embedding <=> $1::vector, content_hash
-               LIMIT $2`,
-          scoped ? [toSql(queryEmbedding), topK, scope.sessionId] : [toSql(queryEmbedding), topK],
-        );
+        const result = await this.pool.query(...cosineSearch(queryEmbedding, topK, scope));
 
         const candidates: RetrievalCandidate[] = result.rows.map(
           (row: { content_hash: string; text: string; score: number; episode_id: string }) => ({
@@ -85,5 +105,22 @@ export class PgPgvectorReader implements PgvectorReader {
         span.end();
       }
     });
+  }
+
+  /**
+   * The planner's plan for exactly the statement `searchByCosine` runs.
+   *
+   * Not a hot-path method. It exists so a report can say, from the database
+   * rather than from a comment, whether the search is served by the HNSW index
+   * or by a sequential scan — ADR 0006 records why it is the latter.
+   */
+  async explainSearchByCosine(
+    queryEmbedding: number[],
+    topK: number,
+    scope: PgvectorSearchScope = {},
+  ): Promise<string[]> {
+    const [text, params] = cosineSearch(queryEmbedding, topK, scope);
+    const result = await this.pool.query(`EXPLAIN ${text}`, params);
+    return result.rows.map((row: { 'QUERY PLAN': string }) => row['QUERY PLAN']);
   }
 }

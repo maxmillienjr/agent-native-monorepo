@@ -59,6 +59,7 @@ export {
   type RetrievalCandidate,
   type RetrievalFacade,
   HybridRetrievalFacade,
+  rrfMerge,
 } from './semantic/retrieval-facade.js';
 
 // Inspection — reading back what one run persisted, and restoring a session to
