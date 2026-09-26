@@ -72,13 +72,17 @@ it, so the fix P1-A handed over (retry 429 in `IO_RETRY`) would make things wors
 tier is written conditional on a repository secret, and shows as skipped, never as passed,
 until one exists.
 
-**[P2-B](P2-B-retrieval-ablation.md) is accepted** — the ablation ADR
-0002 has been waiting for. Drafting it found that the deployed graph path is close to
-unreachable: the seed linker deletes `_`, and 34 of the 41 entity ids in the two live
-extractions contain one. The draft therefore measures the store with the linker taken out
-as well as the deployed path, and pre-registers what happens to ADR 0002 under each
-outcome. It also found that the tie-break P1-B added stops the vector query from using its
-HNSW index, a trade ADR 0006 now records.
+**[P2-B](P2-B-retrieval-ablation.md) is in progress**, tracked in [#57](https://github.com/maxmillienjr/agent-native-monorepo/issues/57),
+and waiting on blind adjudication. The dataset (335 facts, 200 queries in four strata) was
+committed before any vector existed; `yarn eval:retrieval` runs with no key over the
+recorded embeddings and two runs from empty stores match byte for byte. The first run, on
+pre-registered labels: `vector` and `hybrid` both 0.940 Recall@10 and `graph` 0, because
+the seed linker produced no id the graph holds on any of the 200 queries. With the linker
+replaced by gold seeds, `hybrid·oracle` is 0.145 below `vector`. The pool of 3,029
+unlabelled candidates is committed for a separate session to judge; the decision rule's
+outcome, the ADR that records it and the documentation that states the result follow the
+adjudication. `graph-recall-001` is the first task to reach the graph, recorded and
+replayed.
 
 **[P2-C](P2-C-otel-genai-semantics.md) is accepted.** It found that a
 run is seven single-span traces rather than one — no span encloses the graph, and no

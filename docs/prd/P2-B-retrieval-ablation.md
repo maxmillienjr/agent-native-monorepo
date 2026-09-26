@@ -515,56 +515,145 @@ way).
 Each criterion names the axis it is verified on. "Pure" means a unit test with no store and
 no network.
 
-- [ ] `SeedApplication` accepts `graphFacts`, and `applySeed` writes them through
+- [x] `SeedApplication` accepts `graphFacts`, and `applySeed` writes them through
       `mergeFact` after concepts. **Memory live:** an integration test seeds a fact
       mentioning a concept and `expandFromSeeds([thatConcept], 1)` returns it at score 0.5.
-- [ ] `TaskSeeds` accepts an optional `graphFacts` array; `AgentServiceHarness.reset`
+      Verified 2026-09-26 in `inspect.integration.test.ts` against `pgvector/pgvector:pg16`
+      and `neo4j:5-community`, which also checks the graph fact is absent from pgvector.
+- [x] `TaskSeeds` accepts an optional `graphFacts` array; `AgentServiceHarness.reset`
       applies it and `restoreToSeed` keeps its hashes. **Pure** (schema) and **memory live**
-      (a reset followed by a second reset leaves the same `:Fact` set).
-- [ ] `recallAtK`, `reciprocalRank` and `ndcgAtK` match hand-computed values on a fixture
+      (a reset followed by a second reset leaves the same `:Fact` set). Verified
+      2026-09-26: the schema tests in `dataset.test.ts`; the integration test above
+      re-applies the seed after a run wrote a fact and gets the same `:Fact` set back; and
+      on the stub model axis with live memory, `graph-recall-001` passed
+      `retrieved_from_source` on both of two trials, which it cannot do if the second reset
+      deleted its graph fact.
+- [x] `recallAtK`, `reciprocalRank` and `ndcgAtK` match hand-computed values on a fixture
       that includes an empty list, no relevant items, and ties. **Pure.**
-- [ ] The paired bootstrap returns identical intervals for identical input and seed, exactly
+- [x] The paired bootstrap returns identical intervals for identical input and seed, exactly
       `[0, 0]` for two identical systems, and an interval excluding 0 for a fixture in which
       one system wins on every query. **Pure.**
-- [ ] The retrieval dataset loads and validates: 200 queries, 50 per stratum; every
+- [x] The retrieval dataset loads and validates: 200 queries, 50 per stratum; every
       `relevant` handle and every `goldSeeds` id resolves; no two facts share text. **Pure.**
-- [ ] The dataset commit precedes the embedding-file commit in `git log`, and the report
-      prints the dataset's sha256. **Reviewer, from history.**
-- [ ] `EVAL_EMBEDDINGS_MODE=record` writes a vector for every fact and query through
+      The loader also holds each query to its stratum's construction (below).
+- [x] The dataset commit precedes the embedding-file commit in `git log`, and the report
+      prints the dataset's sha256. **Reviewer, from history.** `c833ed0` then `70564d7`;
+      the sha256 is `46e6f4b5…17bdc` in both the embedding header and the report.
+- [x] `EVAL_EMBEDDINGS_MODE=record` writes a vector for every fact and query through
       `createGeminiEmbedder`, resumes without re-embedding what is already recorded, and
       makes no `generateContent` request. **Embeddings live**, with the request count
-      reported by the recorder.
-- [ ] Replay refuses a file whose `embeddingModel`, `embeddingDimensions` or
+      reported by the recorder. Verified 2026-09-26: 535 vectors from 540 `embedContent`
+      requests and 0 others, over six invocations; five stopped on a per-minute 429 and the
+      next resumed from the file.
+- [x] Replay refuses a file whose `embeddingModel`, `embeddingDimensions` or
       `datasetSha256` differs, or which is missing any vector — one unit test each. **Pure.**
-- [ ] `yarn eval:retrieval` with `GOOGLE_API_KEY=` produces `ablation-report.json` and
+- [x] `yarn eval:retrieval` with `GOOGLE_API_KEY=` produces `ablation-report.json` and
       `ablation-summary.md` with the primary table (`vector`, `graph`, `hybrid`) at k ∈ {1,
       3, 5, 10} for `Recall`, `nDCG`, and `MRR`, overall and per stratum, and makes no
       request to `generativelanguage.googleapis.com`. **Memory live, embeddings recorded.**
-- [ ] The same report carries the diagnostic table — the four oracle conditions, `union`,
+      Verified 2026-09-26 at `a5d82e6`; the report is committed under
+      `datasets/retrieval-ablation/reports/pre-adjudication/`.
+- [x] The same report carries the diagnostic table — the four oracle conditions, `union`,
       `hopDepth` 1 and 3 — the vector/graph/both/neither split of relevant facts, the
       empty-result fraction, latency p50/p95, context characters, per-stratum query–label
       overlap, and the tie-sensitivity range for every metric on `graph` and `hybrid`.
-      **Memory live, embeddings recorded.**
-- [ ] The report states both axes, the embedding file's `recordedAt` and `gitSha`, and the
+      **Memory live, embeddings recorded.** `union` is the union-recall column of the split
+      table; see "What shipped".
+- [x] The report states both axes, the embedding file's `recordedAt` and `gitSha`, and the
       plan of the vector query (`EXPLAIN`), so a reader can see it was a sequential scan.
       **Memory live, embeddings recorded.**
-- [ ] Two consecutive runs from empty stores produce byte-identical reports after masking
-      timestamps and latencies. **Memory live, embeddings recorded.**
+- [x] Two consecutive runs from empty stores produce byte-identical reports after masking
+      timestamps and latencies. **Memory live, embeddings recorded.** Verified 2026-09-26:
+      containers recreated before each run; the masked JSON, the masked Markdown and both
+      pool files were identical.
 - [ ] The blind pooling pass is done, and the report carries metrics under the
-      pre-registered and the adjudicated labels. **Reviewer.**
+      pre-registered and the adjudicated labels. **Reviewer.** The pool is committed (3,029
+      candidates over 200 queries); the adjudication has not run.
 - [ ] The decision rule above is applied to the pre-registered labels and the outcome is
       recorded in a new ADR listed in `docs/adr/README.md` — whichever row it lands in.
-      **Reviewer, against the committed report.**
-- [ ] `graph-recall-001` passes `retrieved_from_source` on **model live, memory live** in the
+      **Reviewer, against the committed report.** Waits on the adjudication, by the review's
+      instruction.
+- [x] `graph-recall-001` passes `retrieved_from_source` on **model live, memory live** in the
       recording run, and on **model replay, memory live** from its committed cassette. The
       stub model axis runs it too, and is not what this criterion is verified on: the point
       is that the graph fact reaches `plan`'s prompt under the model that is deployed.
+      Verified 2026-09-26: recorded at `5aca9f9` for three `generateContent` calls, and the
+      recorded `plan` prompt carries the graph fact tagged `[neo4j]`; the replay passed all
+      three tasks.
 - [ ] `docs/STATUS.md` row 15 cites the measurement; a new row records the ablation as a
       capability; `README.md:188` and `packages/eval-harness/README.md:163` state the result
-      rather than the plan. **Reviewer.**
-- [ ] `.context/conventions.md` says where retrieval labels come from, that they are frozen
+      rather than the plan. **Reviewer.** Written once the adjudicated report exists, since
+      those lines state the result.
+- [x] `.context/conventions.md` says where retrieval labels come from, that they are frozen
       before a run, and that an embedding file is re-recorded when `EMBEDDING_MODEL`,
       `EMBEDDING_DIMENSIONS` or the dataset changes. **Reviewer.**
+
+## What shipped, and where it diverged
+
+Status at the adjudication checkpoint, 2026-09-26. Everything up to the first run and the
+pool is built; the adjudication, the ADR and the documentation that states the result are
+not.
+
+The first run, pre-registered labels, recorded embeddings, memory live:
+
+| Condition                | Recall@10 | nDCG@10 | MRR   | relational R@10 | Empty |
+| ------------------------ | --------- | ------- | ----- | --------------- | ----- |
+| `vector`                 | 0.940     | 0.845   | 0.815 | 0.760           | 0%    |
+| `graph`                  | 0.000     | 0.000   | 0.000 | 0.000           | 100%  |
+| `hybrid`                 | 0.940     | 0.845   | 0.815 | 0.760           | 0%    |
+| `graph·oracle`           | 0.385     | 0.180   | 0.119 | 0.120           | 19%   |
+| `hybrid·oracle`          | 0.795     | 0.577   | 0.508 | 0.180           | 0%    |
+| `hybrid·oracle·per-fact` | 0.795     | 0.638   | 0.588 | 0.180           | 0%    |
+
+`hybrid` minus `vector` is exactly 0 on every query, interval `[0, 0]`: the linker produced
+ids for 150 queries and none is a concept in the graph. `hybrid·oracle` minus `vector` is
+−0.145, interval `[−0.195, −0.095]`. The rule's outcome is not stated until the adjudicated
+labels are in.
+
+Where the implementation is not what the Design section describes:
+
+- **The corpus is 335 facts, of which 137 answer no query**, against "about 300 facts, of
+  which roughly half". That target was written for 120 queries. At 200 with mostly one
+  label each, half would have meant reusing answers across queries, so the corpus grew
+  instead. That made 535 texts to embed rather than about 420.
+- **The dataset files carry one wrapper each.** `corpus.json` is `{ sessionId, episodes }`,
+  so the session every fact is written under lives with the facts, and `queries.json` is
+  `{ queries }`.
+- **The loader enforces the strata table.** A relational query must name A, answer through
+  a fact that mentions a B one `RELATES_TO` edge away and never mentions A, and never name
+  B. An entity-distractor seed needs five or more mentioning facts. A no-entity query may
+  contain no capital letter. Relevance is not checked and cannot be.
+- **`union` is a column, not a ranked list.** It is reported as union recall over the two
+  lists the facade actually fuses — pgvector at `2 × topK` and the graph reader's full list
+  — beside the vector/graph/both/neither split, since it has no order to score.
+- **The vector plan comes from memory-core.** The runner may not issue SQL, so
+  `PgPgvectorReader.explainSearchByCosine` plans the exact statement `searchByCosine` runs.
+  It uses `COSTS OFF` and runs `ANALYZE` first: two runs over identical rows otherwise
+  printed a sequential scan before autovacuum's analyze and a `session_id` bitmap scan
+  after. After `ANALYZE`, one session holding the whole table plans as a sequential scan.
+- **The `LIMIT 50` cut is counted from the corpus.** A breadth-first search with the
+  reader's distance gives the reachable set per query; the report prints what the limit cut
+  and checks the store returned exactly the corpus's reachable set, which it did on every
+  query of every graph condition.
+- **Two small additions the Layout does not list.** `rrfMerge` was exported from
+  `retrieval-facade.ts` but not from the package root, and now is. `EVAL_TASKS` narrows
+  `yarn eval` to named tasks, because recording `graph-recall-001` alone was otherwise
+  impossible without re-recording the other two cassettes and spending their calls.
+- **The report withholds the rule's outcome until adjudication.** Intervals are printed
+  from the first run; the outcome is stated only when `adjudication/decisions.json`
+  exists, so the report that decides ADR 0002 carries both label sets.
+
+What running found that nothing recorded:
+
+- **`embedContent` has a per-minute limit on the free tier**, about 100 requests a minute
+  per model (`EmbedContentRequestsPerMinutePerUserPerProjectPerModel-FreeTier`). The
+  recorder stopped on it five times and resumed a minute later each time.
+- **`hopDepth` makes no difference to any oracle metric here.** The reader's `LIMIT 50` is
+  already full at distance two on most queries, so hops beyond one are cut before they are
+  ranked.
+- **The relational stratum is where fusion loses most.** `hybrid·oracle` scores 0.180
+  Recall@10 there against `vector`'s 0.760: the graph list is mostly distance-one facts in
+  hash order, and RRF gives those ranks the same weight as the vector list's.
 
 ## Risks and open questions
 
