@@ -134,3 +134,8 @@ export {
   type PairedBootstrapOptions,
   type PairedBootstrapResult,
 } from './stats/paired-bootstrap.js';
+export {
+  stratifiedBootstrap,
+  type StratifiedBootstrapResult,
+  type StratifiedSample,
+} from './stats/stratified-bootstrap.js';
