@@ -2,11 +2,11 @@
 id: P1-D
 title: Statistical regression gate against committed baselines
 tier: 1
-status: accepted
+status: in-progress
 size: L
 depends_on: [P1-A, P1-C]
 blocks: []
-issue: null
+issue: 76
 superseded_by: null
 ---
 
