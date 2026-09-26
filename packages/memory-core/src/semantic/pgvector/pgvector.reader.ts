@@ -1,9 +1,18 @@
 import type pg from 'pg';
 import { getTracer } from '@repo/telemetry';
+import { GEN_AI, GEN_AI_OPERATION } from '@repo/telemetry/genai';
 import { toSql } from 'pgvector';
 import type { RetrievalCandidate } from '../retrieval-facade.js';
 
 const tracer = getTracer('memory-core');
+
+/**
+ * `gen_ai.operation.name` on this file's spans. The span names predate the
+ * conventions and stay; the operation is the part a GenAI-aware backend reads.
+ */
+const SEARCH = {
+  attributes: { [GEN_AI.OPERATION_NAME]: GEN_AI_OPERATION.SEARCH_MEMORY },
+};
 
 export interface PgvectorSearchScope {
   /** Restricts the search to one session unless `crossSession` is set. */
@@ -28,7 +37,7 @@ export class PgPgvectorReader implements PgvectorReader {
     topK: number,
     scope: PgvectorSearchScope = {},
   ): Promise<RetrievalCandidate[]> {
-    return tracer.startActiveSpan('memory.pgvector.search', async (span) => {
+    return tracer.startActiveSpan('memory.pgvector.search', SEARCH, async (span) => {
       try {
         span.setAttribute('topK', topK);
         span.setAttribute('queryLength', queryEmbedding.length);

@@ -1,8 +1,17 @@
 import { z } from 'zod';
 import type { Driver } from 'neo4j-driver';
 import { getTracer } from '@repo/telemetry';
+import { GEN_AI, GEN_AI_OPERATION } from '@repo/telemetry/genai';
 
 const tracer = getTracer('memory-core');
+
+/**
+ * `gen_ai.operation.name` on this file's spans. The span names predate the
+ * conventions and stay; the operation is the part a GenAI-aware backend reads.
+ */
+const UPSERT = {
+  attributes: { [GEN_AI.OPERATION_NAME]: GEN_AI_OPERATION.UPSERT_MEMORY },
+};
 
 export const EntityWriteSchema = z.object({
   id: z.string(),
@@ -38,9 +47,11 @@ export class CypherNeo4jWriter implements Neo4jWriter {
   async mergeEntity(entity: z.infer<typeof EntityWriteSchema>): Promise<void> {
     const validated = EntityWriteSchema.parse(entity);
 
-    return tracer.startActiveSpan('memory.neo4j.mergeEntity', async (span) => {
+    return tracer.startActiveSpan('memory.neo4j.mergeEntity', UPSERT, async (span) => {
       try {
-        span.setAttribute('entity.id', validated.id);
+        // No id on the span. `distill` extracts it from the conversation, so
+        // it is content, and in the payer domain it can be a member's name.
+        // ALLOWED_SPAN_ATTRIBUTES in @repo/telemetry is what keeps it off.
         const session = this.driver.session();
         try {
           await session.run(
@@ -76,7 +87,7 @@ export class CypherNeo4jWriter implements Neo4jWriter {
   async mergeFact(fact: z.infer<typeof FactWriteSchema>): Promise<void> {
     const validated = FactWriteSchema.parse(fact);
 
-    return tracer.startActiveSpan('memory.neo4j.mergeFact', async (span) => {
+    return tracer.startActiveSpan('memory.neo4j.mergeFact', UPSERT, async (span) => {
       try {
         span.setAttribute('fact.contentHash', validated.contentHash);
         span.setAttribute('fact.entityCount', validated.entityIds.length);
@@ -113,12 +124,10 @@ export class CypherNeo4jWriter implements Neo4jWriter {
   async mergeRelationship(rel: z.infer<typeof RelationshipWriteSchema>): Promise<void> {
     const validated = RelationshipWriteSchema.parse(rel);
 
-    return tracer.startActiveSpan('memory.neo4j.mergeRelationship', async (span) => {
+    return tracer.startActiveSpan('memory.neo4j.mergeRelationship', UPSERT, async (span) => {
       try {
-        span.setAttribute('relationship.type', validated.type);
-        span.setAttribute('relationship.fromId', validated.fromId);
-        span.setAttribute('relationship.toId', validated.toId);
-
+        // Neither endpoint nor the type: all three are model output taken
+        // from the conversation, like the entity id above.
         const session = this.driver.session();
         try {
           await session.run(
