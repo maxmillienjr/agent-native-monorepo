@@ -2,7 +2,7 @@
 
 ## Where things stand
 
-_Last updated 2026-09-10. If this section is more than a few weeks stale, trust the code
+_Last updated 2026-09-26. If this section is more than a few weeks stale, trust the code
 over it and update it._
 
 **Six PRDs are shipped and the system they describe is running.** The service answers
@@ -22,7 +22,7 @@ request. `yarn lint:docs` fails CI when a PRD's status disagrees with its row be
 `pass@k` and `pass^k`, and every number names the axes that produced it. Measured
 2026-08-29 — model `stub` / memory `live`, 5 trials x 2 tasks: 50%, with `memory-recall-001`
 at 5/5 and `tool-use-001` at 0/5. That 0/5 is the stub axis's ceiling and not the agent's
-score: `runs.service.ts:190` returns `null` from `selectTool` for every input, so a task
+score: `runs.service.ts:264` returns `null` from `selectTool` for every input, so a task
 graded on making a tool call cannot pass there. On model `live` / memory `live`, one trial of
 `memory-recall-001` passed all eleven graders, and one trial of `tool-use-001` on 2026-09-10
 passed on three `web-search` selections with well-formed queries. One trial is not a pass
@@ -58,6 +58,19 @@ cannot catch the model getting worse (P1-E) or the client breaking (ADR 0005 nam
 defect class), and a task runs at most as many trials as it has cassettes so that one
 recording is never averaged with itself. What this is not yet is a CI tier — P1-C owns
 that.
+
+**[P1-C](P1-C-tiered-eval-pipeline.md) is drafted, not accepted.** It replaces the nightly
+job, which runs the same 27 `memory-core` integration tests that `e2e.yml` already runs on
+every pull request, with two tiers. A replay tier runs on every pull request with no key
+and needs only the two service containers: measured 2026-09-26 on fresh containers with no
+seed step, it takes 17s and passes every grader. A live tier runs nightly at about eight
+`generateContent` calls. Three things the draft found by running, not by reading. The
+repository has **no Actions secrets**, so the live tier has no key. A cassette miss and a
+failed grader **both exit 1**, the miss writes no report, and Turbo reduces any failing
+exit code to 1. The chat client **already retries a 429 six times** before `IO_RETRY` sees
+it, so the fix P1-A handed over (retry 429 in `IO_RETRY`) would make things worse. Its open
+questions, starting with whether and where a CI key comes from, have to be answered before
+it can be accepted.
 
 **Where the detail lives.** Each PRD carries its own risks, its divergences from the design
 that was reviewed, and — where a shipped record turned out to be wrong — the correction that
@@ -105,7 +118,7 @@ replacing it.
 | -------------------------------------- | ------------------------------------------------------------- | ---- | ------- |
 | [P1-A](P1-A-eval-harness.md)           | `packages/eval-harness` — evaluation as a first-class package | L    | shipped |
 | [P1-B](P1-B-agent-cassette.md)         | `packages/agent-cassette` — decision-level record and replay  | L    | shipped |
-| P1-C                                   | Tiered evaluation pipeline replacing the nightly stub         | M    | draft   |
+| [P1-C](P1-C-tiered-eval-pipeline.md)   | Tiered evaluation pipeline replacing the nightly stub         | M    | draft   |
 | P1-D                                   | Statistical regression gate with paired bootstrap             | M    | draft   |
 | P1-E                                   | Model-drift canary against pinned and floating model ids      | S    | draft   |
 | P1-F                                   | Cost, latency, and step budgets as CI assertions              | S    | draft   |
