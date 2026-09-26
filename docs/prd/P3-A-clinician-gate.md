@@ -2,7 +2,7 @@
 id: P3-A
 title: Clinician-gate invariant enforced in the type system
 tier: 3
-status: draft
+status: accepted
 size: S
 depends_on: []
 blocks: [P3-C, P3-D]
@@ -384,10 +384,15 @@ fails with TS2344. No `vitest --typecheck` step is needed.
   If P3-D chooses a different shape for its output — a FHIR `ClaimResponse` rather than an
   `AgentDisposition` — the channel here is wasted and the types have to be adopted at that
   boundary instead. P3-D should be drafted against this PRD's types, which is why it is in
-  `blocks`.
+  `blocks`. **Decided at review, 2026-09-26:** these types are the domain model and FHIR is
+  the wire format. P3-D maps an `AgentDisposition` or a clinician's determination onto a
+  `ClaimResponse` at its HTTP boundary; it does not replace them.
 - **P3-C in `blocks` assumes its ledger records determinations.** Its index title says
   "decision ledger". If P3-C is scoped to the agent's own model decisions — the cassette's
   seam, ADR 0005 — it does not need these types and the edge should be removed.
+  **Decided at review, 2026-09-26: the edge stays.** What an auditor reconstructs is who
+  decided an adverse outcome and on what recommendation, so P3-C's ledger records
+  determinations and attestations, with the agent's recommendation that preceded each.
 - **Whether routing to a clinician is a "delay".** SB 1120 bars the tool from delaying
   services "based, in whole or in part, on medical necessity". This PRD does not read that
   clause, and makes no claim that `refer-to-clinician` satisfies it. It becomes a real
@@ -407,6 +412,8 @@ fails with TS2344. No `vitest --typecheck` step is needed.
   defect this PRD found, and fixing it may push the size to M.
 - **LangGraph 1.x may type the update.** If P5-C's upgrade makes `addNode` check returns
   against the annotation, the `Node` alias becomes redundant; keep it until that is shown.
+  P5-C is accepted and may land first, so the implementation re-runs the return-type probe
+  on whichever LangGraph version is on `main` and records the result.
 
 ## References
 
