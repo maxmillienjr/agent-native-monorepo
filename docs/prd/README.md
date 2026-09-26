@@ -137,7 +137,7 @@ replacing it.
 | [P1-C](P1-C-tiered-eval-pipeline.md)   | Tiered evaluation pipeline replacing the nightly stub         | M    | accepted |
 | P1-D                                   | Statistical regression gate with paired bootstrap             | M    | draft    |
 | [P1-E](P1-E-model-drift-canary.md)     | Model-drift canary against pinned and floating model ids      | M    | accepted |
-| P1-F                                   | Cost, latency, and step budgets as CI assertions              | S    | draft    |
+| [P1-F](P1-F-cost-and-step-budgets.md)  | Cost, latency, and step budgets as CI assertions              | M    | draft    |
 | [P1-G](P1-G-task-axis-requirements.md) | Task-level axis requirements for the evaluation suite         | S    | shipped  |
 
 ## Tier 2 — Make the architecture real
@@ -204,7 +204,9 @@ measurement reproducible from committed embeddings. It is drawn under P1-B becau
 the last of its three predecessors; it also depends on P2-A and P1-A directly.
 
 P1-F appears twice because it needs two things: the pipeline P1-C builds, and the per-call
-token usage P2-C puts on inference spans. P2-C hangs off P1-B rather than P1-A alone
+token usage P2-C puts on inference spans. It also depends on P1-A and P1-B directly — it
+extends the harness's report and bumps the cassette format — and, like P2-B, is not drawn
+a third time for them. P2-C hangs off P1-B rather than P1-A alone
 because its replay-axis design reads the cassette's recorded usage; both are shipped, so
 P2-C is unblocked.
 
