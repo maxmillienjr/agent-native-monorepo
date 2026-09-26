@@ -138,3 +138,21 @@ workflow for you; the steps below are the tool-agnostic version.
    - Verify write/read round-trip.
    - Verify idempotency (run twice, assert no duplicates).
 6. Run `yarn turbo test:integration` to verify.
+
+## Add an HTTP Route to agent-service
+
+Two things apply to every controller today. Neither is visible from the controller you are
+writing.
+
+1. **The request-body pipe is global.** `main.ts` calls
+   `app.useGlobalPipes(new ZodValidationPipe(RunRequestSchema))`, so a new route's
+   `@Body()` is parsed as a `RunRequest` and anything else gets `400` naming `sessionId`.
+   `test/runs.e2e-spec.ts` installs the same pipe again. A route with a different body has
+   to move the pipe onto `RunsController`'s parameters and delete it from both places. P3-D
+   plans that move.
+2. **Only `application/json` bodies are parsed.** A body sent with another JSON media type,
+   such as `application/fhir+json`, reaches the handler as `undefined`. Register a parser
+   for the type in `main.ts`.
+
+Write a service test in `test/` that posts a real body with the real `Content-Type`.
+Calling the handler directly bypasses both of the problems above.
