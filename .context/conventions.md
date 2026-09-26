@@ -13,10 +13,20 @@
 - `PascalCase.tsx` for React components (e.g., `RunForm.tsx`).
 - Test files: `*.test.ts` co-located with source for unit tests; separate `test/`
   directory for integration tests.
+- Type tests: `*.test-d.ts`, co-located. `tsc --noEmit` checks them under
+  `yarn turbo typecheck`, and Vitest never runs them, because its include is
+  `src/**/*.test.ts`. An unused `@ts-expect-error` fails with TS2578, so each one carries a
+  one-line reason naming the error it expects.
 
 ## Package Structure
 
-- All packages export through a root `src/index.ts` barrel file.
+- All packages export through a root `src/index.ts` barrel file. There is one deliberate
+  exception: `@repo/determination/clinician`, the only constructor for an adverse
+  determination. It is a second entry point in the package's `exports` map and is absent
+  from the barrel, so the graph can import everything it may use without the one thing it
+  may not. A lint rule in `apps/agent-service/eslint.config.js` forbids the subpath under
+  `src/agent/**`, because an `exports` map cannot: the subpath is public on purpose, for
+  the clinician review surface (P3-A).
 - Internal imports within a package use relative paths.
 - Cross-package imports use the `@repo/<name>` workspace alias.
 

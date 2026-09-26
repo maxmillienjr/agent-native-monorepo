@@ -30,7 +30,11 @@ against the project's conventions.
 
 8. **File Naming:** `kebab-case.ts` for source files, `PascalCase.tsx` for React components.
 
-9. **Barrel Exports:** New exports must be added to the package's `src/index.ts`.
+9. **Barrel Exports:** New exports must be added to the package's `src/index.ts`. The one
+   exception is `@repo/determination/clinician`, which holds the only constructor for an
+   adverse determination and is kept out of the barrel on purpose, so the graph cannot
+   reach it. Reject a change that re-exports it from `src/index.ts`, or that imports it
+   under `apps/agent-service/src/agent/`.
 
 10. **Sanitization:** The boundary is licensed content and real data, not vocabulary — see
     ADR 0003. Payer-domain terminology is permitted and expected in Tier 3. Reject a change

@@ -106,7 +106,9 @@ workflow for you; the steps below are the tool-agnostic version.
    omissions both fail quietly: `module` is `NodeNext`, so leaving `"type": "module"` out
    emits CommonJS into a repository where every other workspace is ESM, and leaving the
    `lint` script out means `yarn turbo lint` runs no task for the package and still reports
-   success.
+   success. Add an `exports` map only for an entry point that must stay out of the barrel;
+   `@repo/determination` is the one package that has one, and why is in
+   `.context/conventions.md`.
    ```json
    {
      "name": "@repo/<name>",
@@ -145,6 +147,11 @@ workflow for you; the steps below are the tool-agnostic version.
 5. The package is auto-discovered by the `"workspaces": ["packages/*"]` glob.
 6. Run `yarn install` to link, then `yarn turbo build` to verify. `yarn workspaces list` is
    what confirms the glob picked it up.
+7. A workspace that imports the package declares it as a `workspace:*` dependency, even
+   though the import resolves without one. `nodeLinker: node-modules` symlinks every
+   workspace into `node_modules/@repo/`, so an undeclared import compiles locally against
+   a `dist/` built earlier, and can fail on a clean clone: Turbo orders `typecheck` after
+   `^build` by the declared graph only.
 
 ## Add a New Memory Adapter
 
