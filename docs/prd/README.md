@@ -165,11 +165,11 @@ provider actually operates under. Uses synthetic data only.
 
 ## Tier 4 — Governance and agent security as code
 
-| ID                               | Title                                                           | Size | Status |
-| -------------------------------- | --------------------------------------------------------------- | ---- | ------ |
-| [P4-A](P4-A-controls-as-code.md) | `governance/controls.yaml` and a CI check for unmapped controls | M    | draft  |
-| P4-B                             | Memory-poisoning red team mapped to OWASP Agentic Top 10        | M    | draft  |
-| P4-C                             | Reversibility-tiered tool registry with saga compensation       | M    | draft  |
+| ID                               | Title                                                           | Size | Status   |
+| -------------------------------- | --------------------------------------------------------------- | ---- | -------- |
+| [P4-A](P4-A-controls-as-code.md) | `governance/controls.yaml` and a CI check for unmapped controls | M    | accepted |
+| P4-B                             | Memory-poisoning red team mapped to OWASP Agentic Top 10        | M    | draft    |
+| P4-C                             | Reversibility-tiered tool registry with saga compensation       | M    | draft    |
 
 ## Tier 5 — Interoperability
 

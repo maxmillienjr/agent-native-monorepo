@@ -2,7 +2,7 @@
 id: P4-A
 title: governance/controls.yaml and a CI check for unmapped controls
 tier: 4
-status: draft
+status: accepted
 size: M
 depends_on: []
 blocks: []
@@ -95,16 +95,13 @@ existing check can pass while its evidence has gone stale.
 
 ### Non-goals
 
-- **Moving `docs/STATUS.md` onto symbol anchors.** The three stale rows above get their
-  line numbers corrected in the P4-A pull request. That is a three-line fix, needed
-  whatever else happens. Replacing `STATUS.md`'s `file:line` form with the resolver this
-  PRD builds is a larger decision about a file other PRDs edit weekly. **No PRD owns it.**
-  The first open question below asks whether it should be folded in here.
 - **An automated CPT / PHI detector.** ADR 0003 names the check it wants and leaves it
   unowned. A five-digit CPT pattern collides with ports, ZIP codes, timestamps and
   version numbers, so it needs its own false-positive design. Until it exists,
-  `CTL-DATA-01` is `procedural`, and the matrix shows that. **No PRD owns it.** The third
-  open question asks whether to give it an id.
+  `CTL-DATA-01` is `procedural`, and the matrix shows that. **Decided at review: P3-D
+  owns it**, because P3-D introduces the synthetic payer dataset the detector has to
+  guard; CTL-DATA-01 is `planned` under P3-D once P3-D has a file, and `procedural` until
+  then.
 - **Framework coverage.** The check asserts that every catalogued control has evidence.
   It does not assert that every clause of a framework has a control, and the matrix says
   how much of each framework is not assessed. Most of NIST AI RMF GOVERN 2–6 concerns
@@ -366,6 +363,11 @@ against a licensed copy before this PRD moves to `accepted`.
       number not assessed (for AI RMF 1.0, 72 minus those referenced).
 - [ ] Every `planned` row names a PRD that the index lists and that is not `shipped`.
 - [ ] `docs/STATUS.md` rows 3, 11 and 17 cite lines that hold what the sentence names.
+- [ ] Every evidence cell in `docs/STATUS.md` uses the resolver's anchor forms rather than
+      `file:line`, and `yarn lint:docs` fails on a fixture row whose symbol, test title or
+      heading no longer resolves.
+- [ ] `CONTROLS.md` states that the ISO/IEC 42001 Annex A identifiers come from a named
+      secondary source and were not checked against the standard's text.
 - [ ] `docs/prd/_TEMPLATE.md` shows the optional `controls:` field.
       `.agents/prd-author.md` says a PRD that delivers a `planned` control lists it there.
       `.agents/reviewer.md` says a change that moves a control updates its row in the same
@@ -397,8 +399,10 @@ against a licensed copy before this PRD moves to `accepted`.
   lint would fix that, and it would cost the lint's speed; the residual is named here
   rather than closed.
 - **The ISO/IEC 42001 identifiers are from a secondary source.** If the published Annex A
-  numbers them differently, five mappings are wrong. Resolved by checking a licensed copy
-  before `accepted`.
+  numbers them differently, five mappings are wrong. **Decided at review, 2026-09-26:** no
+  licensed copy is available to this repository, so each ISO mapping carries its source,
+  and the matrix prints that the Annex A identifiers were taken from a secondary source and
+  not checked against the standard's text. A reader with the standard can correct them.
 - **Frameworks move.** OWASP revises its lists by year. The HIPAA Security Rule NPRM
   (90 FR 898, 2025-01-06) would make every §164.312 implementation specification required
   and add multi-factor authentication, and the rule is not final as of this draft. A new
@@ -410,19 +414,22 @@ against a licensed copy before this PRD moves to `accepted`.
   outright, and that an unfalsifiable 72-row table would be worse. If review decides the
   catalogue must enumerate every Annex A control with an explicit exclusion (38 rows,
   most `not-applicable`), that is a larger file, not a larger checker. Size stays `M`.
-- **Open — changes scope.** Should P4-A move `docs/STATUS.md` from `file:line` onto the
-  same resolver? It is the stronger fix for the drift in Problem, and it adds roughly a
-  day. The alternative is that `STATUS.md` keeps drifting between hand corrections.
-- **Open — changes scope.** Is `procedural` a status the catalogue should have? The
-  alternative is to leave CTL-MEM-01 and CTL-DATA-01 out until something executable backs
-  them. That is two fewer rows, and the catalogue would then be silent on the ADR 0003
-  boundary.
-- **Open — changes scope.** Should the ADR 0003 CPT/PHI detector get a PRD id? It would
-  move CTL-DATA-01 from `procedural` to `planned` with an owner. The check needs its own
-  false-positive design, which is why P4-A does not absorb it.
-- **Open.** Should CTL-ACC-01 be `planned` under a new gateway-authentication PRD rather
-  than `not-applicable`? The rationale is legally sound for a repository with no ePHI. A
-  payer reviewer may still read it as the one row that defers the obvious work.
+- **Decided at review, 2026-09-26 — `docs/STATUS.md` moves onto the resolver in P4-A.**
+  It is the stronger fix for the drift in Problem, and a checker that guards the new file
+  while the older one keeps rotting would be the wrong half. It adds roughly a day; the
+  size stays `M`. Rows other PRDs are editing in flight are rebased onto the new form by
+  whichever lands second.
+- **Decided at review, 2026-09-26 — `procedural` stays.** Leaving CTL-MEM-01 and
+  CTL-DATA-01 out would make the catalogue silent on the ADR 0003 boundary, which is the
+  one a payer reviewer reads first. A `procedural` row says in words that a person, not a
+  check, enforces it.
+- **Decided at review, 2026-09-26 — the CPT/PHI detector goes to P3-D**, not to a new id.
+  See Non-goals.
+- **Decided at review, 2026-09-26 — CTL-ACC-01 is `planned` under P5-A.** The
+  `not-applicable` rationale is legally sound for a repository with no ePHI, but it reads
+  as the one row that defers the obvious work. P5-A's A2A server must declare an
+  authentication scheme in its Agent Card anyway, and it is drafted to cover the service's
+  external surface.
 
 ## References
 
