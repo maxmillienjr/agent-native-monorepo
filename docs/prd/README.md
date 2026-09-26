@@ -34,7 +34,7 @@ same axis now reports 100% over 5 trials x 1 task, re-measured 2026-09-10. That 
 denominator change and not an improvement, which is why both numbers stay in
 `docs/STATUS.md` row 17 and why the skipped task is printed beside the rate in all three
 reports. It now runs in CI on every pull request, on the replay axis (P1-C, below). What
-none of this is yet is a merge gate — P1-D decides which failures should block.
+none of this is yet is a merge gate — see P1-D below for what blocks and what is missing.
 
 **Memory and model are independent axes, and neither falls back.** `GOOGLE_API_KEY` selects
 the model half; `DATABASE_URL` and `NEO4J_URI` select the memory half. Configured but
@@ -75,6 +75,19 @@ repository secret and pass to P1-E. The third, the classifier against a real fre
 429, spends a day's quota and waits for the owner to schedule it. Moving
 `REQUIRE_INTEGRATION_ENV` onto `e2e.yml` needed a `turbo.json` declaration the PRD did not
 foresee. Without it, strict env mode strips the flag, and the suite skips again.
+
+**[P1-D](P1-D-regression-gate.md) is in progress**, tracked in
+[#76](https://github.com/maxmillienjr/agent-native-monorepo/issues/76). `eval-replay` now
+exits on a verdict, not a pass rate: every one of the 21 replayed grader results is compared
+exactly with a committed `baselines/replay.json`, and any difference blocks, an improvement
+included, as does an abort. The probe that used to exit 0 at 100% (a task skipped, an
+assertion deleted) now names 11 `missing` cells, and a known failure can be committed.
+`EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval` accepts a change with no key. The
+nightly pools live tallies on an orphan `eval-history` branch against a committed reference
+at δ = 0.20, and will read `insufficient-evidence` for weeks. It has not run, because there
+is no secret. **Nothing blocks a merge until the owner applies
+`.github/rulesets/main.json`**, which requires `eval-replay`; `yarn lint:docs` keeps its
+check names equal to real jobs.
 
 **[P2-B](P2-B-retrieval-ablation.md) is accepted** — the ablation ADR
 0002 has been waiting for. Drafting it found that the deployed graph path is close to
@@ -175,8 +188,8 @@ standing rule in `.context/conventions.md`, not a piece of work.
 The repository's stated thesis. P1-A is shipped: `yarn eval` runs trials against the real
 application context and reports `pass@k` and `pass^k` per axis. P1-C, in progress, runs it
 from `.github/workflows/agent-eval.yml`: on replayed model decisions on every pull request,
-and on the live model nightly once a repository secret exists. Nothing blocks a merge yet —
-P1-D owns that.
+and on the live model nightly once a repository secret exists. P1-D, in progress, gates
+both on committed baselines. Nothing blocks a merge until the owner applies its ruleset.
 
 | ID                                     | Title                                                         | Size | Status      |
 | -------------------------------------- | ------------------------------------------------------------- | ---- | ----------- |
