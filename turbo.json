@@ -50,7 +50,9 @@
         "EVAL_TRIALS",
         "EVAL_OUTPUT_DIR",
         "EVAL_CASSETTE_MODE",
-        "EVAL_EXPECT_AXES"
+        "EVAL_EXPECT_AXES",
+        "OTEL_EXPORTER_OTLP_ENDPOINT",
+        "LOG_LEVEL"
       ]
     },
     "clean": {
