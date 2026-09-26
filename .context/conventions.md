@@ -145,8 +145,15 @@ axis nightly and on dispatch when a `GOOGLE_API_KEY` repository secret exists.
   cost is real and it falls on prompt changes, which are common here; the alternative,
   keying on a normalized shape, serves the old answer to the new prompt and calls it a
   pass. Re-recording needs a live key and about eight `generateContent` calls against a
-  20-request daily free tier, so it is a deliberate act rather than a step in a loop. ADR
-  0005 records the seam choice and what replay stops measuring.
+  20-request daily free tier, so it is a deliberate act rather than a step in a loop.
+  ADR 0005 records the seam choice and what replay stops measuring.
+  **The free tier also allows 5 `generateContent` calls a minute**, and a record or live
+  run of both tasks makes about eight in half a minute, so it reaches that limit. The chat
+  client is meant to wait it out: `stopOnDailyQuota` retries any 429 that does not name a
+  per-day quota, and the client backs off for up to about 90 seconds. That retry has to be
+  explicit, because from `@langchain/core` 1.x LangChain's default handler stops on
+  Gemini's quota wording. At 1.x the wait is proven by `rate-limit.test.ts` against a
+  stubbed `fetch` and has not been observed live (P5-C, "What the implementation found").
 - **A retriever's `ORDER BY` needs a unique secondary key.** Both semantic readers produce
   ties by construction — `expandFromSeeds` scores on hop distance, and the eval harness
   seeds every fact in a task with one vector — and an untied order is decided by whatever
