@@ -59,6 +59,7 @@ export {
   episodicRowWritten,
   entityMerged,
   factsPersistedToBothIndices,
+  retrievedFromSource,
 } from './graders/code.js';
 export {
   ModelGrader,
@@ -96,6 +97,8 @@ export {
   loadTaskSpec,
   loadSuite,
   loadMemoryRecallSuite,
+  readTaskFilter,
+  selectTasks,
 } from './dataset.js';
 
 // The vector a seeded fact is stored with.

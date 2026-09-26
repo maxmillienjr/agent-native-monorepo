@@ -5,6 +5,7 @@ import {
   factsPersistedToBothIndices,
   outcomeMustBe,
   retrievedContextMinLength,
+  retrievedFromSource,
   tokenCountsPositive,
 } from './code.js';
 import type { MemoryOutcome } from '../outcome.js';
@@ -37,6 +38,30 @@ function outcome(overrides: Partial<MemoryOutcome> = {}): MemoryOutcome {
     ...overrides,
   };
 }
+
+describe('retrievedFromSource', () => {
+  it('passes on one candidate from the named retriever', async () => {
+    const grader = retrievedFromSource('neo4j');
+    const graphFact = transcript({
+      retrievedContext: [
+        { source: 'pgvector', content: 'a seeded fact', score: 0.03 },
+        { source: 'neo4j', content: 'only the graph holds this', score: 0.016 },
+      ],
+    });
+    expect(grader.name).toBe('retrieved_from_source');
+    expect((await grader.grade(graphFact, outcome())).label).toBe('pass');
+  });
+
+  it('fails when every candidate came from the other retriever, and says what came', async () => {
+    const score = await retrievedFromSource('neo4j').grade(transcript(), outcome());
+    expect(score.label).toBe('fail');
+    expect(score.explanation).toBe('no candidate from neo4j; retrieved [pgvector]');
+  });
+
+  it('reads the transcript, so it needs no axis', () => {
+    expect(retrievedFromSource('neo4j').requires).toBeUndefined();
+  });
+});
 
 describe('the three assertions migrated from run-fixture-001.json', () => {
   it('grades retrieved context against the declared minimum', async () => {

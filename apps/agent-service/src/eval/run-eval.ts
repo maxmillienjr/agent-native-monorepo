@@ -9,7 +9,9 @@ import {
   detectAxes,
   loadMemoryRecallSuite,
   readCassetteMode,
+  readTaskFilter,
   renderJUnitReport,
+  selectTasks,
   renderJsonReport,
   renderMarkdownSummary,
   skippedTasks,
@@ -165,7 +167,7 @@ function prepare(
   decks: TrialDecks | undefined;
   replay: ReplayProvenance | undefined;
 } {
-  const suite = loadMemoryRecallSuite(trials);
+  const suite = selectTasks(loadMemoryRecallSuite(trials), readTaskFilter());
 
   if (mode === 'off') return { suite, decks: undefined, replay: undefined };
 

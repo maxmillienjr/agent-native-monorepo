@@ -68,6 +68,26 @@ export function tokenCountsPositive(): Grader<MemoryOutcome> {
   });
 }
 
+/**
+ * Did at least one candidate reach `plan`'s prompt from the named retriever?
+ *
+ * Read on `neo4j`, this is stricter than it looks, and that is the point.
+ * `rrfMerge` keeps the first candidate it sees under a key and the facade
+ * passes the pgvector list first, so a fact both retrievers found is reported
+ * as `pgvector`. A `neo4j` candidate is therefore one the graph alone
+ * returned — a fact the seed wrote only to the graph, reached through the
+ * seed linker, which is exactly what the task is asking about.
+ */
+export function retrievedFromSource(source: 'neo4j' | 'pgvector'): Grader<MemoryOutcome> {
+  return transcriptGrader('retrieved_from_source', (transcript) => {
+    const found = transcript.retrievedContext.filter((candidate) => candidate.source === source);
+    const sources = transcript.retrievedContext.map((candidate) => candidate.source).join(', ');
+    return found.length > 0
+      ? pass(`${found.length} of ${transcript.retrievedContext.length} candidate(s) from ${source}`)
+      : fail(`no candidate from ${source}; retrieved [${sources}]`);
+  });
+}
+
 // --- Outcome assertions ----------------------------------------------------
 
 /** Did `reflect` actually write the episode, under the runId the caller was given? */
