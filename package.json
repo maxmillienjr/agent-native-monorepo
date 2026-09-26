@@ -18,7 +18,7 @@
     "eval": "turbo eval",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint:docs": "node scripts/lint-docs.mjs && node scripts/lint-controls.mjs && node --test 'scripts/*.test.mjs'",
+    "lint:docs": "node scripts/lint-docs.mjs && node --test 'scripts/*.test.mjs'",
     "controls:matrix": "node scripts/lint-controls.mjs --write",
     "clean": "turbo clean"
   },

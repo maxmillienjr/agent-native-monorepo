@@ -14,6 +14,7 @@ import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import { frontmatter, prdIndexRows } from './lib/frontmatter.mjs';
 import { createRepo, checkInlineAnchors } from './lib/anchors.mjs';
+import { lintControls, defaultPaths } from './lint-controls.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const prdDir = join(root, 'docs', 'prd');
@@ -236,6 +237,13 @@ if (nodeSurfaces.length === 0) {
   }
 }
 
+// --- governance/controls.yaml ---------------------------------------------
+// In-process rather than chained after this script with `&&`: a renamed declaration that
+// breaks a STATUS.md row and a control at once is then reported against both, instead of
+// the first failure hiding the second.
+const controls = await lintControls({ root, ...defaultPaths(root) });
+errors.push(...controls.errors);
+
 // --- Report ---------------------------------------------------------------
 if (errors.length) {
   console.error(`\ndocs lint failed with ${errors.length} problem(s):\n`);
@@ -244,5 +252,5 @@ if (errors.length) {
   process.exit(1);
 }
 console.log(
-  `docs lint passed: ${byId.size} PRD file(s), ${prdIndex.size} indexed, ADR index consistent.`,
+  `docs lint passed: ${byId.size} PRD file(s), ${prdIndex.size} indexed, ADR index consistent, STATUS.md anchors resolve.\n${controls.summary}`,
 );

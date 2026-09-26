@@ -437,6 +437,44 @@ export async function render({ frameworks, controls, repo }, matrixPath) {
 
 // --- CLI -------------------------------------------------------------------------------
 
+/**
+ * Check the catalogue and the matrix. Returns every problem found and a one-line summary;
+ * with `write`, regenerates the matrix instead of comparing it. lint-docs.mjs calls this
+ * in-process, so one `yarn lint:docs` run reports a broken anchor in STATUS.md and the
+ * control it breaks together.
+ */
+export async function lintControls({ root, cataloguePath, matrixPath, write = false }) {
+  const matrixName = relative(root, matrixPath);
+  const result = check({ root, cataloguePath });
+  const { errors } = result;
+  // The matrix is rendered only from a catalogue with no other problem: a stale-matrix
+  // error on top of a broken catalogue would name the symptom instead of the cause.
+  if (errors.length === 0) {
+    const rendered = await render(result, matrixPath);
+    if (write) {
+      writeFileSync(matrixPath, rendered);
+    } else if (!existsSync(matrixPath) || readFileSync(matrixPath, 'utf-8') !== rendered) {
+      errors.push(`${matrixName} is stale — run yarn controls:matrix`);
+    }
+  }
+  if (errors.length) return { errors, summary: null };
+  const counts = STATUSES.map(
+    (s) => `${result.controls.filter((c) => c.status === s).length} ${s}`,
+  ).join(', ');
+  return {
+    errors,
+    summary:
+      `controls lint passed: ${result.controls.length} control(s) (${counts}), every anchor resolves` +
+      (write ? `; wrote ${matrixName}.` : `, ${matrixName} is current.`),
+  };
+}
+
+/** The catalogue and matrix paths under a root, as lint-docs.mjs and the CLI default them. */
+export const defaultPaths = (root) => ({
+  cataloguePath: join(root, 'governance', 'controls.yaml'),
+  matrixPath: join(root, 'governance', 'CONTROLS.md'),
+});
+
 async function main() {
   const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
   const { values } = parseArgs({
@@ -448,36 +486,20 @@ async function main() {
     },
   });
   const root = resolve(values.root ?? repoRoot);
-  const cataloguePath = resolve(values.catalogue ?? join(root, 'governance', 'controls.yaml'));
-  const matrixPath = resolve(values.matrix ?? join(root, 'governance', 'CONTROLS.md'));
-  const matrixName = relative(root, matrixPath);
-
-  const result = check({ root, cataloguePath });
-  const { errors } = result;
-  // The matrix is rendered only from a catalogue with no other problem: a stale-matrix
-  // error on top of a broken catalogue would name the symptom instead of the cause.
-  if (errors.length === 0) {
-    const rendered = await render(result, matrixPath);
-    if (values.write) {
-      writeFileSync(matrixPath, rendered);
-    } else if (!existsSync(matrixPath) || readFileSync(matrixPath, 'utf-8') !== rendered) {
-      errors.push(`${matrixName} is stale — run yarn controls:matrix`);
-    }
-  }
-
+  const defaults = defaultPaths(root);
+  const { errors, summary } = await lintControls({
+    root,
+    cataloguePath: resolve(values.catalogue ?? defaults.cataloguePath),
+    matrixPath: resolve(values.matrix ?? defaults.matrixPath),
+    write: values.write,
+  });
   if (errors.length) {
     console.error(`\ncontrols lint failed with ${errors.length} problem(s):\n`);
     for (const e of errors) console.error(`  ✗ ${e}`);
     console.error('');
     process.exit(1);
   }
-  const counts = STATUSES.map(
-    (s) => `${result.controls.filter((c) => c.status === s).length} ${s}`,
-  ).join(', ');
-  console.log(
-    `controls lint passed: ${result.controls.length} control(s) (${counts}), every anchor resolves` +
-      (values.write ? `; wrote ${matrixName}.` : `, ${matrixName} is current.`),
-  );
+  console.log(summary);
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) await main();
