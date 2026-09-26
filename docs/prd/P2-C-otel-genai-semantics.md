@@ -8,6 +8,7 @@ depends_on: [P1-A, P1-B]
 blocks: [P1-F]
 issue: null
 superseded_by: null
+controls: [CTL-OBS-01]
 ---
 
 # P2-C · OpenTelemetry GenAI semantics, including evaluation events

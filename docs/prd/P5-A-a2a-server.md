@@ -8,6 +8,7 @@ depends_on: []
 blocks: [P5-B]
 issue: null
 superseded_by: null
+controls: [CTL-ACC-01]
 ---
 
 # P5-A · Agent2Agent v1.0 server with a signed Agent Card

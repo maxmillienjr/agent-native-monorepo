@@ -8,6 +8,7 @@ depends_on: [P1-A, P1-B]
 blocks: [P1-D, P1-E, P1-F]
 issue: 56
 superseded_by: null
+controls: [CTL-EVAL-03]
 ---
 
 # P1-C · Tiered evaluation pipeline replacing the nightly stub

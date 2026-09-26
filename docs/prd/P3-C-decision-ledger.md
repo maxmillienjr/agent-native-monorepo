@@ -8,6 +8,7 @@ depends_on: [P3-A, P3-B]
 blocks: []
 issue: null
 superseded_by: null
+controls: [CTL-AUD-01]
 ---
 
 # P3-C · Hash-chained, tamper-evident decision ledger

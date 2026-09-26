@@ -8,6 +8,7 @@ depends_on: [P1-A, P1-B, P1-C, P2-C]
 blocks: []
 issue: null
 superseded_by: null
+controls: [CTL-COST-01]
 ---
 
 # P1-F · Cost, latency, and step budgets as CI assertions

@@ -8,6 +8,7 @@ depends_on: []
 blocks: [P3-C, P3-D]
 issue: null
 superseded_by: null
+controls: [CTL-HUM-01]
 ---
 
 # P3-A · Clinician-gate invariant enforced in the type system
