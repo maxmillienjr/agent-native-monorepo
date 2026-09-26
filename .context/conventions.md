@@ -174,6 +174,12 @@ axis nightly and on dispatch when a `GOOGLE_API_KEY` repository secret exists.
   XML emits a `<skipped/>` case rather than a pass or an absence, and the Markdown summary
   prints it between the rate and the table. Never report a rate computed over fewer tasks
   without the list of what was left out.
+- **`EVAL_TRIALS` is per task, and there is no task filter.** `EVAL_TRIALS=1 yarn eval` on
+  the live axis runs one trial of every task that is not skipped: about three
+  `generateContent` calls for `memory-recall-001` and five for `tool-use-001`. To measure
+  one task live on a tight quota, move the other task's file out of
+  `packages/eval-harness/datasets/memory-recall/` for the run and put it back afterwards.
+  The loader reads every top-level `.json` there. P2-C's live criteria were run this way.
 - **Integration needs the stores exported, and says nothing when they are not.** Bring the
   infrastructure up with `docker compose up -d --wait` — no `--profile full`, the suite
   talks to Postgres and Neo4j directly — and export `DATABASE_URL`, `NEO4J_URI`,

@@ -2,7 +2,7 @@
 id: P2-C
 title: OpenTelemetry GenAI semantics, including evaluation events
 tier: 2
-status: in-progress
+status: shipped
 size: L
 depends_on: [P1-A, P1-B]
 blocks: [P1-F]
@@ -519,76 +519,160 @@ that throws ends its span with status unset, because every node closes in a bare
 Each criterion names the model axis it is verified on. "Fakes" means in-process fakes for
 every dependency — a unit test, on neither axis — and verifies a mapping, not a client.
 
-- [ ] `@repo/telemetry/genai` exports `GENAI_SEMCONV` naming commit
+- [x] `@repo/telemetry/genai` exports `GENAI_SEMCONV` naming commit
       `e57c543b4889619eb2a05702471937db5119165d`, the `GEN_AI` constants, and the four
-      helpers, and importing it does not load `@opentelemetry/sdk-node`. Unit test.
-- [ ] A graph run produces exactly one trace: `spans.test.ts` asserts one distinct trace id
+      helpers, and importing it does not load `@opentelemetry/sdk-node`. Unit test:
+      `genai-entry.test.ts` mocks `sdk-node` with a probe, imports the entry point and
+      asserts the probe never fired, and a control imports `otel.setup.ts` and asserts
+      that it did.
+- [x] A graph run produces exactly one trace: `spans.test.ts` asserts one distinct trace id
       across every exported span, and that each `agent.node.*` span's parent is the
       `invoke_agent agent-service` span, which has kind INTERNAL,
       `gen_ai.operation.name = invoke_agent`, `gen_ai.agent.name = agent-service` and
-      `gen_ai.conversation.id` equal to the request's `sessionId`. Fakes.
-- [ ] `agent.node.plan` carries `gen_ai.operation.name = plan` and no `prompt_tokens` or
+      `gen_ai.conversation.id` equal to the request's `sessionId`. Fakes. The suite drives
+      `RunsService.executeTraced`, which is what opens the root, rather than the compiled
+      graph.
+- [x] `agent.node.plan` carries `gen_ai.operation.name = plan` and no `prompt_tokens` or
       `completion_tokens`. Fakes.
-- [ ] With a fake tool selected, `act` emits `execute_tool web-search`, kind INTERNAL, with
+- [x] With a fake tool selected, `act` emits `execute_tool web-search`, kind INTERNAL, with
       `gen_ai.tool.name = web-search`, as a child of `agent.node.act`; with a tool that
       throws, the span has ERROR status, `error.type`, and still carries `gen_ai.tool.name`.
       Fakes.
-- [ ] A node that throws ends its span with ERROR status and `error.type`. Fakes.
-- [ ] The chat wrapper, given a fake LangChain response with
+- [x] A node that throws ends its span with ERROR status and `error.type`. Fakes: an
+      invalid body fails `ingress` with `error.type = ZodError`, and the root span is ERROR
+      too.
+- [x] The chat wrapper, given a fake LangChain response with
       `usage_metadata { input_tokens: 10, output_tokens: 20, total_tokens: 45 }` and
       `finishReason: 'STOP'`, emits `generate_content gemini-2.5-flash`, kind CLIENT, with
       `gen_ai.provider.name = gcp.gemini`, `gen_ai.request.model = gemini-2.5-flash`,
       `gen_ai.usage.input_tokens = 10`, `gen_ai.usage.output_tokens = 35`,
       `gen_ai.usage.reasoning.output_tokens = 15`, `gen_ai.response.finish_reasons = ['STOP']`
-      and `agent_native.seam`. Fakes.
-- [ ] On model `live` / memory `live`, one trial of `memory-recall-001`
+      and `agent_native.seam`. Fakes. Asserted in `spans.test.ts` on the span the real
+      `invokeChat` opened inside a full graph run over a fake client.
+- [x] On model `live` / memory `live`, one trial of `memory-recall-001`
       (`EVAL_TRIALS=1 yarn eval`): the transcript's spans in `eval-report.json` include one
       `generate_content` span for each of `plan.callLlm`, `act.selectTool` and
       `distill.extractEntities`, each with `gen_ai.usage.input_tokens > 0` and
       `gen_ai.usage.output_tokens > 0`, each a descendant of `invoke_agent`, and one
       `embeddings gemini-embedding-001` span per `embedContent` call. **Live axis only** —
       the stub axis has no inference spans by design, so it cannot verify this. Budget:
-      three `generateContent` calls and the run's embeddings.
-- [ ] On the same live run, the derivation holds: for each chat span,
+      three `generateContent` calls and the run's embeddings. Verified 2026-09-26: one
+      trace of 125 spans, all descendants of the root. Input and output tokens were 58 and
+      2368 on `plan.callLlm`, 1240 and 44 on `act.selectTool`, and 1288 and 7252 on
+      `distill.extractEntities`. There were sixteen `embeddings` spans, for the query and
+      the fifteen facts `reflect` upserted, and every grader passed. The runner has no task
+      filter, so `tool-use-001.json` was moved out of the dataset directory for the run.
+      Otherwise the same command runs that task as well, for about five more calls.
+- [x] On the same live run, the derivation holds: for each chat span,
       `output_tokens − reasoning.output_tokens` equals the call's `candidatesTokenCount` as
       LangChain reports it. If `totalTokenCount` turns out not to include thought tokens,
       this criterion fails and the derivation is removed rather than the criterion edited.
-- [ ] On model `replay` / memory `live`, run with `EVAL_CASSETTE_MODE=replay` and an
+      Verified 2026-09-26 against the client's own counts, logged at debug by
+      `invokeChat`. The client reported 1197, 1 and 3837 output tokens, and the spans'
+      differences are 2368 − 1171, 44 − 43 and 7252 − 3415. One further direct
+      `generateContent` call read the raw response. Its `usageMetadata` was
+      `promptTokenCount` 11, `candidatesTokenCount` 61, `thoughtsTokenCount` 576 and
+      `totalTokenCount` 648. So the total is the sum of all three, and it includes the
+      thought tokens the conventions want in `output_tokens`.
+- [x] On model `replay` / memory `live`, run with `EVAL_CASSETTE_MODE=replay` and an
       empty `GOOGLE_API_KEY`: the `plan.callLlm` span of `memory-recall-001` carries
       input tokens 58, output tokens 922 and `agent_native.replayed` true; its
       `act.selectTool` and `distill.extractEntities` spans carry `agent_native.replayed`
       true and no key beginning `gen_ai.usage.`; the existing watcher still reports no
-      request to `generativelanguage.googleapis.com`.
-- [ ] On model `stub` / memory `live`, no span in any transcript carries
-      `gen_ai.provider.name`.
-- [ ] The allowlist test passes with `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true`
+      request to `generativelanguage.googleapis.com`. Verified 2026-09-26, and the same
+      holds for `tool-use-001` at 68 and 217. Its three `execute_tool` spans are marked
+      replayed too.
+- [x] On model `stub` / memory `live`, no span in any transcript carries
+      `gen_ai.provider.name`. Verified 2026-09-26: thirteen spans, no inference or
+      embeddings span among them.
+- [x] The allowlist test passes with `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true`
       set: every attribute key on every span of a full graph run and of the wrapper tests is
       in `ALLOWED_SPAN_ATTRIBUTES`, which contains no `gen_ai.input.messages`,
       `gen_ai.output.messages`, `gen_ai.system_instructions`, `gen_ai.tool.definitions`,
       `gen_ai.tool.call.arguments`, `gen_ai.tool.call.result`, `entity.id` or
       `relationship.*` key. Fakes; the live run above is additionally checked against the
-      same list.
-- [ ] `Transcript.spans` is populated on every trial of a replay run, every record carries
+      same list. The wrappers run inside the graph runs, so one test covers both. The live
+      and replay runs are checked by `run-eval` itself, which fails the run before it
+      writes a report if any span it saw carried an unlisted key. Both passed.
+- [x] `Transcript.spans` is populated on every trial of a replay run, every record carries
       the widened `SpanRecord` fields, all share the root's trace id, and none is named
-      `memory.inspect.*`. Replay axis, memory `live`.
-- [ ] `EvalHarness` emits one `gen_ai.evaluation.result` log record per `GraderResult`,
+      `memory.inspect.*`. Replay axis, memory `live`. Verified 2026-09-26: 109 spans for
+      `memory-recall-001` and 74 for `tool-use-001`.
+- [x] `EvalHarness` emits one `gen_ai.evaluation.result` log record per `GraderResult`,
       carrying the attributes in the design table, with the trace and span id of the
       trial's `invoke_agent` record; a transcript with no spans produces unparented events
       and no error. `harness.test.ts` with a fake `AgentHarness` and an
       `InMemoryLogRecordExporter`. Fakes.
-- [ ] On the replay run, `run-eval` logs the number of evaluation events emitted, and it
+- [x] On the replay run, `run-eval` logs the number of evaluation events emitted, and it
       equals the number of grader results in `eval-report.json` — twenty-one for the
-      committed set. Replay axis.
-- [ ] `turbo.json`'s `eval` task declares `OTEL_EXPORTER_OTLP_ENDPOINT`.
-- [ ] `eval-report.json` carries the GenAI conventions commit (`GENAI_SEMCONV.commit`)
+      committed set. Replay axis. Verified 2026-09-26: `eval.events` logged
+      `emitted: 21, graderResults: 21`.
+- [x] `turbo.json`'s `eval` task declares `OTEL_EXPORTER_OTLP_ENDPOINT`.
+- [x] `eval-report.json` carries the GenAI conventions commit (`GENAI_SEMCONV.commit`)
       beside the axes, and the Markdown summary prints it. Replay axis, memory `live`.
-- [ ] `docs/STATUS.md` gains a row for GenAI telemetry with file and line evidence;
+      The summary prints it at the foot, below the exclusions a reader must reach first.
+- [x] `docs/STATUS.md` gains a row for GenAI telemetry with file and line evidence;
       `.context/glossary.md` no longer says a request is one trace unless it is;
       `.context/workflows.md` shows `withNodeSpan`; `.context/conventions.md` records the pin
       and the upgrade procedure; the `Score` comment and
-      `packages/eval-harness/README.md` describe log-based events.
-- [ ] `yarn turbo typecheck`, `yarn turbo lint`, `yarn turbo test:unit`, `yarn lint:docs` and
+      `packages/eval-harness/README.md` describe log-based events. Row 20 cites its
+      evidence by name rather than by line, which is the form P4-A made `yarn lint:docs`
+      resolve.
+- [x] `yarn turbo typecheck`, `yarn turbo lint`, `yarn turbo test:unit`, `yarn lint:docs` and
       `yarn format:check` pass.
+
+## What shipped, and where it diverged from the design
+
+Measured 2026-09-26, memory `live` throughout, against throwaway stores:
+
+| Run                        | Axis     | Result                    | Spans in the trace        |
+| -------------------------- | -------- | ------------------------- | ------------------------- |
+| `memory-recall-001`, 1 x 1 | `live`   | all eleven graders passed | 125, 3 `generate_content` |
+| committed set, 1 x 2       | `replay` | all twenty-one passed     | 109 and 74                |
+| `memory-recall-001`, 1 x 1 | `stub`   | all eleven graders passed | 13, no inference span     |
+
+Four `generateContent` calls: three for the live trial and one direct call for the raw
+`usageMetadata`. The live trial's usage shows what the recorded set cannot. On
+`memory-recall-001` a run's model calls cost 2586 input and 9664 output tokens, 4629 of
+them thought tokens. `RunResponse.tokenCounts` reports 58 and 1197, which is `plan`'s
+candidates alone. Deciding what the run total is stays P1-F's.
+
+Where the implementation is not what the Design section describes, each deliberate:
+
+- **`yarn eval` enforces the allowlist, not only the test.** The design has
+  `spans.test.ts` hold a graph run to `ALLOWED_SPAN_ATTRIBUTES` and says the live run is
+  "additionally checked". A check that only a person runs is not a check, so `run-eval`
+  holds every span the evaluation process finishes to the list, the harness's own seed and
+  inspection spans included. A stray key fails the run before a report is written, as a
+  replay that reached the model does. Every pull request's replay job now enforces content
+  off against the real `memory-core` adapters, which the unit test fakes.
+- **`LOG_LEVEL` is declared on the `eval` task beside the endpoint.** `invokeChat` logs
+  the client's own counts at debug, because that line is the only way to check the
+  derivation against a live reply. `createLogger` had always read `LOG_LEVEL`, and strict
+  env mode had always stripped it on `yarn eval`.
+- **`initTelemetry`'s options form registers no metric reader.** Called with a name, it
+  is the service's configuration and is unchanged. With options, NodeSDK would otherwise
+  build an OTLP metric exporter from the environment and point it at `localhost:4318`.
+  Nothing reads a metric, so the options form turns it off.
+- **`withAgentSpan` exposes `recordError`.** The SSE path contains its own failure and
+  writes a terminal frame, so the root span would otherwise end with status unset on a
+  failed stream.
+- **`error.type` is also the status description, and the message goes nowhere.** A
+  replayed `CassetteMissError` carries a diff of the prompt, and a model client's error can
+  quote the request. Neither `recordException` nor the error's message is used.
+- **The Markdown summary prints the commit at its foot.** It sits below the exclusions a
+  reader must reach before the table, not beside the axis line. `eval-report.json`
+  carries it as `genAiSemconvCommit`, a top-level field beside `axes`.
+- **The STATUS row cites evidence by name.** The criterion asked for file and line, and
+  P4-A replaced line anchors with named ones that `yarn lint:docs` resolves while this was
+  in flight.
+
+**What the docs did not say.** `EVAL_TRIALS=1 yarn eval` runs one trial of every task that
+is not skipped, and the runner has no task filter. A live criterion scoped to one task
+therefore costs the other task's calls as well, unless the task file is moved out of the
+dataset directory for the run. On this quota that is five `generateContent` calls,
+a quarter of a day. No PRD owns a filter. It is recorded here as a gap, not built, because
+it changes what `yarn eval` means and this PRD had no reason to.
 
 ## Risks and open questions
 

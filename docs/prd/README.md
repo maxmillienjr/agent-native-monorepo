@@ -84,13 +84,20 @@ as well as the deployed path, and pre-registers what happens to ADR 0002 under e
 outcome. It also found that the tie-break P1-B added stops the vector query from using its
 HNSW index, a trade ADR 0006 now records.
 
-**[P2-C](P2-C-otel-genai-semantics.md) is in progress**, tracked in [#74](https://github.com/maxmillienjr/agent-native-monorepo/issues/74). It found that a
-run is seven single-span traces rather than one — no span encloses the graph, and no
-instrumentation supplies a parent — that two of the three `generateContent` calls drop
-their token usage before anything records it, and that the GenAI conventions it adopts
-have moved to a repository with no release, so it pins a commit. The replay axis emits
-inference spans carrying the cassette's recorded usage, marked as replayed, so that the
-pull-request tier can see the budgets P1-F will assert.
+**[P2-C](P2-C-otel-genai-semantics.md) has shipped**, tracked in
+[#74](https://github.com/maxmillienjr/agent-native-monorepo/issues/74). A run is now one
+trace under an `invoke_agent` root instead of seven single-span traces. Every model call,
+embedding and tool execution has its own span in the OpenTelemetry GenAI vocabulary, named
+from one pinned commit of a conventions repository that has no release. Usage is recorded on
+all three chat seams, where it used to be recorded on one. On one live trial of
+`memory-recall-001` the run's model calls cost 2586 input and 9664 output tokens, 4629 of
+them thought tokens, against the 58 and 1197 `RunResponse.tokenCounts` reports. P1-F owns
+deciding what the run total is. The replay axis opens the same spans from the cassette,
+marked `agent_native.replayed`. Content capture is off, with no switch: an attribute
+allowlist holds every span in a unit test and in every `yarn eval`, and four
+model-extracted memory attributes came off. `EvalHarness` emits a `gen_ai.evaluation.result`
+log record per grader result, parented to the run it judged, and `Transcript.spans` carries
+each trial's trace into `eval-report.json`.
 
 **[P4-A](P4-A-controls-as-code.md) has shipped**, tracked in
 [#63](https://github.com/maxmillienjr/agent-native-monorepo/issues/63).
@@ -184,13 +191,14 @@ P1-D owns that.
 ## Tier 2 — Make the architecture real
 
 The three-tier memory model is instantiated and the graph is checkpointed. What remains is
-measuring whether the hybrid premise holds, and saying so in the standard vocabulary.
+measuring whether the hybrid premise holds. The standard vocabulary for saying so is in
+place: P2-C emits the OpenTelemetry GenAI conventions.
 
-| ID                                   | Title                                                            | Size | Status      |
-| ------------------------------------ | ---------------------------------------------------------------- | ---- | ----------- |
-| [P2-A](P2-A-wire-memory-core.md)     | Wire memory-core into the service; add checkpointing and retry   | L    | shipped     |
-| [P2-B](P2-B-retrieval-ablation.md)   | Hybrid retrieval evaluation and the graph/vector/hybrid ablation | L    | accepted    |
-| [P2-C](P2-C-otel-genai-semantics.md) | OpenTelemetry GenAI semantics, including evaluation events       | L    | in-progress |
+| ID                                   | Title                                                            | Size | Status   |
+| ------------------------------------ | ---------------------------------------------------------------- | ---- | -------- |
+| [P2-A](P2-A-wire-memory-core.md)     | Wire memory-core into the service; add checkpointing and retry   | L    | shipped  |
+| [P2-B](P2-B-retrieval-ablation.md)   | Hybrid retrieval evaluation and the graph/vector/hybrid ablation | L    | accepted |
+| [P2-C](P2-C-otel-genai-semantics.md) | OpenTelemetry GenAI semantics, including evaluation events       | L    | shipped  |
 
 ## Tier 3 — Regulated-domain credibility
 
@@ -252,8 +260,7 @@ P1-F appears twice because it needs two things: the pipeline P1-C builds, and th
 token usage P2-C puts on inference spans. It also depends on P1-A and P1-B directly — it
 extends the harness's report and bumps the cassette format — and, like P2-B, is not drawn
 a third time for them. P2-C hangs off P1-B rather than P1-A alone
-because its replay-axis design reads the cassette's recorded usage; both are shipped, so
-P2-C is unblocked.
+because its replay-axis design reads the cassette's recorded usage. All three are shipped.
 
 P1-E is drawn under P1-C, whose nightly live job it reads, but it also depends on P1-B
 directly: its embedding baseline is the committed cassettes' vectors, and its decision
