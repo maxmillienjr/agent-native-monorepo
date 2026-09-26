@@ -277,7 +277,8 @@ not touched — `extraction` sets the precedent of a field that lives only on
 `AgentStateSchema`. No node is named `disposition`, so the channel-name collision in
 `.context/workflows.md:49-58` does not arise.
 
-Because LangGraph 0.4.10 does not check an inline node's return, each wrapper in
+Because LangGraph does not check an inline node's return — at 0.4.10, and still at 1.4.18
+when P5-C re-ran the probe on 2026-09-26 — each wrapper in
 `graph.ts:54-94` gets an explicit return type:
 
 ```ts

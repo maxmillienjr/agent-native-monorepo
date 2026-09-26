@@ -246,9 +246,9 @@ cassettes, and both say what that costs.
 `P0-B`, `P3-A`, `P4-A`, `P5-A`, and `P5-C` have no hard
 predecessors and can be picked up whenever they are the most valuable next thing. P5-C
 was previously drawn as a predecessor of P2-A; it is not one. `retryPolicy`,
-`compile({ checkpointer })`, and a peer-compatible
-`@langchain/langgraph-checkpoint-postgres@0.1.3` are all available at the pinned
-`@langchain/langgraph@0.4.10`.
+`compile({ checkpointer })` and a peer-compatible saver were all available at
+`@langchain/langgraph@0.4.10`, where P2-A shipped. P5-C has since moved the pins to
+`@langchain/langgraph@1.4.18` and `@langchain/langgraph-checkpoint-postgres@1.0.5`.
 
 P5-B waits on P5-A. The appendix recommends integrating with an ADK estate over A2A
 rather than porting, and the one trial step that checks that recommendation needs P5-A's
