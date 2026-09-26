@@ -24,7 +24,7 @@ A run that cannot complete writes `eval-abort.json` and an `eval-summary.md` hea
 completed. `EVAL_TRIALS` overrides the five trials per task, `EVAL_CASSETTE_MODE` is
 `record` or `replay` — see below — and `EVAL_EXPECT_AXES`, when set, refuses a run whose
 axes differ from it. All four are declared on `turbo.json`'s `eval` task, without which
-strict env mode strips them.
+strict env mode strips them, as are `EVAL_GATE` and `EVAL_HISTORY_DIR` (below).
 
 In CI, `agent-eval.yml` runs this same command twice: on the replay axis on every pull
 request, and on the live axis nightly when a `GOOGLE_API_KEY` repository secret exists.
@@ -176,15 +176,51 @@ the report holds, and exports both spans and events over OTLP when
 `OTEL_EXPORTER_OTLP_ENDPOINT` is set. `eval-report.json` names the conventions commit the
 spans and events follow, as `genAiSemconvCommit`.
 
+## The regression gate
+
+```bash
+EVAL_CASSETTE_MODE=replay EVAL_GATE=replay yarn eval   # compare with the committed baseline
+EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval   # accept a change: rewrite it, no key
+yarn eval:promote-live <cassette digest>               # commit a live reference (P1-D)
+```
+
+Without `EVAL_GATE`, `yarn eval` exits non-zero when any trial failed, which is a local
+signal and nothing more. With it, the gate's verdict decides the exit code, and the runner
+writes `eval-gate.json` beside the reports and appends a section to `eval-summary.md`.
+
+- **Replay is a snapshot, not a statistic.** Trial `i` replays cassette `i` in the baseline
+  run and in this one, so a per-cell difference has zero variance. `src/gate/` compares
+  every `(task, trial, grader) → (label, value)` cell with
+  `datasets/memory-recall/baselines/replay.json`, exactly, and every difference blocks:
+  `regressed`, `improved`, `value-moved`, `missing` (a skipped task, a deleted assertion),
+  `unbaselined`, and `stale-digest` when the cassette set changed and the baseline did not.
+  An improvement blocks because a baseline that kept the old `fail` would match a later
+  regression back to it. The explanation is not in the cell, because it carries the run id.
+  A run that aborted is `aborted`, which also blocks. Accepting any of this is
+  `EVAL_GATE=update` and a baseline diff someone reviews; after a re-record, run it too.
+- **Live is statistical, and usually says `insufficient-evidence`.** `EVAL_GATE=live`
+  appends the run's tally — one pass/fail per trial — to the orphan `eval-history` branch
+  checked out at `EVAL_HISTORY_DIR`, pools every night of the same cassette digest (an
+  _epoch_), and compares that pool with `baselines/live.json`. The statistic is the mean
+  over tasks of the difference in trial pass rates, with a stratified percentile bootstrap
+  below 20 tasks (`tasks-fixed`: about these tasks only) and P2-B's paired bootstrap over
+  per-task differences from 20 (`tasks-random`). At δ = 0.20 the verdict is `regressed`
+  only when Δ ≤ −δ and the interval excludes 0, `held` only when its lower bound is above
+  −δ, and neither below 15 trials per task per arm. A failed live trial is data, and only
+  `regressed` or an abort fails the job.
+
+`stats/` holds the resamplers and nothing that knows what a task is. `pairedBootstrap` is
+shared with P2-B's retrieval ablation.
+
 ## What this package does not do
 
-- **Reading a cassette.** This package resolves their paths and counts them; it never opens
-  one. `@repo/agent-cassette` is the format, and its only runtime dependency is `zod` —
-  importing it here for a type would end that.
+- **Parsing a cassette.** This package resolves their paths, counts them and hashes their
+  bytes for the gate's digest; it never parses one. `@repo/agent-cassette` is the format,
+  and its only runtime dependency is `zod` — importing it here for a type would end that.
 - **CI.** The workflow is `agent-eval.yml` (P1-C); this package has no script of its own for
   it and needs none.
-- **Statistical gating.** `yarn eval` exits non-zero on any failing trial; deciding which
-  failures should block a merge is P1-D.
+- **Applying the merge gate.** The gate decides the verdict; `.github/rulesets/main.json`
+  is what makes `eval-replay` a required check, and applying it is the repository owner's.
 - **Retrieval-quality metrics** (`Recall@k`, `nDCG`, `MRR`). P2-B, built on the `Grader`
   interface defined here.
 - **Span collection.** `Transcript.spans` is filled by the adapter, not by this package.
