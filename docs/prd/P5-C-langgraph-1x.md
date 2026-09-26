@@ -2,11 +2,11 @@
 id: P5-C
 title: Upgrade to LangGraph 1.x
 tier: 5
-status: accepted
+status: in-progress
 size: S
 depends_on: [P0-A]
 blocks: []
-issue: null
+issue: 61
 superseded_by: null
 ---
 
