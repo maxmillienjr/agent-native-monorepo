@@ -139,3 +139,46 @@ export {
   type StratifiedBootstrapResult,
   type StratifiedSample,
 } from './stats/stratified-bootstrap.js';
+
+// The regression gate (P1-D): the committed baselines, the live evidence, and
+// the two comparisons.
+export {
+  GradedReportSchema,
+  LivePoolSchema,
+  LiveReferenceSchema,
+  LiveRunSchema,
+  LiveTallySchema,
+  ReplayBaselineSchema,
+  ReplayCellSchema,
+  baselinesDir,
+  cassetteSetDigest,
+  compareCells,
+  digestFiles,
+  epochDir,
+  liveReferencePath,
+  liveTally,
+  loadLiveReference,
+  loadReplayBaseline,
+  poolTallies,
+  renderReplayBaseline,
+  replayBaseline,
+  replayBaselinePath,
+  replayCells,
+  tallyPath,
+  type DigestInput,
+  type GradedReport,
+  type LivePool,
+  type LiveReference,
+  type LiveRun,
+  type LiveTally,
+  type ReplayBaseline,
+  type ReplayCell,
+} from './gate/baseline.js';
+export {
+  REPLAY_DIFFERENCE_KINDS,
+  compareReplay,
+  countDifferences,
+  type ReplayComparison,
+  type ReplayDifference,
+  type ReplayDifferenceKind,
+} from './gate/compare-replay.js';
