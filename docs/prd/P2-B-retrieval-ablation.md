@@ -132,9 +132,10 @@ repository makes about evaluation.
 - **Per-fact `MENTIONS` in `reflect`.** Same reasoning. The diagnostic table measures what
   per-fact edges would buy; changing `reflect` is **unowned** until the ADR above says it is
   worth doing.
-- **Restoring HNSW use under the tie-break.** A code defect in the vector reader, found
-  here, outside this PRD's question, and not needed by it. **No PRD owns it today** — see
-  the risks section.
+- **Restoring HNSW use under the tie-break.** Found here, outside this PRD's question, and
+  not needed by it. It is not a defect but a trade, which
+  [ADR 0006](../adr/0006-deterministic-retrieval-order-over-the-vector-index.md) records
+  along with the conditions that reopen it — see the risks section.
 - **An end-to-end answer-quality ablation** — the agent run once per query per condition,
   with a retriever switched off, and its answer graded. It needs `generateContent` per query per
   condition, and it only has a question to answer if the retrieval-level result shows a
@@ -601,10 +602,11 @@ no network.
   than by a domain expert and a reader should be able to discount it.
 - **Vector search is a sequential scan since #44.** Found while drafting this PRD and
   outside its scope. It does not bias the ablation — exact search is the best the vector
-  path can do, and its latency is labelled — but the index is built and never used, and
-  `README.md:186` and `.context/architecture.md:79` describe the store as HNSW-backed. The
-  fix is a query shape that takes candidates from the index in distance order and breaks
-  ties afterwards, and it has to keep the determinism P1-B needs. **No PRD owns it.**
+  path can do, and its latency is labelled. Since drafting, ADR 0006 has recorded it as a
+  deliberate trade: the index-preserving query shapes were measured and none is
+  deterministic, including over-fetch with an exact re-rank, which returned a different
+  set after an index rebuild over identical rows. `docs/STATUS.md` row 6 is `stubbed` for
+  that reason, and the ADR names what reopens it.
 - **The tie-break makes rank metrics partly a function of sha256.** Reported as a range
   rather than hidden. A tie-aware fusion — giving tied candidates a shared rank — would be a
   change to `rrfMerge` and therefore to the system under test; it is not made here.
