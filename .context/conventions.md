@@ -153,6 +153,12 @@ axis nightly and on dispatch when a `GOOGLE_API_KEY` repository secret exists.
   order the store holds rows in, which changes across a delete-and-reseed. That order
   reaches `plan`'s prompt through `rrfMerge` and `retrievedContext`, so it is an input to
   the agent and not a presentation detail. Both readers break the tie on the content hash.
+- **A script or test that runs git in another directory strips git's environment first.**
+  Git exports `GIT_DIR` and `GIT_INDEX_FILE` to hooks and to `git rebase --exec`, and an
+  inherited `GIT_DIR` overrides discovery from `cwd`. A fixture test that ran `git init` and
+  `git add` in a temporary directory under `rebase --exec` set `core.bare = true` in this
+  repository's shared config and staged the fixture into the worktree's index.
+  `gitEnv()` in `scripts/lib/anchors.mjs` drops every `GIT_` variable; pass it as `env`.
 - **E2E runs against the compose stack, not the dev server.** Bring it up with
   `docker compose --profile full up -d --build --wait`, then run the suite with
   `E2E_BASE_URL=http://localhost:8080`. Without that variable Playwright boots the Vite dev
