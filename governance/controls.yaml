@@ -351,12 +351,31 @@ controls:
 
   - id: CTL-OBS-01
     title: Model calls and evaluations emit OpenTelemetry GenAI semantic-convention telemetry
-    status: planned
-    owner: P2-C
+    status: implemented
     maps:
       - { framework: nist-ai-rmf-1.0, ref: MEASURE 2.4 }
       - { framework: nist-ai-rmf-1.0, ref: MANAGE 4.1 }
       - { framework: iso-iec-42001-2023, ref: A.6.2.6 }
+    evidence:
+      - kind: test
+        file: apps/agent-service/src/agent/graph/spans.test.ts
+        name: is one trace, rooted at invoke_agent
+        tier: unit
+      - kind: test
+        file: apps/agent-service/src/agent/graph/spans.test.ts
+        name: records the conventions’ attributes on an inference span, output including thought tokens
+        tier: unit
+      - kind: test
+        file: apps/agent-service/src/agent/graph/spans.test.ts
+        name: puts no attribute outside ALLOWED_SPAN_ATTRIBUTES on any span, with capture switched on
+        tier: unit
+      - kind: test
+        file: packages/eval-harness/src/harness.test.ts
+        name: emits one per grader result, parented to the trial’s invoke_agent span
+        tier: unit
+      - { kind: ci, workflow: agent-eval.yml, job: replay, run: yarn eval }
+      - { kind: symbol, file: packages/telemetry/src/genai.ts, name: GENAI_SEMCONV }
+    note: The conventions are in Development status; the names are pinned to one commit of the conventions repository and a bump is a deliberate change. On the replay axis the inference spans carry recorded usage and are marked agent_native.replayed, so they are not a measurement of the current model. Content capture is off, and opt-in capture is P3-C's.
 
   - id: CTL-COST-01
     title: A trial is bounded in input tokens, output tokens and model calls, asserted in CI

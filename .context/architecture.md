@@ -149,7 +149,10 @@ The LangGraph graph is hosted inside a NestJS 11 microservice (`apps/agent-servi
 - **POST /runs/stream** — Streaming mode. Emits SSE events per node completion.
 - **Global concerns:** ZodValidationPipe, AuditInterceptor (structured logging),
   LoggingInterceptor (correlation ID via AsyncLocalStorage), HttpExceptionFilter.
-- **Observability:** One OTel span per graph node, OTLP HTTP export. The reader classes
+- **Observability:** One trace per run under an `invoke_agent` root, one span per graph
+  node beneath it, OTLP HTTP export. Model calls, embeddings and tool executions have
+  spans of their own in the OpenTelemetry GenAI vocabulary, with token usage on each model
+  call; content capture is off and an attribute allowlist holds it off. The reader classes
   carry child spans for pgvector search and Neo4j expansion, and `MemoryModule` constructs
   them (`memory/memory.module.ts:106`), so a live trace on the configured memory axis shows
   those children under `agent.node.retrieve`.

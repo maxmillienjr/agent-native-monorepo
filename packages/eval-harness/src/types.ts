@@ -115,8 +115,24 @@ export interface ToolCall {
   readonly error?: string;
 }
 
+/**
+ * One finished span, as much of it as a consumer needs to rebuild the tree
+ * without an OpenTelemetry dependency of its own.
+ *
+ * Times are milliseconds. On the `replay` axis an inference span's duration is
+ * replay speed, not the model's latency, and such a span carries
+ * `agent_native.replayed`; a reader of durations filters on it.
+ */
 export interface SpanRecord {
   readonly name: string;
+  readonly kind: 'internal' | 'client' | 'server' | 'producer' | 'consumer';
+  readonly traceId: string;
+  readonly spanId: string;
+  /** Absent on the root. */
+  readonly parentSpanId?: string;
+  readonly startTimeUnixMs: number;
+  readonly durationMs: number;
+  readonly status: 'unset' | 'ok' | 'error';
   readonly attributes: Readonly<Record<string, unknown>>;
 }
 
@@ -133,9 +149,10 @@ export interface Transcript {
   readonly outcome: AgentReportedOutcome;
   readonly latencyMs: number;
   /**
-   * Not populated by the adapter in `apps/agent-service`. The field is here
-   * because it is part of the contract P1-B (cassette replay) and P2-C (GenAI
-   * span events) consume; P2-C owns filling it.
+   * The run's trace: every span under its `invoke_agent` root, and nothing the
+   * harness did around the run. `apps/agent-service` fills it on every axis.
+   * Optional because an `AgentHarness` that collects no spans is still a valid
+   * one; its evaluation events are emitted unparented.
    */
   readonly spans?: readonly SpanRecord[];
 }
@@ -143,16 +160,19 @@ export interface Transcript {
 // --- Score -----------------------------------------------------------------
 
 /**
- * Shaped to match the OpenTelemetry `gen_ai.evaluation.result` event, so P2-C
- * can emit these as span events with no translation layer:
+ * Shaped to match the OpenTelemetry `gen_ai.evaluation.result` event, which
+ * `telemetry.ts` emits for every grader result with no translation layer:
  *
  *   value       -> gen_ai.evaluation.score.value
  *   label       -> gen_ai.evaluation.score.label
  *   explanation -> gen_ai.evaluation.explanation
  *
  * The attribute that does not come from here is `gen_ai.evaluation.name`, which
- * is the metric name — `Grader.name`. The unit P2-C emits is therefore the
- * (Grader, Score) pair, not the Score alone.
+ * is the metric name — `Grader.name`. The unit emitted is therefore the
+ * (Grader, Score) pair, not the Score alone. It is a log record through the
+ * Logs API, parented to the run's `invoke_agent` span — not a span event:
+ * `Span.addEvent` is the API OTEP 4430 deprecates, and the convention defines
+ * the result as an event in the Logs data model.
  *
  * Binary by default. Ordinal 1–5 rubrics produce inconsistent labels across
  * annotators and across judge runs; where finer resolution is genuinely needed,
@@ -356,6 +376,15 @@ export interface SuiteReport<TOutcome = Outcome> {
   readonly skipped: readonly SkippedTask[];
   /** Graders whose judgements have no calibration set behind them. */
   readonly uncalibratedGraders: readonly string[];
+  /**
+   * The OpenTelemetry GenAI conventions commit the transcripts' span
+   * attributes and the evaluation events follow — `GENAI_SEMCONV.commit`.
+   *
+   * The conventions are in Development status and move; a comparison of two
+   * reports across a bump (P1-D's) has to know that the names changed under
+   * it, and one field now is cheaper than migrating stored reports later.
+   */
+  readonly genAiSemconvCommit: string;
 }
 
 // --- A run that did not complete --------------------------------------------

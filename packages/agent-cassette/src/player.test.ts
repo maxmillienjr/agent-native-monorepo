@@ -227,3 +227,24 @@ describe('a recorded retry', () => {
     expect(player.remaining()).toBe(0);
   });
 });
+
+describe('onServe', () => {
+  it('sees each decision as it is served, a recorded failure included, and never a miss', async () => {
+    const served: Decision[] = [];
+    const failed = decision(PLAN, { kind: 'error', name: 'HttpError', message: 'no', status: 503 });
+    const planned: Decision = {
+      ...decision(PLAN, { kind: 'value', value: { content: 'a plan' } }),
+      tokenCounts: { prompt: 58, completion: 922 },
+    };
+    const player = new CassettePlayer(cassette([failed, planned]), CONFIG, {
+      onServe: (entry) => served.push(entry),
+    });
+
+    await expect(player.resolve(PLAN, neverLive())).rejects.toBeInstanceOf(ReplayedError);
+    await player.resolve(PLAN, neverLive());
+    await expect(player.resolve(PLAN, neverLive())).rejects.toBeInstanceOf(CassetteMissError);
+
+    // The wiring reads the recorded usage off the second.
+    expect(served).toEqual([failed, planned]);
+  });
+});

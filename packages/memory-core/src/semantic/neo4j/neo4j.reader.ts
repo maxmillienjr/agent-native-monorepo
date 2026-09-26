@@ -1,8 +1,17 @@
 import type { Driver } from 'neo4j-driver';
 import { getTracer } from '@repo/telemetry';
+import { GEN_AI, GEN_AI_OPERATION } from '@repo/telemetry/genai';
 import type { RetrievalCandidate } from '../retrieval-facade.js';
 
 const tracer = getTracer('memory-core');
+
+/**
+ * `gen_ai.operation.name` on this file's spans. The span names predate the
+ * conventions and stay; the operation is the part a GenAI-aware backend reads.
+ */
+const SEARCH = {
+  attributes: { [GEN_AI.OPERATION_NAME]: GEN_AI_OPERATION.SEARCH_MEMORY },
+};
 
 export interface Neo4jReader {
   expandFromSeeds(seedEntityIds: string[], hopDepth: number): Promise<RetrievalCandidate[]>;
@@ -12,7 +21,7 @@ export class CypherNeo4jReader implements Neo4jReader {
   constructor(private readonly driver: Driver) {}
 
   async expandFromSeeds(seedEntityIds: string[], hopDepth: number): Promise<RetrievalCandidate[]> {
-    return tracer.startActiveSpan('memory.neo4j.expand', async (span) => {
+    return tracer.startActiveSpan('memory.neo4j.expand', SEARCH, async (span) => {
       try {
         span.setAttribute('seedEntityCount', seedEntityIds.length);
         span.setAttribute('hopDepth', hopDepth);

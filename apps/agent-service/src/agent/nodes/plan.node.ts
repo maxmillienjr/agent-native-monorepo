@@ -1,7 +1,5 @@
-import { getTracer } from '@repo/telemetry';
+import { withNodeSpan } from '@repo/telemetry';
 import type { AgentState } from '../graph/state.js';
-
-const tracer = getTracer('agent-service');
 
 const SYSTEM_PROMPT = 'You are a helpful research assistant.';
 
@@ -19,8 +17,9 @@ export async function planNode(
   state: AgentState,
   deps: PlanNodeDeps,
 ): Promise<Partial<AgentState>> {
-  return tracer.startActiveSpan('agent.node.plan', async (span) => {
-    try {
+  return withNodeSpan(
+    'plan',
+    async (span) => {
       span.setAttribute('run_id', state.runId);
       span.setAttribute('session_id', state.sessionId);
 
@@ -36,8 +35,9 @@ export async function planNode(
 
       const response = await deps.callLlm(SYSTEM_PROMPT, userPrompt);
 
-      span.setAttribute('prompt_tokens', response.tokenCounts.prompt);
-      span.setAttribute('completion_tokens', response.tokenCounts.completion);
+      // Usage is on the inference span beneath this one, where the client
+      // recorded it. A copy here would be counted twice by anything summing
+      // `gen_ai.usage.*` over the trace.
 
       return {
         currentPlan: response.content,
@@ -51,8 +51,7 @@ export async function planNode(
           completion: state.tokenCounts.completion + response.tokenCounts.completion,
         },
       };
-    } finally {
-      span.end();
-    }
-  });
+    },
+    { operation: 'plan' },
+  );
 }

@@ -9,7 +9,7 @@ before making any changes.
   pgvector directly from app code.
 - The reflect node is the ONLY place that promotes data to Episodic or Semantic memory.
 - All graph nodes must have a corresponding OTel span. Use the span helpers in
-  packages/telemetry.
+  packages/telemetry — `withNodeSpan` for a node; see .context/conventions.md, Telemetry.
 - The root `workspaces` array is two globs, `packages/*` and `apps/*`, so a new package in
   either directory needs no entry. Confirm it resolved with `yarn workspaces list`. Only a
   package outside those two directories has to be added by hand.

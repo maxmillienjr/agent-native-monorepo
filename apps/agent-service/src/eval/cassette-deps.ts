@@ -8,9 +8,16 @@ import {
   CassettePlayer,
   CassetteRecorder,
   type Deck,
+  type Decision,
   type DecisionCall,
   type TokenCounts,
 } from '@repo/agent-cassette';
+import {
+  activeInferenceSpan,
+  withInferenceSpan,
+  type InferenceRequest,
+  type InferenceSeam,
+} from '@repo/telemetry';
 import { CHAT_MODEL, defaultTools, type ModelDeps } from '../runs/runs.service.js';
 
 /**
@@ -125,10 +132,29 @@ export function replayModelDeps(deck: Deck): ModelDeps {
     );
   };
 
+  // The span a live call would have had, so a transcript's spans do not depend
+  // on the axis. The models are the running configuration's, which the player
+  // has already checked equal to the cassette header's. What the recording
+  // measured arrives through `onServe`; see `recordServedDecision`.
+  const chat = (seam: Exclude<InferenceSeam, 'embed'>, json: boolean): InferenceRequest => ({
+    operation: 'generate_content',
+    model: CHAT_MODEL,
+    seam,
+    ...(json ? { outputType: 'json' as const } : {}),
+  });
+  const embedding: InferenceRequest = {
+    operation: 'embeddings',
+    model: EMBEDDING_MODEL,
+    seam: 'embed',
+    dimensions: EMBEDDING_DIMENSIONS,
+  };
+
   return {
     plan: {
       callLlm: (systemPrompt, userPrompt) =>
-        deck.resolve(calls.plan(systemPrompt, userPrompt), unreachable),
+        withInferenceSpan(chat('plan.callLlm', false), () =>
+          deck.resolve(calls.plan(systemPrompt, userPrompt), unreachable),
+        ),
     },
     act: {
       tools: defaultTools().map((tool) => ({
@@ -136,19 +162,54 @@ export function replayModelDeps(deck: Deck): ModelDeps {
         execute: (input) => deck.resolve(calls.tool(tool.name, input), unreachable),
       })),
       selectTool: (plan, tools) =>
-        deck.resolve(
-          calls.selectTool(
-            plan,
-            tools.map((tool) => tool.name),
+        withInferenceSpan(chat('act.selectTool', true), () =>
+          deck.resolve(
+            calls.selectTool(
+              plan,
+              tools.map((tool) => tool.name),
+            ),
+            unreachable,
           ),
-          unreachable,
         ),
     },
     distill: {
-      extractEntities: (context) => deck.resolve(calls.extract(context), unreachable),
+      extractEntities: (context) =>
+        withInferenceSpan(chat('distill.extractEntities', true), () =>
+          deck.resolve(calls.extract(context), unreachable),
+        ),
     },
-    embed: (text) => deck.resolve(calls.embed(text), unreachable),
+    embed: (text) =>
+      withInferenceSpan(embedding, () => deck.resolve(calls.embed(text), unreachable)),
   };
+}
+
+/**
+ * What a replayed decision says about the span it is served inside.
+ *
+ * The player calls this from inside `resolve`, so the active span is the
+ * inference or embeddings span `replayModelDeps` opened — or, at the
+ * `act.tool` seam, the `execute_tool` span `act` opened. Each is marked
+ * `agent_native.replayed`, and a reader summing usage across tiers filters on
+ * it: no call happened, and the span's duration is replay speed.
+ *
+ * The recorded usage is set where the cassette has it, and only there. Token
+ * usage is a property of the request-and-response pair a cassette freezes, so
+ * the recording measured it. `act.selectTool` and `distill.extractEntities`
+ * decisions carry none, because the set predates their usage being reachable,
+ * and an absent count is not written as zero. The recorded `completion` is the
+ * candidate count, not the derived output a live span carries, so a replayed
+ * `output_tokens` undercounts a thinking model until the set is re-recorded.
+ */
+export function recordServedDecision(decision: Decision): void {
+  const span = activeInferenceSpan();
+  if (span === undefined) return;
+  span.markReplayed();
+  if (decision.tokenCounts !== undefined) {
+    span.recordUsage({
+      input: decision.tokenCounts.prompt,
+      output: decision.tokenCounts.completion,
+    });
+  }
 }
 
 /**
@@ -263,7 +324,10 @@ export function replayDecks(
     for (let index = 0; index < task.trials; index += 1) {
       const path = cassettePath(datasetDir, task.taskId, index);
       const raw: unknown = JSON.parse(readFileSync(path, 'utf8'));
-      players.set(key(task.taskId, index), new CassettePlayer(raw, config));
+      players.set(
+        key(task.taskId, index),
+        new CassettePlayer(raw, config, { onServe: recordServedDecision }),
+      );
     }
   }
 

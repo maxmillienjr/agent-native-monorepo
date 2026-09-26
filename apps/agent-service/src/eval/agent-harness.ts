@@ -22,6 +22,7 @@ import { AppModule } from '../app.module.js';
 import { PG_POOL, NEO4J_DRIVER } from '../memory/memory.tokens.js';
 import { RunsService, type TracedRun } from '../runs/runs.service.js';
 import { recordingModelDeps, replayModelDeps, type TrialDecks } from './cassette-deps.js';
+import type { SpanCollector } from './span-records.js';
 
 /**
  * The adapter between `packages/eval-harness` and this service.
@@ -65,6 +66,7 @@ export class AgentServiceHarness implements AgentHarness<MemoryOutcome> {
     private readonly inspector: MemoryInspector,
     private readonly seeds: SeedManager,
     private readonly decks?: TrialDecks,
+    private readonly spans?: SpanCollector,
   ) {
     // Installed once, reading the deck the current trial opened. The service
     // learns that its model half can be decorated and nothing else; replay
@@ -162,6 +164,9 @@ export class AgentServiceHarness implements AgentHarness<MemoryOutcome> {
       tokenCounts: traced.response.tokenCounts,
       outcome: traced.response.outcome,
       latencyMs,
+      // The run's trace, on every axis. Taken before `captureOutcome`, whose
+      // inspection spans are the harness's and not the run's.
+      ...(this.spans === undefined ? {} : { spans: this.spans.take(traced.traceId) }),
     };
   }
 
@@ -223,7 +228,10 @@ export class AgentServiceHarness implements AgentHarness<MemoryOutcome> {
  * misconfigured memory axis is a configuration mistake whose message is the
  * whole point.
  */
-export async function createAgentServiceHarness(decks?: TrialDecks): Promise<AgentServiceHarness> {
+export async function createAgentServiceHarness(
+  decks?: TrialDecks,
+  spans?: SpanCollector,
+): Promise<AgentServiceHarness> {
   const context = await NestFactory.createApplicationContext(AppModule, {
     abortOnError: false,
     logger: false,
@@ -247,5 +255,6 @@ export async function createAgentServiceHarness(decks?: TrialDecks): Promise<Age
     new PgNeo4jMemoryInspector(pool, driver),
     new PgNeo4jSeedManager(pool, driver),
     decks,
+    spans,
   );
 }

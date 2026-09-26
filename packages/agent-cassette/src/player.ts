@@ -92,6 +92,19 @@ const HeaderPeekSchema = z
   })
   .partial();
 
+export interface PlayerOptions {
+  /**
+   * Called synchronously with each decision as it is served, inside `resolve`
+   * and before a recorded error is rethrown.
+   *
+   * It exists for telemetry: the wiring opens a span around each replayed
+   * call, and this is how that span learns the usage the recording measured.
+   * A hook rather than a dependency, so the package keeps `zod` as its only
+   * runtime import.
+   */
+  readonly onServe?: (decision: Decision) => void;
+}
+
 export class CassettePlayer implements Deck {
   readonly mode = 'replay';
 
@@ -100,7 +113,11 @@ export class CassettePlayer implements Deck {
   private readonly bySeam = new Map<string, Decision[]>();
   private readonly consumed = new Set<Decision>();
 
-  constructor(cassette: unknown, config: ReplayConfig) {
+  constructor(
+    cassette: unknown,
+    config: ReplayConfig,
+    private readonly options: PlayerOptions = {},
+  ) {
     this.cassette = parseForReplay(cassette, config);
 
     for (const decision of this.cassette.decisions) {
@@ -134,6 +151,7 @@ export class CassettePlayer implements Deck {
     }
 
     this.consumed.add(decision);
+    this.options.onServe?.(decision);
     return replayResponse<R>(decision);
   }
 

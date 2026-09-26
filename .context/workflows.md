@@ -55,21 +55,28 @@ workflow for you; the steps below are the tool-agnostic version.
    ```typescript
    export async function <name>Node(state: AgentState): Promise<Partial<AgentState>>
    ```
-3. Wrap the body in an OTel span:
+3. Wrap the body in the node span helper:
 
    ```typescript
-   import { getTracer } from '@repo/telemetry';
-   const tracer = getTracer('agent-service');
+   import { withNodeSpan } from '@repo/telemetry';
 
-   return tracer.startActiveSpan('agent.node.<name>', async (span) => {
-     try {
-       // node logic
-       return {/* partial state updates */};
-     } finally {
-       span.end();
-     }
+   return withNodeSpan('<name>', async (span) => {
+     span.setAttribute('run_id', state.runId);
+     // node logic
+     return {/* partial state updates */};
    });
    ```
+
+   It names the span `agent.node.<name>`, ends it, and on a throw records `error.type` and
+   ERROR status before rethrowing. The span is a child of the run's `invoke_agent` root, so
+   the node needs nothing else to join the run's trace. Two rules come with it:
+   - **A new span attribute goes on `ALLOWED_SPAN_ATTRIBUTES`** in
+     `packages/telemetry/src/genai.ts`, or `spans.test.ts` and every `yarn eval` fail. The
+     list is where a reviewer asks whether the value is content — anything the model or the
+     user wrote, an extracted entity id included — and content never goes on a span.
+   - **A model call is not the node's to record.** Usage belongs on the inference span the
+     client wrapper opens (`withInferenceSpan`); a copy on the node span is counted twice by
+     anything summing `gen_ai.usage.*`.
 
 4. Wire the node into `apps/agent-service/src/agent/graph/graph.ts`:
    - Add the node to the `StateGraph`.

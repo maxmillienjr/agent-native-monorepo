@@ -1805,7 +1805,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/exporter-logs-otlp-http@npm:0.222.0":
+"@opentelemetry/exporter-logs-otlp-http@npm:0.222.0, @opentelemetry/exporter-logs-otlp-http@npm:^0.222.0":
   version: 0.222.0
   resolution: "@opentelemetry/exporter-logs-otlp-http@npm:0.222.0"
   dependencies:
@@ -2634,7 +2634,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/sdk-logs@npm:0.222.0":
+"@opentelemetry/sdk-logs@npm:0.222.0, @opentelemetry/sdk-logs@npm:^0.222.0":
   version: 0.222.0
   resolution: "@opentelemetry/sdk-logs@npm:0.222.0"
   dependencies:
@@ -2724,7 +2724,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/sdk-trace@npm:2.11.0":
+"@opentelemetry/sdk-trace@npm:2.11.0, @opentelemetry/sdk-trace@npm:^2.11.0":
   version: 2.11.0
   resolution: "@opentelemetry/sdk-trace@npm:2.11.0"
   dependencies:
@@ -2902,8 +2902,11 @@ __metadata:
     "@nestjs/core": "npm:^11.2.3"
     "@nestjs/platform-express": "npm:^11.2.3"
     "@nestjs/testing": "npm:^11.2.3"
+    "@opentelemetry/api": "npm:^1.9.0"
     "@opentelemetry/auto-instrumentations-node": "npm:^0.80.0"
     "@opentelemetry/context-async-hooks": "npm:^2.11.0"
+    "@opentelemetry/sdk-logs": "npm:^0.222.0"
+    "@opentelemetry/sdk-trace": "npm:^2.11.0"
     "@opentelemetry/sdk-trace-base": "npm:^2.11.0"
     "@repo/agent-cassette": "workspace:*"
     "@repo/agent-contracts": "workspace:*"
@@ -2977,9 +2980,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@repo/eval-harness@workspace:packages/eval-harness"
   dependencies:
+    "@opentelemetry/api": "npm:^1.9.0"
+    "@opentelemetry/api-logs": "npm:^0.222.0"
+    "@opentelemetry/sdk-logs": "npm:^0.222.0"
     "@repo/eslint-config": "workspace:*"
     "@repo/memory-core": "workspace:*"
     "@repo/shared-types": "workspace:*"
+    "@repo/telemetry": "workspace:*"
     "@repo/tsconfig": "workspace:*"
     "@types/node": "npm:^22.20.1"
     eslint: "npm:^9.39.5"
@@ -3046,9 +3053,13 @@ __metadata:
   resolution: "@repo/telemetry@workspace:packages/telemetry"
   dependencies:
     "@opentelemetry/api": "npm:^1.9.0"
+    "@opentelemetry/context-async-hooks": "npm:^2.11.0"
+    "@opentelemetry/exporter-logs-otlp-http": "npm:^0.222.0"
     "@opentelemetry/exporter-trace-otlp-http": "npm:^0.222.0"
     "@opentelemetry/resources": "npm:^2.11.0"
+    "@opentelemetry/sdk-logs": "npm:^0.222.0"
     "@opentelemetry/sdk-node": "npm:^0.222.0"
+    "@opentelemetry/sdk-trace": "npm:^2.11.0"
     "@opentelemetry/semantic-conventions": "npm:^1.43.0"
     "@repo/eslint-config": "workspace:*"
     "@repo/tsconfig": "workspace:*"

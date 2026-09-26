@@ -1,4 +1,12 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from 'vitest';
+import { context, trace } from '@opentelemetry/api';
+import { AsyncLocalStorageContextManager } from '@opentelemetry/context-async-hooks';
+import {
+  BasicTracerProvider,
+  InMemorySpanExporter,
+  SimpleSpanProcessor,
+} from '@opentelemetry/sdk-trace-base';
+import { unlistedAttributeKeys, withToolSpan } from '@repo/telemetry';
 import { EMBEDDING_DIMENSIONS, EMBEDDING_MODEL } from '@repo/memory-core';
 import {
   CassetteMissError,
@@ -12,6 +20,7 @@ import { channel } from 'node:diagnostics_channel';
 import { CHAT_MODEL, RunsService, type ModelDeps } from '../runs/runs.service.js';
 import {
   MODEL_HOST,
+  recordServedDecision,
   recordingModelDeps,
   replayModelDeps,
   tokenCountsFor,
@@ -387,5 +396,62 @@ describe('the no-live-call watcher', () => {
     requests.publish({ request: {} });
 
     expect(violations()).toEqual([]);
+  });
+});
+
+/**
+ * On the replay axis no client exists, so no client span can be opened; the
+ * wiring opens the one a live call would have had and fills it from the
+ * cassette. What it may claim is exactly what the recording measured.
+ */
+describe('replayed spans', () => {
+  const exporter = new InMemorySpanExporter();
+
+  beforeAll(() => {
+    context.setGlobalContextManager(new AsyncLocalStorageContextManager().enable());
+    trace.setGlobalTracerProvider(
+      new BasicTracerProvider({ spanProcessors: [new SimpleSpanProcessor(exporter)] }),
+    );
+  });
+
+  it('carry the recorded usage where the cassette has it, none where it does not, all marked', async () => {
+    const { cassette } = await record(fakeLive([]));
+    const deps = replayModelDeps(
+      new CassettePlayer(cassette, replayConfig, { onServe: recordServedDecision }),
+    );
+    exporter.reset();
+
+    await deps.plan.callLlm('system', 'user');
+    const selection = await deps.act.selectTool('a plan', deps.act.tools);
+    // `act` opens this span around the tool; the decision is served inside it.
+    await withToolSpan('web-search', () => deps.act.tools[0]!.execute(selection!.input));
+    await deps.distill.extractEntities('a conversation');
+    await deps.embed('a fact');
+
+    const spans = exporter.getFinishedSpans();
+    const bySeam = (seam: string) =>
+      spans.find((span) => span.attributes['agent_native.seam'] === seam)?.attributes;
+    const usageKeys = (attributes: Record<string, unknown> | undefined) =>
+      Object.keys(attributes ?? {}).filter((key) => key.startsWith('gen_ai.usage.'));
+
+    expect(spans.map((span) => span.name)).toEqual([
+      `generate_content ${CHAT_MODEL}`,
+      `generate_content ${CHAT_MODEL}`,
+      'execute_tool web-search',
+      `generate_content ${CHAT_MODEL}`,
+      `embeddings ${EMBEDDING_MODEL}`,
+    ]);
+    for (const span of spans) expect(span.attributes['agent_native.replayed']).toBe(true);
+
+    // `fakeLive`'s plan reported { prompt: 11, completion: 7 } and the recorder kept it.
+    expect(bySeam('plan.callLlm')).toMatchObject({
+      'gen_ai.provider.name': 'gcp.gemini',
+      'gen_ai.usage.input_tokens': 11,
+      'gen_ai.usage.output_tokens': 7,
+    });
+    expect(usageKeys(bySeam('act.selectTool'))).toEqual([]);
+    expect(usageKeys(bySeam('distill.extractEntities'))).toEqual([]);
+    expect(usageKeys(bySeam('embed'))).toEqual([]);
+    expect(unlistedAttributeKeys(spans)).toEqual([]);
   });
 });

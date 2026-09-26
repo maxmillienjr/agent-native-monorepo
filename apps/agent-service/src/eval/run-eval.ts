@@ -19,7 +19,8 @@ import {
   type ReplayProvenance,
   type Suite,
 } from '@repo/eval-harness';
-import { createLogger } from '@repo/telemetry';
+import { InMemoryLogRecordExporter, SimpleLogRecordProcessor } from '@opentelemetry/sdk-logs';
+import { createLogger, initTelemetry, shutdownTelemetry } from '@repo/telemetry';
 import { loadEnvFile } from '../load-env.js';
 import { explainAbort } from './abort-cause.js';
 import { createAgentServiceHarness } from './agent-harness.js';
@@ -32,6 +33,7 @@ import {
   type TrialDecks,
 } from './cassette-deps.js';
 import { runAndReport, type RunEnd } from './run-suite.js';
+import { SpanCollector } from './span-records.js';
 
 const logger = createLogger('eval');
 
@@ -96,7 +98,19 @@ async function main(): Promise<RunEnd> {
       const { suite, decks, replay } = prepare(mode, trials, axes);
       if (replay !== undefined) progress.replay = replay;
 
-      const agent = await createAgentServiceHarness(decks);
+      // Before the Nest context, so every span the run opens reaches a
+      // provider. Spans are kept in memory until the trial that produced them
+      // asks for its trace; evaluation events are counted. Both also go over
+      // OTLP when OTEL_EXPORTER_OTLP_ENDPOINT is set.
+      const spans = new SpanCollector();
+      const events = new InMemoryLogRecordExporter();
+      initTelemetry({
+        serviceName: 'agent-service',
+        spanProcessors: [spans.processor],
+        logRecordProcessors: [new SimpleLogRecordProcessor({ exporter: events })],
+      });
+
+      const agent = await createAgentServiceHarness(decks, spans);
 
       try {
         logger.info({ msg: 'eval.start', axes: describeAxes(axes), trials, cassettes: mode });
@@ -161,6 +175,26 @@ async function main(): Promise<RunEnd> {
           );
         }
 
+        // The same place, for the same reason. Content capture is off by an
+        // allowlist, and a span that carried a key outside it is a report
+        // that may have written content into `eval-report.json`.
+        const unlisted = spans.unlistedKeys();
+        if (unlisted.length > 0) {
+          throw new Error(
+            `a span carried attribute(s) outside ALLOWED_SPAN_ATTRIBUTES: ${unlisted.join(', ')}. ` +
+              'Add a key to the list in @repo/telemetry only once it is known to carry no content.',
+          );
+        }
+
+        logger.info({
+          msg: 'eval.events',
+          event: 'gen_ai.evaluation.result',
+          emitted: events.getFinishedLogRecords().length,
+          graderResults: report.tasks
+            .flatMap((task) => task.trials)
+            .reduce((sum, trial) => sum + trial.results.length, 0),
+        });
+
         logger.info({
           msg: 'eval.done',
           axes: describeAxes(report.axes),
@@ -173,6 +207,8 @@ async function main(): Promise<RunEnd> {
         return report;
       } finally {
         await agent.close();
+        // Flushes the OTLP export, when there is one.
+        await shutdownTelemetry();
       }
     },
   });

@@ -3,7 +3,7 @@ import { Injectable, Inject } from '@nestjs/common';
 import type { Response } from 'express';
 import type { BaseCheckpointSaver } from '@langchain/langgraph';
 import type { RunResponse, StreamEvent } from '@repo/agent-contracts';
-import { createLogger } from '@repo/telemetry';
+import { createLogger, withAgentSpan, type AgentSpan } from '@repo/telemetry';
 import {
   EMBEDDING_DIMENSIONS,
   type EpisodicRepository,
@@ -12,11 +12,11 @@ import {
   type RetrievalFacade,
 } from '@repo/memory-core';
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
-import { SystemMessage, HumanMessage } from '@langchain/core/messages';
 import { buildAgentGraph, type GraphDeps } from '../agent/graph/graph.js';
 import { buildRunResponse } from '../agent/nodes/egress.node.js';
 import type { AgentState } from '../agent/graph/state.js';
 import { createGeminiEmbedder } from '../agent/model/gemini-embedder.js';
+import { invokeChat, type ChatRequest } from '../agent/model/gemini-chat.js';
 import { stopOnDailyQuota } from '../agent/model/rate-limit.js';
 import { EXTRACTION_PROMPT, parseExtraction } from '../agent/model/extraction.js';
 import {
@@ -51,7 +51,15 @@ export interface TracedRun {
   readonly nodeSequence: string[];
   readonly toolOutputs: AgentState['toolOutputs'];
   readonly extraction: AgentState['extraction'];
+  /** The trace the run's `invoke_agent` span is the root of. */
+  readonly traceId: string;
 }
+
+/**
+ * `gen_ai.agent.name` on every run's root span. The conventions ask for it at
+ * creation because a sampler may read it.
+ */
+export const AGENT_NAME = 'agent-service';
 
 /**
  * The chat model, named once.
@@ -223,24 +231,16 @@ export class RunsService {
     const prose = createGeminiChat(apiKey);
     const json = createGeminiChat(apiKey, { json: true });
 
+    // Each call names its seam, so the inference span says which decision it
+    // paid for — the cassette's vocabulary, which is what P1-F attributes by.
     const callWith =
-      (llm: ChatGoogleGenerativeAI) => async (systemPrompt: string, userPrompt: string) => {
-        const response = await llm.invoke([
-          new SystemMessage(systemPrompt),
-          new HumanMessage(userPrompt),
-        ]);
-        const meta = response.usage_metadata;
-        return {
-          content: typeof response.content === 'string' ? response.content : '',
-          tokenCounts: {
-            prompt: meta?.input_tokens ?? 0,
-            completion: meta?.output_tokens ?? 0,
-          },
-        };
-      };
+      (llm: ChatGoogleGenerativeAI, request: Omit<ChatRequest, 'model'>) =>
+      (systemPrompt: string, userPrompt: string) =>
+        invokeChat(llm, { model: CHAT_MODEL, ...request }, systemPrompt, userPrompt);
 
-    const callLlm = callWith(prose);
-    const callJson = callWith(json);
+    const callLlm = callWith(prose, { seam: 'plan.callLlm', json: false });
+    const callSelect = callWith(json, { seam: 'act.selectTool', json: true });
+    const callExtract = callWith(json, { seam: 'distill.extractEntities', json: true });
 
     return {
       plan: { callLlm },
@@ -248,7 +248,7 @@ export class RunsService {
         tools: defaultTools(),
         selectTool: async (plan, tools) => {
           const toolNames = tools.map((t) => t.name).join(', ');
-          const response = await callJson(
+          const response = await callSelect(
             'You select the best tool for a task. Respond with JSON: {"toolName": "...", "input": ...} or null if no tool is needed.',
             `Plan: ${plan}\nAvailable tools: ${toolNames}`,
           );
@@ -261,7 +261,7 @@ export class RunsService {
       },
       distill: {
         extractEntities: async (context: string) => {
-          const response = await callJson(EXTRACTION_PROMPT, context);
+          const response = await callExtract(EXTRACTION_PROMPT, context);
           return parseExtraction(response.content);
         },
       },
@@ -311,9 +311,16 @@ export class RunsService {
 
     logger.info({ msg: 'run.start', correlationId: params.correlationId, runId });
 
-    const result = await compiled.invoke({ runId }, { configurable: { thread_id: runId } });
-
-    return buildRunResponse(result as unknown as AgentState);
+    // The root every node span hangs off. Without it a run was seven traces,
+    // one per node: nothing encloses the graph and no instrumentation supplies
+    // a parent. LangGraph propagates the active context, so one span here is
+    // enough.
+    return withAgentSpan({ agentName: AGENT_NAME, runId }, async (agent) => {
+      const result = await compiled.invoke({ runId }, { configurable: { thread_id: runId } });
+      const state = result as unknown as AgentState;
+      agent.setConversationId(state.sessionId);
+      return buildRunResponse(state);
+    });
   }
 
   /**
@@ -340,25 +347,29 @@ export class RunsService {
 
     logger.info({ msg: 'run.traced.start', correlationId: params.correlationId, runId });
 
-    const nodeSequence: string[] = [];
-    const state: Record<string, unknown> = { runId };
+    return withAgentSpan({ agentName: AGENT_NAME, runId }, async (agent) => {
+      const nodeSequence: string[] = [];
+      const state: Record<string, unknown> = { runId };
 
-    const stream = await compiled.stream({ runId }, { configurable: { thread_id: runId } });
-    for await (const chunk of stream) {
-      for (const [nodeName, update] of Object.entries(chunk)) {
-        nodeSequence.push(nodeName);
-        Object.assign(state, update);
+      const stream = await compiled.stream({ runId }, { configurable: { thread_id: runId } });
+      for await (const chunk of stream) {
+        for (const [nodeName, update] of Object.entries(chunk)) {
+          nodeSequence.push(nodeName);
+          Object.assign(state, update);
+        }
       }
-    }
 
-    const finalState = state as unknown as AgentState;
+      const finalState = state as unknown as AgentState;
+      agent.setConversationId(finalState.sessionId);
 
-    return {
-      response: buildRunResponse(finalState),
-      nodeSequence,
-      toolOutputs: finalState.toolOutputs,
-      extraction: finalState.extraction,
-    };
+      return {
+        response: buildRunResponse(finalState),
+        nodeSequence,
+        toolOutputs: finalState.toolOutputs,
+        extraction: finalState.extraction,
+        traceId: agent.traceId,
+      };
+    });
   }
 
   async stream(params: { body: unknown; correlationId: string; res: Response }): Promise<void> {
@@ -376,6 +387,18 @@ export class RunsService {
       params.res.write(`data: ${JSON.stringify(event)}\n\n`);
     };
 
+    await withAgentSpan({ agentName: AGENT_NAME, runId }, (agent) =>
+      this.streamInto(compiled, runId, params, sendEvent, agent),
+    );
+  }
+
+  private async streamInto(
+    compiled: ReturnType<typeof buildAgentGraph>,
+    runId: string,
+    params: { correlationId: string; res: Response },
+    sendEvent: (event: StreamEvent) => void,
+    agent: AgentSpan,
+  ): Promise<void> {
     try {
       const stream = await compiled.stream({ runId }, { configurable: { thread_id: runId } });
 
@@ -384,10 +407,16 @@ export class RunsService {
         if (nodeName) {
           sendEvent({ node: nodeName });
         }
+        // `ingress` is the node that validated the body, so its update is
+        // where the session id first exists.
+        const sessionId = (chunk as Record<string, { sessionId?: unknown }>)['ingress']?.sessionId;
+        if (typeof sessionId === 'string') agent.setConversationId(sessionId);
       }
 
       sendEvent({ node: 'done' });
     } catch (error) {
+      // Contained below, so the root span is marked here or not at all.
+      agent.recordError(error);
       // The response is already committed — headers went out with the first
       // frame — so GlobalHttpExceptionFilter writing a JSON body onto it
       // throws ERR_HTTP_HEADERS_SENT and the client is left with a stream that

@@ -112,6 +112,15 @@ export function renderMarkdownSummary(report: SuiteReport<unknown>): string {
     );
   }
 
+  // At the foot, below the exclusions a reader must reach first. The spans
+  // and evaluation events in `eval-report.json` follow these conventions,
+  // which are in Development status, so two reports compare attribute for
+  // attribute only when this matches.
+  lines.push(
+    '',
+    `Spans and evaluation events follow the GenAI semantic conventions at \`${report.genAiSemconvCommit}\`.`,
+  );
+
   lines.push('');
   return lines.join('\n');
 }

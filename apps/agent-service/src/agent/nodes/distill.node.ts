@@ -1,7 +1,5 @@
-import { getTracer } from '@repo/telemetry';
+import { withNodeSpan } from '@repo/telemetry';
 import type { AgentState, Extraction } from '../graph/state.js';
-
-const tracer = getTracer('agent-service');
 
 export interface DistillNodeDeps {
   extractEntities: (context: string) => Promise<Extraction>;
@@ -29,21 +27,17 @@ export async function distillNode(
   state: AgentState,
   deps: DistillNodeDeps,
 ): Promise<Partial<AgentState>> {
-  return tracer.startActiveSpan('agent.node.distill', async (span) => {
-    try {
-      span.setAttribute('run_id', state.runId);
-      span.setAttribute('session_id', state.sessionId);
+  return withNodeSpan('distill', async (span) => {
+    span.setAttribute('run_id', state.runId);
+    span.setAttribute('session_id', state.sessionId);
 
-      const sessionContext = state.messages.map((m) => `${m.role}: ${m.content}`).join('\n');
-      const extraction = await deps.extractEntities(sessionContext);
+    const sessionContext = state.messages.map((m) => `${m.role}: ${m.content}`).join('\n');
+    const extraction = await deps.extractEntities(sessionContext);
 
-      span.setAttribute('entity_count', extraction.entities.length);
-      span.setAttribute('relationship_count', extraction.relationships.length);
-      span.setAttribute('fact_count', extraction.facts.length);
+    span.setAttribute('entity_count', extraction.entities.length);
+    span.setAttribute('relationship_count', extraction.relationships.length);
+    span.setAttribute('fact_count', extraction.facts.length);
 
-      return { extraction };
-    } finally {
-      span.end();
-    }
+    return { extraction };
   });
 }

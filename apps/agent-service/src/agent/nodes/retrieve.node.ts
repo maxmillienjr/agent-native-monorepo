@@ -1,8 +1,6 @@
-import { getTracer } from '@repo/telemetry';
+import { withNodeSpan } from '@repo/telemetry';
 import type { RetrievalFacade } from '@repo/memory-core';
 import type { AgentState } from '../graph/state.js';
-
-const tracer = getTracer('agent-service');
 
 /**
  * The seed linker: the graph retriever's only way in from a query.
@@ -35,32 +33,28 @@ export async function retrieveNode(
   state: AgentState,
   deps: RetrieveNodeDeps,
 ): Promise<Partial<AgentState>> {
-  return tracer.startActiveSpan('agent.node.retrieve', async (span) => {
-    try {
-      span.setAttribute('run_id', state.runId);
-      span.setAttribute('session_id', state.sessionId);
+  return withNodeSpan('retrieve', async (span) => {
+    span.setAttribute('run_id', state.runId);
+    span.setAttribute('session_id', state.sessionId);
 
-      const lastUserMessage = [...state.messages].reverse().find((m) => m.role === 'user');
-      if (!lastUserMessage) {
-        return { retrievedContext: [] };
-      }
-
-      const queryEmbedding = await deps.embedQuery(lastUserMessage.content);
-      const seedEntityIds = extractSeedEntityIds(state.messages);
-
-      const candidates = await deps.retrievalFacade.retrieve({
-        queryEmbedding,
-        seedEntityIds,
-        topK: state.topK,
-        hopDepth: state.hopDepth,
-        sessionId: state.sessionId,
-      });
-
-      span.setAttribute('candidateCount', candidates.length);
-
-      return { retrievedContext: candidates };
-    } finally {
-      span.end();
+    const lastUserMessage = [...state.messages].reverse().find((m) => m.role === 'user');
+    if (!lastUserMessage) {
+      return { retrievedContext: [] };
     }
+
+    const queryEmbedding = await deps.embedQuery(lastUserMessage.content);
+    const seedEntityIds = extractSeedEntityIds(state.messages);
+
+    const candidates = await deps.retrievalFacade.retrieve({
+      queryEmbedding,
+      seedEntityIds,
+      topK: state.topK,
+      hopDepth: state.hopDepth,
+      sessionId: state.sessionId,
+    });
+
+    span.setAttribute('candidateCount', candidates.length);
+
+    return { retrievedContext: candidates };
   });
 }
