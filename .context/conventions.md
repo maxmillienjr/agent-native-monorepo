@@ -51,6 +51,53 @@
 - All log lines include `correlationId` from AsyncLocalStorage context.
 - Log levels: `debug`, `info`, `warn`, `error`.
 
+## Telemetry
+
+- **Spans are opened through the helpers in `@repo/telemetry`**: `withNodeSpan` for a graph
+  node, `withToolSpan` around a tool, `withInferenceSpan` around a model or embedding call,
+  and `withAgentSpan` for the run's root, which `RunsService` already opens. Each records
+  `error.type` and ERROR status on a throw and never the error's message, which can quote
+  a prompt. `@repo/telemetry/genai` is the same vocabulary without the SDK, for a package
+  that only needs the names.
+- **The GenAI semantic conventions are pinned to one commit, and moving it is a
+  deliberate pull request.** They left `open-telemetry/semantic-conventions` after
+  `v1.41.1` for `open-telemetry/semantic-conventions-genai`, which is in Development status
+  and had no release tag when P2-C pinned commit `e57c543b4889619eb2a05702471937db5119165d`
+  (2026-09-24). The npm package is not the pin: its `ATTR_GEN_AI_*` constants are
+  deprecated and behind the source. `GENAI_SEMCONV` in `packages/telemetry/src/genai.ts`
+  names the commit and the schema URL every helper's tracer carries, and `GEN_AI` spells
+  every key once. A rename upstream is not a defect here until someone bumps. To bump:
+  1. Read the diff of `docs/gen-ai/` and `model/` between the pinned commit and the new
+     one.
+  2. Edit `genai.ts` and nothing it does not have to: the commit, the schema URL if the
+     manifest's changed, and every renamed or removed key in `GEN_AI` and
+     `ALLOWED_SPAN_ATTRIBUTES`.
+  3. Expect `genai.test.ts`, `spans.test.ts` and `cassette-deps.test.ts` to fail on a
+     renamed key, and fix their assertions in the same pull request. That failure is what
+     keeps a bump from being silent.
+  4. Emit no old names beside the new ones. The only reader is P1-F, through the same
+     constants, so it moves in the same commit.
+  5. `eval-report.json` records `genAiSemconvCommit`; a comparison of two reports across
+     a bump has to read it before it compares attributes.
+
+  Re-pin to a tag in a pull request of its own once the repository publishes a `v*-dev`
+  release.
+
+- **Content capture is off, and there is no switch.** No span carries prompts, completions,
+  system instructions, tool definitions, tool arguments or tool results, and
+  `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT` is not read. The enforcement is
+  `ALLOWED_SPAN_ATTRIBUTES`, an allowlist that `spans.test.ts` holds a full graph run to and
+  that `yarn eval` holds every span of every trial to, failing the run before it writes a
+  report. Adding a key is an edit to that list, and the review question is whether the value
+  is content. An extracted entity id is content: in the payer domain it can be a member's
+  name. Opt-in capture needs the external-store pattern the conventions recommend, and the
+  store is P3-C's ledger.
+- **A replayed span is a recording, not a measurement.** On the replay axis the inference
+  spans are opened from the cassette and marked `agent_native.replayed`. They carry the
+  usage the recording measured, and only where the cassette has it. Their duration is
+  replay speed. A reader summing usage or reading latency across tiers filters on the
+  marker.
+
 ## Testing
 
 Each tier has one command, and all five run in CI. Eval runs twice in `agent-eval.yml`: on

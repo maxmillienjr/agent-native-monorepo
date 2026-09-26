@@ -49,10 +49,18 @@
 ## Observability
 
 - **OTel span:** An OpenTelemetry trace span measuring the duration and metadata of an
-  operation. Each graph node produces one span.
-- **Trace:** A tree of spans sharing one trace id. At HEAD a run is not one trace: no span
-  encloses the graph and no instrumentation supplies a parent, so each node span is the
-  root of its own trace. P2-C adds the enclosing `invoke_agent` span.
+  operation. Each graph node produces one span, opened with `withNodeSpan`.
+- **Trace:** A tree of spans sharing one trace id. One run is one trace, rooted at the
+  `invoke_agent agent-service` span `RunsService` opens around the graph. One HTTP request
+  is not: no instrumentation is registered, so there is no server span above the run, and a
+  gateway request and the run it causes are separate traces (P5-A inherits propagation).
+- **GenAI semantic conventions:** The OpenTelemetry attribute vocabulary for model calls,
+  agents, tools and evaluation results. This repository emits it from
+  `@repo/telemetry/genai`, pinned to one commit of the conventions repository; the pin and
+  the upgrade procedure are in `.context/conventions.md`.
+- **Evaluation event:** A `gen_ai.evaluation.result` log record, one per grader result,
+  emitted by `EvalHarness` through the Logs API and parented to the trial's `invoke_agent`
+  span.
 - **Correlation ID:** A UUID propagated across all services and log lines for a single
   request, set via `x-correlation-id` header or auto-generated.
 
