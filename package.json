@@ -24,9 +24,9 @@
     "clean": "turbo clean"
   },
   "devDependencies": {
-    "prettier": "^3.9.6",
-    "turbo": "^2.10.12",
-    "yaml": "^2.8.3",
+    "prettier": "^3.9.9",
+    "turbo": "^2.11.5",
+    "yaml": "^2.9.1",
     "zod": "^3.24.0"
   },
   "resolutions": {

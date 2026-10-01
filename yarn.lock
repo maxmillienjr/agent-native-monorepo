@@ -1606,9 +1606,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/testing@npm:^11.2.3":
-  version: 11.2.3
-  resolution: "@nestjs/testing@npm:11.2.3"
+"@nestjs/testing@npm:^11.2.6":
+  version: 11.2.6
+  resolution: "@nestjs/testing@npm:11.2.6"
   dependencies:
     tslib: "npm:2.8.1"
   peerDependencies:
@@ -1621,7 +1621,7 @@ __metadata:
       optional: true
     "@nestjs/platform-express":
       optional: true
-  checksum: 10c0/e687f1bec4e3ee2c0ced6e2574fb54c68c36bb0eae6eec0cb77d0f7044292a8acd264c3e900d2ba7532c258558d278413785c527d370066e9617ff473eee89c7
+  checksum: 10c0/812ddc31d307cca99b1066ecdd9cdda50a6a4c3b2f59a7dcba16e1eef2c1d43054616df5943532369279a8ffd4ca486b7006abacdc4dc1cd99b7248bf41d9a4e
   languageName: node
   linkType: hard
 
@@ -2867,7 +2867,7 @@ __metadata:
   dependencies:
     "@repo/eslint-config": "workspace:*"
     "@repo/tsconfig": "workspace:*"
-    "@types/node": "npm:^22.20.1"
+    "@types/node": "npm:^22.20.4"
     eslint: "npm:^9.39.5"
     typescript: "npm:^5.7.0"
     vitest: "npm:^4.1.11"
@@ -2901,7 +2901,7 @@ __metadata:
     "@nestjs/common": "npm:^11.2.3"
     "@nestjs/core": "npm:^11.2.3"
     "@nestjs/platform-express": "npm:^11.2.3"
-    "@nestjs/testing": "npm:^11.2.3"
+    "@nestjs/testing": "npm:^11.2.6"
     "@opentelemetry/api": "npm:^1.9.0"
     "@opentelemetry/auto-instrumentations-node": "npm:^0.80.0"
     "@opentelemetry/context-async-hooks": "npm:^2.11.0"
@@ -2918,15 +2918,15 @@ __metadata:
     "@repo/telemetry": "workspace:*"
     "@repo/tsconfig": "workspace:*"
     "@types/express": "npm:^5.0.0"
-    "@types/node": "npm:^22.20.1"
-    "@types/supertest": "npm:^6.0.0"
+    "@types/node": "npm:^22.20.4"
+    "@types/supertest": "npm:^7.2.1"
     eslint: "npm:^9.39.5"
     jest: "npm:^29.7.0"
     reflect-metadata: "npm:^0.2.2"
     rxjs: "npm:^7.8.0"
-    supertest: "npm:^7.0.0"
-    ts-jest: "npm:^29.4.12"
-    tsx: "npm:^4.23.13"
+    supertest: "npm:^7.3.0"
+    ts-jest: "npm:^29.4.14"
+    tsx: "npm:^4.23.15"
     typescript: "npm:^5.7.0"
     vitest: "npm:^4.1.11"
     zod: "npm:^3.24.0"
@@ -2988,7 +2988,7 @@ __metadata:
     "@repo/shared-types": "workspace:*"
     "@repo/telemetry": "workspace:*"
     "@repo/tsconfig": "workspace:*"
-    "@types/node": "npm:^22.20.1"
+    "@types/node": "npm:^22.20.4"
     eslint: "npm:^9.39.5"
     typescript: "npm:^5.7.0"
     vitest: "npm:^4.1.11"
@@ -3005,11 +3005,11 @@ __metadata:
     "@repo/telemetry": "workspace:*"
     "@repo/tsconfig": "workspace:*"
     "@types/express": "npm:^5.0.0"
-    "@types/node": "npm:^22.20.1"
+    "@types/node": "npm:^22.20.4"
     eslint: "npm:^9.39.5"
     express: "npm:^5.1.0"
     http-proxy-middleware: "npm:^3.0.7"
-    tsx: "npm:^4.23.13"
+    tsx: "npm:^4.23.15"
     typescript: "npm:^5.7.0"
   languageName: unknown
   linkType: soft
@@ -3023,7 +3023,7 @@ __metadata:
     "@repo/telemetry": "workspace:*"
     "@repo/tsconfig": "workspace:*"
     "@types/pg": "npm:^8.23.1"
-    drizzle-kit: "npm:^0.31.10"
+    drizzle-kit: "npm:^0.31.11"
     drizzle-orm: "npm:^0.45.2"
     eslint: "npm:^9.39.5"
     neo4j-driver: "npm:^5.28.0"
@@ -3314,44 +3314,44 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@turbo/darwin-64@npm:2.10.12":
-  version: 2.10.12
-  resolution: "@turbo/darwin-64@npm:2.10.12"
+"@turbo/darwin-64@npm:2.11.5":
+  version: 2.11.5
+  resolution: "@turbo/darwin-64@npm:2.11.5"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@turbo/darwin-arm64@npm:2.10.12":
-  version: 2.10.12
-  resolution: "@turbo/darwin-arm64@npm:2.10.12"
+"@turbo/darwin-arm64@npm:2.11.5":
+  version: 2.11.5
+  resolution: "@turbo/darwin-arm64@npm:2.11.5"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@turbo/linux-64@npm:2.10.12":
-  version: 2.10.12
-  resolution: "@turbo/linux-64@npm:2.10.12"
+"@turbo/linux-64@npm:2.11.5":
+  version: 2.11.5
+  resolution: "@turbo/linux-64@npm:2.11.5"
   conditions: (os=android | os=linux) & cpu=x64
   languageName: node
   linkType: hard
 
-"@turbo/linux-arm64@npm:2.10.12":
-  version: 2.10.12
-  resolution: "@turbo/linux-arm64@npm:2.10.12"
+"@turbo/linux-arm64@npm:2.11.5":
+  version: 2.11.5
+  resolution: "@turbo/linux-arm64@npm:2.11.5"
   conditions: (os=android | os=linux) & cpu=arm64
   languageName: node
   linkType: hard
 
-"@turbo/windows-64@npm:2.10.12":
-  version: 2.10.12
-  resolution: "@turbo/windows-64@npm:2.10.12"
+"@turbo/windows-64@npm:2.11.5":
+  version: 2.11.5
+  resolution: "@turbo/windows-64@npm:2.11.5"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"@turbo/windows-arm64@npm:2.10.12":
-  version: 2.10.12
-  resolution: "@turbo/windows-arm64@npm:2.10.12"
+"@turbo/windows-arm64@npm:2.11.5":
+  version: 2.11.5
+  resolution: "@turbo/windows-arm64@npm:2.11.5"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
@@ -3566,12 +3566,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^22.20.1":
-  version: 22.20.1
-  resolution: "@types/node@npm:22.20.1"
+"@types/node@npm:^22.20.4":
+  version: 22.20.4
+  resolution: "@types/node@npm:22.20.4"
   dependencies:
     undici-types: "npm:~6.21.0"
-  checksum: 10c0/f2ba54d3d1fb92e1c57c78d32c3a17655b1e87363b707136f55c422b4838d4054901ce5d27f75bb0e5ecb7ebfee3804e0987822d22b473473008091857a09353
+  checksum: 10c0/3a17e19f7b7b7a6d6c695ef8b0a34b70f84829a1539f57d338487bc3b51ddd4ca86ffbcbcc4f1307a41de83d02c1b7dfbb16e8cb6a9c3a8360b4306ccf9ead2d
   languageName: node
   linkType: hard
 
@@ -3687,13 +3687,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/supertest@npm:^6.0.0":
-  version: 6.0.3
-  resolution: "@types/supertest@npm:6.0.3"
+"@types/supertest@npm:^7.2.1":
+  version: 7.2.1
+  resolution: "@types/supertest@npm:7.2.1"
   dependencies:
     "@types/methods": "npm:^1.1.4"
     "@types/superagent": "npm:^8.1.0"
-  checksum: 10c0/a2080f870154b09db123864a484fb633bc9e2a0f7294a194388df4c7effe5af9de36d5a5ebf819f72b404fa47b5e813c47d5a3a51354251fd2fa8589bfb64f2c
+  checksum: 10c0/c1ca876d591dd1cead0d5f0fd53d21b8f15a84bdb59a1229c95ada0a031fc64bb83a5ddd88fd9a247dd1af1b9aee39b9d56815176b62104676d4f4cb4a042370
   languageName: node
   linkType: hard
 
@@ -3992,9 +3992,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "agent-native-monorepo@workspace:."
   dependencies:
-    prettier: "npm:^3.9.6"
-    turbo: "npm:^2.10.12"
-    yaml: "npm:^2.8.3"
+    prettier: "npm:^3.9.9"
+    turbo: "npm:^2.11.5"
+    yaml: "npm:^2.9.1"
     zod: "npm:^3.24.0"
   languageName: unknown
   linkType: soft
@@ -4906,9 +4906,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"drizzle-kit@npm:^0.31.10":
-  version: 0.31.10
-  resolution: "drizzle-kit@npm:0.31.10"
+"drizzle-kit@npm:^0.31.11":
+  version: 0.31.11
+  resolution: "drizzle-kit@npm:0.31.11"
   dependencies:
     "@drizzle-team/brocli": "npm:^0.10.2"
     "@esbuild-kit/esm-loader": "npm:^2.5.5"
@@ -4916,7 +4916,7 @@ __metadata:
     tsx: "npm:^4.21.0"
   bin:
     drizzle-kit: bin.cjs
-  checksum: 10c0/83edbf8db1e94c734eab92db09ee2e4b00875d18b50b62e61c8e768a636f3ddb4071050cccf54fe55c2efc19ee79e350e5fe6060906153ffbd7d7534e2590115
+  checksum: 10c0/e90fc48ad09f63be2da644c1ff816b786b2b0ed68f7e5a81d2a375ad0347badfdfcea77de8fa175dc39df90f0f3951144d1a016ebcbd2b2d0e21a09053425d19
   languageName: node
   linkType: hard
 
@@ -8679,12 +8679,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:^3.9.6":
-  version: 3.9.6
-  resolution: "prettier@npm:3.9.6"
+"prettier@npm:^3.9.9":
+  version: 3.9.9
+  resolution: "prettier@npm:3.9.9"
   bin:
     prettier: bin/prettier.cjs
-  checksum: 10c0/9f7ddae234035868f3daab3dc34e6de7e54622185afb017378029f0c09a9c023248ccf6f34def0b17a0538e18c47aa1b3188bab72965d1bf735919baa0747e99
+  checksum: 10c0/d50ea2537b2ff7dbd5088a214f4d936484e55c665cea2185b477a55b0770be55f3b156a71f63a9a639def6b334667bb327139dc85f2a1041c0a34752cdc74647
   languageName: node
   linkType: hard
 
@@ -9685,14 +9685,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"supertest@npm:^7.0.0":
-  version: 7.2.2
-  resolution: "supertest@npm:7.2.2"
+"supertest@npm:^7.3.0":
+  version: 7.3.0
+  resolution: "supertest@npm:7.3.0"
   dependencies:
     cookie-signature: "npm:^1.2.2"
     methods: "npm:^1.1.2"
     superagent: "npm:^10.3.0"
-  checksum: 10c0/9de987aefbec50c5dfac79ff699bbc23c89cdbfe59ede165309fb3cf00c306117b30c5059fe6f7085c7525aab315ac27c77a1dc6056b993c7e0bb154a56c2b78
+  checksum: 10c0/1e6c1c328b94a004cf7aff5e23e35b036768184fa66db44cacea02efaa66987578ffa4e054997c7f4265f659bd429a80b77d6ad9c820d9e45a6620f7a958e8ef
   languageName: node
   linkType: hard
 
@@ -9838,9 +9838,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-jest@npm:^29.4.12":
-  version: 29.4.12
-  resolution: "ts-jest@npm:29.4.12"
+"ts-jest@npm:^29.4.14":
+  version: 29.4.14
+  resolution: "ts-jest@npm:29.4.14"
   dependencies:
     bs-logger: "npm:^0.2.6"
     fast-json-stable-stringify: "npm:^2.1.0"
@@ -9852,7 +9852,7 @@ __metadata:
     type-fest: "npm:^4.41.0"
     yargs-parser: "npm:^21.1.1"
   peerDependencies:
-    "@babel/core": ">=7.0.0-beta.0 <8"
+    "@babel/core": ">=7.0.0-beta.0 <9"
     "@jest/transform": ^29.0.0 || ^30.0.0
     "@jest/types": ^29.0.0 || ^30.0.0
     babel-jest: ^29.0.0 || ^30.0.0
@@ -9874,7 +9874,7 @@ __metadata:
       optional: true
   bin:
     ts-jest: cli.js
-  checksum: 10c0/cf08cf4b417085578db038b525c8b22cf6af689601eab697fe84a46fa07bddcd506bd961c607c8f25c705e90ea8ac8ecf258fc200161f4e0882d0d7db4db9ec9
+  checksum: 10c0/58780804871e5752d7f42e69a38ea0716d0a6330272f3a253cf10dbf8c59390f64f2da6fff3d93dcb1bc514d8fa5d02963d8ef6d062fdfa96113b3aad0fd9331
   languageName: node
   linkType: hard
 
@@ -9912,9 +9912,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tsx@npm:^4.23.13":
-  version: 4.23.13
-  resolution: "tsx@npm:4.23.13"
+"tsx@npm:^4.23.15":
+  version: 4.23.15
+  resolution: "tsx@npm:4.23.15"
   dependencies:
     esbuild: "npm:~0.28.0"
     fsevents: "npm:~2.3.3"
@@ -9923,20 +9923,20 @@ __metadata:
       optional: true
   bin:
     tsx: dist/cli.mjs
-  checksum: 10c0/dc99c8988b42ec2443963a0b9051f42d068bc7e2a44e82f3b94b40539a991c5c01ea3ee049cf317d1040b2245711dd4c64ace9ac875f3b07edee29f610702e3c
+  checksum: 10c0/3c5fc53e578da87d3a63565286b1ecbb0e01b9bb646daec1957294ef890d14f22cc67bb4b09b5daffab0e7ce0217b1e7645393feb0f524b1ddf26ae9595d7e75
   languageName: node
   linkType: hard
 
-"turbo@npm:^2.10.12":
-  version: 2.10.12
-  resolution: "turbo@npm:2.10.12"
+"turbo@npm:^2.11.5":
+  version: 2.11.5
+  resolution: "turbo@npm:2.11.5"
   dependencies:
-    "@turbo/darwin-64": "npm:2.10.12"
-    "@turbo/darwin-arm64": "npm:2.10.12"
-    "@turbo/linux-64": "npm:2.10.12"
-    "@turbo/linux-arm64": "npm:2.10.12"
-    "@turbo/windows-64": "npm:2.10.12"
-    "@turbo/windows-arm64": "npm:2.10.12"
+    "@turbo/darwin-64": "npm:2.11.5"
+    "@turbo/darwin-arm64": "npm:2.11.5"
+    "@turbo/linux-64": "npm:2.11.5"
+    "@turbo/linux-arm64": "npm:2.11.5"
+    "@turbo/windows-64": "npm:2.11.5"
+    "@turbo/windows-arm64": "npm:2.11.5"
   dependenciesMeta:
     "@turbo/darwin-64":
       optional: true
@@ -9952,7 +9952,7 @@ __metadata:
       optional: true
   bin:
     turbo: bin/turbo
-  checksum: 10c0/bc912180b8c00f88be0672223c6cf8b61e05f113a93574d3bcb7343f9391ee03c115afc4468c76c4dfcbd9ee4a6564b025762dad9aefe53a91e02ff62613d9be
+  checksum: 10c0/2fc7e68ec2d56e038d84f2d3ee528e356fcf4bc6af4434e39b96d4c63518e406ff04fb35c912b0a5bbbcf5bf5431ba054ebb0ca26921e34e117ad19e6a06e6d6
   languageName: node
   linkType: hard
 
@@ -10576,6 +10576,15 @@ __metadata:
   bin:
     yaml: bin.mjs
   checksum: 10c0/f340718df45e97a9551b9bf9dac61c80050bc464513b710debfb5067c380c8472e3b67809cffacb4ab5ffb5e66ef9310816c88b05f371cec60abfedd8c88e0a2
+  languageName: node
+  linkType: hard
+
+"yaml@npm:^2.9.1":
+  version: 2.9.1
+  resolution: "yaml@npm:2.9.1"
+  bin:
+    yaml: bin.mjs
+  checksum: 10c0/9d06676ef02b89559a8b10a71882bd2cdae81e8393dc8dbc871615c3259475d9609ad973d19cb3c9e71e72d6206e3d1e7aa241c7e55f3d16fd2e77db305827d6
   languageName: node
   linkType: hard
 
