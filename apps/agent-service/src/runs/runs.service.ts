@@ -4,7 +4,7 @@ import type { Response } from 'express';
 import type { BaseCheckpointSaver } from '@langchain/langgraph';
 import { RunRequestSchema, type RunResponse, type StreamEvent } from '@repo/agent-contracts';
 import type { Deck } from '@repo/agent-cassette';
-import { createLogger, withAgentSpan, type AgentSpan } from '@repo/telemetry';
+import { createLogger, withAgentSpan } from '@repo/telemetry';
 import {
   EMBEDDING_DIMENSIONS,
   type EpisodicRepository,
@@ -67,6 +67,38 @@ export interface TracedRun {
   readonly toolOutputs: AgentState['toolOutputs'];
   readonly extraction: AgentState['extraction'];
   /** The trace the run's `invoke_agent` span is the root of. */
+  readonly traceId: string;
+}
+
+/**
+ * What every chat entry point is given. `runId` is minted when absent; the A2A
+ * executor passes its task id, so a task id is a run id and the checkpointer's
+ * `thread_id` (P5-A).
+ */
+export interface RunParams {
+  readonly body: unknown;
+  readonly correlationId: string;
+  readonly runId?: string;
+}
+
+/**
+ * One thing the run loop observed: a node starting, or a node's update.
+ *
+ * A start has no state in it. It exists so that a caller can name the node a
+ * run failed in without the loop changing the error the node threw.
+ */
+export type RunEvent =
+  | { readonly kind: 'started'; readonly node: string }
+  | { readonly kind: 'updated'; readonly node: string; readonly update: Partial<AgentState> };
+
+export type RunEventListener = (event: RunEvent) => void;
+
+/** A finished chat run, as every entry point receives it from `RunsService.run`. */
+export interface ChatRun {
+  readonly runId: string;
+  /** The updates folded in order: what `invoke` would have returned. */
+  readonly state: AgentState;
+  readonly nodeSequence: string[];
   readonly traceId: string;
 }
 
@@ -330,76 +362,42 @@ export class RunsService {
     };
   }
 
-  async execute(params: { body: unknown; correlationId: string }): Promise<RunResponse> {
+  async execute(params: RunParams): Promise<RunResponse> {
     // The runId is minted here rather than in `ingress` because it is the
     // checkpointer's thread_id, and that has to exist before the invoke.
-    const runId = randomUUID();
+    const runId = params.runId ?? randomUUID();
 
     logger.info({ msg: 'run.start', correlationId: params.correlationId, runId });
 
-    // The root every node span hangs off. Without it a run was seven traces,
-    // one per node: nothing encloses the graph and no instrumentation supplies
-    // a parent. LangGraph propagates the active context, so one span here is
-    // enough.
-    return withAgentSpan({ agentName: AGENT_NAME, runId }, (agent) =>
-      this.recorded(runId, params, async (deps) => {
-        const compiled = this.compile(deps, params);
-        const result = await compiled.invoke({ runId }, { configurable: { thread_id: runId } });
-        const state = result as unknown as AgentState;
-        agent.setConversationId(state.sessionId);
-        return buildRunResponse(state);
-      }),
-    );
+    const run = await this.run({ ...params, runId });
+    return buildRunResponse(run.state);
   }
 
   /**
    * `execute`, with the trajectory recorded.
    *
-   * It streams rather than invokes because the node sequence is only observable
-   * as the updates arrive. Every channel in `AgentStateAnnotation` is a
-   * last-value-wins `Annotation`, so folding the updates in order reconstructs
-   * exactly the state `invoke` would have returned.
-   *
    * Called by the evaluation harness, not by the HTTP surface. It runs the same
-   * dependency set `execute` does — the same model axis, the same memory axis,
-   * the same checkpointer, the same run record — because an evaluation that
-   * composes its own dependencies measures a system nobody deploys.
+   * loop `execute` does — the same model axis, the same memory axis, the same
+   * checkpointer, the same run record — because an evaluation that composes
+   * its own dependencies measures a system nobody deploys.
    */
-  async executeTraced(params: { body: unknown; correlationId: string }): Promise<TracedRun> {
-    const runId = randomUUID();
+  async executeTraced(params: RunParams): Promise<TracedRun> {
+    const runId = params.runId ?? randomUUID();
 
     logger.info({ msg: 'run.traced.start', correlationId: params.correlationId, runId });
 
-    return withAgentSpan({ agentName: AGENT_NAME, runId }, (agent) =>
-      this.recorded(runId, params, async (deps) => {
-        const compiled = this.compile(deps, params);
-        const nodeSequence: string[] = [];
-        const state: Record<string, unknown> = { runId };
-
-        const stream = await compiled.stream({ runId }, { configurable: { thread_id: runId } });
-        for await (const chunk of stream) {
-          for (const [nodeName, update] of Object.entries(chunk)) {
-            nodeSequence.push(nodeName);
-            Object.assign(state, update);
-          }
-        }
-
-        const finalState = state as unknown as AgentState;
-        agent.setConversationId(finalState.sessionId);
-
-        return {
-          response: buildRunResponse(finalState),
-          nodeSequence,
-          toolOutputs: finalState.toolOutputs,
-          extraction: finalState.extraction,
-          traceId: agent.traceId,
-        };
-      }),
-    );
+    const run = await this.run({ ...params, runId });
+    return {
+      response: buildRunResponse(run.state),
+      nodeSequence: run.nodeSequence,
+      toolOutputs: run.state.toolOutputs,
+      extraction: run.state.extraction,
+      traceId: run.traceId,
+    };
   }
 
-  async stream(params: { body: unknown; correlationId: string; res: Response }): Promise<void> {
-    const runId = randomUUID();
+  async stream(params: RunParams & { res: Response }): Promise<void> {
+    const runId = params.runId ?? randomUUID();
 
     logger.info({ msg: 'run.stream.start', correlationId: params.correlationId, runId });
 
@@ -407,44 +405,18 @@ export class RunsService {
       params.res.write(`data: ${JSON.stringify(event)}\n\n`);
     };
 
-    await withAgentSpan({ agentName: AGENT_NAME, runId }, (agent) =>
-      this.streamInto(runId, params, sendEvent, agent),
-    );
-  }
-
-  private async streamInto(
-    runId: string,
-    params: { body: unknown; correlationId: string; res: Response },
-    sendEvent: (event: StreamEvent) => void,
-    agent: AgentSpan,
-  ): Promise<void> {
     try {
-      // Inside the containment, so a record that cannot be opened ends the
-      // stream with an error frame like any other failure.
-      await this.recorded(runId, params, async (deps) => {
-        const compiled = this.compile(deps, params);
-        const stream = await compiled.stream({ runId }, { configurable: { thread_id: runId } });
-
-        for await (const chunk of stream) {
-          const [nodeName] = Object.keys(chunk);
-          if (nodeName) {
-            sendEvent({ node: nodeName });
-          }
-          // `ingress` is the node that validated the body, so its update is
-          // where the session id first exists.
-          const sessionId = (chunk as Record<string, { sessionId?: unknown }>)['ingress']
-            ?.sessionId;
-          if (typeof sessionId === 'string') agent.setConversationId(sessionId);
-        }
+      // A record that cannot be opened ends the stream with an error frame
+      // like any other failure, because it fails inside `run`.
+      await this.run({ ...params, runId }, (event) => {
+        if (event.kind === 'updated') sendEvent({ node: event.node });
       });
-
       sendEvent({ node: 'done' });
     } catch (error) {
-      // Contained below, so the root span is marked here or not at all.
-      agent.recordError(error);
-      // The response is already committed — headers went out with the first
-      // frame — so GlobalHttpExceptionFilter writing a JSON body onto it
-      // throws ERR_HTTP_HEADERS_SENT and the client is left with a stream that
+      // The root span recorded the error as it left `run`. The response is
+      // already committed — headers went out with the first frame — so
+      // GlobalHttpExceptionFilter writing a JSON body onto it throws
+      // ERR_HTTP_HEADERS_SENT and the client is left with a stream that
       // simply stops. Containment for a stream is a terminal frame, and the
       // error must not escape this method.
       const message = error instanceof Error ? error.message : String(error);
@@ -460,7 +432,59 @@ export class RunsService {
     }
   }
 
-  private compile(deps: GraphDeps, params: { body: unknown; correlationId: string }) {
+  /**
+   * The one chat run loop. `POST /runs`, `POST /runs/stream`, the evaluation
+   * harness and the A2A executor all run through it, so they cannot drift
+   * (P5-A): one root span, one run record (P3-B), one compiled graph, and one
+   * fold of the updates into the final state.
+   *
+   * It streams rather than invokes because the node sequence is only
+   * observable as the updates arrive. Every channel in `AgentStateAnnotation`
+   * is a last-value-wins `Annotation`, so folding the updates in order
+   * reconstructs exactly the state `invoke` would have returned.
+   *
+   * `onEvent` sees each node start and each node's update as it happens. A
+   * start is how a caller names the node a failure happened in: the error a
+   * node throws is passed through unchanged, because the retry policy, the
+   * evaluation's abort classification and the run record all read it.
+   */
+  async run(params: RunParams & { runId: string }, onEvent?: RunEventListener): Promise<ChatRun> {
+    const { runId } = params;
+
+    // The root every node span hangs off. Without it a run was seven traces,
+    // one per node: nothing encloses the graph and no instrumentation supplies
+    // a parent. LangGraph propagates the active context, so one span here is
+    // enough.
+    return withAgentSpan({ agentName: AGENT_NAME, runId }, (agent) =>
+      this.recorded(runId, params, async (deps) => {
+        const compiled = this.compile(deps, params);
+        const nodeSequence: string[] = [];
+        const events = runUpdates(compiled, runId);
+
+        let next = await events.next();
+        while (next.done !== true) {
+          const event = next.value;
+          if (event.kind === 'updated') {
+            nodeSequence.push(event.node);
+            // `ingress` is the node that validated the body, so its update is
+            // where the session id first exists.
+            const sessionId = (event.update as { sessionId?: unknown }).sessionId;
+            if (event.node === 'ingress' && typeof sessionId === 'string') {
+              agent.setConversationId(sessionId);
+            }
+          }
+          onEvent?.(event);
+          next = await events.next();
+        }
+
+        const state = next.value;
+        agent.setConversationId(state.sessionId);
+        return { runId, state, nodeSequence, traceId: agent.traceId };
+      }),
+    );
+  }
+
+  private compile(deps: GraphDeps, params: RunParams) {
     return buildAgentGraph(deps, params.body, params.correlationId, this.checkpointer ?? undefined);
   }
 
@@ -503,6 +527,38 @@ export class RunsService {
       await this.runLedger?.commitRunOrLog(runId, params.correlationId);
     }
   }
+}
+
+/**
+ * The graph's updates as they arrive, returning the folded final state.
+ *
+ * `updates` carries each node's partial state; `tasks` carries a start event
+ * per node before it runs, which is the only place a node's name is known
+ * while it is still running. A task result is also on `tasks` and is ignored:
+ * its writes are the update `updates` already carried.
+ */
+async function* runUpdates(
+  compiled: ReturnType<typeof buildAgentGraph>,
+  runId: string,
+): AsyncGenerator<RunEvent, AgentState, undefined> {
+  const state: Record<string, unknown> = { runId };
+  const stream = await compiled.stream(
+    { runId },
+    { configurable: { thread_id: runId }, streamMode: ['updates', 'tasks'] },
+  );
+
+  for await (const [mode, chunk] of stream) {
+    if (mode === 'tasks') {
+      if ('input' in chunk) yield { kind: 'started', node: chunk.name };
+      continue;
+    }
+    for (const [node, update] of Object.entries(chunk as Record<string, Partial<AgentState>>)) {
+      Object.assign(state, update);
+      yield { kind: 'updated', node, update };
+    }
+  }
+
+  return state as unknown as AgentState;
 }
 
 /**
