@@ -5,7 +5,7 @@
 _Last updated 2026-10-08. If this section is more than a few weeks stale, trust the code
 over it and update it._
 
-**Thirteen PRDs are shipped and the system they describe is running.** The service answers
+**Fourteen PRDs are shipped and the system they describe is running.** The service answers
 `POST /runs` and `POST /runs/stream`; `memory-core` is constructed by the app rather than
 sitting beside it; the graph compiles with a checkpointer and a retry policy on every node
 that performs I/O; and `packages/eval-harness` measures the result. Verified against live
@@ -13,7 +13,7 @@ stores from an empty database: one run leaves episodic rows, `:Concept` and `:Fa
 `semantic_facts` rows and checkpoints under the runId its own response returned.
 
 **`docs/STATUS.md` is the authority on any capability sentence, including the ones above.**
-Twenty-six rows, each with a status and evidence cited by name — twenty-one `implemented`,
+Twenty-seven rows, each with a status and evidence cited by name — twenty-two `implemented`,
 one `planned`, three `stubbed`, one `removed`, none `broken`. The rule that keeps it true is in
 `.context/conventions.md`: a change that moves a row moves it there in the same pull
 request. `yarn lint:docs` fails CI when a PRD's status disagrees with its row below.
@@ -233,6 +233,20 @@ only distance from PAS left is X12. The recording needs 20 `generateContent` cal
 free-tier day, so it is planned as two batches on two days. Until it is made, the agent's
 accuracy on the labelled set is unmeasured, and STATUS row 26 says so.
 
+**[P3-B](P3-B-audit-replay.md) has shipped**, tracked in
+[#97](https://github.com/maxmillienjr/agent-native-monorepo/issues/97). A checkpoint history
+turned out to be a run's trace, not its inputs: no request, no retried attempt, no commit,
+no retrieval query. So every run on the configured memory axis, on both graphs, now leaves
+a run record beside its checkpoints, with every decision at the cassette seam plus
+`memory.retrieve`, appended as it resolves. `yarn audit:replay <runId>` re-executes the run
+at its recorded commit from the record alone and compares every checkpoint. All nine match
+on a stub run and on a trial served from the committed cassettes. An edited decision, a
+deleted one, an added one or an edited checkpoint each exit 1, another commit exits 2, and
+a replay writes nothing. The prior-authorization path fails closed with a 503 when its
+record cannot be written. ADR 0007 records the design. A match proves the record complete,
+not unaltered: P3-C, now unblocked, owns tamper evidence, and "Before real data" lists what
+a real deployment owes.
+
 **Where the detail lives.** Each PRD carries its own risks, its divergences from the design
 that was reviewed, and — where a shipped record turned out to be wrong — the correction that
 followed. P2-A is the one to read first: it shipped, was reopened the same day when two of
@@ -311,7 +325,7 @@ provider actually operates under. Uses synthetic data only.
 | ID                                            | Title                                                         | Size | Status      |
 | --------------------------------------------- | ------------------------------------------------------------- | ---- | ----------- |
 | [P3-A](P3-A-clinician-gate.md)                | Clinician-gate invariant enforced in the type system          | S    | shipped     |
-| [P3-B](P3-B-audit-replay.md)                  | Deterministic replay for audit reconstruction                 | L    | in-progress |
+| [P3-B](P3-B-audit-replay.md)                  | Deterministic replay for audit reconstruction                 | L    | shipped     |
 | [P3-C](P3-C-decision-ledger.md)               | Hash-chained, tamper-evident decision ledger                  | L    | accepted    |
 | [P3-D](P3-D-payer-dataset-fhir-prior-auth.md) | Synthetic payer dataset and FHIR prior-authorization surface  | L    | in-progress |
 | [P3-E](P3-E-clinician-review-queue.md)        | Clinician review queue, `$inquire` and the decision clock     | M    | accepted    |

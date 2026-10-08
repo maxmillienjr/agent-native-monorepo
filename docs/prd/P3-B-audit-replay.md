@@ -2,7 +2,7 @@
 id: P3-B
 title: Deterministic replay for audit reconstruction
 tier: 3
-status: in-progress
+status: shipped
 size: L
 depends_on: [P2-A, P1-B]
 blocks: [P3-C]
@@ -294,43 +294,146 @@ references by `run_id`, so no content goes on a span (P3-C records that decision
 
 ## Acceptance criteria
 
-- [ ] `packages/memory-core/migrations/0002_run_records.sql` creates `run_records` and
+Verified 2026-10-08 on throwaway `pgvector/pgvector:pg16` and `neo4j:5-community`
+containers, with no `GOOGLE_API_KEY` in any process and no `generateContent` call made.
+
+- [x] `packages/memory-core/migrations/0002_run_records.sql` creates `run_records` and
       `run_decisions`; integration tests on live Postgres cover a round trip, an idempotent
-      re-open of the same `run_id`, and an append after the run failed.
-- [ ] `recordingModelDeps` and `replayModelDeps` live in
+      re-open of the same `run_id`, and an append after the run failed. Verified:
+      `run-record.integration.test.ts`, 6 of 6, including "re-opens the same run_id
+      idempotently" and "appends after the run failed".
+- [x] `recordingModelDeps` and `replayModelDeps` live in
       `src/agent/model/decision-seam.ts`; `src/eval/cassette-deps.ts` imports them, and
       `EVAL_CASSETTE_MODE=replay yarn eval` reproduces the same per-grader results as `main`.
-      Model `replay` / memory `live`.
-- [ ] `packages/agent-cassette`'s `SEAMS` still has five members, and a unit test asserts a
-      `CassetteSchema` parse rejects a `memory.retrieve` decision while the record schema
-      accepts one.
-- [ ] One `POST /runs` on memory `live` leaves one `run_records` row whose `request` equals
+      Model `replay` / memory `live`. Verified: `cassette-deps.ts` imports both for
+      `deckDecorator`, which both harnesses install. `EVAL_GATE=replay` read `match` on all
+      21 cells on `main` before the change and again after the move, the recording layer and
+      the final commit.
+- [x] `packages/agent-cassette`'s `SEAMS` does not gain `memory.retrieve` — it has six
+      members since P3-D added `assess.criteria`, five when this was written — and a unit
+      test asserts a `CassetteSchema` parse rejects a `memory.retrieve` decision while the
+      record schema accepts one. Verified: `memory-core/src/audit/run-record.test.ts`,
+      "rejects a memory.retrieve decision in a cassette and accepts it in a run record".
+- [x] One `POST /runs` on memory `live` leaves one `run_records` row whose `request` equals
       the body sent under `canonicalJson`, and whose decisions are, in order,
       `embed`, `memory.retrieve`, `plan.callLlm`, `act.selectTool`,
       `distill.extractEntities`, then one `embed` per fact. Model `stub` / memory `live`.
-- [ ] A run whose `plan` throws once and then succeeds leaves two `plan.callLlm` decisions,
+      Verified: `audit-replay.integration.test.ts`, "leaves one run_records row holding the
+      body sent and every decision in order". The stub extracts one fact, so six decisions.
+- [x] A run whose `plan` throws once and then succeeds leaves two `plan.callLlm` decisions,
       an error then a value, while its checkpoint history shows one; replay exits 0. Model
-      `stub` with an injected fault / memory `live`.
-- [ ] `audit:replay` exits 0 on a run recorded on memory `live` for each of model `stub` and
+      `stub` with an injected fault / memory `live`. Verified: "records a retried plan as
+      two decisions while the history shows one step, and replays it".
+- [x] `audit:replay` exits 0 on a run recorded on memory `live` for each of model `stub` and
       model `replay`; the latter serves the committed cassettes' recorded Gemini answers, so
       the replayed decisions are ones a real model produced, with no request to
-      `generativelanguage.googleapis.com`.
-- [ ] Mutation tests: editing one decision's response exits 1 naming the first divergent
+      `generativelanguage.googleapis.com`. Verified: "replays a stub run with every
+      checkpoint matching" (9 of 9 checkpoints, 6 of 6 decisions) and "replays a run whose
+      decisions came from the committed cassettes, with no request to the model host" (20
+      decisions from `memory-recall-001.trial-0.json`, `model_axis` `replay`, the undici
+      watcher empty).
+- [x] Mutation tests: editing one decision's response exits 1 naming the first divergent
       step; deleting one decision exits 1 with a miss; adding one exits 1 with an
-      unconsumed decision; editing one checkpoint blob exits 1 at that step.
-- [ ] `audit:replay` exits 2 with the recorded sha in its message when the build's sha
-      differs, and when `git_sha` is null.
-- [ ] `docker build --build-arg GIT_SHA=$(git rev-parse HEAD)` produces an image whose runs
-      record that sha, and `node dist/audit/replay.js` runs inside it.
-- [ ] Replay makes no write to Postgres or Neo4j: row and node counts before and after are
-      equal.
-- [ ] `docs/adr/0007-*.md` exists and is indexed; ADR 0005's audit-replay consequence links
+      unconsumed decision; editing one checkpoint blob exits 1 at that step. Verified: the
+      four `mutations` tests. An edited plan diverges at step 3 (`plan`) with steps -1 to 2
+      still matching, as the prototype found; an edited `currentPlan` blob diverges at
+      step 3 on that channel alone.
+- [x] `audit:replay` exits 2 with the recorded sha in its message when the build's sha
+      differs, and when `git_sha` is null. Verified: the two `refusals` tests, and inside
+      the image against a record from another commit.
+- [x] `docker build --build-arg GIT_SHA=$(git rev-parse HEAD)` produces an image whose runs
+      record that sha, and `node dist/audit/replay.js` runs inside it. Verified locally on
+      the branch head of the time, `3fa1c8c`, which the rebase onto `main` rewrote as
+      `443192e`: the image run against the containers recorded `git_sha` `3fa1c8c…` with
+      `git_dirty` null, `docker exec … node dist/audit/replay.js <runId>` printed
+      `verdict: match (exit 0)`, and a record from another commit was refused with exit 2.
+      The `images` job in `ci.yml` checks the sha and that the command starts in the image,
+      and passed on the pull request.
+- [x] Replay makes no write to Postgres or Neo4j: row and node counts before and after are
+      equal. Verified: "makes no write to Postgres or Neo4j", over seven tables and every
+      Neo4j node. The command also reads through a pool whose sessions are read-only.
+- [x] `docs/adr/0007-*.md` exists and is indexed; ADR 0005's audit-replay consequence links
       to it.
-- [ ] `.context/conventions.md` has a "Before real data" section and the additive-only rule
+- [x] `.context/conventions.md` has a "Before real data" section and the additive-only rule
       for run-record migrations; `docs/STATUS.md` has a row, `implemented`, citing the
-      replay test.
-- [ ] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
+      replay test. Row 27.
+- [x] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
       pass.
+
+## What shipped, and where it diverged from the design
+
+**The record covers both graphs, so it has a `graph` column.** This PRD was written before
+P3-D shipped the prior-authorization graph, which is the path review said must fail
+closed. That path is recorded and replayable too: `run_records.graph` is `chat` or
+`prior-auth`, and replay builds the graph the record names. Its `session_id` is null.
+
+**The prior-authorization graph reads the clock into state, so `started_at` is an input.**
+The input table above says the wall clock "never [reaches] a state channel". On the chat
+graph that holds. On P3-D's graph `receivedAt` is a channel and `decisionDueBy` is derived
+from it, so the service passes the receipt time as the record's `started_at`, and replay
+serves it back as `receivedAt` and as the graph's clock. This is the "unrecorded input
+nobody has listed" the risks below predicted, found by building it.
+
+**Fail-closed is implemented on the prior-authorization path.** A record that cannot be
+opened, appended to or closed makes `$submit` answer 503 with an `OperationOutcome` and no
+`ClaimResponse`. A new `RunRecordWriteError` is excluded from `IO_RETRY`, so a failed append
+does not buy a second model answer it could not record either. On the chat path a failed
+append is logged and the record is closed `partial`, rather than left with `finished_at`
+null as the draft said: `partial` names the gap, and a null `finished_at` stays what it
+means everywhere else, a run that never finished.
+
+**`memory.retrieve` is the seventh seam, not the sixth.** P3-D added `assess.criteria` to
+`SEAMS`, so the cassette's set is six and the record's is seven. The criterion above is
+reworded to the property it meant: `SEAMS` does not gain the retrieval.
+
+**The retrieval request carries its query embedding as base64 float32.** A recorded
+embedding comes back as the float32 rounding of what the embedder returned, so a replayed
+`retrieve` asks with the rounded vector. Hashing the raw array would make every replay of a
+run whose embedder returned doubles — the stub's — miss at `memory.retrieve`. Rounding both
+sides through the vector codec makes the two requests the same bytes, and a quarter of the
+size.
+
+**The record header gained `git_dirty`.** Under `tsx` or a local `dist`, a run made from a
+tree with uncommitted changes records the commit and that the tree was dirty, and the
+report says so. From the image it is null: the build argument says nothing about the tree.
+Replay does not refuse a dirty record, because the sha still names the nearest code.
+
+**A request refused at the boundary has no record.** The draft made `session_id` nullable
+because "a request that fails `RunRequestSchema` is still a run the service received".
+`RunsController`'s pipe answers that request 400 before `RunsService` sees it, and `$submit`
+answers an unreadable bundle before a case id exists, so neither becomes a run. The column
+is nullable for the prior-authorization graph instead.
+
+**`ModelDeps`, `CHAT_MODEL` and `defaultTools` moved to `src/agent/model/model-deps.ts`.**
+The seam is written against them and the service now imports the seam, so leaving them in
+`runs.service.ts` would have made the two import each other. `gitHead` moved to
+`src/audit/code-identity.ts` for the same reason. `PersistingDeck` and the replay live in
+`apps/agent-service/src/audit/`, beside the service that writes and the saver that reads;
+`memory-core` holds the tables, the schemas and the repository, which is what P3-C's digest
+function needs from it.
+
+**The cassette package changed shape, not behaviour.** `Deck` and `DecisionCall` are generic
+over the seam with the cassette's as the default, the recorder's decision builder is
+exported, and the player's queue is `DecisionQueue`, which `CassettePlayer` wraps and
+replay uses directly. No hash moved: the replay gate matched on every commit.
+
+**Replay attributes decisions to the step that asked for them through LangGraph's task
+config.** Observing the update stream mis-attributed them, because the graph runs ahead of
+its reader. `--read-only` attributes by the seams each node owns instead, which is exact for
+these two graphs.
+
+**The repository writes spans, with `run_id` only.** `memory.run_record.open`, `.append` and
+`.close`, beside the other `memory-core` spans. A decision's request and response are
+content and stay off.
+
+**`apps/agent-service` gained an integration tier.** The criteria above need the whole
+service on live stores, which no existing tier ran. Turbo orders it after `memory-core`'s
+suite because both share one Postgres. `release.yml` passes `GIT_SHA` as well as `ci.yml`
+and `e2e.yml`, so a release tag and the commit its runs record are the same string.
+
+**Migration numbering.** P3-E adds a `prior_auth_cases` migration in parallel, and both
+were drafted as `0002`. Whichever merges second renumbers its file and journal entry; the
+rule is now in the conventions.
 
 ## Risks and open questions
 

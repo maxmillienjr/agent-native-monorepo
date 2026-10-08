@@ -41,7 +41,11 @@ workflow for you; the steps below are the tool-agnostic version.
 3. **Anchor by name.** `symbol` is `{ file, name }` with `name` a declaration or
    `Class.member`. `test` is `{ file, name, tier }` with `name` the exact title. `ci` is
    `{ workflow, job, run? }`. `doc` is `{ file, heading }`. Paths are exact
-   repository-relative paths, and a `:NN` line anchor is rejected.
+   repository-relative paths, and a `:NN` line anchor is rejected. A `test` anchor's `tier`
+   is checked too: the file's workspace must declare a `test:<tier>` script, and a workflow
+   triggered on pull requests must run `turbo test:<tier>`. So a test in a workspace with no
+   such script — the root `scripts/*.test.mjs`, which run under `yarn lint:docs` — is cited
+   by its `ci` step instead, and a new tier in a workspace needs its script first.
 4. Run `yarn controls:matrix` to regenerate `governance/CONTROLS.md`, then `yarn lint:docs`.
    The lint names every problem at once, each with the control id.
 5. **When a PRD ships a `planned` control**, move the row to `implemented` with its
