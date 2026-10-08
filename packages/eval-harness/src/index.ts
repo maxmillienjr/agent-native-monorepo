@@ -172,6 +172,24 @@ export {
   type Stratum,
 } from './retrieval/dataset.js';
 
+// P2-D's explanation labels: gold concept paths per (query, relevant fact)
+// pair, derived from the strata construction, and the relational answer keys.
+export {
+  EXPLANATION_LABELS_FILE,
+  ConceptPathSchema,
+  ExplanationLabelsSchema,
+  ExplanationPairSchema,
+  answerKeyPresent,
+  deriveGoldPaths,
+  explanationLabelProblems,
+  loadExplanationLabels,
+  normalizeAnswerText,
+  pathKey,
+  type ExplanationLabels,
+  type ExplanationPair,
+  type GoldPath,
+} from './retrieval/explanation-labels.js';
+
 // The ablation's arithmetic and its report.
 export {
   DECISION_MARGIN,
