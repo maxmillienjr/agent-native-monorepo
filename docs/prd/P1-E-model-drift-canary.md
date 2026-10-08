@@ -2,11 +2,11 @@
 id: P1-E
 title: Model-drift canary against pinned and floating model ids
 tier: 1
-status: accepted
+status: in-progress
 size: M
 depends_on: [P1-A, P1-B, P1-C]
 blocks: []
-issue: null
+issue: 86
 superseded_by: null
 ---
 
