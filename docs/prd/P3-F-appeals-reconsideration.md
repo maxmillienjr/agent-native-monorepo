@@ -2,7 +2,7 @@
 id: P3-F
 title: 'Appeals: reconsideration lifecycle for adverse determinations'
 tier: 3
-status: draft
+status: accepted
 size: M
 depends_on: [P3-A, P3-E]
 blocks: []
@@ -700,25 +700,29 @@ ones it is checked on.
 
 ## Risks and open questions
 
-**Open questions that change scope.**
+**Open questions, decided at review 2026-10-08.**
 
 1. **Appeals of a lapsed initial decision.** § 422.568(f) makes them appealable, and P3-E's
    sweep finds them. Accepting them means a pended case leaves P3-E's queue when an appeal is
    filed on it, a reconsideration with no initial reviewer to exclude, and a third case
    status. That is about two more days and takes the PRD to L. **Recommendation: out**, with
-   `422` and the STATUS row saying so.
+   `422` and the STATUS row saying so. _Decided: out_, as recommended.
 2. **A reconsideration after the deadline.** This draft refuses it and forwards, following
    § 422.590(d) and (g). The alternative accepts a late reversal, since it favours the
    enrollee. The CFR text does not provide for it, and CMS's sub-regulatory guidance was not
    read for this draft. **Recommendation: as drafted**, unless review cites guidance.
+   _Decided: as drafted._ The regulation text governs; no guidance was cited.
 3. **The ADR.** This draft keeps the case table and narrows ADR 0010's trigger. The
    alternative takes the trigger literally and moves the case layer onto a durable-execution
    engine, which ADR 0001 rejected for the agent and ADR 0010 deferred for the case. That is
    a separate PRD of size L before this one. **Recommendation: the narrowed trigger.**
+   _Decided: the narrowed trigger_, recorded as **ADR 0015** (0011 is held by P4-B's
+   branch, 0013 by P3-C and 0014 by P5-A).
 4. **The ledger edge.** P3-C is being implemented. If it ships first, its four new kinds and
    the verifier's non-involvement check are about a day inside this PRD, which is the top of
    M. If review wants the ledger criteria closed at merge, P3-C becomes a `depends_on` edge.
-   **Recommendation: no edge**, as P3-E's review decided (`P3-E-...md:770-776`).
+   **Recommendation: no edge**, as P3-E's review decided (`P3-E-...md:770-776`). _Decided:
+   no edge._ Whichever of P3-C and P3-F lands second wires the four entry kinds.
 
 **Risks.**
 
