@@ -413,7 +413,37 @@ controls:
         name: refuses a denial carried under a key it does not declare, rather than stripping it
         tier: unit
       - { kind: ci, workflow: ci.yml, job: ci, run: yarn turbo typecheck }
-    note: Delivered by P3-A, narrowed from "no adverse determination is issued without a licensed clinician" to what the types, the lint rule and the strict egress parse enforce. The typecheck step runs the type tests that make an unattested denial fail to compile. Nothing produces a determination until P3-D, the route that issues one is P3-E's, and binding an attestation to an authenticated, licensed reviewer is P3-C's.
+    note: Delivered by P3-A, narrowed from "no adverse determination is issued without a licensed clinician" to what the types, the lint rule and the strict egress parse enforce. The typecheck step runs the type tests that make an unattested denial fail to compile. P3-D's graph produces the agent's dispositions, and P3-E's review route is the one caller of the constructor (CTL-HUM-02). Recording an attestation in a tamper-evident ledger is P3-C's.
+
+  - id: CTL-HUM-02
+    title: A clinician's determination is issued only over a signature the service verifies and cannot produce, by a credential the policy lists, once per case
+    status: implemented
+    maps:
+      - { framework: nist-ai-rmf-1.0, ref: GOVERN 3.2 }
+      - { framework: nist-ai-rmf-1.0, ref: MAP 3.5 }
+      - { framework: owasp-asi-2026, ref: ASI03 }
+      - { framework: owasp-asi-2026, ref: ASI09 }
+    evidence:
+      - {
+          kind: doc,
+          file: docs/adr/0010-the-prior-auth-case-lives-above-the-graph.md,
+          heading: Decision,
+        }
+      - { kind: symbol, file: apps/agent-service/src/review/signature.ts, name: verifySignature }
+      - kind: test
+        file: apps/agent-service/test/review.e2e-spec.ts
+        name: refuses each malformed, unverified or unqualified determination and leaves the case pended
+        tier: service
+      - kind: test
+        file: apps/agent-service/test/review.e2e-spec.ts
+        name: answers a byte-identical resubmission with the stored body, and another determination with 409
+        tier: service
+      - kind: test
+        file: apps/agent-service/src/review/registry.test.ts
+        name: refuses the same signature over another case, another key, or garbage
+        tier: unit
+      - { kind: ci, workflow: ci.yml, job: ci, run: yarn turbo test:service }
+    note: Delivered by P3-E. The service holds public keys only, so a stolen service credential cannot mint a denial, and the case id inside the signed bytes stops a signature being replayed onto another case. A signature binds a determination to a key, not to a person; identity proofing and key custody are P3-C's, and the credential check is a type match against the policy's list, not a licence check. Authenticating the caller of /review/* is P5-A's.
 
   - id: CTL-AUD-01
     title: Each decision is recorded in a hash-chained, tamper-evident ledger
