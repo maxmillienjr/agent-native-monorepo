@@ -58,9 +58,10 @@
 - **OTel span:** An OpenTelemetry trace span measuring the duration and metadata of an
   operation. Each graph node produces one span, opened with `withNodeSpan`.
 - **Trace:** A tree of spans sharing one trace id. One run is one trace, rooted at the
-  `invoke_agent agent-service` span `RunsService` opens around the graph. One HTTP request
-  is not: no instrumentation is registered, so there is no server span above the run, and a
-  gateway request and the run it causes are separate traces (P5-A inherits propagation).
+  `invoke_agent agent-service` span `RunsService` opens around the graph. No HTTP
+  instrumentation is registered, so there is no server span above the run. A caller that
+  sends `traceparent` gets the run in its own trace: the service extracts it on every route,
+  and the gateway forwards it (P5-A).
 - **GenAI semantic conventions:** The OpenTelemetry attribute vocabulary for model calls,
   agents, tools and evaluation results. This repository emits it from
   `@repo/telemetry/genai`, pinned to one commit of the conventions repository; the pin and
@@ -78,6 +79,21 @@
   Episodic memory is scoped to sessions.
 - **Turn:** A single user→assistant exchange within a run. Episodic rows are indexed by
   `turnIndex` within a session.
+- **Principal:** The caller a bearer token names, from `SERVICE_CREDENTIALS`, or
+  `anonymous` when the service runs open. A2A tasks belong to one.
+- **Task (A2A):** One message's run, as A2A names it. Its id is the `runId`.
+- **Context (A2A):** A2A's conversation id. Not a `sessionId`: the session is derived from
+  the principal and the context, so two principals with one context id have two sessions.
+
+## A2A
+
+- **Agent Card:** The JSON document at `/.well-known/agent-card.json` that tells another
+  agent what this one does, where to call it and what credential to present. Signed when
+  keys are configured.
+- **JWKS:** The public keys the card's signatures verify against, at
+  `/.well-known/jwks.json`.
+- **TCK:** The A2A Technology Compatibility Kit, `a2aproject/a2a-tck`, run in CI at a
+  pinned commit. A conformance suite, not a certification; none exists for A2A.
 
 ## Where the words and the code disagree
 

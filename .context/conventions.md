@@ -69,6 +69,14 @@
 - **No `console.log`.** Use the structured logger from `@repo/telemetry`.
 - All log lines include `correlationId` from AsyncLocalStorage context.
 - Log levels: `debug`, `info`, `warn`, `error`.
+- **Every logger shares one transport.** `createLogger` hands each logger the same pino
+  transport, which is one worker thread. A transport per logger deadlocks `process.exit`
+  once a process holds about a dozen, and `agent-service` creates one per module: a
+  malformed variable hung boot instead of exiting 1 until P5-A found it. Do not pass
+  `transport` to `pino()` anywhere else.
+- **Never log a credential.** Log the principal a token named, never the token or a
+  digest, and never echo a rejected configuration value: a token pasted where a digest
+  belongs is the mistake the message reports.
 
 ## Telemetry
 
@@ -395,6 +403,28 @@ replays the committed answer file and makes no request.
   is a method of a compiled graph, not of the saver, so reading a run's checkpoints means
   compiling its graph. `audit/replay-run.ts#recordedHistory` does that with nothing that
   can run a node. `audit:replay` and the ledger's run digest both read through it.
+- **The compose stack runs authenticated (P5-A).** Its demo tokens are in
+  `docker-compose.yml`: `Authorization: Bearer tck-demo-token` or `console-demo-token` for
+  a request to port 3000 or 3001; the console on 8080 adds its own. A second stack beside
+  the default one takes the host-port variables — `POSTGRES_HOST_PORT`,
+  `NEO4J_BOLT_HOST_PORT`, `NEO4J_HTTP_HOST_PORT`, `AGENT_SERVICE_HOST_PORT`,
+  `GATEWAY_HOST_PORT`, `CONSOLE_HOST_PORT` — and its own `COMPOSE_PROJECT_NAME`.
+- **The A2A TCK runs in the `browser-e2e` job, at a pinned commit, and holds to a list.**
+  `scripts/tck-expected.txt` names each test expected to fail with its reason, and
+  `scripts/tck-check.mjs` fails the job on a failure not listed, on a listed test that
+  passes and on a listed test that did not run. A change that makes a listed test pass
+  takes it off the list in the same pull request; moving the pin is a pull request of its
+  own. To run it locally, bring the stack up with `A2A_PUBLIC_URL=http://localhost:9999`,
+  start `TCK_TOKEN=tck-demo-token node scripts/tck-auth-proxy.mjs 9999 http://localhost:3001`,
+  install the TCK at the pinned commit into a virtual environment, and run
+  `run_tck.py --sut-host http://localhost:9999 --transport jsonrpc --level must`; the job's
+  step is the reference.
+- **A service spec that reads spans flushes first.** Under `initTelemetry`'s `NodeSDK` the
+  span processor holds a finished span until the resource's asynchronous attributes settle,
+  so a spec that reads the in-memory exporter right after a request sees nothing. Call
+  `processor.forceFlush()` before reading, as `trace-context.e2e-spec.ts` does. The new
+  `@opentelemetry/sdk-trace` takes `new SimpleSpanProcessor({ exporter })`, an options
+  object, where `sdk-trace-base` takes the exporter alone.
 
 ### Live model quota
 
@@ -555,9 +585,13 @@ portfolio's, not counsel's.
   encryption, read logging and retention floor as the run record. Nothing here deletes a
   case either.
 - **Who reads a case is the deployment's to restrict.** `GET /review/cases/:caseId` serves
-  the rationale to any caller until P5-A's authentication covers `/review/*`. A deployment
-  restricts it to the reviewers it assigns, and grants the service's database role, and no
-  other, on `prior_auth_cases`.
+  the rationale to any caller holding a service credential (P5-A), and to any caller at all
+  when the service runs open. A credential names a service principal, not a reviewer, so a
+  deployment runs with `SERVICE_CREDENTIALS` set, restricts the route to the reviewers it
+  assigns, and grants the service's database role, and no other, on `prior_auth_cases`.
+- **A deployment sets `SERVICE_CREDENTIALS` and terminates TLS.** Open mode exists for the
+  no-`.env` quickstart, and the repository has no TLS by decision (CTL-ACC-03). Both are on
+  the deploying organization (ADR 0014).
 - **A reviewer key is a person only by custody.** The registry maps a key to a reviewer id
   and a credential type. That the key's holder is that licensed reviewer, and that the key
   has not left them, is outside what code can show; the reviewer-key item above says what

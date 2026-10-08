@@ -268,8 +268,13 @@ The LangGraph graph is hosted inside a NestJS 11 microservice (`apps/agent-servi
   a case before it answers.
 - **GET /review/cases**, **GET /review/cases/:caseId**,
   **POST /review/cases/:caseId/determination** — the clinician review surface (P3-E).
-- **Global concerns:** ZodValidationPipe, AuditInterceptor (structured logging),
-  LoggingInterceptor (correlation ID via AsyncLocalStorage), HttpExceptionFilter.
+- **POST /a2a/jsonrpc**, **GET /.well-known/agent-card.json**, **GET /.well-known/jwks.json**
+  — the A2A v1.0 server and its discovery documents (P5-A). Below.
+- **Global concerns:** bearer authentication, then the JSON body parser, then W3C trace
+  context, all Express middleware mounted by `configureApp` ahead of every route; then, for
+  Nest controllers only, AuditInterceptor (structured logging), LoggingInterceptor
+  (correlation ID via AsyncLocalStorage) and HttpExceptionFilter. There is no global pipe:
+  each controller validates its own body. There is no CORS.
 - **Observability:** One trace per run under an `invoke_agent` root, one span per graph
   node beneath it, OTLP HTTP export. Model calls, embeddings and tool executions have
   spans of their own in the OpenTelemetry GenAI vocabulary, with token usage on each model
@@ -278,3 +283,62 @@ The LangGraph graph is hosted inside a NestJS 11 microservice (`apps/agent-servi
   the configured memory axis shows `memory.pgvector.search` under `agent.node.retrieve`.
   The Neo4j reader's `memory.neo4j.expand` span appears in no run, because no request
   constructs that reader since ADR 0009.
+  An inbound `traceparent` parents the run's root, so a caller's trace continues into the
+  run; the gateway forwards it and opens no span of its own.
+
+## Service Authentication
+
+Every route except `GET /health` and the two `/.well-known` documents needs a bearer token
+when `SERVICE_CREDENTIALS` is set (ADR 0014). The rule denies by default, so a route added
+later is covered without being named. The service holds `principal:sha256hex` pairs, never
+a token, and the check is at the service rather than the gateway because compose publishes
+the service's own port.
+
+- **Three states, like the model and memory axes.** Unset runs open: every caller is the
+  principal `anonymous`, boot logs `auth.open` at `warn`, and the Agent Card declares no
+  security. Malformed exits 1 naming the variable. Set requires a token.
+- **The compose stack runs authenticated**, with two demo principals, `console` and `tck`.
+  The console's nginx adds the console's token when the container starts, so it is in no
+  bundle. Anyone who reaches the console's port uses it; the console has no user login.
+- **What a principal can see.** On the A2A surface a task belongs to the principal that
+  created it. `POST /runs` still lets an authenticated caller name any `sessionId`; ADR 0014
+  states that as a residual.
+
+## Agent2Agent (A2A)
+
+`apps/agent-service/src/a2a/` serves A2A v1.0 over JSON-RPC, on `@a2a-js/sdk`'s request
+handler mounted as Express middleware, not as Nest controllers. One endpoint,
+`/a2a/jsonrpc`, also takes the v0.3 method names, because ADK for TypeScript 2.1.0 speaks
+v0.3 (P5-B depends on that).
+
+```
+A2A message ─▶ RunExecutor ─▶ rebuildHistory (episodic, read-only)
+                    │
+                    └─▶ RunsService.run ─▶ graph ─▶ reflect writes the new turns
+                         (runId = taskId)
+```
+
+- **A task is a run.** The SDK mints the task id, the executor passes it as the `runId`, so
+  it is the checkpointer's `thread_id` and the run record's id. `/runs`, `/runs/stream`,
+  the evaluation harness and the executor all go through `RunsService.run`.
+- **A context is a session, per principal.** The session id is a UUIDv5 over the principal
+  and the `contextId` (`contextSessionId`), so a principal who learns another's context id
+  gets a different conversation. The history is rebuilt from episodic memory, which must
+  hold exactly turns `0..n-1`; a gap or an over-long context fails the task rather than
+  letting `reflect`'s `ON CONFLICT DO NOTHING` drop the new turn. Runs in one session are
+  serialized in process. On the stub memory axis there is nothing to read, so every message
+  is a conversation of one.
+- **Every task ends terminal.** `COMPLETED` (an outcome of `partial` still completes, and
+  says so in metadata) or `FAILED`, whose message names the node and never the error. A
+  message naming a finished task is `-32004`, and `CancelTask` on a running one is `-32002`.
+- **Tasks live in memory.** `GetTask` after a restart answers not-found, though the run's
+  checkpoints and record exist. Two replicas would lose tasks between them.
+- **The card is signed once, at boot,** by every key in `A2A_CARD_SIGNING_KEYS`, with ES256
+  and the RFC 7638 thumbprint as `kid`; `/.well-known/jwks.json` publishes the public
+  keys. With no key it is served unsigned. The card holds no empty value, because the SDK's
+  canonical form drops empty values the specification keeps, and the service spec checks
+  every signature with the SDK's verifier and with `jose` over RFC 8785. A caller that sends
+  no `A2A-Version` gets the v0.3 card, unsigned.
+- **Conformance** is the TCK at a pinned commit, MUST level, JSON-RPC, against the compose
+  stack, with its expected failures listed in `scripts/tck-expected.txt`. There is no A2A
+  certification to claim.
