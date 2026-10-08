@@ -2,11 +2,11 @@
 id: P1-F
 title: Cost, latency, and step budgets as CI assertions
 tier: 1
-status: accepted
+status: in-progress
 size: M
 depends_on: [P1-A, P1-B, P1-C, P2-C]
 blocks: []
-issue: null
+issue: 85
 superseded_by: null
 controls: [CTL-COST-01]
 ---
