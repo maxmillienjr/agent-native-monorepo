@@ -31,6 +31,7 @@ import { createAgentServiceHarness } from '../src/eval/agent-harness.js';
 import { replayDecks, watchForModelRequests } from '../src/eval/cassette-deps.js';
 import { generateReviewerKey, signDetermination } from '../src/review/signer.js';
 import { appealSignedBytes } from '../src/review/signature.js';
+import { ReviewSweep } from '../src/review/review.sweep.js';
 import { skipUnlessIntegrationEnv } from './integration-env.js';
 
 const BUNDLES = join(
@@ -685,6 +686,55 @@ describe.skipIf(SKIP)('decision ledger (integration)', () => {
       const verified = await cli('verify.js', [], env);
       expect(verified.code).toBe(0);
       expect(verified.stdout).toMatch(/reconsideration\.attested \d+/);
+    });
+
+    it('appends a dismissal, and the sweep a lapse forward, each under its derived id', async () => {
+      const toDismiss = await appealed();
+      const dismissal = {
+        reason: 'withdrawn',
+        explanation: 'Synthetic fixture: the enrollee withdrew the request.',
+        attestation: {
+          reviewerId: RECONSIDERER.entry.reviewerId,
+          credential: RECONSIDERER.entry.credential,
+          attestedAt: '2026-10-09T12:00:00+00:00',
+        },
+      };
+      const bytes = appealSignedBytes({ action: 'dismissal', ...toDismiss, body: dismissal });
+      const dismissed = await request(app.getHttpServer())
+        .post(`/review/appeals/${toDismiss.appealId}/dismissal`)
+        .set('Content-Type', 'application/json')
+        .send({
+          dismissal,
+          reviewerKeyId: RECONSIDERER.entry.reviewerKeyId,
+          signature: sign(null, bytes, createPrivateKey(RECONSIDERER.privateKeyPem)).toString(
+            'base64url',
+          ),
+        });
+      expect(dismissed.status).toBe(200);
+
+      // Thirty-one days on, the sweep forwards the appeal as deemed affirmed.
+      // Appeals left in this database by suites with no ledger have no entry
+      // to cite, and are reported and passed over rather than holding it up.
+      const lapsing = await appealed();
+      const { forwarded } = await app
+        .get(ReviewSweep)
+        .sweep(new Date(Date.now() + 31 * 24 * 60 * 60 * 1000));
+      expect(forwarded.map((appeal) => appeal.appealId)).toContain(lapsing.appealId);
+
+      const rows = await service.ledger.readRows();
+      const payloadOf = (name: string) => {
+        const row = rows.payloads.find((candidate) => candidate.entryId === uuidV5(name));
+        return row === undefined ? undefined : (JSON.parse(row.payload) as Record<string, unknown>);
+      };
+      expect(payloadOf(`${toDismiss.appealId}\ndismissal`)).toMatchObject({
+        kind: 'appeal.dismissed',
+        dismissal: { reason: 'withdrawn' },
+      });
+      expect(payloadOf(`${lapsing.appealId}\nforwarded`)).toMatchObject({
+        kind: 'appeal.forwarded',
+        reason: 'deadline-lapsed',
+      });
+      expect((await cli('verify.js', ['--chain-only'], env)).code).toBe(0);
     });
 
     it('answers 503 to a reconsideration with the ledger’s database stopped, and the appeal stays filed', async () => {

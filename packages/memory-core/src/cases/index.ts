@@ -44,6 +44,7 @@ export {
   type ActionOptions,
   type ReconsiderOptions,
   type FileOptions,
+  type ForwardOptions,
   type ForwardedAppeal,
   type AppealRepository,
 } from './appeal.repo.js';

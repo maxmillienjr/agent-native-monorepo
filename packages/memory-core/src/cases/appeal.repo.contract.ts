@@ -363,6 +363,19 @@ export function describeAppealRepositoryContract(
       ).rejects.toThrow('the ledger append failed');
       expect((await appeals.get(lapsing.appealId))?.status).toBe('filed');
 
+      // With onError, a forward that fails is reported and the sweep goes on.
+      const later = await filed({ receivedAt: new Date('2026-04-01T11:00:00Z') });
+      const reported: string[] = [];
+      const past = await appeals.forwardLapsed(new Date('2026-05-01T11:00:00Z'), {
+        beforeCommit: async (next) => {
+          if (next.appealId === lapsing.appealId) throw new Error('the ledger append failed');
+        },
+        onError: (appealId) => reported.push(appealId),
+      });
+      expect(reported).toEqual([lapsing.appealId]);
+      expect(past.map((row) => row.appealId)).toEqual([later.appealId]);
+      expect((await appeals.get(lapsing.appealId))?.status).toBe('filed');
+
       const lapses: string[] = [];
       const forwarded = await appeals.forwardLapsed(now, {
         beforeCommit: async (next) => {

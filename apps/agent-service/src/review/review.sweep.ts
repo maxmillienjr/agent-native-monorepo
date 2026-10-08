@@ -119,14 +119,24 @@ export class ReviewSweep implements OnModuleInit, OnModuleDestroy {
       }
       span.setAttribute('review.flagged_count', flagged.length);
 
-      // With a ledger (P3-C), each forward is appended before it is recorded;
-      // a failed append stops the sweep there, and the appeal waits, filed,
-      // for the next one.
+      // With a ledger (P3-C), each forward is appended before it is recorded.
+      // A failed append rolls that forward back, and the appeal waits, filed,
+      // for the next sweep; the others go on, so one appeal the ledger
+      // refuses does not hold back every later one.
       const runLedger = this.runLedger;
-      const forwarded = await this.appeals.forwardLapsed(
-        now,
-        runLedger === null ? {} : { beforeCommit: (next) => runLedger.appendAppeal(next) },
-      );
+      let failed = 0;
+      const forwarded = await this.appeals.forwardLapsed(now, {
+        ...(runLedger === null ? {} : { beforeCommit: (next) => runLedger.appendAppeal(next) }),
+        onError: (appealId, error) => {
+          failed += 1;
+          logger.error({
+            msg: 'review.appeal.forward_failed',
+            appealId,
+            errorType: errorType(error),
+          });
+        },
+      });
+      span.setAttribute('review.forward_failed_count', failed);
       for (const appeal of forwarded) {
         span.addEvent('review.appeal.forwarded', {
           'prior_auth.appeal_id': appeal.appealId,

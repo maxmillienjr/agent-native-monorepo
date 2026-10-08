@@ -9,6 +9,7 @@ import {
   classifyAction,
   dismissedRow,
   filedRow,
+  forwardOrReport,
   forwardedOf,
   lapsedRow,
   notAppealable,
@@ -20,6 +21,7 @@ import {
   type Dismissal,
   type FileOptions,
   type FileResult,
+  type ForwardOptions,
   type ForwardedAppeal,
   type NewAppeal,
   type ReconsiderOptions,
@@ -120,7 +122,7 @@ export class InMemoryAppealRepository implements AppealRepository {
     });
   }
 
-  async forwardLapsed(now: Date, options: ActionOptions = {}): Promise<ForwardedAppeal[]> {
+  async forwardLapsed(now: Date, options: ForwardOptions = {}): Promise<ForwardedAppeal[]> {
     const candidates = [...this.rows.values()]
       .filter(
         (row) => row.status === 'filed' && row.reconsiderationDueBy.getTime() <= now.getTime(),
@@ -132,16 +134,19 @@ export class InMemoryAppealRepository implements AppealRepository {
       );
     const forwarded: ForwardedAppeal[] = [];
     for (const candidate of candidates) {
-      await this.cases.transact(candidate.caseId, async (caseRow) => {
-        const appeal = this.rows.get(candidate.appealId);
-        // Re-read under the lock: a write may have moved it since the scan.
-        if (appeal === undefined || appeal.status !== 'filed') return;
-        if (caseRow === undefined) throw new Error(`appeal ${appeal.appealId} has no case`);
-        const next = lapsedRow(appeal, caseRow, now);
-        await options.beforeCommit?.(copy(next), caseRow);
-        this.rows.set(next.appealId, next);
-        forwarded.push(forwardedOf(next));
-      });
+      const next = await forwardOrReport(candidate.appealId, options, () =>
+        this.cases.transact(candidate.caseId, async (caseRow) => {
+          const appeal = this.rows.get(candidate.appealId);
+          // Re-read under the lock: a write may have moved it since the scan.
+          if (appeal === undefined || appeal.status !== 'filed') return null;
+          if (caseRow === undefined) throw new Error(`appeal ${appeal.appealId} has no case`);
+          const forward = lapsedRow(appeal, caseRow, now);
+          await options.beforeCommit?.(copy(forward), caseRow);
+          this.rows.set(forward.appealId, forward);
+          return forward;
+        }),
+      );
+      if (next !== null) forwarded.push(forwardedOf(next));
     }
     return forwarded;
   }

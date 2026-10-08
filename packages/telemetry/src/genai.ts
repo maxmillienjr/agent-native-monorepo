@@ -186,6 +186,7 @@ export const ALLOWED_SPAN_ATTRIBUTES: ReadonlySet<string> = new Set<string>([
   'review.appeal_count',
   'review.lapsed_count',
   'review.forwarded_count',
+  'review.forward_failed_count',
   // The memory-core spans.
   'topK',
   'queryLength',

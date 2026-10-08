@@ -317,11 +317,19 @@ export interface AppealRepository {
   /**
    * Forwards every filed appeal at or past its deadline as `deadline-lapsed`
    * (§ 422.590(d), (g)), each under its own lock and in one conditional
-   * update, and returns those it forwarded. An appeal is forwarded once. A
-   * `beforeCommit` that throws stops the sweep at that appeal, which stays
-   * filed for the next one; those forwarded before it stand.
+   * update, and returns those it forwarded. An appeal is forwarded once.
+   *
+   * A forward whose `beforeCommit` throws is rolled back, and the appeal stays
+   * filed for the next sweep. Without `onError` the error propagates and the
+   * sweep stops there; with it, the error is reported and the sweep goes on,
+   * so one appeal the ledger refuses does not hold back every later one.
    */
-  forwardLapsed(now: Date, options?: ActionOptions): Promise<ForwardedAppeal[]>;
+  forwardLapsed(now: Date, options?: ForwardOptions): Promise<ForwardedAppeal[]>;
+}
+
+export interface ForwardOptions extends ActionOptions {
+  /** Called for each forward that failed and was rolled back; the sweep continues. */
+  readonly onError?: (appealId: string, error: unknown) => void;
 }
 
 // --- Shared by both stores, so they cannot drift -----------------------------
@@ -733,7 +741,7 @@ export class DrizzleAppealRepository implements AppealRepository {
     );
   }
 
-  async forwardLapsed(now: Date, options: ActionOptions = {}): Promise<ForwardedAppeal[]> {
+  async forwardLapsed(now: Date, options: ForwardOptions = {}): Promise<ForwardedAppeal[]> {
     return span('memory.appeals.forward_lapsed', async () => {
       const lapsed = await this.db
         .select({ appealId: priorAuthAppeals.appealId })
@@ -750,27 +758,29 @@ export class DrizzleAppealRepository implements AppealRepository {
       for (const { appealId } of lapsed) {
         // Each under its own lock: a concurrent sweep, or a write that
         // forwarded it first, leaves it not filed, and this one passes over it.
-        const next = await this.db.transaction(async (tx): Promise<AppealRow | null> => {
-          const [record] = await tx
-            .select()
-            .from(priorAuthAppeals)
-            .where(eq(priorAuthAppeals.appealId, appealId))
-            .for('update');
-          if (record === undefined) return null;
-          const appeal = toAppealRow(record);
-          if (appeal.status !== 'filed') return null;
-          const [caseRecord] = await tx
-            .select()
-            .from(priorAuthCases)
-            .where(eq(priorAuthCases.caseId, appeal.caseId))
-            .limit(1);
-          if (caseRecord === undefined) throw new Error(`appeal ${appealId} has no case`);
-          const caseRow = toCaseRow(caseRecord);
-          const forward = lapsedRow(appeal, caseRow, now);
-          await options.beforeCommit?.(forward, caseRow);
-          await this.write(tx, forward);
-          return forward;
-        });
+        const next = await forwardOrReport(appealId, options, () =>
+          this.db.transaction(async (tx): Promise<AppealRow | null> => {
+            const [record] = await tx
+              .select()
+              .from(priorAuthAppeals)
+              .where(eq(priorAuthAppeals.appealId, appealId))
+              .for('update');
+            if (record === undefined) return null;
+            const appeal = toAppealRow(record);
+            if (appeal.status !== 'filed') return null;
+            const [caseRecord] = await tx
+              .select()
+              .from(priorAuthCases)
+              .where(eq(priorAuthCases.caseId, appeal.caseId))
+              .limit(1);
+            if (caseRecord === undefined) throw new Error(`appeal ${appealId} has no case`);
+            const caseRow = toCaseRow(caseRecord);
+            const forward = lapsedRow(appeal, caseRow, now);
+            await options.beforeCommit?.(forward, caseRow);
+            await this.write(tx, forward);
+            return forward;
+          }),
+        );
         if (next !== null) forwarded.push(forwardedOf(next));
       }
       return forwarded;
@@ -834,6 +844,24 @@ export class DrizzleAppealRepository implements AppealRepository {
 }
 
 type Transaction = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
+
+/**
+ * Runs one lapse forward. A failure propagates without `onError`, and with
+ * it is reported and counts as nothing forwarded, so the sweep goes on.
+ */
+export async function forwardOrReport(
+  appealId: string,
+  options: ForwardOptions,
+  forward: () => Promise<AppealRow | null>,
+): Promise<AppealRow | null> {
+  if (options.onError === undefined) return forward();
+  try {
+    return await forward();
+  } catch (error) {
+    options.onError(appealId, error);
+    return null;
+  }
+}
 
 export function forwardedOf(row: AppealRow): ForwardedAppeal {
   if (row.forwardedAt === null || row.caseFileDigest === null) {
