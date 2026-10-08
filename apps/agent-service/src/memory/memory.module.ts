@@ -15,9 +15,10 @@ import {
   PgPgvectorReader,
   VectorRetrievalFacade,
   PgRunRecordRepository,
+  type CaseRepository,
 } from '@repo/memory-core';
 import { readMemoryConfig, type MemoryConfig } from './memory.config.js';
-import { selectCaseRepository } from './case-repository.js';
+import { selectAppealRepository, selectCaseRepository } from './case-repository.js';
 import {
   MEMORY_CONFIG,
   PG_POOL,
@@ -29,6 +30,7 @@ import {
   CHECKPOINTER,
   RUN_RECORDS,
   CASE_REPOSITORY,
+  APPEAL_REPOSITORY,
 } from './memory.tokens.js';
 
 const logger = createLogger('memory-module');
@@ -144,6 +146,14 @@ const logger = createLogger('memory-module');
       useFactory: (pool: pg.Pool | null) =>
         selectCaseRepository(pool, (entry) => logger.warn(entry)),
     },
+    {
+      // Appeals (P3-F), over the case store above: on the unconfigured axis
+      // the two share one per-case lock, so they must be the same instance.
+      provide: APPEAL_REPOSITORY,
+      inject: [PG_POOL, CASE_REPOSITORY],
+      useFactory: (pool: pg.Pool | null, cases: CaseRepository) =>
+        selectAppealRepository(pool, cases),
+    },
   ],
   exports: [
     MEMORY_CONFIG,
@@ -154,6 +164,7 @@ const logger = createLogger('memory-module');
     CHECKPOINTER,
     RUN_RECORDS,
     CASE_REPOSITORY,
+    APPEAL_REPOSITORY,
   ],
 })
 export class MemoryModule implements OnModuleDestroy {

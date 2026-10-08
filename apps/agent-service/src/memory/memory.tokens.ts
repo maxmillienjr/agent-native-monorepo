@@ -19,3 +19,5 @@ export const CHECKPOINTER = 'CHECKPOINTER';
 /** The run record (P3-B). Not a memory tier; provided here because it shares the pool. */
 export const RUN_RECORDS = 'RUN_RECORDS';
 export const CASE_REPOSITORY = 'CASE_REPOSITORY';
+/** Appeals of denied cases (P3-F), built over `CASE_REPOSITORY`. */
+export const APPEAL_REPOSITORY = 'APPEAL_REPOSITORY';

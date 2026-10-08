@@ -1,8 +1,11 @@
 import type pg from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import {
+  DrizzleAppealRepository,
   DrizzleCaseRepository,
+  InMemoryAppealRepository,
   InMemoryCaseRepository,
+  type AppealRepository,
   type CaseRepository,
 } from '@repo/memory-core';
 
@@ -30,4 +33,24 @@ export function selectCaseRepository(
       'restart. A pended request submitted now has no case after the service restarts.',
   });
   return new InMemoryCaseRepository();
+}
+
+/**
+ * The appeal store for this memory axis (P3-F), beside the case store it
+ * references. Postgres with a pool. Without one, an in-process store built
+ * over the in-process case store, sharing its per-case lock, so an appeal and
+ * its case are written as one. `selectCaseRepository` has already warned that
+ * both are volatile.
+ */
+export function selectAppealRepository(
+  pool: pg.Pool | null,
+  cases: CaseRepository,
+): AppealRepository {
+  if (pool !== null) return new DrizzleAppealRepository(drizzle(pool));
+  if (!(cases instanceof InMemoryCaseRepository)) {
+    throw new Error(
+      'with no DATABASE_URL the case store is in process, and appeals are built over it',
+    );
+  }
+  return new InMemoryAppealRepository(cases);
 }
