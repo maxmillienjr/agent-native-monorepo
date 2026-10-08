@@ -18,6 +18,21 @@ export type CaseStatus = z.infer<typeof CaseStatusSchema>;
 
 export const CasePrioritySchema = z.enum(['expedited', 'standard']);
 
+/**
+ * A valid `Date`, from any realm. `z.date()` checks `instanceof Date`, which
+ * fails for a `Date` made in another realm, as Jest's ESM VM context makes
+ * every one the service spec creates; the tag check does not. The output is a
+ * fresh `Date` in this realm.
+ */
+const InstantSchema = z
+  .custom<Date>(
+    (value) =>
+      Object.prototype.toString.call(value) === '[object Date]' &&
+      !Number.isNaN((value as Date).getTime()),
+    { message: 'expected a valid Date' },
+  )
+  .transform((value) => new Date(value.getTime()));
+
 /** A FHIR document as received or issued. The service parses it; this layer stores it. */
 const DocumentSchema = z.record(z.unknown());
 
@@ -40,8 +55,8 @@ export const NewCaseSchema = z
     caseId: CaseIdSchema,
     status: z.enum(['approved-automated', 'pended']),
     priority: CasePrioritySchema,
-    receivedAt: z.date(),
-    decisionDueBy: z.date(),
+    receivedAt: InstantSchema,
+    decisionDueBy: InstantSchema,
     /** `system|value` of the patient's member identifier. */
     memberId: z.string().min(1),
     /** `system|value` of the insurer's identifier. */
@@ -90,7 +105,7 @@ export const DecisionSchema = z
     reviewerId: z.string().min(1),
     reviewerKeyId: z.string().min(1),
     signature: z.string().min(1),
-    decidedAt: z.date(),
+    decidedAt: InstantSchema,
     /** The response bundle now in force: what `$inquire` returns from here on. */
     response: DocumentSchema,
   })
@@ -102,8 +117,8 @@ export const CaseRowSchema = z
     caseId: z.string().uuid(),
     status: CaseStatusSchema,
     priority: CasePrioritySchema,
-    receivedAt: z.date(),
-    decisionDueBy: z.date(),
+    receivedAt: InstantSchema,
+    decisionDueBy: InstantSchema,
     memberId: z.string(),
     insurerId: z.string(),
     providerId: z.string(),
@@ -116,8 +131,8 @@ export const CaseRowSchema = z
     reviewerId: z.string().nullable(),
     reviewerKeyId: z.string().nullable(),
     signature: z.string().nullable(),
-    decidedAt: z.date().nullable(),
-    overdueFlaggedAt: z.date().nullable(),
+    decidedAt: InstantSchema.nullable(),
+    overdueFlaggedAt: InstantSchema.nullable(),
   })
   .strict();
 export type CaseRow = z.infer<typeof CaseRowSchema>;
