@@ -124,7 +124,7 @@ alone.
 | ----------- | ---------------------- | ----------------------------- | -------------------------------------------------------- |
 | Unit        | Vitest                 | `yarn turbo test:unit`        | `packages/` and pure logic in apps — no I/O              |
 | Service     | Jest + @nestjs/testing | `yarn turbo test:service`     | `apps/agent-service` over HTTP, stub graph deps          |
-| Integration | Vitest                 | `yarn turbo test:integration` | Real Postgres/Neo4j — never mock a database              |
+| Integration | Vitest, and Jest       | `yarn turbo test:integration` | Real Postgres/Neo4j — never mock a database              |
 | E2E         | Playwright             | `yarn turbo test:e2e`         | Browser against the full `docker compose` stack          |
 | Eval        | `@repo/eval-harness`   | `yarn eval`                   | Agent trials against real stores, model replayed or live |
 | Retrieval   | `@repo/eval-harness`   | `yarn eval:retrieval`         | The P2-B ablation, pre-0009 design: recorded embeddings  |
@@ -233,6 +233,13 @@ alone.
   `@repo/memory-core#test:integration`, because both suites share one Postgres and
   memory-core's truncates tables in `beforeAll`. It needs `dist/` built for the one test
   that runs the compiled command, which the task's `dependsOn` already does.
+- **The review spec runs in that tier as well, as a second command.** `review.e2e-spec.ts`
+  (P3-E) drives the clinician review surface over HTTP on both memory axes: unconfigured
+  under `test:service`, and live too under `test:integration`, which runs the same Jest file
+  after the Vitest suite with the stores exported. It is Jest because it shares the service
+  specs' Nest setup. Its live axis never empties `prior_auth_cases` and reads only the cases
+  it made, but `memory-core`'s `cases.integration.test.ts` empties that table before each
+  test, which is one more reason the task runs after `memory-core`'s.
 - **Every run on the configured memory axis leaves a run record, and `audit:replay` reads
   it.** `yarn audit:replay <runId>` (or `node dist/audit/replay.js <runId>` in the image)
   re-executes the run from its record and compares every checkpoint; `--read-only` prints

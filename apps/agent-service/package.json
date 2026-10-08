@@ -13,7 +13,7 @@
     "lint": "eslint src/",
     "test:service": "NODE_OPTIONS=--experimental-vm-modules jest",
     "test:unit": "vitest run",
-    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "test:integration": "vitest run --config vitest.integration.config.ts && NODE_OPTIONS=--experimental-vm-modules jest test/review.e2e-spec.ts",
     "audit:replay": "node dist/audit/replay.js",
     "eval": "node dist/eval/run-eval.js",
     "eval:retrieval": "node dist/eval/run-retrieval-ablation.js",
