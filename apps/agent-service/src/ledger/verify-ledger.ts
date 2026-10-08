@@ -41,7 +41,9 @@ export interface LedgerVerifyReport {
     readonly lastSeq: number | null;
     readonly checked: boolean;
   };
-  /** Absent under `chainOnly`. */
+  /** Whether checks 6 and 7 were asked for: false under `--chain-only`. */
+  readonly runsRequested: boolean;
+  /** Absent under `--chain-only`, or when an earlier check failed first. */
   readonly runs?: {
     readonly committed: number;
     readonly rederived: number;
@@ -71,7 +73,7 @@ export async function verifyLedger(options: VerifyLedgerOptions): Promise<Ledger
     lastSeq: anchors.length === 0 ? null : Math.max(...anchors.map((anchor) => anchor.seq)),
     checked: false,
   };
-  const base = { chain, anchors: anchorSummary };
+  const base = { chain, anchors: anchorSummary, runsRequested: options.runs !== undefined };
 
   // 1-4.
   if (chainFailure !== undefined) {
@@ -168,7 +170,11 @@ export function renderLedgerReport(report: LedgerVerifyReport): string {
     report.anchors.count === 0
       ? 'anchors: none — nothing outside the database vouches for this chain'
       : `anchors: ${report.anchors.count}, last at seq ${report.anchors.lastSeq}` +
-          (report.anchors.checked ? ', verified against the CA' : ', not checked') +
+          (!report.anchors.checked
+            ? ', not checked'
+            : report.failure?.check === 'anchor'
+              ? ', one fails against the CA'
+              : ', verified against the CA') +
           (head !== null && report.anchors.lastSeq !== null && head.seq > report.anchors.lastSeq
             ? `; seq ${report.anchors.lastSeq + 1}-${head.seq} are after the last anchor, where a database administrator's consistent rewrite is undetectable`
             : ''),
@@ -182,7 +188,11 @@ export function renderLedgerReport(report: LedgerVerifyReport): string {
       for (const runId of report.runs.uncommitted) lines.push(`  ${runId}`);
     }
   } else {
-    lines.push('runs: not checked (--chain-only)');
+    lines.push(
+      report.runsRequested
+        ? 'runs: not reached, because an earlier check failed'
+        : 'runs: not checked (--chain-only)',
+    );
   }
   if (report.failure !== undefined) {
     const where = [
