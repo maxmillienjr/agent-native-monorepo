@@ -35,6 +35,8 @@ import { NO_USAGE } from '../agent/model/usage.js';
 import { CHAT_MODEL, defaultTools, type ModelDeps } from '../agent/model/model-deps.js';
 import { recordingGraphDeps } from '../agent/model/decision-seam.js';
 import { RunRecorder } from '../audit/run-recorder.js';
+import { RUN_LEDGER } from '../ledger/ledger.tokens.js';
+import type { RunLedger } from '../ledger/run-ledger.js';
 import type { ToolSelection } from '../agent/nodes/act.node.js';
 import {
   ASSESS_PROMPT,
@@ -142,6 +144,7 @@ export class RunsService {
     @Inject(RETRIEVAL_FACADE) private readonly retrievalFacade: RetrievalFacade | null,
     @Inject(CHECKPOINTER) private readonly checkpointer: BaseCheckpointSaver | null,
     @Inject(RUN_RECORDS) runRecords: RunRecordRepository | null,
+    @Inject(RUN_LEDGER) private readonly runLedger: RunLedger | null = null,
   ) {
     this.recorder = new RunRecorder(runRecords);
   }
@@ -470,26 +473,35 @@ export class RunsService {
    * append that fails later is logged and leaves the record `partial`. The
    * session id is read from the body without failing on it, because the record
    * keeps the body as received and `ingress` is what rejects it.
+   *
+   * With a ledger configured, the closed record is then committed to it as
+   * `run.recorded`, success or failure, outside the graph (P3-C). Fail-open
+   * again: a failed append is logged and `ledger:verify` lists the run as
+   * uncommitted, so the gap is visible rather than silent.
    */
-  private recorded<T>(
+  private async recorded<T>(
     runId: string,
     params: { body: unknown; correlationId: string },
     work: (deps: GraphDeps) => Promise<T>,
   ): Promise<T> {
     const parsed = RunRequestSchema.safeParse(params.body);
 
-    return this.recorder.record(
-      {
-        runId,
-        graph: 'chat',
-        sessionId: parsed.success ? parsed.data.sessionId : null,
-        correlationId: params.correlationId,
-        request: params.body,
-        modelAxis: this.modelAxis(),
-      },
-      'fail-open',
-      (deck) => work(this.getDeps(deck)),
-    );
+    try {
+      return await this.recorder.record(
+        {
+          runId,
+          graph: 'chat',
+          sessionId: parsed.success ? parsed.data.sessionId : null,
+          correlationId: params.correlationId,
+          request: params.body,
+          modelAxis: this.modelAxis(),
+        },
+        'fail-open',
+        (deck) => work(this.getDeps(deck)),
+      );
+    } finally {
+      await this.runLedger?.commitRunOrLog(runId, params.correlationId);
+    }
   }
 }
 

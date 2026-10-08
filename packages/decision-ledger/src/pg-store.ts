@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type pg from 'pg';
+import pg from 'pg';
 import {
   LedgerAnchorSchema,
   LedgerEntrySchema,
@@ -204,4 +204,26 @@ function transaction(client: pg.PoolClient): LedgerTransaction {
       );
     },
   };
+}
+
+/**
+ * A pool for the ledger's writer, or for a verifier with `readOnly`.
+ *
+ * Timeouts are short on purpose: a ledger that stops answering must not hold
+ * a run. And an `error` listener is attached, because an idle client whose
+ * server goes away emits one, and unheard that is an uncaught exception that
+ * takes the whole service down — the outage a ledger outage must not become.
+ */
+export function createLedgerPool(
+  connectionString: string,
+  options: { readonly readOnly?: boolean; readonly onError?: (error: Error) => void } = {},
+): pg.Pool {
+  const pool = new pg.Pool({
+    connectionString,
+    connectionTimeoutMillis: 5_000,
+    statement_timeout: 10_000,
+    ...(options.readOnly === true ? { options: '-c default_transaction_read_only=on' } : {}),
+  });
+  pool.on('error', options.onError ?? (() => undefined));
+  return pool;
 }

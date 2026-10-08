@@ -38,6 +38,7 @@
     "@opentelemetry/sdk-trace": "^2.11.0",
     "@repo/agent-cassette": "workspace:*",
     "@repo/agent-contracts": "workspace:*",
+    "@repo/decision-ledger": "workspace:*",
     "@repo/determination": "workspace:*",
     "@repo/eval-harness": "workspace:*",
     "@repo/memory-core": "workspace:*",

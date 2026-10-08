@@ -102,7 +102,8 @@ export interface ReplayOptions {
   readonly readOnly?: boolean;
 }
 
-interface Snapshot {
+/** One checkpoint of a run's history. */
+export interface Snapshot {
   readonly step: number;
   readonly next: readonly string[];
   readonly values: Record<string, unknown>;
@@ -140,13 +141,7 @@ export async function replayRun(options: ReplayOptions): Promise<ReplayReport> {
   if (refusal !== undefined) return refuse(described, refusal);
 
   const thread = { configurable: { thread_id: options.runId } };
-  const recordedGraph = compile(
-    stored,
-    unreachableDeck(),
-    new CapturedWrites(),
-    options.checkpointer,
-  );
-  const recorded = await history(recordedGraph, thread);
+  const recorded = await recordedHistory(stored, options.checkpointer);
   const decisions = stored.decisions.map((row) => row.decision);
 
   if (options.readOnly === true) {
@@ -339,6 +334,19 @@ function unreachableDeck(): Deck<RecordSeam> {
     mode: 'replay',
     resolve: () => Promise.reject(new Error('reading a checkpoint history ran a node')),
   };
+}
+
+/**
+ * The checkpoint history a recorded run left, oldest first, read without
+ * running anything: the graph is compiled only so LangGraph can deserialise
+ * its own checkpoints. P3-C's ledger digests this beside the record.
+ */
+export async function recordedHistory(
+  stored: StoredRun,
+  checkpointer: BaseCheckpointSaver,
+): Promise<Snapshot[]> {
+  const graph = compile(stored, unreachableDeck(), new CapturedWrites(), checkpointer);
+  return history(graph, { configurable: { thread_id: stored.record.runId } });
 }
 
 async function history(graph: ReplayableGraph, thread: unknown): Promise<Snapshot[]> {

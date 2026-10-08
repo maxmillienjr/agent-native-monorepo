@@ -2910,6 +2910,7 @@ __metadata:
     "@opentelemetry/sdk-trace-base": "npm:^2.11.0"
     "@repo/agent-cassette": "workspace:*"
     "@repo/agent-contracts": "workspace:*"
+    "@repo/decision-ledger": "workspace:*"
     "@repo/determination": "workspace:*"
     "@repo/eslint-config": "workspace:*"
     "@repo/eval-harness": "workspace:*"
@@ -2953,7 +2954,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@repo/decision-ledger@workspace:packages/decision-ledger":
+"@repo/decision-ledger@workspace:*, @repo/decision-ledger@workspace:packages/decision-ledger":
   version: 0.0.0-use.local
   resolution: "@repo/decision-ledger@workspace:packages/decision-ledger"
   dependencies:

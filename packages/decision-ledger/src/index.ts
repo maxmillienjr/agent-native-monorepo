@@ -48,7 +48,7 @@ export {
   type LedgerTransaction,
 } from './ledger.js';
 export { InMemoryLedgerStore } from './memory-store.js';
-export { LEDGER_LOCK_KEY, PgLedgerStore } from './pg-store.js';
+export { LEDGER_LOCK_KEY, PgLedgerStore, createLedgerPool } from './pg-store.js';
 export {
   verifyChain,
   type ChainCheck,
