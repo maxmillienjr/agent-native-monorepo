@@ -415,6 +415,28 @@ describe.skipIf(SKIP)('decision ledger (integration)', () => {
       });
       expect(edited.code).toBe(1);
       expect(edited.stdout).toContain(`run ${runId}`);
+
+      const decision = await verifyWhileEdited(async () => {
+        const saved = await pool.query<{ ordinal: number; decision: unknown }>(
+          'SELECT ordinal, decision FROM run_decisions WHERE run_id = $1 ORDER BY ordinal LIMIT 1',
+          [runId],
+        );
+        const { ordinal, decision: original } = saved.rows[0]!;
+        await pool.query(
+          `UPDATE run_decisions SET decision = jsonb_set(decision, '{latencyMs}', '999999')
+           WHERE run_id = $1 AND ordinal = $2`,
+          [runId, ordinal],
+        );
+        return async () => {
+          await pool.query(
+            'UPDATE run_decisions SET decision = $3 WHERE run_id = $1 AND ordinal = $2',
+            [runId, ordinal, JSON.stringify(original)],
+          );
+        };
+      });
+      expect(decision.code).toBe(1);
+      expect(decision.stdout).toContain(`run ${runId}`);
+      expect((await cli('verify.js', [], env)).code).toBe(0);
       expect(reached()).toEqual([]);
     });
 
