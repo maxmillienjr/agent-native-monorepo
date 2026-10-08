@@ -21,8 +21,7 @@ import {
 import { AppModule } from '../app.module.js';
 import { PG_POOL, NEO4J_DRIVER } from '../memory/memory.tokens.js';
 import { RunsService, type TracedRun } from '../runs/runs.service.js';
-import { recordingModelDeps, replayModelDeps } from '../agent/model/decision-seam.js';
-import type { TrialDecks } from './cassette-deps.js';
+import { deckDecorator, type TrialDecks } from './cassette-deps.js';
 import type { SpanCollector } from './span-records.js';
 
 /**
@@ -75,12 +74,7 @@ export class AgentServiceHarness implements AgentHarness<MemoryOutcome> {
     // that path.
     if (decks !== undefined) {
       this.runs.setModelDecorator(
-        (live) =>
-          this.deck === undefined
-            ? live
-            : this.deck.mode === 'replay'
-              ? replayModelDeps(this.deck)
-              : recordingModelDeps(live, this.deck),
+        deckDecorator(() => this.deck),
         // A trial's run record names what decided it (P3-B).
         decks.mode === 'replay' ? 'replay' : undefined,
       );

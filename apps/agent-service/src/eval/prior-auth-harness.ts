@@ -12,8 +12,7 @@ import {
 import { AppModule } from '../app.module.js';
 import { PriorAuthService, type PriorAuthRun } from '../fhir/prior-auth.service.js';
 import { RunsService } from '../runs/runs.service.js';
-import { recordingModelDeps, replayModelDeps } from '../agent/model/decision-seam.js';
-import type { TrialDecks } from './cassette-deps.js';
+import { deckDecorator, type TrialDecks } from './cassette-deps.js';
 import type { SpanCollector } from './span-records.js';
 
 /**
@@ -44,12 +43,7 @@ export class PriorAuthHarness implements AgentHarness<PriorAuthOutcome> {
   ) {
     if (decks !== undefined) {
       runsService.setModelDecorator(
-        (live) =>
-          this.deck === undefined
-            ? live
-            : this.deck.mode === 'replay'
-              ? replayModelDeps(this.deck)
-              : recordingModelDeps(live, this.deck),
+        deckDecorator(() => this.deck),
         // A trial's run record names what decided it (P3-B).
         decks.mode === 'replay' ? 'replay' : undefined,
       );

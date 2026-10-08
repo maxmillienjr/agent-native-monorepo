@@ -13,8 +13,12 @@ import {
   type ReplayConfig,
 } from '@repo/agent-cassette';
 import { activeInferenceSpan } from '@repo/telemetry';
-import { CHAT_MODEL } from '../agent/model/model-deps.js';
-import { tokenCountsFor } from '../agent/model/decision-seam.js';
+import { CHAT_MODEL, type ModelDeps } from '../agent/model/model-deps.js';
+import {
+  recordingModelDeps,
+  replayModelDeps,
+  tokenCountsFor,
+} from '../agent/model/decision-seam.js';
 import { RE_RECORD_COMMAND, UPDATE_BASELINE_COMMAND } from './abort-cause.js';
 
 /**
@@ -78,6 +82,20 @@ export interface TrialDecks {
    * cassette written from a crashed run replays a run that never happened.
    */
   close(completed: boolean): Promise<void>;
+}
+
+/**
+ * The model decorator a harness installs on `RunsService`: the open trial's
+ * deck, recording the live set through it or replaying from it, and the live
+ * set untouched between trials. Both harnesses install this one, so the two
+ * suites cannot record or replay differently.
+ */
+export function deckDecorator(openDeck: () => Deck | undefined): (live: ModelDeps) => ModelDeps {
+  return (live) => {
+    const deck = openDeck();
+    if (deck === undefined) return live;
+    return deck.mode === 'replay' ? replayModelDeps(deck) : recordingModelDeps(live, deck);
+  };
 }
 
 /**
