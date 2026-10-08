@@ -447,12 +447,48 @@ controls:
 
   - id: CTL-HUM-03
     title: An adverse determination can be appealed, is reconsidered only by a physician who did not make it, and an affirmed or lapsed reconsideration is forwarded to independent review
-    status: planned
-    owner: P3-F
+    status: implemented
     maps:
       - { framework: nist-ai-rmf-1.0, ref: GOVERN 3.2 }
       - { framework: nist-ai-rmf-1.0, ref: MANAGE 4.1 }
-    note: Planned under P3-F, after 42 CFR § 422.590(h) and § 422.592(a). Non-involvement is enforced against the reviewer who signed the initial determination, not against everyone involved in it, and the forward to the independent entity is a recorded event, not a delivery to an outside system.
+    evidence:
+      - {
+          kind: doc,
+          file: docs/adr/0015-a-timer-whose-action-is-one-local-transaction-stays-in-the-case-layer.md,
+          heading: Decision,
+        }
+      - { kind: symbol, file: packages/determination/src/clinician.ts, name: attestReconsideration }
+      - kind: test
+        file: packages/determination/src/reconsideration.test.ts
+        name: throws InvolvedReviewerError when the attesting reviewer made the denial
+        tier: unit
+      - kind: test
+        file: apps/agent-service/test/appeal.e2e-spec.ts
+        name: refuses each unqualified or misdirected action with its status and leaves the appeal filed
+        tier: service
+      - kind: test
+        file: apps/agent-service/test/appeal.e2e-spec.ts
+        name: 'reverses: $inquire returns the approval, and the denial record is unchanged'
+        tier: service
+      - kind: test
+        file: apps/agent-service/test/appeal.e2e-spec.ts
+        name: 'affirms: the denial stays in force, and the appeal is forwarded with the case file digested'
+        tier: service
+      - kind: test
+        file: apps/agent-service/test/appeal.e2e-spec.ts
+        name: forwards a lapsed appeal once over two sweeps, with one event
+        tier: service
+      - kind: test
+        file: packages/memory-core/test/cases.integration.test.ts
+        name: refuses an update setting the reviewer to the initial one, and takes another
+        tier: integration
+      - kind: test
+        file: packages/decision-ledger/src/appeal.test.ts
+        name: refuses a reconsideration by the denier under a second key, on append and in the verifier
+        tier: unit
+      - { kind: ci, workflow: ci.yml, job: ci, run: yarn turbo test:service }
+      - { kind: ci, workflow: e2e.yml, job: e2e, run: yarn turbo test:integration }
+    note: Delivered by P3-F, after 42 CFR § 422.590(h) and § 422.592(a), for Medicare Advantage only. Non-involvement is enforced against the reviewer who signed the initial determination, by reviewer id so a second key of theirs is refused too, and not against everyone involved in it; that two reviewer ids are two people is the registry's claim (Before real data). It is held by the branded constructor, the route, a foreign key and CHECK in Postgres, and, with a ledger, by the verifier from the chain alone. Reconsideration needs a physician credential the policy lists. The forward to the independent entity is a recorded event with a case-file digest, not a delivery to an outside system. Authenticating the caller of /review/appeals/* is P5-A's.
 
   - id: CTL-AUD-01
     title: Each decision is recorded in a hash-chained, tamper-evident ledger
