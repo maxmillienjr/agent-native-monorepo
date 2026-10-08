@@ -2,11 +2,11 @@
 id: P3-F
 title: 'Appeals: reconsideration lifecycle for adverse determinations'
 tier: 3
-status: accepted
+status: in-progress
 size: M
 depends_on: [P3-A, P3-E]
 blocks: []
-issue: null
+issue: 112
 superseded_by: null
 controls: [CTL-HUM-03]
 ---
