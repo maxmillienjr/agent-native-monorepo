@@ -560,14 +560,21 @@ no model.
       change gives `held` 342/400 (85.5%) and `regressed` 2/400 (0.5%); 0.9 → 0.5 gives
       `regressed` 390/400 (97.5%); n = 5 gives `insufficient-evidence` 400/400. The test
       asserts the thresholds, so a change to the rule that misses one fails it.
-- [ ] **Model `live` / memory `live`:** `EVAL_GATE=live` exits 0 on a run with a failed
-      trial and a verdict other than `regressed`, and appends a tally that validates
-      against `LiveTallySchema`. It is verified locally with the developer key
-      (`EVAL_TRIALS=1`, 8 calls) and stated as such, because no repository secret exists.
-      **Not run:** this implementation was not cleared to spend the developer key's daily
-      quota. The runner half is unit-tested — `gate.test.ts` › "on live, appends a tally
-      that validates and stays green on a failed trial" — but no live model produced the
-      trial. **Owner:** the repository owner, one local run of eight calls.
+
+_Split at review, 2026-10-08: the failed-trial behaviour is gate logic and is verified on
+fakes; the live half verifies the integration on the live model._
+
+- [x] **Fakes:** with `EVAL_GATE=live`, a run that has a failed trial and a verdict other
+      than `regressed` exits 0 and appends a tally that validates against
+      `LiveTallySchema`. `gate.test.ts` › "on live, appends a tally that validates and stays
+      green on a failed trial", passing on 2026-10-08.
+- [x] **Model `live` / memory `live`:** `EVAL_GATE=live` on a real live run exits 0 on a
+      verdict other than `regressed`, and appends a tally that validates against
+      `LiveTallySchema`. It is verified locally with the developer key (`EVAL_TRIALS=1`, 8
+      calls) and stated as such, because no repository secret exists. **Met locally on
+      2026-10-08** at `f7991ed`, on the run P5-C records: exit 0, verdict `incomparable`
+      because no `baselines/live.json` is committed, and one tally that `LiveTallySchema`
+      parses. See "The local live check".
 - [ ] **Model `live` / memory `live`, in CI:** the nightly pushes its tally to
       `eval-history`, and after five nights in one epoch its summary reports the pooled
       5×2 rate with the list of runs. This needs the repository secret. If none exists at
@@ -601,9 +608,9 @@ no model.
 
 Measured 2026-09-26. No run below made a model call.
 
-**The status stays `in-progress`.** Three criteria are open, and none is this change's to
-close: the owner applies the ruleset, P1-E takes the nightly that needs a secret, and the
-local live run waits for someone who may spend the developer key's quota. Until the ruleset
+**The status stays `in-progress`.** Two criteria are open, and neither is this change's to
+close: the owner applies the ruleset, and P1-E takes the nightly that needs a secret. The
+local live run closed on 2026-10-08 (below). Until the ruleset
 is applied a red `eval-replay` still blocks nothing, and every document that says so names
 that action.
 
@@ -659,6 +666,29 @@ until its cassette exists and the baseline is regenerated with
 `EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval`. P2-B's `EVAL_TASKS` narrows the
 suite and renames it, and a narrowed replay under `EVAL_GATE=replay` reports every other
 task's cells as `missing`, which is correct: a narrowed run is not the gated run.
+
+### The local live check
+
+Run on 2026-10-08 at `f7991ed` with the developer key, Node 24.11.1, `@langchain/langgraph`
+1.4.18 and `@langchain/google-genai` 2.3.2, against fresh Postgres and Neo4j containers. It
+is the same run that closed P5-C's live criteria, and P5-C records the command, the request
+counts and the scratch preload that paced it. The parts this PRD needs:
+
+- `EVAL_TRIALS=1 EVAL_GATE=live` with `EVAL_HISTORY_DIR` set to a scratch directory, not an
+  `eval-history` checkout. `eval:history open` and `publish` were not run, and nothing was
+  pushed.
+- 8 `generateContent` calls, all `200`. Both trials passed every grader, 21 of 21.
+- `eval.gate` logged `axis: live`, `verdict: incomparable`, `blocks: false`, and the process
+  exited 0. The reason in `eval-gate.json` is "there is no committed live reference yet".
+  Each task needs 14 more trials in the epoch and 15 in a reference.
+- The tally was written at
+  `live/memory-recall/3150d589a5c0/2026-10-08T164318.707Z-f7991ed.json`, under the digest
+  of the committed cassette set. It holds one passing trial per task and the per-grader
+  arrays, 11 for `memory-recall-001` and 10 for `tool-use-001`. `LiveTallySchema.safeParse`
+  from the built `@repo/eval-harness` returned success.
+
+The run had no failed trial, so it says nothing about the gate staying green on one. The
+fakes criterion covers that case.
 
 ## Risks and open questions
 

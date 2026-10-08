@@ -5,7 +5,7 @@
 _Last updated 2026-10-08. If this section is more than a few weeks stale, trust the code
 over it and update it._
 
-**Ten PRDs are shipped and the system they describe is running.** The service answers
+**Eleven PRDs are shipped and the system they describe is running.** The service answers
 `POST /runs` and `POST /runs/stream`; `memory-core` is constructed by the app rather than
 sitting beside it; the graph compiles with a checkpointer and a retry policy on every node
 that performs I/O; and `packages/eval-harness` measures the result. Verified against live
@@ -85,7 +85,9 @@ assertion deleted) now names 11 `missing` cells, and a known failure can be comm
 `EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval` accepts a change with no key. The
 nightly pools live tallies on an orphan `eval-history` branch against a committed reference
 at δ = 0.20, and will read `insufficient-evidence` for weeks. It has not run, because there
-is no secret. **Nothing blocks a merge until the owner applies
+is no secret. A local live run on 2026-10-08 did exercise it: `EVAL_GATE=live` exited 0 on
+verdict `incomparable` and wrote a tally that validates against `LiveTallySchema`.
+**Nothing blocks a merge until the owner applies
 `.github/rulesets/main.json`**, which requires `eval-replay`; `yarn lint:docs` keeps its
 check names equal to real jobs.
 
@@ -133,15 +135,15 @@ citation fails the lint. Rows 3 and 11 were still citing lines that no longer he
 they named when they migrated. A green check
 means the evidence exists, not that it is sufficient, and the matrix says so in its header.
 
-**[P5-C](P5-C-langgraph-1x.md) is in progress**, tracked in [#61](https://github.com/maxmillienjr/agent-native-monorepo/issues/61).
+**[P5-C](P5-C-langgraph-1x.md) has shipped**, tracked in [#61](https://github.com/maxmillienjr/agent-native-monorepo/issues/61).
 The service now runs on `@langchain/langgraph@1.4.18` and `@langchain/core@1.2.12`. Every
 offline gate passes, the replay is identical to the one at 0.x, and checkpoints resume across
 the upgrade in both directions. The upgrade changed one behaviour. At `core` 1.x, LangChain's
 default retry handler stops on any 429 whose message mentions quota or billing, and every
 Gemini 429 does. P1-C's `stopOnDailyQuota` handed non-daily 429s to that default, so they
 became terminal. It now retries them itself, and the client waits out a per-minute 429
-again, as it did at 0.x. One live `tool-use-001` trial is still open: the only live run
-predates that fix, and it stopped on a per-minute 429.
+again, as it did at 0.x. A live run at the 1.x head on 2026-10-08 passed all 21 graders on
+both tasks, with a non-empty plan in each transcript, for 8 `generateContent` calls.
 
 **[P3-A](P3-A-clinician-gate.md) has shipped**, tracked in
 [#75](https://github.com/maxmillienjr/agent-native-monorepo/issues/75). ADR 0003's rule
@@ -245,11 +247,11 @@ provider actually operates under. Uses synthetic data only.
 
 ## Tier 5 — Interoperability
 
-| ID                              | Title                                            | Size | Status      |
-| ------------------------------- | ------------------------------------------------ | ---- | ----------- |
-| [P5-A](P5-A-a2a-server.md)      | Agent2Agent v1.0 server with a signed Agent Card | L    | accepted    |
-| [P5-B](P5-B-adk-portability.md) | Agent Development Kit portability appendix       | S    | accepted    |
-| [P5-C](P5-C-langgraph-1x.md)    | Upgrade to LangGraph 1.x                         | S    | in-progress |
+| ID                              | Title                                            | Size | Status   |
+| ------------------------------- | ------------------------------------------------ | ---- | -------- |
+| [P5-A](P5-A-a2a-server.md)      | Agent2Agent v1.0 server with a signed Agent Card | L    | accepted |
+| [P5-B](P5-B-adk-portability.md) | Agent Development Kit portability appendix       | S    | accepted |
+| [P5-C](P5-C-langgraph-1x.md)    | Upgrade to LangGraph 1.x                         | S    | shipped  |
 
 ## Sequencing
 

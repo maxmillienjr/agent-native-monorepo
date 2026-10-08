@@ -99,7 +99,7 @@ Four reasons, each checkable.
 2. **It would fail CI today.** `@google/adk@2.1.0` resolves `adm-zip@0.5.18` (measured
    2026-09-26: 304 packages, 129 MB in a scratch install). `npm audit` reports it under
    GHSA-xcpc-8h2w-3j85, GHSA-vwc7-r8mq-g2x9 and GHSA-7q85-xj36-vmfc, and rates the package
-   `high`. `security.yml:59` runs `yarn npm audit --all --recursive --severity high` on
+   `high`. `security.yml:66` runs `yarn npm audit --all --recursive --severity high` on
    every pull request, which is CTL-SUP-01. Clearing it would mean forcing `adm-zip@0.6.1`,
    outside the `^0.5.17` that ADK declares, with nothing upstream testing that combination.
 3. **ADR 0001 decided the runtime.** A half-port in the tree reads as a hedge on that

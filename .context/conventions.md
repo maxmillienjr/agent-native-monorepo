@@ -338,6 +338,22 @@ which shipped before the command existed.
   package names. A new package in either directory is registered by existing there, and
   `yarn workspaces list` is the check. Adding a name is only needed outside those globs.
 - Pin major versions. Use `^` for minor/patch ranges.
+- **Clear an advisory by version, and touch only what the dependent's range cannot reach.**
+  When `dependency-audit` fails, run `yarn why <pkg>` first, then compare the via clause
+  with the range the dependent asks for in `yarn.lock`. If the fix is inside that range,
+  `yarn up -R <pkg>` moves the lockfile, with no resolution. If a resolution already
+  exists, it has failed in one of two ways. It is **inert** when its key names a range
+  nothing asks for: the via clause shows the dependent's own range, and Yarn ignored the
+  key without saying so. Re-key it to the range actually asked for. It is **stale** when the
+  via clause shows the pinned value: the pin works, but it holds the tree on a version that
+  is now vulnerable. Bump the value. Add a new resolution only when the dependent's range
+  excludes every fixed version. The commit body says which case it was.
+- **An advisory with no fixed release is ignored by numeric ID in `.yarnrc.yml`, never
+  silenced.** `npmAuditIgnoreAdvisories` holds one ID per entry, with the GHSA, the
+  reason the package cannot reach this repository's input, and what removes the entry.
+  Never use a package name, a glob, or a lowered `--severity`. A release above the
+  advisory range does not count as a fix until its diff shows one: http-cache-semantics
+  4.3.0 is outside the range of GHSA-ch52-4w7c-c8xp and leaves the flawed path unchanged.
 - **A root `scripts/` check may import a package only from the root `devDependencies`, and
   only one already in `yarn.lock`.** `scripts/lint-docs.mjs` once needed nothing installed.
   The controls check needs `yaml` to read workflows and the catalogue, and `zod` because a
