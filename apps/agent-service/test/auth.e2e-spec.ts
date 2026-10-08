@@ -126,7 +126,7 @@ describe('Service authentication, open', () => {
     expect(response.status).toBe(200);
   });
 
-  it('gives a cross-origin preflight no Access-Control-Allow-Origin', async () => {
+  it('gives a cross-origin preflight no Access-Control-Allow-Origin when open', async () => {
     const response = await request(service.app.getHttpServer())
       .options('/runs')
       .set('Origin', 'https://evil.example')
