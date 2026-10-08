@@ -2,13 +2,13 @@
 id: P5-A
 title: Agent2Agent v1.0 server with a signed Agent Card
 tier: 5
-status: in-progress
+status: shipped
 size: L
 depends_on: []
 blocks: [P5-B]
 issue: 107
 superseded_by: null
-controls: [CTL-ACC-01]
+controls: [CTL-ACC-01, CTL-ACC-02, CTL-ACC-03]
 ---
 
 # P5-A · Agent2Agent v1.0 server with a signed Agent Card
@@ -430,62 +430,170 @@ on what this server does, and the five exceptions stay visible in a file.
 
 ## Acceptance criteria
 
-- [ ] `GET /.well-known/agent-card.json` answers `200` with a card that round-trips through
+Every criterion was checked on model `stub` with no `generateContent` call. The service tier
+is `yarn turbo test:service`; the compose tier is the `browser-e2e` job in `e2e.yml`, and
+was run first by hand against a throwaway stack on the same compose file.
+
+- [x] `GET /.well-known/agent-card.json` answers `200` with a card that round-trips through
       the SDK's `AgentCard.fromJSON` unchanged. It declares a `JSONRPC` interface at `1.0`
       and one at `0.3`, `streaming: true` and `pushNotifications: false`. _Service tier;
-      model stub, memory stub._
-- [ ] With two keys in `A2A_CARD_SIGNING_KEYS`, the card carries two signatures. Each
+      model stub, memory stub._ `a2a.e2e-spec.ts`, "round-trips through AgentCard.fromJSON
+      unchanged" and "declares JSON-RPC at 1.0 and at 0.3, streaming and no push
+      notifications".
+- [x] With two keys in `A2A_CARD_SIGNING_KEYS`, the card carries two signatures. Each
       verifies with `verifyAgentCardSignature` and with `jose.flattenedVerify` over
       `canonicalize(card without signatures)`, against the JWKS entry matching its `kid`.
       Changing the interface URL, or deleting `securityRequirements`, fails both verifiers
       for both signatures. With the variable unset, the card has no `signatures` and the
       boot log contains `a2a.card.unsigned`. _Service tier; keys generated in the test._
-- [ ] A card fetched with no `A2A-Version` header carries either no signatures or
-      signatures that verify over the card as served. _Service tier._
-- [ ] With `SERVICE_CREDENTIALS` set, `POST /runs`, `POST /runs/stream` and
+      The "A2A card signing" block of `a2a.e2e-spec.ts`; the boot line is read from the
+      compiled service's stdout in `boot.e2e-spec.ts`, because pino writes from a worker
+      thread an in-process spec cannot read.
+- [x] A card fetched with no `A2A-Version` header carries either no signatures or
+      signatures that verify over the card as served. _Service tier._ It carries none:
+      "serves the v0.3 card, to a caller with no A2A-Version, with no signature".
+- [x] With `SERVICE_CREDENTIALS` set, `POST /runs`, `POST /runs/stream` and
       `POST /a2a/jsonrpc` each answer `401` with `WWW-Authenticate: Bearer realm="agent-service"`
       to a missing token and to a wrong one. `GET /health` and both `/.well-known/`
-      documents answer `200` with no token. _Service tier._
-- [ ] With it unset, the service boots, logs `auth.open`, serves a card with no
+      documents answer `200` with no token. _Service tier._ `auth.e2e-spec.ts`, which also
+      holds every `/fhir` and `/review` route to the same `401`.
+- [x] With it unset, the service boots, logs `auth.open`, serves a card with no
       `securitySchemes`, and both README quickstart curls return `200`. With it set to
       `nocolon`, the service exits 1 within two seconds with a message naming
       `SERVICE_CREDENTIALS`. _Service tier for the first; a process test for the second._
-- [ ] `SendStreamingMessage` emits, in order: a `Task` in `SUBMITTED`; one `WORKING` status
+      Both are process tests in `boot.e2e-spec.ts`, against `dist/main.js` in an empty
+      directory with no axis variable, because `auth.open` is only observable on stdout;
+      the open card is also checked in process ("declares no security when none is
+      enforced, …"). The second exits in about 0.9 s. `POST /runs/stream` answered `201`
+      until this PRD; it now answers `200`.
+- [x] `SendStreamingMessage` emits, in order: a `Task` in `SUBMITTED`; one `WORKING` status
       per node, whose `metadata.node` values equal the node sequence `executeTraced` reports
       for the same input; the `answer` and `run` artifacts; `COMPLETED`. The stream then
       closes. With `reflect` throwing on every attempt, it ends in `FAILED` with a message
       that names `reflect` and does not contain the thrown message. _Service tier; model
-      stub, memory stub._
-- [ ] `POST /runs/stream`'s frames are unchanged. The existing
+      stub, memory stub._ "emits the task, a WORKING status per node, both artifacts and
+      COMPLETED, then closes" and "ends the stream FAILED, naming reflect and not the error".
+- [x] `POST /runs/stream`'s frames are unchanged. The existing
       `'emits a terminal error frame and closes the stream'` spec passes without edits.
-      _Service tier._
-- [ ] Principal `b` calling `GetTask` on a task principal `a` created gets `-32001`, and
-      `ListTasks` for `b` does not include it. _Service tier._
-- [ ] A `SendMessage` with no `A2A-Version` header and method `message/send` completes a
-      task. _Service tier._
-- [ ] A `SendMessage` carrying `traceparent` with trace id _T_ produces `agent.node.*`
+      _Service tier._ `runs.e2e-spec.ts` is byte-identical to `main`'s.
+- [x] Principal `b` calling `GetTask` on a task principal `a` created gets `-32001`, and
+      `ListTasks` for `b` does not include it. _Service tier._ "does not show principal a's
+      task to principal b".
+- [x] A `SendMessage` with no `A2A-Version` header and method `message/send` completes a
+      task. _Service tier._ "completes a task for message/send with no A2A-Version header".
+- [x] A `SendMessage` carrying `traceparent` with trace id _T_ produces `agent.node.*`
       spans whose trace id is _T_, read from an in-memory exporter. _Service tier._
-- [ ] On the compose stack, a completed task's `id` has at least one row in the
+      `trace-context.e2e-spec.ts`, "parents an A2A SendMessage run in the caller trace", on
+      `initTelemetry`'s own propagator.
+- [x] On the compose stack, a completed task's `id` has at least one row in the
       checkpointer's `checkpoints` table under `thread_id = id`. _Compose tier; model stub,
-      memory live._
-- [ ] On the compose stack, a second `SendMessage` in the same `contextId` from the same
+      memory live._ `scripts/a2a-compose-check.mjs`: nine rows.
+- [x] On the compose stack, a second `SendMessage` in the same `contextId` from the same
       principal reports `messageCount: 3` in its `run` artifact. The same `contextId` from
       the other principal reports `messageCount: 1`. _Compose tier; memory live. On memory
-      stub both report 1, and the README says so._
-- [ ] `e2e.yml` runs the TCK at a pinned commit with `--transport jsonrpc --level must`
+      stub both report 1, and the README says so._ Same script; README, "Calling it as
+      another agent (A2A)".
+- [x] `e2e.yml` runs the TCK at a pinned commit with `--transport jsonrpc --level must`
       through the auth proxy against the compose stack, with authentication enforced. The
       step fails when a test not in `scripts/tck-expected.txt` fails, and when a listed
       test passes. It uploads `compatibility.json`. _Compose tier; model stub, memory live._
-- [ ] The Playwright suite in `e2e.yml` passes against the compose stack with
+      `263b9cf`: 67 passed, 6 failed, 162 skipped, locally and in run 37857819585 on the pull
+      request, which uploaded `compatibility.json`. `tck-check.mjs` also fails on a listed
+      test that did not run, and `tck-check.test.mjs` holds all three directions.
+- [x] The Playwright suite in `e2e.yml` passes against the compose stack with
       authentication enforced, and the console bundle in `apps/console/dist` contains no
-      service token.
-- [ ] A preflight `OPTIONS /runs` with `Origin: https://evil.example` gets no
-      `Access-Control-Allow-Origin` header. _Service tier._
-- [ ] `git grep -l -E 'BEGIN (EC |RSA )?PRIVATE KEY'` returns nothing.
-- [ ] The ADR exists and the ADR index lists it. `docs/STATUS.md` has the three rows. The
-      CTL-ACC rows are as proposed, in whichever of P4-A and P5-A lands second.
-- [ ] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
+      service token. The suite gained the one test that reads a response, a run streaming to
+      `[done]`; the others stop before one, so a token that never arrived passed them. The
+      token is checked absent from `apps/console/dist` and from the image's html. Six of six
+      passed in run 37857819585, where the compose check also passed all four lines.
+- [x] A preflight `OPTIONS /runs` with `Origin: https://evil.example` gets no
+      `Access-Control-Allow-Origin` header. _Service tier._ Enforced and open.
+- [x] `git grep -l -E 'BEGIN (EC |RSA )?PRIVATE KEY'` returns nothing. It matched P3-E's
+      `signer.test.ts`, which asserted on the header string and held no key; that test now
+      parses the PEM instead.
+- [x] The ADR exists and the ADR index lists it. `docs/STATUS.md` has the three rows. The
+      CTL-ACC rows are as proposed, in whichever of P4-A and P5-A lands second. ADR 0014;
+      rows 31, 32 and 33; CTL-ACC-01 and -02 `implemented`, CTL-ACC-03 `not-applicable`.
+- [x] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
       pass.
+
+## What shipped, and where it diverged
+
+_Recorded 2026-10-08, on the branch for #107._ Model `stub` throughout, zero `generateContent`
+calls. Service and unit tiers in process; integration and the compose tier against
+throwaway Postgres and Neo4j containers on host ports 38432 and 38687, removed after.
+
+**Built as designed.** `src/a2a/` and `src/auth/` as the Design laid them out; the
+`a2a-keygen` one-shot; the gateway's three prefixes; nginx's template; the TCK job with its
+proxy and list; ADR 0014; three STATUS rows; the CTL-ACC split.
+
+**Where it diverged, and why.**
+
+- **The SDK is held at `~1.2.1`.** 1.3.0 was published on 2026-09-29, nine days before this
+  work, and adds only database-backed stores. A caret would have taken it. A minor bump is a
+  change of its own, with the two-verifier test watching it.
+- **The card is served as ProtoJSON and signed once, at boot.** `JSON.stringify` of the
+  SDK's in-memory card writes a security scheme's oneof as `$case` and `value`, so the
+  served card is `AgentCard.toJSON`'s output. The SDK's request handler can sign on every
+  read, but ES256 signatures are randomized, so each fetch would get a new body and `ETag`,
+  and every `SendMessage` reads the card. The handler gets the unsigned in-memory card; the
+  routes serve the signed one.
+- **The v0.3 card is unsigned, by choice.** The SDK's translation copies the v1.0
+  signatures onto the v0.3 shape, which they do not cover. The criterion accepted either
+  outcome, and the served card is now built so it has none.
+- **The TCK fails six, not five.** The five are the spike's scenario-scripted content. The
+  sixth, CORE-SEND-003, is a defect in the TCK at `263b9cf`, which is also its `main`: the
+  requirement says an unsupported media type MUST get `ContentTypeNotSupportedError`, the
+  service returns it (`validateInputModes`), and the spec entry sets no `expected_error`, so
+  the generic check asserts success. Listed with that reason, rather than passed by
+  accepting the part.
+- **`GetExtendedAgentCard` answers `-32004`, not `-32007`.** With
+  `capabilities.extendedAgentCard: false` the SDK answers `UnsupportedOperationError`. The
+  TCK accepts it. The Protocol surface table said `-32007`.
+- **`CancelTask` on a running task is `-32002` at once.** The executor throws
+  `TaskNotCancelableError` from `cancelTask`. Publishing nothing would have made the SDK wait
+  for the run to finish and then answer the same error.
+- **One public loop, not a private generator consumed three times.** `RunsService.run`
+  opens the root span and the run record and folds the updates; the generator under it is
+  module-private. `execute` moved from `invoke` to the same fold. The loop streams in
+  `updates` and `tasks` mode, so the A2A executor can name the node a failure happened in
+  without the loop wrapping the error a node threw: the retry policy, the eval harness's
+  abort classification and the run record all read that error unchanged.
+- **Authentication denies by default.** The Design listed the covered routes. The middleware
+  instead exempts three and covers everything else, so `/fhir` and `/review`, amended in at
+  P3-E's review, needed no edit, and an unknown path is `401`. `CREDENTIALS` is provided by
+  an `AuthModule`, not `A2aModule`, because it is not A2A's.
+- **`messageCount` counts the messages the run was given:** the rebuilt history plus the new
+  message. The final state's count includes the assistant's turn, which would have made the
+  criterion's numbers 2 and 4.
+- **The task's `metadata` accumulates.** SDK 1.2.1 copies each status event's `metadata`
+  onto the task, so a completed task carries `node: "egress"` beside `outcome`. Harmless,
+  and the per-event values are what the criterion reads.
+- **The gateway has no span.** It re-injects the caller's trace context through the
+  propagator in `proxyReq`; an HTTP server span stayed a non-goal.
+- **Compose gained host-port variables for the three apps**, as the stores already had, so
+  a second stack can run beside the default one.
+
+**What the implementation found.**
+
+- **A fatal boot error stopped exiting.** Every `createLogger` started a pino transport,
+  one worker thread each, and `process.exit` deadlocks flushing about a dozen: a probe
+  exited with 8 and hung with 12. The new modules pushed `main` over the line, so a
+  malformed `SERVICE_CREDENTIALS`, or `DATABASE_URL` without `NEO4J_URI`, logged Nest's
+  error and hung. Every logger now shares one transport, and the conventions say so.
+- **Under `NodeSDK` an exported span is late.** The processor waits for the resource's
+  asynchronous attributes, so a spec that reads an in-memory exporter right after a request
+  sees nothing. The trace spec flushes first.
+- **P3-E's 403 criterion was P5-A's to close.** The review controller now passes the bearer
+  principal to `ReviewService.determine`, and `review-auth.e2e-spec.ts` checks that `a`'s
+  key sent with `b`'s token is `403` and the case stays pended. P3-E's box is ticked.
+- **A private-key header in a test is a committed key to a grep.** P3-E's signer test now
+  parses the key instead.
+
+**Residuals, each owned or stated.** Per-session authorization on `POST /runs`, console user
+login and TLS are in ADR 0014 with no owner, as the Non-goals said. Tasks that outlive the
+process have no owner either: P3-B shipped a run record a task could be rebuilt from, and
+no PRD claims doing it. P5-B's T5 now has a server to call, on the v0.3 path.
 
 ## Risks and open questions
 

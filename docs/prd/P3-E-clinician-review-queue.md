@@ -568,9 +568,11 @@ case store), the **ledger** axis (P3-C's `LEDGER_DATABASE_URL`) and the **auth**
       stopped, the route returns `503` and the case stays `pended`. Memory live. _Closed by
       P3-C (#108):_ `apps/agent-service/test/ledger.integration.test.ts`, the decision-path
       tests, with the database refusing connections and every open one cut.
-- [ ] Auth enforced (checkable once P5-A has shipped; until then open with owner P5-A): a
+- [x] Auth enforced (checkable once P5-A has shipped; until then open with owner P5-A): a
       valid signature from a registry entry naming principal `a`, sent with principal `b`'s
-      token, returns `403`.
+      token, returns `403`. _Ticked by P5-A on 2026-10-08:_ the controller now passes the
+      bearer principal, and `review-auth.e2e-spec.ts` checks the `403` and that the case
+      stays pended.
 
 **`$inquire`**
 

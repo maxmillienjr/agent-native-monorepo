@@ -5,7 +5,7 @@
 _Last updated 2026-10-08. If this section is more than a few weeks stale, trust the code
 over it and update it._
 
-**Sixteen PRDs are shipped and the system they describe is running.** The service answers
+**Seventeen PRDs are shipped and the system they describe is running.** The service answers
 `POST /runs` and `POST /runs/stream`; `memory-core` is constructed by the app rather than
 sitting beside it; the graph compiles with a checkpointer and a retry policy on every node
 that performs I/O; and `packages/eval-harness` measures the result. Verified against live
@@ -13,7 +13,7 @@ stores from an empty database: one run leaves episodic rows, `:Concept` and `:Fa
 `semantic_facts` rows and checkpoints under the runId its own response returned.
 
 **`docs/STATUS.md` is the authority on any capability sentence, including the ones above.**
-Thirty rows, each with a status and evidence cited by name — twenty-five `implemented`,
+Thirty-three rows, each with a status and evidence cited by name — twenty-eight `implemented`,
 one `planned`, three `stubbed`, one `removed`, none `broken`. The rule that keeps it true is in
 `.context/conventions.md`: a change that moves a row moves it there in the same pull
 request. `yarn lint:docs` fails CI when a PRD's status disagrees with its row below.
@@ -261,8 +261,8 @@ rationale on one case. The service accepts a determination only over an Ed25519 
 that it verifies against `REVIEWER_REGISTRY` and cannot produce, from a credential the policy
 lists, and only once per case. `POST /fhir/Claim/$inquire` returns each case's current
 response, and an overdue sweep flags cases and never decides them. STATUS row 28 says that on
-time means decided, not notified. P3-C has since added the ledger appends. P5-A still has to
-add the authentication of `/review/*`. Appeals belong to P3-F.
+time means decided, not notified. P3-C has since added the ledger appends. P5-A has since
+authenticated `/review/*`. Appeals belong to P3-F.
 
 **[P3-C](P3-C-decision-ledger.md) has shipped**, tracked in
 [#108](https://github.com/maxmillienjr/agent-native-monorepo/issues/108). What the service
@@ -281,6 +281,21 @@ open and lists the run as uncommitted. `$submit` and the determination route fai
 which closes P3-E's ledger criterion. Anchoring on a schedule, a second authority and key
 custody are a deployment's, and are listed in "Before real data". CTL-AUD-01 is
 `implemented`, and STATUS rows 29 and 30 are new.
+
+**[P5-A](P5-A-a2a-server.md) has shipped**, tracked in
+[#107](https://github.com/maxmillienjr/agent-native-monorepo/issues/107). Another agent can
+now find this one and call it, and the service checks who is calling. `/a2a/jsonrpc` is an
+A2A v1.0 server, with the v0.3 names kept for ADK for TypeScript 2.1.0, which is P5-B's T5.
+A task is a run, through the one loop `/runs` uses, and a context's history is rebuilt from
+episodic memory per principal. The Agent Card is signed with ES256 and checked by two
+verifiers, because the SDK's canonical form drops values the specification keeps. Every
+route except health and discovery needs a bearer token when `SERVICE_CREDENTIALS` is set,
+`/fhir` and `/review` included, and an unset variable runs open with a `warn` (ADR 0014). The
+compose stack runs authenticated, and `e2e.yml` runs the A2A TCK at a pinned commit: 67
+passed, and six failures are listed with reasons, one of them a TCK defect. Along the way
+the work found that a malformed variable had stopped exiting: one pino worker per logger
+deadlocked `process.exit`. CTL-ACC-01 is now three rows, two implemented and encryption in
+transit not applicable.
 
 **Where the detail lives.** Each PRD carries its own risks, its divergences from the design
 that was reviewed, and — where a shipped record turned out to be wrong — the correction that
@@ -376,11 +391,11 @@ provider actually operates under. Uses synthetic data only.
 
 ## Tier 5 — Interoperability
 
-| ID                              | Title                                            | Size | Status      |
-| ------------------------------- | ------------------------------------------------ | ---- | ----------- |
-| [P5-A](P5-A-a2a-server.md)      | Agent2Agent v1.0 server with a signed Agent Card | L    | in-progress |
-| [P5-B](P5-B-adk-portability.md) | Agent Development Kit portability appendix       | S    | accepted    |
-| [P5-C](P5-C-langgraph-1x.md)    | Upgrade to LangGraph 1.x                         | S    | shipped     |
+| ID                              | Title                                            | Size | Status   |
+| ------------------------------- | ------------------------------------------------ | ---- | -------- |
+| [P5-A](P5-A-a2a-server.md)      | Agent2Agent v1.0 server with a signed Agent Card | L    | shipped  |
+| [P5-B](P5-B-adk-portability.md) | Agent Development Kit portability appendix       | S    | accepted |
+| [P5-C](P5-C-langgraph-1x.md)    | Upgrade to LangGraph 1.x                         | S    | shipped  |
 
 ## Sequencing
 
