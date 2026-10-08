@@ -12,6 +12,7 @@ const policy: Policy = {
   effective: '2026-01-01',
   approvalPeriodDays: 90,
   disclaimer: 'Synthetic. A fixture policy invented for this unit test and nothing else.',
+  reviewerCredentials: ['synthetic-physician'],
   criteria: [
     { id: 'c1', title: 'First criterion', requirement: 'Synthetic requirement one.' },
     { id: 'c2', title: 'Second criterion', requirement: 'Synthetic requirement two.' },

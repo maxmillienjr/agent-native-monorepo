@@ -26,6 +26,19 @@ describe('the policy catalogue', () => {
     expect(() => new PolicyCatalogue([first, first])).toThrow(/two policies/);
   });
 
+  it('lists the credential types that may deny under each policy, all synthetic', () => {
+    for (const policy of catalogue.all()) {
+      expect(policy.reviewerCredentials.length, policy.id).toBeGreaterThan(0);
+      expect(policy.reviewerCredentials, policy.id).toContain('synthetic-physician');
+    }
+    const [first] = catalogue.all();
+    if (first === undefined) throw new Error('no policies');
+    expect(
+      PolicySchema.safeParse({ ...first, reviewerCredentials: ['board-certified-physician'] })
+        .success,
+    ).toBe(false);
+  });
+
   it('rejects a policy without a disclaimer', () => {
     const [first] = catalogue.all();
     const { disclaimer: _dropped, ...withoutDisclaimer } = first ?? {};

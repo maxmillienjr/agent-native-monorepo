@@ -48,6 +48,16 @@ export const PolicySchema = z
     approvalPeriodDays: z.number().int().positive(),
     disclaimer: z.string().min(40),
     criteria: z.array(PolicyCriterionSchema).min(1),
+    /**
+     * The credential types whose holder may deny a request under this policy
+     * (P3-E). 42 CFR § 422.566(d) requires an adverse decision to be reviewed
+     * by a professional "with expertise in the field of medicine … that is
+     * appropriate for the services at issue"; this list is that rule reduced
+     * to what code can check, a type match against the reviewer registry. It
+     * is not a licence check. Every type is prefixed `synthetic-`, because no
+     * real licensing board is named here (ADR 0003).
+     */
+    reviewerCredentials: z.array(z.string().regex(/^synthetic-[a-z0-9-]+$/)).min(1),
   })
   .strict()
   .superRefine((policy, ctx) => {

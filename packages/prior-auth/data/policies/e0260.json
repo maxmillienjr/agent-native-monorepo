@@ -23,5 +23,6 @@
       "title": "Position changes often enough to need a motor",
       "requirement": "The prescriber's note states that the position must change several times a day or without delay, which a manual crank cannot do."
     }
-  ]
+  ],
+  "reviewerCredentials": ["synthetic-physician"]
 }

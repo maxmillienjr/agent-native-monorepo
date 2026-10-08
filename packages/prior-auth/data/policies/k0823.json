@@ -33,5 +33,6 @@
       "title": "The member can operate it safely",
       "requirement": "The examination documents that the member has the vision, judgement and hand function to operate the controls safely."
     }
-  ]
+  ],
+  "reviewerCredentials": ["synthetic-physician", "synthetic-physiatry-physician"]
 }
