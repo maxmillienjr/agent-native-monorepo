@@ -366,8 +366,9 @@ describe('the decorator seam on RunsService', () => {
 });
 
 /**
- * What a replay names as its models (P1-E):
- * the ids come from the headers rather than from the configuration.
+ * What a replay names as its models (P1-E), and what it does under an
+ * `EVAL_CHAT_MODEL` override: the ids come from the headers, and an override
+ * is refused when the set is loaded — before any store is touched.
  */
 describe('replay decks and the model ids', () => {
   let dataset: string;
@@ -382,11 +383,25 @@ describe('replay decks and the model ids', () => {
 
   afterEach(() => {
     rmSync(dataset, { recursive: true, force: true });
+    vi.unstubAllEnvs();
+    vi.resetModules();
   });
 
   it('names the chat and embedding ids the headers recorded', () => {
     const decks = replayDecks(dataset, [{ taskId: 'memory-recall-001', trials: 1 }]);
     expect(decks.models()).toEqual({ chat: CHAT_MODEL, embedding: EMBEDDING_MODEL });
+  });
+
+  it('refuses a set recorded on the pinned id when EVAL_CHAT_MODEL names another', async () => {
+    vi.stubEnv('EVAL_CHAT_MODEL', 'gemini-flash-latest');
+    vi.resetModules();
+    const overridden = await import('./cassette-deps.js');
+
+    expect(() =>
+      overridden.replayDecks(dataset, [{ taskId: 'memory-recall-001', trials: 1 }]),
+    ).toThrow(
+      /gemini-2\.5-flash[\s\S]*gemini-flash-latest|gemini-flash-latest[\s\S]*gemini-2\.5-flash/,
+    );
   });
 });
 

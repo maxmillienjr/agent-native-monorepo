@@ -75,6 +75,28 @@ export function assertGateAxes(
   }
 }
 
+/**
+ * Refuses a gate on a chat model other than the pinned one.
+ *
+ * `EVAL_CHAT_MODEL` exists for a hand-started run on the floating alias, which
+ * is a migration comparison (P1-E). Its tally pooled into the pinned epoch
+ * would average two models and call the result one, and a replay under the
+ * override is already refused by the cassette player; this says so before the
+ * player is reached, with the reason rather than a header mismatch.
+ */
+export function assertGateModel(
+  gate: GateMode | undefined,
+  chatModel: string,
+  pinnedChatModel: string,
+): void {
+  if (gate === undefined || chatModel === pinnedChatModel) return;
+  throw new Error(
+    `EVAL_GATE=${gate} judges the pinned chat model \`${pinnedChatModel}\`, and EVAL_CHAT_MODEL ` +
+      `set this run to \`${chatModel}\`. A run on another id is a comparison, not evidence for ` +
+      'the gate; unset EVAL_GATE for it.',
+  );
+}
+
 /** The one field of `eval-abort.json` the gate repeats: the stable cause code, when there is one. */
 const AbortCodeSchema = z.object({ cause: z.object({ code: z.string() }).optional() });
 

@@ -35,13 +35,8 @@ import {
   watchForModelRequests,
   type TrialDecks,
 } from './cassette-deps.js';
-import {
-  applyGate,
-  assertGateAxes,
-  readGateMode,
-  type GateMode,
-} from './gate.js';
-import { CHAT_MODEL } from '../runs/runs.service.js';
+import { applyGate, assertGateAxes, assertGateModel, readGateMode, type GateMode } from './gate.js';
+import { CHAT_MODEL, PINNED_CHAT_MODEL } from '../runs/runs.service.js';
 import { committedCassetteDigest } from './history.js';
 import { runAndReport, type RunEnd } from './run-suite.js';
 import { SpanCollector } from './span-records.js';
@@ -103,6 +98,7 @@ async function main(): Promise<RunEnd> {
       // failing — and neither must a gate asked to judge an axis it cannot.
       assertExpectedAxes(axes);
       assertGateAxes(gate, axes);
+      assertGateModel(gate, CHAT_MODEL, PINNED_CHAT_MODEL);
 
       const liveCalls =
         mode === 'replay'

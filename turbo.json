@@ -56,7 +56,8 @@
         "LOG_LEVEL",
         "EVAL_GATE",
         "EVAL_HISTORY_DIR",
-        "EVAL_TASKS"
+        "EVAL_TASKS",
+        "EVAL_CHAT_MODEL"
       ]
     },
     "eval:retrieval": {

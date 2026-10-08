@@ -62,14 +62,29 @@ export interface TracedRun {
 export const AGENT_NAME = 'agent-service';
 
 /**
- * The chat model, named once.
+ * The chat model the service is pinned to, named once.
+ *
+ * "Pinned" is the stable id: `gemini-2.5-flash` has no dated variant to pin to,
+ * and `models.get` reports its version as `001`. Whether the model behind it
+ * stays the same is what the drift canary watches (P1-E).
+ */
+export const PINNED_CHAT_MODEL = 'gemini-2.5-flash';
+
+/**
+ * The chat model this process runs, resolved once at module load.
  *
  * A cassette header records it and the player refuses a set recorded against a
  * different one, so the string has to be readable from outside this class —
  * a second spelling of it in the eval wiring would make that check pass while
  * being wrong.
+ *
+ * `EVAL_CHAT_MODEL` overrides it for a live suite run started by hand on
+ * another id — the floating alias, as a migration comparison. Every reader
+ * (both clients, the recorder header, the replay check, the report) takes this
+ * one value, so an overridden run names the id it ran on, and a replay under
+ * an override is refused by the player before any store is reset.
  */
-export const CHAT_MODEL = 'gemini-2.5-flash';
+export const CHAT_MODEL = process.env['EVAL_CHAT_MODEL'] || PINNED_CHAT_MODEL;
 
 /**
  * The chat client, constructed in one place so the retry behaviour is the same

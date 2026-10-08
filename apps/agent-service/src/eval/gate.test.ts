@@ -11,7 +11,14 @@ import {
   type GateResult,
   type GradedReport,
 } from '@repo/eval-harness';
-import { applyGate, assertGateAxes, readGateMode, readRunOutput, type GateMode } from './gate.js';
+import {
+  applyGate,
+  assertGateAxes,
+  assertGateModel,
+  readGateMode,
+  readRunOutput,
+  type GateMode,
+} from './gate.js';
 
 /**
  * The gate as the runner applies it: a real output directory, a real dataset
@@ -257,5 +264,16 @@ describe('readGateMode and assertGateAxes', () => {
     expect(() => assertGateAxes('replay', replay, {})).not.toThrow();
     expect(() => assertGateAxes('live', live, { EVAL_HISTORY_DIR: '/h' })).not.toThrow();
     expect(() => assertGateAxes(undefined, live, {})).not.toThrow();
+  });
+
+  it('refuses a gate on a chat model other than the pinned one, and nothing without a gate', () => {
+    const pinned = 'gemini-2.5-flash';
+    for (const gate of ['live', 'replay', 'update'] as const) {
+      expect(() => assertGateModel(gate, 'gemini-flash-latest', pinned)).toThrow(
+        /`gemini-2\.5-flash`.*`gemini-flash-latest`/,
+      );
+      expect(() => assertGateModel(gate, pinned, pinned)).not.toThrow();
+    }
+    expect(() => assertGateModel(undefined, 'gemini-flash-latest', pinned)).not.toThrow();
   });
 });
