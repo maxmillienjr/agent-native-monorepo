@@ -633,63 +633,63 @@ Each criterion names the axis it is checked on where the model or the memory is 
 - [ ] `packages/eval-harness/datasets/prior-auth/` holds 24 task files, 24 bundles under
       `bundles/`, and `bundles/labels.json`. The labels commit precedes the first cassette
       commit in `git log`.
-- [ ] `packages/prior-auth/data/policies/` holds four policies, one per HCPCS Level II code
+- [x] `packages/prior-auth/data/policies/` holds four policies, one per HCPCS Level II code
       in the Design table, each with a `disclaimer` field.
-- [ ] `yarn lint:docs` runs `lint-data.mjs`, and it passes on the tree at merge with an
+- [x] `yarn lint:docs` runs `lint-data.mjs`, and it passes on the tree at merge with an
       empty `lint-data.allow.json` apart from the test fixtures' entries.
-- [ ] `scripts/lint-data.test.mjs` has one fixture per rule (D1-D5, T1, T2). Each fails
+- [x] `scripts/lint-data.test.mjs` has one fixture per rule (D1-D5, T1, T2). Each fails
       with the named rule and no other. A clean fixture passes, and an allowlist entry whose
       token is absent fails.
-- [ ] A mutation is recorded in the pull request. A bundle's HCPCS code is replaced with
+- [x] A mutation is recorded in the pull request. A bundle's HCPCS code is replaced with
       `00000` and `yarn lint:docs` exits 1 naming D2 and D4. The mutation is then reverted.
 - [ ] `fhir-validate.yml` passes with zero errors on base R4 and US Core 6.1.0 for all 24
       bundles and every captured response. The pinned validator, US Core and PAS versions
       are in the workflow file.
 - [ ] The same job's PAS 2.2.1 report lists only errors on the X12-bound elements named in
       Design. A reviewer checks the job summary and finds no other error class.
-- [ ] ADR 0008 exists, is indexed in `docs/adr/README.md`, and names every system D1
+- [x] ADR 0008 exists, is indexed in `docs/adr/README.md`, and names every system D1
       allows.
-- [ ] CTL-DATA-01 is `implemented` in `governance/controls.yaml` with the two anchors
+- [x] CTL-DATA-01 is `implemented` in `governance/controls.yaml` with the two anchors
       above, and the residual clause is a separate `procedural` control, in whichever of
       P3-D and P4-A merges second.
 
 **HTTP surface.** Model `stub` / memory `stub` unless stated.
 
-- [ ] `main.ts` installs no global pipe. `RunsController`'s two `@Body()` parameters carry
+- [x] `main.ts` installs no global pipe. `RunsController`'s two `@Body()` parameters carry
       the `RunRequest` pipe, and `runs.e2e-spec.ts` no longer installs one. The existing
       `POST /runs` tests pass unchanged, including the `400` on an invalid body.
-- [ ] `POST /fhir/Claim/$submit` with `Content-Type: application/fhir+json` and a committed
+- [x] `POST /fhir/Claim/$submit` with `Content-Type: application/fhir+json` and a committed
       bundle returns `200` and a `Bundle` whose `entry[0]` is a `ClaimResponse`. The same
       bundle as `application/json` returns the same response.
-- [ ] A body that is not a `Bundle` returns `400` with an `OperationOutcome`. A `Bundle`
+- [x] A body that is not a `Bundle` returns `400` with an `OperationOutcome`. A `Bundle`
       whose first entry is not a `Claim` does the same.
-- [ ] On the stub model every committed bundle returns `outcome: queued`, and none
+- [x] On the stub model every committed bundle returns `outcome: queued`, and none
       returns an approval.
-- [ ] A unit test feeds `toClaimResponse` a cast `AdverseDetermination` and asserts that it
+- [x] A unit test feeds `toClaimResponse` a cast `AdverseDetermination` and asserts that it
       throws. A second test drives both variants through the mapping and asserts that
       `outcome` is only ever `complete` or `queued`.
-- [ ] The sentinel test: a stub `assess` whose rationale contains a sentinel string
+- [x] The sentinel test: a stub `assess` whose rationale contains a sentinel string
       produces a serialized response that does not contain it.
-- [ ] `GET /fhir/metadata` returns a `CapabilityStatement` listing exactly the operations
+- [x] `GET /fhir/metadata` returns a `CapabilityStatement` listing exactly the operations
       implemented.
 
 **Clock**
 
-- [ ] With the `Clock` fixed at `2026-03-01T10:00:00Z`, a standard request's
+- [x] With the `Clock` fixed at `2026-03-01T10:00:00Z`, a standard request's
       `prior_auth.decision_due_by` span attribute is `2026-03-08T10:00:00Z` and an
       expedited request's is `2026-03-04T10:00:00Z`. `Claim.created` set a day earlier does
       not change either.
-- [ ] `clock.test-d.ts` asserts that `Parameters<typeof decisionDueBy>` is exactly
+- [x] `clock.test-d.ts` asserts that `Parameters<typeof decisionDueBy>` is exactly
       `[Date, Priority]`, so nothing the agent produces can reach the deadline.
 
 **Graph and agent.** Axes as stated per line.
 
-- [ ] Each of the four nodes emits an `agent.node.<name>` span, and a unit test asserts all
+- [x] Each of the four nodes emits an `agent.node.<name>` span, and a unit test asserts all
       four under one parent (memory `stub`).
-- [ ] `dispose` is a pure function with unit tests: all `met` with resolving citations gives
+- [x] `dispose` is a pure function with unit tests: all `met` with resolving citations gives
       approval; one `insufficient` gives a referral; a `met` whose only citation does not
       resolve gives a referral.
-- [ ] `SEAMS` includes `assess.criteria`. `EVAL_CASSETTE_MODE=replay yarn eval` on the
+- [x] `SEAMS` includes `assess.criteria`. `EVAL_CASSETTE_MODE=replay yarn eval` on the
       memory-recall suite produces the same per-grader results as on `main`. Model
       `replay` / memory `live`.
 - [ ] One recorded trial of each of the 24 tasks exists, recorded on model `live` / memory
@@ -698,18 +698,140 @@ Each criterion names the axis it is checked on where the model or the memory is 
       every task, the wrongful approval count, the unnecessary referral rate, and the labels'
       sha256. Model `replay` / memory `live`. The wrongful approval count is 0. The recorded
       values of the other numbers are written into `docs/STATUS.md`, whatever they are.
-- [ ] On model `stub`, the prior-auth suite skips all 24 tasks and says so beside the rate
+- [x] On model `stub`, the prior-auth suite skips all 24 tasks and says so beside the rate
       (P1-G).
 
 **Bookkeeping**
 
-- [ ] `docs/STATUS.md` has a row for the prior-authorization surface citing the service
+- [x] `docs/STATUS.md` has a row for the prior-authorization surface citing the service
       spec, and P3-A's clinician-gate row moves from `stubbed` to `implemented`, citing the
       prior-auth graph test in which a disposition is produced and gated.
-- [ ] No file added by this PRD contains a CPT code, a real NPI, or a resource without
+- [x] No file added by this PRD contains a CPT code, a real NPI, or a resource without
       `HTEST`. `lint-data.mjs` checks this. It is not self-reported.
-- [ ] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
+- [x] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
       pass.
+
+## What shipped, and where it diverged
+
+_Recorded 2026-10-08, on the branch for #84._ Every ticked criterion was verified on the
+stub and fixture axes, or with throwaway stores on model `replay` / memory `live`. No
+`generateContent` call was made: the free tier's daily quota was spent by other work that
+day, so the recording is the one step left (see "The recording").
+
+**The licence research came first, and neither answer was restrictive.** Both narrowed ADR
+0003, and ADR 0008 records them with sources read on 2026-10-08. ICD-10-CM has no licence of
+its own. WHO's licensing FAQ sends anyone asking about the US modification to NCHS, NCHS
+publishes none, and the FY2026 and FY2027 release files carry no notice. CDC's agency
+policy governs: public domain, on four conditions (attribution, no implied endorsement, no
+substantive change, a statement that the material is free on the agency's website). ADR
+0008 and `data/payer.json` carry the notice that meets them. HCPCS Level II is a CMS work,
+and CMS claims no copyright in it except the D range, which its own record layout says is
+the ADA's CDT. So D2 checks `^[A-CE-V][0-9]{4}$`, not P3-D's `^[A-V][0-9]{4}$`. ADR 0003 is
+not superseded. Its decision stands, and its premise that every Level II code is free was
+wrong for one letter.
+
+**The validator rejected the NPI design.** US Core 6.1.0's invariant `us-core-17` requires
+a valid NPI check digit. An NPI built to fail the check breaks the profile the job gates on,
+and one that passes could belong to a real provider. US Core requires an identifier, not
+an NPI, so the practitioner and the supplier carry `https://example.org/` identifiers and
+the bundles hold no NPI. `lint-data.mjs` keeps the check-digit rule, so between the two
+checks an NPI cannot enter payer data in either form.
+
+**Other validator findings.**
+
+- The validator rejects `https://example.org/` URLs as not for production data. The job
+  passes `-allow-example-urls true`, because RFC 2606 reserves the domain for this purpose.
+- An unversioned `meta.profile` resolved to US Core 7.0.0 once PAS was loaded, because PAS
+  2.2.1 depends on 7.0.0. Each profile now names `|6.1.0`.
+- Three PAS requirements are not X12, so the bundles carry them: the
+  `careTeamClaimScope` extension, a `PractitionerRole` on the care team, and
+  `Coverage.subscriber`. The last is there because PAS's `self-beneficiary` invariant
+  reads "self" in X12's code list.
+- After those changes the PAS report has 0 errors outside the expected classes. The
+  approval response conforms to the PAS response bundle outright. The queued response
+  fails only on `outcome`. The expected classes are `requestType`, `certificationType`,
+  `item.category`, `queued` in place of X12's `A4`, and two classes that follow from those:
+  the claim-update branch and the summary of no profile matching.
+
+**Types.** P3-D sketched each FHIR schema with `satisfies z.ZodType<fhir4.X>`. A nested
+passthrough schema's inferred type is too large for `tsc` to write into a declaration file
+(TS7056). So each schema is annotated `z.ZodType<…>` instead. That is the same
+assignability check, shown by mutating `servicedDate` to a number, and the exported types
+are base R4's own. `@types/fhir` is a dependency rather than a devDependency, because the
+emitted declarations name it.
+
+**Other divergences.**
+
+- **The administrative stratum makes no model call.** `lookup` refers a request whose
+  coverage is inactive, and `assess` is skipped. Its labels are `assessed: false`, and
+  `finding_agreement` passes on it only if nothing was assessed. A trial set therefore
+  costs 20 `assess` calls, not the 24 that Design counted.
+- **`toClaimResponse` takes `Policy | undefined` and a context** carrying `respondedAt`,
+  the case id (for `identifier` and `preAuthRef`) and the referral reason. A code with no
+  policy is referred, not rejected.
+- **`yarn eval --suite prior-auth` cannot reach the script**, because Turbo reads the flag
+  as its own. The suite is `EVAL_SUITE=prior-auth`, which is declared in `turbo.json`.
+  `--suite` works when the script is run directly. The suite defaults to one trial a task.
+- **The bundles are generated from `scenarios.ts`**, where every note is plain text a
+  reviewer can read. The scenarios were still written against the stratum table by hand,
+  and `dataset.test.ts` holds the committed files to that source byte for byte.
+- **`lint-data.mjs` also decodes plain-text attachments** and applies D4 to the note text,
+  so a code inside base64 cannot pass unseen. The planned mutation names T1 as well as D2
+  and D4, because a code-shaped value under a JSON `code` key is T1's anchor.
+- **CTL-DATA-01 has no `test` anchor.** P4-A's resolver requires the test file to sit in a
+  workspace with a `test:<tier>` script. The root scripts' `node:test` files run inside
+  `yarn lint:docs`, so the `ci` anchor on that step is the executable evidence.
+- **One JSON parser for both media types.** Nest registers its default `jsonParser` only
+  when no middleware of that name is applied. A second `express.json` for FHIR alone would
+  have stopped `application/json` being parsed. `configureApp` is called by `main.ts` and
+  the spec. A body the parser rejects never reaches the FHIR controller, so the global
+  filter writes an `OperationOutcome` for `/fhir/` paths.
+- **The fictional payer is P2-B's Quillmark Health Partners.** P2-B landed first and
+  picked the names. Its corpus gives Quillmark a Medicare Advantage plan, Quillmark Senior
+  Advantage, and P3-D's timeframes bind Medicare Advantage and exclude exchange plans. So
+  the two plans here are Quillmark Senior Advantage and a Plus variant.
+- **The policy thresholds are deliberately not real figures**: an AHI of 18, a 21-day
+  trial, a 60-day home assessment and 35 degrees of head elevation. They cannot be
+  mistaken for an LCD's.
+
+**The mutation, recorded 2026-10-08.** `E0601` in
+`pa-e0601-all-met-structured.bundle.json` was replaced with `00000`. `yarn lint:docs` exited
+1, naming D2, D4 and T1 against that file, and the change was reverted.
+
+**The recording.** It needs model `live` and memory `live`, because the cassette header
+pins both. That means a key and the two stores. Run it from a clean tree at the branch
+head, because the header records the sha:
+
+```
+EVAL_SUITE=prior-auth EVAL_CASSETTE_MODE=record EVAL_TRIALS=1 \
+  EVAL_EXPECT_AXES='model=live memory=live' EVAL_TASKS=<one day's ids> yarn eval
+```
+
+The whole set makes 20 `generateContent` calls: one `assess.criteria` call for each request
+that is not administrative. It makes no embedding call. An `AssessmentFormatError` retry
+adds one call each time it fires. The free tier allows exactly 20 calls a day and 5 a
+minute. The client waits out a per-minute 429, but a single retry would exhaust the day.
+So the plan is two batches of 10, using the `EVAL_TASKS` filter P1-E added. Day 1 is the
+twelve E0601 and E0470 tasks, ten of which call the model. Day 2 is the twelve K0823 and
+E0260 tasks. Afterwards, run
+`EVAL_SUITE=prior-auth EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval` to write
+`datasets/prior-auth/baselines/replay.json`. Commit the 24 cassettes and the baseline, add
+a prior-auth replay step to `agent-eval.yml`, and write the recorded figures into STATUS
+row 26.
+
+**Open criteria.**
+
+- **The labels commit precedes the first cassette commit.** The labels have a commit of
+  their own, "label the prior-authorization requests", but no cassette commit exists yet,
+  so the ordering cannot be read from `git log`. It closes with the recording.
+- **One recorded trial of each task, and the replayed report with its four figures.**
+  These wait for the recording above. The replay path is built: on model `stub` all 24
+  tasks are skipped and each figure says "not measured". With no cassettes, a replay aborts
+  and names the first task that has none.
+- **`fhir-validate.yml` passes, and its PAS report lists only X12-bound errors.** Both
+  were verified locally with the pinned validator 6.10.4 in a Java 17 container. The run
+  covered the 24 bundles and 27 captured responses: 51 files, 0 gated errors, 0 `other`.
+  Each criterion is ticked only once the workflow has run on the pull request.
 
 ## Risks and open questions
 

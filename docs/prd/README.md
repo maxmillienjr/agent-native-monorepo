@@ -13,8 +13,8 @@ stores from an empty database: one run leaves episodic rows, `:Concept` and `:Fa
 `semantic_facts` rows and checkpoints under the runId its own response returned.
 
 **`docs/STATUS.md` is the authority on any capability sentence, including the ones above.**
-Twenty-five rows, each with a status and evidence cited by name — nineteen `implemented`, one
-`planned`, four `stubbed`, one `removed`, none `broken`. The rule that keeps it true is in
+Twenty-six rows, each with a status and evidence cited by name — twenty-one `implemented`,
+one `planned`, three `stubbed`, one `removed`, none `broken`. The rule that keeps it true is in
 `.context/conventions.md`: a change that moves a row moves it there in the same pull
 request. `yarn lint:docs` fails CI when a PRD's status disagrees with its row below.
 
@@ -192,11 +192,33 @@ constructor for a denial needs a clinician's attestation. That constructor sits 
 `./clinician` subpath, which a lint rule bars from the graph. Type tests fail
 `yarn turbo typecheck` if an unattested denial compiles, and every run response is now
 parsed strictly on the way out. On review, the chat graph's `disposition` channel moved to
-P3-D, so nothing produces a disposition yet, and `docs/STATUS.md` row 20 says `stubbed`.
+P3-D, whose prior-authorization graph is now the producer, so `docs/STATUS.md` row 20 is
+`implemented`.
 LangGraph still does not check what a node returns, at 0.4.10 or at 1.4.18. Implementing
 this found that the `Node` alias misses an undeclared key returned beside a declared one;
 an explicit return type catches it. CTL-HUM-01 is `implemented`, with its title narrowed to
 what is enforced.
+
+**[P3-D](P3-D-payer-dataset-fhir-prior-auth.md) is in progress**, tracked in
+[#84](https://github.com/maxmillienjr/agent-native-monorepo/issues/84), with one step left:
+the live recording. The service answers `POST /fhir/Claim/$submit` and `GET /fhir/metadata`.
+It runs a second graph (intake, lookup, assess, dispose) inline and returns a
+`ClaimResponse`: `complete` for an automated approval, `queued` for a referral. The surface is
+shaped after PAS 2.2.1 and does not conform to it, because ADR 0008 keeps X12 code values out
+of the repository. The model reports a finding per criterion. Code decides, and approves only
+when every criterion is met with a citation into the member's own bundle. The deadline counts
+from the server's receipt. The dataset is one fictional payer, four DME policies coded in
+HCPCS Level II, and 24 labelled requests in six strata. The licence research that had to come
+first found ICD-10-CM public domain on CDC's conditions, and found HCPCS Level II's D range to
+be the ADA's CDT. ADR 0008 records both and narrows ADR 0003 without superseding it.
+`yarn lint:docs` now runs a CPT and synthetic-data detector, so CTL-DATA-01 is `implemented`
+and its unprovable half is a procedural CTL-DATA-02. The HL7 validator found two problems in
+the design. US Core rejects an NPI that fails its check digit, so the data holds no NPI at
+all. And an unversioned profile resolved to US Core 7.0.0, so each profile names 6.1.0. After
+those fixes, every bundle and every captured response validates against US Core 6.1.0, and the
+only distance from PAS left is X12. The recording needs 20 `generateContent` calls, a full
+free-tier day, so it is planned as two batches on two days. Until it is made, the agent's
+accuracy on the labelled set is unmeasured, and STATUS row 26 says so.
 
 **Where the detail lives.** Each PRD carries its own risks, its divergences from the design
 that was reviewed, and — where a shipped record turned out to be wrong — the correction that
