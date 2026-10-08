@@ -22,13 +22,9 @@ async function bootstrap(): Promise<void> {
   // which variable was wrong — not a native stack trace.
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { abortOnError: false });
 
+  // Authentication, the body parser, trace context, `/health` and the A2A
+  // routes, in that order. There is no `enableCors()`: see `configureApp`.
   configureApp(app);
-  app.enableCors();
-
-  const httpAdapter = app.getHttpAdapter();
-  httpAdapter.get('/health', (_req, res) => {
-    httpAdapter.reply(res, { status: 'ok' }, 200);
-  });
 
   const port = process.env['PORT'] ?? 3000;
   await app.listen(port);
