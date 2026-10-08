@@ -5,6 +5,8 @@ import { MemoryModule } from '../memory/memory.module.js';
 import { LedgerModule } from '../ledger/ledger.module.js';
 import { RUN_LEDGER } from '../ledger/ledger.tokens.js';
 import type { RunLedger } from '../ledger/run-ledger.js';
+import { AppealController } from './appeal.controller.js';
+import { AppealService } from './appeal.service.js';
 import { ReviewController } from './review.controller.js';
 import { ReviewService } from './review.service.js';
 import { ReviewSweep } from './review.sweep.js';
@@ -15,15 +17,18 @@ const logger = createLogger('review');
 /**
  * The clinician review surface (P3-E, ADR 0010): the queue, one case, the
  * determination route, and the overdue sweep that flags and never decides.
+ * Appeals (P3-F) are beside them under `/review/appeals`, and the same sweep
+ * forwards an appeal whose reconsideration deadline has passed (ADR 0015).
  * It reads and decides `prior_auth_cases` through `CASE_REPOSITORY`, and
  * takes the request clock from `FhirModule`, so the queue's `overdue`, the
  * sweep and `$submit`'s deadline all read the same clock.
  */
 @Module({
   imports: [MemoryModule, FhirModule, LedgerModule],
-  controllers: [ReviewController],
+  controllers: [ReviewController, AppealController],
   providers: [
     ReviewService,
+    AppealService,
     ReviewSweep,
     {
       // Unset: no registry, and the determination route answers 503 while the

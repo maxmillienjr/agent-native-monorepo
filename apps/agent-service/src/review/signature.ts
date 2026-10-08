@@ -30,6 +30,35 @@ export function signedBytes(input: {
   );
 }
 
+/**
+ * The bytes a reviewer signs to act on an appeal (P3-F):
+ * `canonicalJson({ action, appealId, body, runId })`, with the case id as
+ * `runId` as above.
+ *
+ * The keys differ from a determination's, so a signature over an initial
+ * determination never verifies as a reconsideration, and the reverse. The
+ * action inside them stops a dismissal's signature being presented as a
+ * reconsideration. The appeal id stops a signature being moved to another
+ * appeal on the same case, which a dismissal makes possible: a case can have
+ * a dismissed appeal and a new one.
+ */
+export function appealSignedBytes(input: {
+  readonly action: 'reconsideration' | 'dismissal';
+  readonly appealId: string;
+  readonly caseId: string;
+  readonly body: unknown;
+}): Buffer {
+  return Buffer.from(
+    canonicalJson({
+      action: input.action,
+      appealId: input.appealId,
+      body: input.body,
+      runId: input.caseId,
+    }),
+    'utf8',
+  );
+}
+
 const BASE64URL = /^[A-Za-z0-9_-]+$/;
 const ED25519_PUBLIC_KEY_BYTES = 32;
 const ED25519_SIGNATURE_BYTES = 64;

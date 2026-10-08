@@ -431,7 +431,7 @@ export class ReviewService {
 }
 
 /** Two credentials are the same credential. */
-function sameCredential(
+export function sameCredential(
   a: { readonly type: string; readonly jurisdiction: string },
   b: { readonly type: string; readonly jurisdiction: string },
 ): boolean {
