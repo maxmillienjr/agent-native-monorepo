@@ -89,6 +89,7 @@ describe('stage2Prompts', () => {
         topK: 10,
         shouldContinue: true,
         aborted: false,
+        pendingApproval: null,
       },
       {
         callLlm: async (system, user) => {

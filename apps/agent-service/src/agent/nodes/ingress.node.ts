@@ -39,6 +39,7 @@ export async function ingressNode(
       stepCount: 0,
       shouldContinue: true,
       aborted: false,
+      pendingApproval: null,
       toolOutputs: [],
     };
   });
