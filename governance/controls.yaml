@@ -445,6 +445,15 @@ controls:
       - { kind: ci, workflow: ci.yml, job: ci, run: yarn turbo test:service }
     note: Delivered by P3-E. The service holds public keys only, so a stolen service credential cannot mint a denial, and the case id inside the signed bytes stops a signature being replayed onto another case. A signature binds a determination to a key, not to a person; identity proofing and key custody are P3-C's, and the credential check is a type match against the policy's list, not a licence check. Authenticating the caller of /review/* is P5-A's.
 
+  - id: CTL-HUM-03
+    title: An adverse determination can be appealed, is reconsidered only by a physician who did not make it, and an affirmed or lapsed reconsideration is forwarded to independent review
+    status: planned
+    owner: P3-F
+    maps:
+      - { framework: nist-ai-rmf-1.0, ref: GOVERN 3.2 }
+      - { framework: nist-ai-rmf-1.0, ref: MANAGE 4.1 }
+    note: Planned under P3-F, after 42 CFR § 422.590(h) and § 422.592(a). Non-involvement is enforced against the reviewer who signed the initial determination, not against everyone involved in it, and the forward to the independent entity is a recorded event, not a delivery to an outside system.
+
   - id: CTL-AUD-01
     title: Each decision is recorded in a hash-chained, tamper-evident ledger
     status: planned

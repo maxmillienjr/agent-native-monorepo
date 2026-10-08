@@ -5,7 +5,7 @@ tier: 3
 status: shipped
 size: S
 depends_on: []
-blocks: [P3-C, P3-D, P3-E]
+blocks: [P3-C, P3-D, P3-E, P3-F]
 issue: 75
 superseded_by: null
 controls: [CTL-HUM-01]

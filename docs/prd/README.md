@@ -345,7 +345,7 @@ provider actually operates under. Uses synthetic data only.
 | [P3-C](P3-C-decision-ledger.md)               | Hash-chained, tamper-evident decision ledger                  | L    | accepted    |
 | [P3-D](P3-D-payer-dataset-fhir-prior-auth.md) | Synthetic payer dataset and FHIR prior-authorization surface  | L    | in-progress |
 | [P3-E](P3-E-clinician-review-queue.md)        | Clinician review queue, `$inquire` and the decision clock     | M    | shipped     |
-| P3-F                                          | Appeals: reconsideration lifecycle for adverse determinations | M    | draft       |
+| [P3-F](P3-F-appeals-reconsideration.md)       | Appeals: reconsideration lifecycle for adverse determinations | M    | draft       |
 
 ## Tier 4 — Governance and agent security as code
 
@@ -436,6 +436,11 @@ the cassette. Both are shipped, so it is not drawn under them.
 P3-E is drawn under P3-D, whose case and pended response it picks up. It also depends on
 P3-A directly, because its clinician route is the one caller of the `./clinician` entry
 point, and that is not drawn a second time.
+
+P3-F is drawn under P3-E, whose decided case, reviewer registry, signed payload and sweep it
+extends. It also depends on P3-A directly, because it adds a second branded constructor,
+`attestReconsideration`, to `@repo/determination/clinician`. Like P3-E, it can be built
+before P3-C's ledger, so the ledger is not drawn as an edge.
 
 P3-B is drawn under P1-B, its last predecessor, because the run record reuses the
 cassette's decision format and moves its seam wrappers into production; it also depends on
