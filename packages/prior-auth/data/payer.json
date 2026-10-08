@@ -13,12 +13,14 @@
     {
       "id": "quillmark-senior-advantage",
       "name": "Quillmark Senior Advantage (synthetic)",
-      "regime": "CMS-0057-F"
+      "regime": "CMS-0057-F",
+      "lineOfBusiness": "medicare-advantage"
     },
     {
       "id": "quillmark-senior-advantage-plus",
       "name": "Quillmark Senior Advantage Plus (synthetic)",
-      "regime": "CMS-0057-F"
+      "regime": "CMS-0057-F",
+      "lineOfBusiness": "medicare-advantage"
     }
   ]
 }

@@ -29,5 +29,7 @@
       "requirement": "A titration study or the prescriber's note documents that bi-level pressure at the ordered settings controlled the apnea."
     }
   ],
-  "reviewerCredentials": ["synthetic-physician", "synthetic-pulmonology-physician"]
+  "reviewerCredentials": ["synthetic-physician", "synthetic-pulmonology-physician"],
+  "reconsiderationCredentials": ["synthetic-physician", "synthetic-pulmonology-physician"],
+  "requestType": "item-or-service"
 }

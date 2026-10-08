@@ -34,5 +34,7 @@
       "requirement": "The examination documents that the member has the vision, judgement and hand function to operate the controls safely."
     }
   ],
-  "reviewerCredentials": ["synthetic-physician", "synthetic-physiatry-physician"]
+  "reviewerCredentials": ["synthetic-physician", "synthetic-physiatry-physician"],
+  "reconsiderationCredentials": ["synthetic-physician", "synthetic-physiatry-physician"],
+  "requestType": "item-or-service"
 }

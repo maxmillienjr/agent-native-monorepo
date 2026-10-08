@@ -24,5 +24,7 @@
       "requirement": "The prescriber's note states that the position must change several times a day or without delay, which a manual crank cannot do."
     }
   ],
-  "reviewerCredentials": ["synthetic-physician"]
+  "reviewerCredentials": ["synthetic-physician"],
+  "reconsiderationCredentials": ["synthetic-physician"],
+  "requestType": "item-or-service"
 }

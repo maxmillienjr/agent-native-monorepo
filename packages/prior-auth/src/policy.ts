@@ -58,6 +58,24 @@ export const PolicySchema = z
      * real licensing board is named here (ADR 0003).
      */
     reviewerCredentials: z.array(z.string().regex(/^synthetic-[a-z0-9-]+$/)).min(1),
+    /**
+     * The credential types whose holder may reconsider a denial under this
+     * policy (P3-F). § 422.590(h)(2) requires "a physician with expertise in
+     * the field of medicine that is appropriate for the services at issue",
+     * which is narrower than the initial review's "physician or other
+     * appropriate health care professional" (§ 422.566(d)), so every type here
+     * must name a physician. P3-A records no basis for a denial, so the
+     * physician rule applies to every reconsideration, the conservative error.
+     */
+    reconsiderationCredentials: z.array(z.string().regex(/^synthetic-[a-z0-9-]*physician$/)).min(1),
+    /**
+     * What kind of request the policy covers. Only a pre-service request for an
+     * item or service has the 30-day reconsideration clock; a Part B drug has 7
+     * days (§ 422.590(c)) and a payment request 60 (§ 422.590(b)). A literal,
+     * so a policy of another kind fails to parse rather than inheriting the
+     * wrong clock.
+     */
+    requestType: z.literal('item-or-service'),
   })
   .strict()
   .superRefine((policy, ctx) => {
@@ -86,6 +104,13 @@ export const PayerSchema = z
             id: z.string().min(1),
             name: z.string().min(1),
             regime: z.literal('CMS-0057-F'),
+            /**
+             * The line of business, which decides which appeal rules apply
+             * (P3-F). Only Medicare Advantage's Part 422, Subpart M is built,
+             * so any other value fails to parse rather than being reconsidered
+             * under the wrong rules.
+             */
+            lineOfBusiness: z.literal('medicare-advantage'),
           })
           .strict(),
       )

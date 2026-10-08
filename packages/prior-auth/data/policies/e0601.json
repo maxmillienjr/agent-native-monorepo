@@ -29,5 +29,7 @@
       "requirement": "A signed prescriber order names the device and its pressure setting or pressure range."
     }
   ],
-  "reviewerCredentials": ["synthetic-physician", "synthetic-sleep-medicine-physician"]
+  "reviewerCredentials": ["synthetic-physician", "synthetic-sleep-medicine-physician"],
+  "reconsiderationCredentials": ["synthetic-physician", "synthetic-sleep-medicine-physician"],
+  "requestType": "item-or-service"
 }

@@ -39,6 +39,29 @@ describe('the policy catalogue', () => {
     ).toBe(false);
   });
 
+  it('lets only physician credential types reconsider, and covers items and services alone (P3-F)', () => {
+    for (const policy of catalogue.all()) {
+      expect(policy.reconsiderationCredentials, policy.id).toContain('synthetic-physician');
+      for (const type of policy.reconsiderationCredentials) expect(type).toMatch(/physician$/);
+      expect(policy.requestType).toBe('item-or-service');
+    }
+    const [first] = catalogue.all();
+    if (first === undefined) throw new Error('no policies');
+    const reconsideredBy = (types: string[]) =>
+      PolicySchema.safeParse({ ...first, reconsiderationCredentials: types }).success;
+    expect(reconsideredBy(['synthetic-pharmacist'])).toBe(false);
+    expect(reconsideredBy(['synthetic-nurse-practitioner'])).toBe(false);
+    expect(reconsideredBy(['synthetic-sleep-medicine-physician'])).toBe(true);
+    expect(PolicySchema.safeParse({ ...first, requestType: 'part-b-drug' }).success).toBe(false);
+  });
+
+  it('names Medicare Advantage as every plan line of business (P3-F)', () => {
+    const payer = loadPayer();
+    expect(payer.plans.map((plan) => plan.lineOfBusiness)).toEqual(
+      payer.plans.map(() => 'medicare-advantage'),
+    );
+  });
+
   it('rejects a policy without a disclaimer', () => {
     const [first] = catalogue.all();
     const { disclaimer: _dropped, ...withoutDisclaimer } = first ?? {};

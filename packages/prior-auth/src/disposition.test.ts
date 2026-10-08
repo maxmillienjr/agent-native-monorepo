@@ -13,6 +13,8 @@ const policy: Policy = {
   approvalPeriodDays: 90,
   disclaimer: 'Synthetic. A fixture policy invented for this unit test and nothing else.',
   reviewerCredentials: ['synthetic-physician'],
+  reconsiderationCredentials: ['synthetic-physician'],
+  requestType: 'item-or-service',
   criteria: [
     { id: 'c1', title: 'First criterion', requirement: 'Synthetic requirement one.' },
     { id: 'c2', title: 'Second criterion', requirement: 'Synthetic requirement two.' },
