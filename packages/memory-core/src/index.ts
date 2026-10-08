@@ -35,7 +35,11 @@ export {
   type Neo4jWriter,
   CypherNeo4jWriter,
 } from './semantic/neo4j/neo4j.writer.js';
-export { type Neo4jReader, CypherNeo4jReader } from './semantic/neo4j/neo4j.reader.js';
+export {
+  type GraphReadScope,
+  type Neo4jReader,
+  CypherNeo4jReader,
+} from './semantic/neo4j/neo4j.reader.js';
 export { createNeo4jClient } from './semantic/neo4j/neo4j.client.js';
 export { ensureSemanticConstraints } from './semantic/neo4j/neo4j.constraints.js';
 

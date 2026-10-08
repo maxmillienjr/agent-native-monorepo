@@ -125,6 +125,7 @@ export class AgentServiceHarness implements AgentHarness<MemoryOutcome> {
     });
 
     await this.seeds.applySeed({
+      sessionId,
       concepts: task.seeds.neo4j,
       relationships: task.seeds.relationships,
       facts: task.seeds.pgvector.map((fact) => ({ ...fact, embedding: fixtureEmbedding() })),

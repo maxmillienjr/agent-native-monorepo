@@ -25,6 +25,12 @@ export const RelationshipWriteSchema = z.object({
   type: z.string(),
   confidence: z.number().min(0).max(1),
   episodeId: z.string().uuid(),
+  /**
+   * The session that wrote the edge, and part of its merge key. An edge is
+   * only safe to show to the session that wrote it, because an explanation
+   * returns the edges it crosses (P2-D's M1, extended to edges).
+   */
+  sessionId: z.string().uuid(),
   createdAt: z.date().default(() => new Date()),
 });
 
@@ -32,6 +38,13 @@ export const FactWriteSchema = z.object({
   contentHash: z.string(),
   text: z.string(),
   episodeId: z.string().uuid(),
+  /**
+   * Set on the `:Fact` when it is created and never on match: the first-writer
+   * rule pgvector's `ON CONFLICT DO NOTHING` already follows, so the two
+   * stores agree about which session owns a fact (ADR 0004). The `MENTIONS`
+   * edges this write adds carry it as well.
+   */
+  sessionId: z.string().uuid(),
   entityIds: z.array(z.string()).default([]),
 });
 
@@ -97,18 +110,23 @@ export class CypherNeo4jWriter implements Neo4jWriter {
           // The fact node is merged before the UNWIND, so an extraction that
           // produced facts but no entities still lands the fact — an empty
           // list ends the pipeline after the MERGE, it does not undo it.
+          //
+          // `sessionId` is the first writer's and stays so. A second session
+          // restating the fact adds its own `MENTIONS` edges, which a read
+          // scoped to it can see, but not the fact, which it does not own.
           await session.run(
             `MERGE (f:Fact {contentHash: $contentHash})
-             ON CREATE SET f.text = $text, f.episodeId = $episodeId
+             ON CREATE SET f.text = $text, f.episodeId = $episodeId, f.sessionId = $sessionId
              ON MATCH SET f.text = $text
              WITH f
              UNWIND $entityIds AS eid
              MATCH (c:Concept {id: eid})
-             MERGE (f)-[:MENTIONS]->(c)`,
+             MERGE (f)-[:MENTIONS {sessionId: $sessionId}]->(c)`,
             {
               contentHash: validated.contentHash,
               text: validated.text,
               episodeId: validated.episodeId,
+              sessionId: validated.sessionId,
               entityIds: validated.entityIds,
             },
           );
@@ -128,12 +146,15 @@ export class CypherNeo4jWriter implements Neo4jWriter {
       try {
         // Neither endpoint nor the type: all three are model output taken
         // from the conversation, like the entity id above.
+        //
+        // The session is in the merge key, so two sessions that extract the
+        // same edge write two edges. Concepts stay global, keyed on id.
         const session = this.driver.session();
         try {
           await session.run(
             `MERGE (a:Concept {id: $fromId})
              MERGE (b:Concept {id: $toId})
-             MERGE (a)-[r:RELATES_TO {type: $type}]->(b)
+             MERGE (a)-[r:RELATES_TO {type: $type, sessionId: $sessionId}]->(b)
              ON CREATE SET r.confidence = $confidence,
                            r.episodeId = $episodeId,
                            r.createdAt = datetime($createdAt)
@@ -143,6 +164,7 @@ export class CypherNeo4jWriter implements Neo4jWriter {
               fromId: validated.fromId,
               toId: validated.toId,
               type: validated.type,
+              sessionId: validated.sessionId,
               confidence: validated.confidence,
               episodeId: validated.episodeId,
               createdAt: validated.createdAt.toISOString(),

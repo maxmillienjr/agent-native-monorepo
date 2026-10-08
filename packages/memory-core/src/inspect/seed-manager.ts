@@ -37,19 +37,28 @@ export type SeedState = z.input<typeof SeedStateSchema>;
  * outcome grader keyed on the run would fail every trial after the first, for
  * a reason that has nothing to do with the agent.
  *
- * **The Neo4j half is database-wide.** Neither `:Concept` nor `:Fact` carries a
- * session — `mergeEntity` writes an id, a label and a description, and nothing
- * else — so "everything this session's trials wrote" cannot be expressed in
- * Cypher. What can be expressed is "everything the seed does not own", and that
- * is what runs. Point an evaluation run at a disposable database.
+ * **The Neo4j half is database-wide.** `:Concept` carries no session —
+ * `mergeEntity` writes an id, a label and a description, and nothing else — and
+ * a `:Fact` carries only its first writer's, so "everything this session's
+ * trials wrote" cannot be expressed in Cypher. What can be expressed is
+ * "everything the seed does not own", and that is what runs. Point an
+ * evaluation run at a disposable database.
  *
  * The checkpointer's three tables are deliberately untouched: they are outside
  * `runMigrations`, `PostgresSaver.setup()` owns them, and each run mints a
  * fresh `thread_id`, so they accumulate rather than interfere.
  */
 export const SeedApplicationSchema = z.object({
+  /**
+   * The session every graph edge and `:Fact` in the seed is written under.
+   * Seeds name it once rather than per entry, because a seed is one session's
+   * state; pgvector rows still carry their own, as `semantic_facts` does.
+   */
+  sessionId: z.string().uuid(),
   concepts: z.array(EntityWriteSchema).default([]),
-  relationships: z.array(RelationshipWriteSchema.omit({ createdAt: true })).default([]),
+  relationships: z
+    .array(RelationshipWriteSchema.omit({ createdAt: true, sessionId: true }))
+    .default([]),
   facts: z.array(FactUpsertSchema).default([]),
   /**
    * `:Fact` nodes and their `MENTIONS` edges, written through `mergeFact`.
@@ -60,7 +69,7 @@ export const SeedApplicationSchema = z.object({
    * independent of `facts` on purpose — a fact present in one index and absent
    * from the other is exactly what an ablation or a graph-path task needs.
    */
-  graphFacts: z.array(FactWriteSchema).default([]),
+  graphFacts: z.array(FactWriteSchema.omit({ sessionId: true })).default([]),
 });
 export type SeedApplication = z.input<typeof SeedApplicationSchema>;
 
@@ -100,13 +109,19 @@ export class PgNeo4jSeedManager implements SeedManager {
 
         for (const concept of validated.concepts) await neo4jWriter.mergeEntity(concept);
         for (const relationship of validated.relationships) {
-          await neo4jWriter.mergeRelationship({ ...relationship, createdAt: new Date() });
+          await neo4jWriter.mergeRelationship({
+            ...relationship,
+            sessionId: validated.sessionId,
+            createdAt: new Date(),
+          });
         }
         for (const fact of validated.facts) await pgvectorWriter.upsertFact(fact);
         // After the concepts, and that order is load-bearing: `mergeFact` links
         // with `MATCH (c:Concept {id: eid})`, which matches nothing for a concept
         // not yet written and so drops the edge without an error.
-        for (const fact of validated.graphFacts) await neo4jWriter.mergeFact(fact);
+        for (const fact of validated.graphFacts) {
+          await neo4jWriter.mergeFact({ ...fact, sessionId: validated.sessionId });
+        }
       } finally {
         span.end();
       }

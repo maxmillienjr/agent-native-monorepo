@@ -13,8 +13,21 @@ const SEARCH = {
   attributes: { [GEN_AI.OPERATION_NAME]: GEN_AI_OPERATION.SEARCH_MEMORY },
 };
 
+/**
+ * The session a graph read is confined to. Required, and with no
+ * `crossSession` escape: every fact returned is one the session owns, and
+ * every edge crossed is one it wrote (P2-D's M1).
+ */
+export interface GraphReadScope {
+  readonly sessionId: string;
+}
+
 export interface Neo4jReader {
-  expandFromSeeds(seedEntityIds: string[], hopDepth: number): Promise<RetrievalCandidate[]>;
+  expandFromSeeds(
+    seedEntityIds: string[],
+    hopDepth: number,
+    scope: GraphReadScope,
+  ): Promise<RetrievalCandidate[]>;
 }
 
 /**
@@ -25,14 +38,20 @@ export interface Neo4jReader {
  * P2-B's ablation, and `MemoryModule` no longer constructs this class. It is
  * kept in `memory-core`, and not deleted with the fusion, for two callers: the
  * ablation runner, which reproduces the measurement that decided ADR 0002, and
- * P2-D, whose explanation measurement reads the graph. It returns facts from
- * every session — there is no scope parameter — so P4-B's graph session filter
- * (M1) is a precondition of wiring it into a request again, and P2-D owns it.
+ * P2-D, whose explanation measurement reads the graph. It is scoped to one
+ * session, as P4-B's M1 specified and P2-D extended to edges: the facts it
+ * returns are the session's own, reached over `RELATES_TO` and `MENTIONS`
+ * edges the session wrote. P2-B's corpus is one session, so the scope leaves
+ * the ablation's numbers as they were.
  */
 export class CypherNeo4jReader implements Neo4jReader {
   constructor(private readonly driver: Driver) {}
 
-  async expandFromSeeds(seedEntityIds: string[], hopDepth: number): Promise<RetrievalCandidate[]> {
+  async expandFromSeeds(
+    seedEntityIds: string[],
+    hopDepth: number,
+    scope: GraphReadScope,
+  ): Promise<RetrievalCandidate[]> {
     return tracer.startActiveSpan('memory.neo4j.expand', SEARCH, async (span) => {
       try {
         span.setAttribute('seedEntityCount', seedEntityIds.length);
@@ -57,10 +76,16 @@ export class CypherNeo4jReader implements Neo4jReader {
           // and `ORDER BY score DESC` alone leaves the rest to the store. It is
           // unique — the :Fact(contentHash) constraint says so — so the order is
           // total, and it is the same key pgvector's reader and rrfMerge use.
+          //
+          // The scope covers every relationship on the path, `MENTIONS`
+          // included, as well as the fact: an edge another session wrote is
+          // not a way into this session's facts.
           const result = await session.run(
             `MATCH path = (seed:Concept)-[:RELATES_TO*0..${Math.min(hopDepth, 3)}]-(related:Concept)
                           <-[:MENTIONS]-(f:Fact)
              WHERE seed.id IN $seedIds
+               AND f.sessionId = $sessionId
+               AND all(r IN relationships(path) WHERE r.sessionId = $sessionId)
              WITH f, min(length(path)) AS distance
              RETURN DISTINCT f.contentHash AS contentHash,
                     f.text AS text,
@@ -69,7 +94,7 @@ export class CypherNeo4jReader implements Neo4jReader {
                     1.0 / (1.0 + distance) AS score
              ORDER BY score DESC, contentHash
              LIMIT 50`,
-            { seedIds: seedEntityIds },
+            { seedIds: seedEntityIds, sessionId: scope.sessionId },
           );
 
           const candidates: RetrievalCandidate[] = result.records.map((record) => ({

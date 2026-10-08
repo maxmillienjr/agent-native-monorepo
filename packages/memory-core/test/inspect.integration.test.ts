@@ -60,6 +60,7 @@ describe.skipIf(SKIP)('memory inspection (integration)', () => {
       contentHashes: SEED_HASHES,
     });
     await reset.applySeed({
+      sessionId: SESSION,
       concepts: [{ id: SEED_CONCEPTS[0]!, label: 'Seed Concept' }],
       relationships: [],
       facts: [
@@ -95,6 +96,7 @@ describe.skipIf(SKIP)('memory inspection (integration)', () => {
       contentHash: `hash-${runId}`,
       text: `A fact written by ${runId}.`,
       episodeId: runId,
+      sessionId: SESSION,
       entityIds: ['langgraph'],
     });
   }
@@ -200,6 +202,7 @@ describe.skipIf(SKIP)('memory inspection (integration)', () => {
         contentHashes: [...SEED_HASHES, GRAPH_HASH],
       });
       await reset.applySeed({
+        sessionId: SESSION,
         concepts: [
           { id: SEED_CONCEPTS[0]!, label: 'Seed Concept' },
           { id: GRAPH_CONCEPT, label: 'Graph Concept' },
@@ -239,7 +242,9 @@ describe.skipIf(SKIP)('memory inspection (integration)', () => {
     it('writes a graph fact the reader reaches from its concept at one hop', async () => {
       await applyGraphSeed();
 
-      const found = await new CypherNeo4jReader(driver).expandFromSeeds([GRAPH_CONCEPT], 1);
+      const found = await new CypherNeo4jReader(driver).expandFromSeeds([GRAPH_CONCEPT], 1, {
+        sessionId: SESSION,
+      });
 
       expect(found).toHaveLength(1);
       expect(found[0]).toMatchObject({ source: 'neo4j', contentHash: GRAPH_HASH, score: 0.5 });

@@ -68,6 +68,7 @@ export async function reflectNode(
       await deps.neo4jWriter.mergeRelationship({
         ...rel,
         episodeId: state.runId,
+        sessionId: state.sessionId,
         createdAt: new Date(),
       });
     }
@@ -89,10 +90,13 @@ export async function reflectNode(
         sessionId: state.sessionId,
       });
 
+      // The session goes to the graph as it goes to pgvector: a graph read is
+      // scoped to the facts a session owns and the edges it wrote (P2-D's M1).
       await deps.neo4jWriter.mergeFact({
         contentHash,
         text: fact.text,
         episodeId: state.runId,
+        sessionId: state.sessionId,
         entityIds,
       });
     }

@@ -69,6 +69,7 @@ describe.skipIf(SKIP)('VectorRetrievalFacade (integration)', () => {
       type: 'USES',
       confidence: 0.95,
       episodeId: '550e8400-e29b-41d4-a716-446655440000',
+      sessionId: '550e8400-e29b-41d4-a716-446655440001',
     });
     await neo4jWriter.mergeRelationship({
       fromId: 'memory',
@@ -76,6 +77,7 @@ describe.skipIf(SKIP)('VectorRetrievalFacade (integration)', () => {
       type: 'STORED_IN',
       confidence: 0.9,
       episodeId: '550e8400-e29b-41d4-a716-446655440000',
+      sessionId: '550e8400-e29b-41d4-a716-446655440001',
     });
 
     // Seed pgvector with test embeddings
@@ -114,12 +116,14 @@ describe.skipIf(SKIP)('VectorRetrievalFacade (integration)', () => {
       contentHash: 'sha256-facade-test-1',
       text: 'LangGraph enables stateful agent workflows with memory.',
       episodeId: '550e8400-e29b-41d4-a716-446655440000',
+      sessionId: '550e8400-e29b-41d4-a716-446655440001',
       entityIds: ['langgraph'],
     });
     await neo4jWriter.mergeFact({
       contentHash: 'sha256-facade-graph-only',
       text: 'Graph traversal reaches facts no vector search returned.',
       episodeId: '550e8400-e29b-41d4-a716-446655440000',
+      sessionId: '550e8400-e29b-41d4-a716-446655440001',
       entityIds: ['langgraph'],
     });
 
@@ -150,7 +154,7 @@ describe.skipIf(SKIP)('VectorRetrievalFacade (integration)', () => {
   it('does not return a fact only the graph holds, though the graph reaches it', async () => {
     // The graph still holds and reaches the fact, so its absence below is the
     // facade not reading the graph, and not a seed that failed to land.
-    const reachable = await neo4jReader.expandFromSeeds(['langgraph'], 1);
+    const reachable = await neo4jReader.expandFromSeeds(['langgraph'], 1, { sessionId: sessionA });
     expect(reachable.map((c) => c.contentHash)).toContain('sha256-facade-graph-only');
 
     const results = await facade.retrieve({

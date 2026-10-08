@@ -115,6 +115,7 @@ describe.skipIf(SKIP)('Retrieval ordering determinism (integration)', () => {
           contentHash,
           text,
           episodeId: EPISODE_ID,
+          sessionId: SESSION_ID,
           entityIds: [SEED_CONCEPT_ID],
         });
 
@@ -155,7 +156,9 @@ describe.skipIf(SKIP)('Retrieval ordering determinism (integration)', () => {
       // The premise of the whole suite. If the scores were distinct the order
       // would be determined by `score DESC` alone and the secondary key would
       // never be consulted, so a passing determinism test would prove nothing.
-      const candidates = await neo4jReader.expandFromSeeds([SEED_CONCEPT_ID], 2);
+      const candidates = await neo4jReader.expandFromSeeds([SEED_CONCEPT_ID], 2, {
+        sessionId: SESSION_ID,
+      });
 
       expect(candidates).toHaveLength(WRITE_ORDER.length);
       expect(new Set(candidates.map((c) => c.score)).size).toBe(1);
@@ -165,7 +168,9 @@ describe.skipIf(SKIP)('Retrieval ordering determinism (integration)', () => {
       const orders: string[][] = [];
       for (let cycle = 0; cycle < CYCLES; cycle++) {
         await reseed();
-        const candidates = await neo4jReader.expandFromSeeds([SEED_CONCEPT_ID], 2);
+        const candidates = await neo4jReader.expandFromSeeds([SEED_CONCEPT_ID], 2, {
+          sessionId: SESSION_ID,
+        });
         orders.push(candidates.map((c) => c.contentHash));
       }
 
@@ -177,7 +182,9 @@ describe.skipIf(SKIP)('Retrieval ordering determinism (integration)', () => {
     it('breaks the tie on contentHash rather than on store order', async () => {
       // Written scrambled, read back sorted: the tie is broken by the declared
       // secondary key and not by whatever order the store happens to hold.
-      const candidates = await neo4jReader.expandFromSeeds([SEED_CONCEPT_ID], 2);
+      const candidates = await neo4jReader.expandFromSeeds([SEED_CONCEPT_ID], 2, {
+        sessionId: SESSION_ID,
+      });
 
       expect(candidates.map((c) => c.contentHash)).toEqual(SORTED_ORDER);
     });

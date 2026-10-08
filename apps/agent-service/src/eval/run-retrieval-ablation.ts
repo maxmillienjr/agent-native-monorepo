@@ -345,7 +345,9 @@ async function fusedRetrieve(
     stores.pgReader.searchByCosine(query.queryEmbedding, query.topK * 2, {
       sessionId: query.sessionId,
     }),
-    stores.neo4jReader.expandFromSeeds(query.seedEntityIds, query.hopDepth),
+    stores.neo4jReader.expandFromSeeds(query.seedEntityIds, query.hopDepth, {
+      sessionId: query.sessionId,
+    }),
   ]);
   return rrfMerge([vector, graph], query.topK);
 }
@@ -393,6 +395,7 @@ async function runConditions(
   const goldSeeds = new Map(dataset.queries.map((q) => [q.id, [...q.goldSeeds]]));
 
   const seedApplication = (shape: GraphShape) => ({
+    sessionId,
     concepts: [...dataset.entities.values()].map((e) => ({
       id: e.id,
       label: e.label,
@@ -473,7 +476,7 @@ async function runConditions(
             },
           );
           const [graph, graphMs] = await timed(() =>
-            neo4jReader.expandFromSeeds(seedEntityIds, hop),
+            neo4jReader.expandFromSeeds(seedEntityIds, hop, { sessionId }),
           );
           const [hybrid, hybridMs] = await timed(() =>
             fusedRetrieve(stores, {
