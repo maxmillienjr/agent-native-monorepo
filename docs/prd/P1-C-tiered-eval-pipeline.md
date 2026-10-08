@@ -2,7 +2,7 @@
 id: P1-C
 title: Tiered evaluation pipeline replacing the nightly stub
 tier: 1
-status: in-progress
+status: shipped
 size: M
 depends_on: [P1-A, P1-B]
 blocks: [P1-D, P1-E, P1-F]
@@ -387,7 +387,7 @@ and no request leaves the process.
       both cases. Both paths surface `classifyRateLimit`'s answer in the abort summary.
       `rate-limit.test.ts`, with a fake key and `fetch` stubbed: 1, 7 (fake timers) and 1,
       1, and each case asserts the rendered abort summary's `Cause` line.
-- [ ] **Model `live` / memory `live`:** the classifier matches a real free-tier 429. The
+- [x] **Model `live` / memory `live`:** the classifier matches a real free-tier 429. The
       criterion above uses a synthetic body. Verified by one dispatch of the live job at
       `trials=3` (twenty-four calls against twenty) on a day nobody needs the key. The run
       must end `aborted` with `daily-quota` as the cause, list the trials that completed,
@@ -395,7 +395,15 @@ and no request leaves the process.
       different shape, this criterion stays unchecked and the classifier is fixed against
       the captured body. If no repository secret exists when this ships, the dispatch may
       be replaced by the same run made locally with the developer key, stated as such.
-      **Not run.** It spends a day's quota, so the owner schedules it; it stays with P1-C.
+      **Met on 2026-10-08, by a dispatch rather than a `trials=3` run.** The first dispatch
+      after the owner added the secret (run 37812971653) found the project's daily quota
+      already spent. The first `generateContent` returned a real free-tier 429 with
+      `quotaId` `GenerateRequestsPerDayPerProjectPerModel-FreeTier` and `quotaValue` `20`.
+      `classifyRateLimit` returned `daily-quota`, no retry was made, and the run ended
+      `aborted` with `completedTrials: []`. The `eval-live` artifact's `eval-abort.json`
+      carries the real `errorDetails` — `google.rpc.Help`, `QuotaFailure` and `RetryInfo` —
+      in the shape the synthetic fixture assumed, so the classifier needed no change. The
+      gate reported `aborted`, which blocks.
 - [x] The `live` job runs only on `schedule` and `workflow_dispatch`, is in one concurrency
       group, reads the key from `secrets.GOOGLE_API_KEY`, and sets
       `EVAL_EXPECT_AXES=model=live memory=live`. **With no secret configured**, the job is
