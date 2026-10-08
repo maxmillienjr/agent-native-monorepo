@@ -1,5 +1,5 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
-import pino, { type Logger } from 'pino';
+import pino, { type DestinationStream, type Logger } from 'pino';
 
 interface LogContext {
   correlationId?: string;
@@ -15,8 +15,24 @@ export function getCorrelationId(): string | undefined {
   return als.getStore()?.correlationId;
 }
 
+let sharedTransport: DestinationStream | undefined;
+
+/**
+ * One transport for every logger in the process.
+ *
+ * Each pino `transport` option starts a worker thread, and a process exiting
+ * with many of them deadlocks: `process.exit` flushes each synchronously, and
+ * with about a dozen workers it never returns. Measured on 2026-10-08 — 8
+ * loggers exited, 12 hung — and `agent-service` creates one per module. Once
+ * P5-A's modules took it past that, a malformed variable stopped exiting 1
+ * and hung instead, with the fatal line never written.
+ */
+function transport(): DestinationStream {
+  return (sharedTransport ??= pino.transport({ target: 'pino/file', options: { destination: 1 } }));
+}
+
 export function createLogger(name: string): Logger {
-  return pino({
+  const options = {
     name,
     level: process.env['LOG_LEVEL'] ?? 'info',
     // Without this an Error logged as `{ error: err }` serializes to `{}`, because
@@ -27,9 +43,6 @@ export function createLogger(name: string): Logger {
       const store = als.getStore();
       return store?.correlationId ? { correlationId: store.correlationId } : {};
     },
-    transport:
-      process.env['NODE_ENV'] !== 'production'
-        ? { target: 'pino/file', options: { destination: 1 } }
-        : undefined,
-  });
+  };
+  return process.env['NODE_ENV'] !== 'production' ? pino(options, transport()) : pino(options);
 }
