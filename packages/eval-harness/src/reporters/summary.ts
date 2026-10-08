@@ -89,6 +89,19 @@ export function renderMarkdownSummary(report: SuiteReport<unknown>): string {
     lines.push('', `> **Budgets:** ${report.usage.reason}.`);
   }
 
+  // Beside the rate and the exclusions, above the table: a suite's own
+  // figures (a wrongful approval count) are what a reader came for.
+  if (report.figures !== undefined && report.figures.length > 0) {
+    lines.push(
+      '',
+      ...report.figures.map(
+        (figure) =>
+          `- **${figure.label}:** ${figure.value}` +
+          (figure.note === undefined ? '' : ` (${figure.note})`),
+      ),
+    );
+  }
+
   lines.push(
     '',
     '| Task | pass@k | pass^k | Trials passed |',

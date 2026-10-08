@@ -37,6 +37,7 @@ export {
   type Score,
   type SkippedTask,
   type SpanRecord,
+  type SuiteFigure,
   type Suite,
   type SuiteReport,
   type Task,
@@ -314,3 +315,24 @@ export {
   type GateResult,
   type GateVerdict,
 } from './gate/render.js';
+
+// The prior-authorization suite (P3-D): its dataset, graders and figures.
+export {
+  PRIOR_AUTH_DATASET_DIR,
+  PRIOR_AUTH_SUITE,
+  PriorAuthLabelSchema,
+  PriorAuthTaskSpecSchema,
+  loadPriorAuthLabels,
+  loadPriorAuthSuite,
+  type PriorAuthLabel,
+  type PriorAuthLabels,
+  type PriorAuthTaskSpec,
+} from './prior-auth/dataset.js';
+export {
+  citationsResolve,
+  dispositionKind,
+  findingAgreement,
+  noFalseApproval,
+  type PriorAuthOutcome,
+} from './prior-auth/graders.js';
+export { priorAuthFigures } from './prior-auth/figures.js';

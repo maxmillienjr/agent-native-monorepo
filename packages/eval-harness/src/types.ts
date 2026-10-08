@@ -469,6 +469,18 @@ export interface ModelIds {
   readonly embedding: string;
 }
 
+/**
+ * A number a suite reports beside its pass rate that the rate cannot express,
+ * such as the prior-authorization suite's wrongful approval count. It is
+ * computed by the suite's own code and printed by every reporter as given.
+ */
+export interface SuiteFigure {
+  readonly label: string;
+  readonly value: string;
+  /** Whether the figure gates anything, and on what. */
+  readonly note?: string;
+}
+
 export interface SuiteReport<TOutcome = Outcome> {
   readonly suite: string;
   readonly startedAt: string;
@@ -487,6 +499,8 @@ export interface SuiteReport<TOutcome = Outcome> {
   readonly passRate: number;
   /** Tasks excluded from the run, and therefore from `passRate`. */
   readonly skipped: readonly SkippedTask[];
+  /** The suite's own figures, printed beside the rate (P3-D's prior-auth suite has four). */
+  readonly figures?: readonly SuiteFigure[];
   /** Graders whose judgements have no calibration set behind them. */
   readonly uncalibratedGraders: readonly string[];
   /**
