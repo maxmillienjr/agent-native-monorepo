@@ -1,0 +1,1 @@
+A fixture for lint-data's T1: this line says CPT and carries 00000.

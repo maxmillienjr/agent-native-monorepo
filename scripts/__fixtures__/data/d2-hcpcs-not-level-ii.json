@@ -1,0 +1,14 @@
+{
+  "resourceType": "Basic",
+  "id": "fixture-d2",
+  "meta": {
+    "security": [
+      { "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason", "code": "HTEST" }
+    ]
+  },
+  "code": {
+    "coding": [
+      { "system": "http://www.cms.gov/Medicare/Coding/HCPCSReleaseCodeSets", "code": "D0000" }
+    ]
+  }
+}

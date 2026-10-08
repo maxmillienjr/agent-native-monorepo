@@ -1,0 +1,37 @@
+[
+  {
+    "file": "scripts/__fixtures__/data/d1-system-not-listed.json",
+    "token": "http://www.ama-assn.org/go/cpt",
+    "reason": "lint-data.test.mjs fixture for D1: a Coding under the forbidden CPT system."
+  },
+  {
+    "file": "scripts/__fixtures__/data/d2-hcpcs-not-level-ii.json",
+    "token": "D0000",
+    "reason": "lint-data.test.mjs fixture for D2: a placeholder in the CDT range under HCPCS."
+  },
+  {
+    "file": "scripts/__fixtures__/data/d3-icd10cm-shape.json",
+    "token": "0000",
+    "reason": "lint-data.test.mjs fixture for D3: a value without the ICD-10-CM shape."
+  },
+  {
+    "file": "scripts/__fixtures__/data/d4-code-shaped-value.json",
+    "token": "0000T",
+    "reason": "lint-data.test.mjs fixture for D4: an all-zero value with the Category III shape."
+  },
+  {
+    "file": "scripts/__fixtures__/data/d5-name-without-digits.json",
+    "token": "Fixturename",
+    "reason": "lint-data.test.mjs fixture for D5: a name part that does not end in digits."
+  },
+  {
+    "file": "scripts/__fixtures__/data/t1-anchored-code.txt",
+    "token": "00000",
+    "reason": "lint-data.test.mjs fixture for T1: an all-zero code shape on a line that says CPT."
+  },
+  {
+    "file": "scripts/__fixtures__/data/t2-ssn-shape.txt",
+    "token": "000-00-0000",
+    "reason": "lint-data.test.mjs fixture for T2: an all-zero Social Security number shape."
+  }
+]

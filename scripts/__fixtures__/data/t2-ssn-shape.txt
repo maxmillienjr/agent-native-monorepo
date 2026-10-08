@@ -1,0 +1,1 @@
+A fixture for lint-data's T2: 000-00-0000 has the shape of a Social Security number.

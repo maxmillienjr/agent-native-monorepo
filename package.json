@@ -21,7 +21,7 @@
     "canary": "turbo build --filter=@repo/agent-service... --output-logs=errors-only && yarn workspace @repo/agent-service canary",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint:docs": "node scripts/lint-docs.mjs && node --test 'scripts/*.test.mjs'",
+    "lint:docs": "node scripts/lint-docs.mjs && node scripts/lint-data.mjs && node --test 'scripts/*.test.mjs'",
     "controls:matrix": "node scripts/lint-controls.mjs --write",
     "clean": "turbo clean"
   },

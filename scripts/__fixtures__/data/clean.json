@@ -1,0 +1,24 @@
+{
+  "resourceType": "Patient",
+  "id": "fixture-clean",
+  "meta": {
+    "security": [
+      { "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason", "code": "HTEST" }
+    ]
+  },
+  "identifier": [{ "system": "https://example.org/fhir/sid/member-id", "value": "FIXTURE-1" }],
+  "name": [{ "family": "Fixture100", "given": ["Clean200"] }],
+  "telecom": [{ "system": "phone", "value": "217-555-0100" }],
+  "address": [{ "city": "Springfield", "state": "IL" }],
+  "extension": [
+    {
+      "url": "https://example.org/fhir/StructureDefinition/fixture",
+      "valueCodeableConcept": {
+        "coding": [
+          { "system": "http://hl7.org/fhir/sid/icd-10-cm", "code": "G47.33" },
+          { "system": "http://www.cms.gov/Medicare/Coding/HCPCSReleaseCodeSets", "code": "E0601" }
+        ]
+      }
+    }
+  ]
+}

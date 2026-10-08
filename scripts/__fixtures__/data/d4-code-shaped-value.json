@@ -1,0 +1,10 @@
+{
+  "resourceType": "Basic",
+  "id": "fixture-d4",
+  "meta": {
+    "security": [
+      { "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason", "code": "HTEST" }
+    ]
+  },
+  "code": { "text": "0000T" }
+}
