@@ -141,8 +141,19 @@ which shipped before the command existed.
   stops the run — a stale cassette, an axis refusal, a request that reached the model
   during replay, an exhausted quota, an unreachable store — writes `eval-abort.json` and an
   `eval-summary.md` headed `aborted`, names the error and the trials that finished, and
-  also exits 1. The runner clears all four files before it starts, so read the directory,
+  also exits 1. The runner clears all five files before it starts, so read the directory,
   never the exit code.
+- **In CI the exit code is the gate's verdict, not the pass rate.** With `EVAL_GATE` set
+  (P1-D), `yarn eval` also writes `eval-gate.json` and appends the verdict to
+  `eval-summary.md`. `EVAL_GATE=replay` compares every `(task, trial, grader)` cell with
+  `packages/eval-harness/datasets/memory-recall/baselines/replay.json` and fails on any
+  difference, an improvement included, or on an abort; a committed trial that is known to
+  fail is fine as long as the baseline says so. `EVAL_GATE=live` pools nights of one
+  cassette set and fails only on `regressed`. **A pull request that changes a grader
+  result, a task, an assertion or the cassette set regenerates the baseline in the same
+  change:** `EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval`, against the stores, with
+  no key. The baseline diff is how a reviewer sees the behaviour that changed; never re-run
+  the job instead.
 - **A Turbo task declares every variable its process reads.** Turbo runs in
   `envMode: strict` — the 2.x default — so a task receives only the variables its `env`
   array names, and an undeclared one arrives as `undefined` with nothing said. The damage
@@ -212,7 +223,11 @@ which shipped before the command existed.
   keying on a normalized shape, serves the old answer to the new prompt and calls it a
   pass. Re-recording needs a live key and about eight `generateContent` calls against a
   20-request daily free tier, so it is a deliberate act rather than a step in a loop.
-  ADR 0005 records the seam choice and what replay stops measuring.
+  ADR 0005 records the seam choice and what replay stops measuring. **After a re-record,
+  regenerate the replay baseline** with `EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval`
+  and commit both: the baseline is tied to the set by a digest, and a new set with the old
+  baseline fails the gate as `stale-digest`. A contributor without a key cannot re-record;
+  a maintainer with one pushes the new set and baseline to the pull request's branch.
   **The free tier also allows 5 `generateContent` calls a minute**, and a record or live
   run of both tasks makes about eight in half a minute, so it reaches that limit. The chat
   client is meant to wait it out: `stopOnDailyQuota` retries any 429 that does not name a

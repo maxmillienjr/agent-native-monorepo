@@ -2,11 +2,11 @@
 id: P1-D
 title: Statistical regression gate against committed baselines
 tier: 1
-status: accepted
+status: in-progress
 size: L
 depends_on: [P1-A, P1-C]
 blocks: []
-issue: null
+issue: 76
 superseded_by: null
 ---
 
@@ -497,60 +497,168 @@ turbo.json                                                   EVAL_GATE, EVAL_HIS
 Each criterion names the axis that verifies it. **Pure** means a unit test with no store and
 no model.
 
-- [ ] `compareReplay` returns `match` for identical tables. For each of the six difference
+- [x] `compareReplay` returns `match` for identical tables. For each of the six difference
       kinds it returns `differs` with that kind named, and it ignores `explanation`. **Pure.**
-- [ ] **Model `replay` / memory `live`:** `EVAL_GATE=update` writes `baselines/replay.json`
+      `compare-replay.test.ts`: one case per kind, and the `match` case gives the two runs
+      different explanations, one of them a different run id.
+- [x] **Model `replay` / memory `live`:** `EVAL_GATE=update` writes `baselines/replay.json`
       with 21 cells. Two consecutive `EVAL_GATE=replay` runs then exit 0 with verdict
-      `match`, even though their explanations differ in the run id.
-- [ ] **Model `replay` / memory `live`:** the Problem section's probe (a task's `requires`
+      `match`, even though their explanations differ in the run id. Against empty Postgres
+      and Neo4j containers on 2026-09-26: `update` exited 0 and wrote 21 cells on cassette
+      set `3150d589a5c0`; the two replays exited 0 with `match`, and their
+      `episodic_row_written` explanations named runs `3703026f…`/`c44ed421…` and
+      `cca9dfbc…`/`01222ccd…`. Repeated after rebasing onto P2-C and P5-C's LangGraph 1.x:
+      `update` added only the `semconvCommit` line, the two replays matched, and the
+      Problem's probe below again named 11 `missing` cells.
+- [x] **Model `replay` / memory `live`:** the Problem section's probe (a task's `requires`
       narrowed, an assertion removed) makes `EVAL_GATE=replay` exit non-zero, naming 11
-      `missing` cells. Today it exits 0.
-- [ ] **Model `replay` / memory `live`:** a threshold raised so that a replayed cell fails
+      `missing` cells. Today it exits 0. Exit 1, and the summary reads 11 `missing` (10 cells
+      in the run, 21 in the baseline): `entity_merged` on `memory-recall-001` and all ten of
+      `tool-use-001`'s, while the rate above it still read 100% over 1 of 2 tasks.
+- [x] **Model `replay` / memory `live`:** a threshold raised so that a replayed cell fails
       gives `regressed`, and restoring the threshold gives `match` again. Lowering a
       threshold on a cell that was `fail` in a hand-edited baseline gives `improved`, which
-      also blocks.
-- [ ] **Model `replay` / memory `live`:** with `eval-abort.json` present, the gate reports
+      also blocks. `tool-use-001`'s `trajectory_precision` threshold 0 → 0.9: exit 1,
+      `regressed`, pass 0.778 → fail 0.778; restored: exit 0, `match`. The failing cell
+      accepted with `EVAL_GATE=update` (a one-line baseline diff, `pass` → `fail`) and the
+      threshold lowered back to 0: exit 1, `improved`. With the threshold left at 0.9 the
+      accepted baseline matches, exit 0, at a pass rate of 50% — a committed known failure.
+- [x] **Model `replay` / memory `live`:** with `eval-abort.json` present, the gate reports
       `aborted` and exits non-zero whether or not `eval-report.json` exists. It is checked
       with P1-C's hash-flip probe and with a report written before the watcher throws.
-- [ ] **Model `replay` / memory `live`, in CI:** `eval-replay` runs on the pull request
+      Hash-flip probe on `memory-recall-001.trial-0.json`: exit 1, `eval-gate.json` reads
+      `aborted` with reason `` `eval-abort.json` is present (`cassette-miss`) ``. The runner no
+      longer writes a report before the watcher throws (P1-C, "What shipped"), so the
+      directory holding both files is constructed in `gate.test.ts` › "is aborted when
+      eval-abort.json is present, whether or not a report is".
+- [x] **Model `replay` / memory `live`, in CI:** `eval-replay` runs on the pull request
       that adds it, reports `match`, and its summary shows the gate section. It is run five
       more times on one commit via re-run with zero differences, which is the determinism
-      evidence the risk below needs.
-- [ ] `stratifiedBootstrap` returns identical intervals for the same input and seed, and
+      evidence the risk below needs. Pull request #80, run 36268329998 at `48e187c`: the
+      job logged `"verdict":"match"`, and the uploaded `eval-summary.md` ends with the
+      section headed `Gate — replay: match` over all 21 cells. Attempts 2–6 of the same
+      job on the same commit each logged `match` and succeeded. An earlier head of the
+      branch, before the rebase onto P2-C, gave the same six out of six (run 36267140212).
+      Twelve CI replays and six local ones: no flake yet.
+- [x] `stratifiedBootstrap` returns identical intervals for the same input and seed, and
       `[0, 0]` for identical arms. `pairedBootstrap`, which is P2-B's, gives the same
-      guarantees. **Pure.**
-- [ ] `compareLive` returns `insufficient-evidence` whenever any task has fewer than
+      guarantees. **Pure.** `stratified-bootstrap.test.ts` › "returns the identical interval
+      for identical input and seed" and "returns exactly [0, 0] for identical arms with no
+      variance"; `paired-bootstrap.test.ts`, P2-B's file byte for byte, has the same two.
+- [x] `compareLive` returns `insufficient-evidence` whenever any task has fewer than
       `⌈3/δ⌉` trials in either arm, whatever the interval, and `incomparable` for mismatched
       task sets. It picks `tasks-random` at K ≥ 20 and names the regime. **Pure.**
-- [ ] A seeded simulation test of the rule at δ = 0.20, K = 2, 400 simulations: with no
+      `compare-live.test.ts`: 14 failures against 14 passes gives Δ = −1 with a zero-width
+      interval and still `insufficient-evidence`; one short arm on one task does the same;
+      K = 19 is `tasks-fixed` and K = 20 `tasks-random`.
+- [x] A seeded simulation test of the rule at δ = 0.20, K = 2, 400 simulations: with no
       change at p = 0.9 and n = 18, `held` ≥ 75% and `regressed` ≤ 5%. With p dropping
       from 0.9 to 0.5, `regressed` ≥ 95%. With n = 5, `insufficient-evidence` is 100%.
       The thresholds are the simulation's to confirm; if 400 seeded runs miss one, the
       criterion reports the measured rate and the rule is revisited, not the threshold.
-      **Pure.**
+      **Pure.** Measured, at 2,000 resamples per interval as in the PRD's own sketch: no
+      change gives `held` 342/400 (85.5%) and `regressed` 2/400 (0.5%); 0.9 → 0.5 gives
+      `regressed` 390/400 (97.5%); n = 5 gives `insufficient-evidence` 400/400. The test
+      asserts the thresholds, so a change to the rule that misses one fails it.
 - [ ] **Model `live` / memory `live`:** `EVAL_GATE=live` exits 0 on a run with a failed
       trial and a verdict other than `regressed`, and appends a tally that validates
       against `LiveTallySchema`. It is verified locally with the developer key
       (`EVAL_TRIALS=1`, 8 calls) and stated as such, because no repository secret exists.
+      **Not run:** this implementation was not cleared to spend the developer key's daily
+      quota. The runner half is unit-tested — `gate.test.ts` › "on live, appends a tally
+      that validates and stays green on a failed trial" — but no live model produced the
+      trial. **Owner:** the repository owner, one local run of eight calls.
 - [ ] **Model `live` / memory `live`, in CI:** the nightly pushes its tally to
       `eval-history`, and after five nights in one epoch its summary reports the pooled
       5×2 rate with the list of runs. This needs the repository secret. If none exists at
       ship time, the criterion stays unchecked and passes to **P1-E**, as P1-C's nightly
-      criterion does.
-- [ ] `scripts/lint-docs.mjs` fails when a ruleset `context` matches no job, or more than
+      criterion does. No secret exists, so it passes to **P1-E**. The pieces it needs are
+      tested without one: the writer against a bare repository (`history.test.ts`), and the
+      pooled line and run list (`render.test.ts` › "prints the pooled 5×2 rate with the five
+      runs").
+- [x] `scripts/lint-docs.mjs` fails when a ruleset `context` matches no job, or more than
       one, after matrix expansion. It is shown by renaming `eval-replay` in a scratch
-      commit. **Pure.**
+      commit. **Pure.** A scratch commit renaming the job to `eval-replay-renamed` made
+      `yarn lint:docs` report the check `eval-replay` as one no workflow job reports; it was
+      then reset. `ruleset.test.mjs` keeps the rename, a Node bump in `ci`'s matrix and a
+      duplicate name as tests that run under `yarn lint:docs`.
 - [ ] **Owner:** the ruleset is applied, and
       `gh api repos/maxmillienjr/agent-native-monorepo/rules/branches/main` lists
       `pull_request`, `required_status_checks`, `deletion` and `non_fast_forward`. A
       throwaway pull request that flips a replayed cell shows `eval-replay` as required
-      and failing, and the merge button is disabled.
-- [ ] Documentation this change makes false is corrected in the same pull request:
+      and failing, and the merge button is disabled. Not applied here, by decision.
+- [x] Documentation this change makes false is corrected in the same pull request:
       `run-eval.ts:143-144`, `packages/eval-harness/README.md:162`, `README.md:14` and
       `:89`, `docs/STATUS.md:70` and rows 17–18, and `.context/conventions.md` (the
-      baseline update command goes beside the re-record rule at `:133`).
-- [ ] `yarn turbo typecheck`, `yarn turbo lint`, `yarn turbo test:unit`, `yarn lint:docs` and
-      `yarn format:check` pass.
+      baseline update command goes beside the re-record rule at `:133`). The comment moved
+      to `run-suite.ts` with P1-C and now says the gate replaces it; the other six are
+      rewritten, STATUS has a row 22 for the gate, and the conventions carry the baseline
+      command beside the re-record rule and a rule that a CI eval job exits on the verdict.
+- [x] `yarn turbo typecheck`, `yarn turbo lint`, `yarn turbo test:unit`, `yarn lint:docs` and
+      `yarn format:check` pass. So does `yarn turbo test:service`.
+
+## What shipped, and where it diverged from the design
+
+Measured 2026-09-26. No run below made a model call.
+
+**The status stays `in-progress`.** Three criteria are open, and none is this change's to
+close: the owner applies the ruleset, P1-E takes the nightly that needs a secret, and the
+local live run waits for someone who may spend the developer key's quota. Until the ruleset
+is applied a red `eval-replay` still blocks nothing, and every document that says so names
+that action.
+
+Where the build is not what the Design section describes:
+
+- **There is no `prng.ts` or `percentile.ts`.** P2-B wrote the shared file first, on its
+  own branch, as one `stats/paired-bootstrap.ts` holding `mulberry32`, the seed default and
+  the percentile indices. This change takes that file and its test byte for byte (P2-B's
+  `46dca7b`) and imports the generator from it, so the two branches add the same content
+  at the same path and git merges them cleanly. The barrel's export block is P2-B's too.
+  Whichever of P1-D and P2-B merges second checks that the file did not move in between.
+  `stratifiedBootstrap` repeats the three lines of percentile arithmetic rather than
+  editing P2-B's file, which would reopen the conflict the copy exists to avoid.
+- **A live run's epoch is read from git, not from disk.** The live job deletes the
+  committed cassettes before it records (P1-C), so by the time a tally is written the
+  directory holds that night's recordings. `committedCassetteDigest` hashes the set
+  committed at `HEAD`, with the same function the replay gate applies to the files on disk;
+  a unit test asserts the two agree on a clean checkout and that the git one survives the
+  deletion.
+- **The git half of the history is its own command.** `EVAL_GATE=live` only writes the
+  tally into `EVAL_HISTORY_DIR` and reads the epoch back. Opening the branch (fetch, or
+  start the orphan) and publishing it (commit, push, and on a rejected push fetch, rebase
+  and retry) are `yarn workspace @repo/agent-service eval:history open|publish`, tested
+  against a bare repository and clones, including two first nights that each start the
+  orphan. The branch is a worktree of the checkout, so the push uses the credentials
+  `actions/checkout` left and needs none of its own. The tally file name drops the colons
+  from `startedAt`, which a Windows checkout cannot hold.
+- **`baselines/live.json` has a schema the Design did not give.** It is the pooled epoch —
+  suite, digest, the list of runs, and per task every trial's pass/fail — with
+  `kind: 'live-reference'`. `yarn eval:promote-live <digest>` writes it and refuses to
+  create `eval-history` when the remote has none.
+- **The gate refuses an axis it cannot judge, before the Nest context.** `EVAL_GATE=replay`
+  or `update` off the replay axis, `live` off the live axis, or `live` without
+  `EVAL_HISTORY_DIR`, is an abort. A missing replay baseline is every cell `unbaselined`,
+  and an error inside the gate itself (a baseline that does not parse) is written as
+  `aborted` with the reason, so `eval-gate.json` exists whenever `EVAL_GATE` was set.
+- **The ruleset lint uses a YAML parser and has its own tests.** While this was in flight
+  P4-A made `yaml` a root dependency and put `node --test` under `yarn lint:docs`, so the
+  check is `scripts/lib/ruleset.mjs` with `scripts/ruleset.test.mjs`, rather than a line
+  reader inside `lint-docs.mjs`. It refuses a job name with an expression or a matrix with
+  `include` or `exclude`, instead of guessing how GitHub would name it.
+- **The history's git runs without inherited `GIT_*` variables**, the convention P4-A wrote
+  after a fixture test ran against this repository under `rebase --exec`.
+- **`semconvCommit` is provenance, not a cell.** P2-C merged mid-flight and `SuiteReport`
+  now carries `genAiSemconvCommit`; the baseline records it and the comparison ignores it,
+  because a conventions bump renames span attributes and moves no grader result.
+- **STATUS row 17's owner is now P1-E**, which takes the live 5×2 rate with the nightly.
+  The gate is a new row 22.
+
+**For P2-B, whichever merges second.** P2-B adds `graph-recall-001` to the suite this gate
+snapshots. Once both have merged, the replay gate reports that task's cells as `unbaselined`
+until its cassette exists and the baseline is regenerated with
+`EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval`. P2-B's `EVAL_TASKS` narrows the
+suite and renames it, and a narrowed replay under `EVAL_GATE=replay` reports every other
+task's cells as `missing`, which is correct: a narrowed run is not the gated run.
 
 ## Risks and open questions
 

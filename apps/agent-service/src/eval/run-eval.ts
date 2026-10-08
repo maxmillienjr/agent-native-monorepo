@@ -8,6 +8,7 @@ import {
   capTrialsToCassettes,
   describeAxes,
   detectAxes,
+  gateBlocks,
   loadMemoryRecallSuite,
   readCassetteMode,
   readTaskFilter,
@@ -32,6 +33,8 @@ import {
   watchForModelRequests,
   type TrialDecks,
 } from './cassette-deps.js';
+import { applyGate, assertGateAxes, readGateMode, type GateMode } from './gate.js';
+import { committedCassetteDigest } from './history.js';
 import { runAndReport, type RunEnd } from './run-suite.js';
 import { SpanCollector } from './span-records.js';
 
@@ -41,7 +44,9 @@ const logger = createLogger('eval');
  * `yarn eval` — runs the suite and writes the three reports, or, when the run
  * cannot complete, `eval-abort.json` and an `eval-summary.md` that name why.
  * The replay tier in `agent-eval.yml` runs it on every pull request and the
- * live tier nightly; locally it is the same command.
+ * live tier nightly; locally it is the same command. With `EVAL_GATE` set it
+ * also writes `eval-gate.json`, and the gate's verdict — not whether every
+ * trial passed — decides the exit code (`gate.ts`).
  *
  * Two things have to be true before a number out of here means anything, and
  * both have failed silently in this repository before:
@@ -66,7 +71,7 @@ async function main(): Promise<RunEnd> {
   // in the mode included — can be written down as an abort.
   const outputDir = resolve(process.env['EVAL_OUTPUT_DIR'] ?? 'eval-results');
 
-  return runAndReport<MemoryOutcome>({
+  const end = await runAndReport<MemoryOutcome>({
     outputDir,
     suite: MEMORY_RECALL_SUITE,
     explain: explainAbort,
@@ -80,14 +85,16 @@ async function main(): Promise<RunEnd> {
       }),
     body: async (progress, onTrial) => {
       const mode = readCassetteMode();
+      const gate = readGateMode();
       const trials = Number(process.env['EVAL_TRIALS'] ?? 5);
       const axes = detectAxes();
       progress.axes = axes;
 
       // Before the watcher, the cassettes and the Nest context: a job on the
       // wrong axes must not reset a store or open a recording on its way to
-      // failing.
+      // failing — and neither must a gate asked to judge an axis it cannot.
       assertExpectedAxes(axes);
+      assertGateAxes(gate, axes);
 
       const liveCalls =
         mode === 'replay'
@@ -212,6 +219,51 @@ async function main(): Promise<RunEnd> {
       }
     },
   });
+
+  return gateTheRun(end, outputDir);
+}
+
+/**
+ * With `EVAL_GATE` set, the gate's verdict decides the exit code in place of
+ * "every trial passed" (P1-D).
+ *
+ * After `runAndReport` rather than inside it, because the gate reads the
+ * output directory the way CI does — an abort file, or a report — and so
+ * judges an aborted run by the same rule as a completed one.
+ */
+function gateTheRun(end: RunEnd, outputDir: string): RunEnd {
+  let mode: GateMode | undefined;
+  try {
+    mode = readGateMode();
+  } catch {
+    // The body read it first and wrote the typo down as the abort.
+    return end;
+  }
+  if (mode === undefined) return end;
+
+  const historyDir = process.env['EVAL_HISTORY_DIR'];
+  const result = applyGate({
+    mode,
+    outputDir,
+    datasetDir: MEMORY_RECALL_DATASET_DIR,
+    displayRoot: resolve(process.cwd(), '..', '..'),
+    committedDigest: () => committedCassetteDigest(MEMORY_RECALL_DATASET_DIR),
+    gitSha: () => gitHead().sha,
+    ...(historyDir === undefined || historyDir === '' ? {} : { historyDir: resolve(historyDir) }),
+  });
+
+  const blocks = gateBlocks(result);
+  (blocks ? logger.error : logger.info).call(logger, {
+    msg: 'eval.gate',
+    axis: result.axis,
+    verdict: result.verdict,
+    blocks,
+    ...(result.verdict === 'aborted' ? { reason: result.reason } : {}),
+    outputDir,
+  });
+
+  if (result.verdict === 'aborted') return 'aborted';
+  return blocks ? 'failed' : 'passed';
 }
 
 /**

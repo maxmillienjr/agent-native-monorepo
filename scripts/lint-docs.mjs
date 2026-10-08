@@ -15,6 +15,7 @@ import { fileURLToPath } from 'node:url';
 import { frontmatter, prdIndexRows } from './lib/frontmatter.mjs';
 import { createRepo, checkInlineAnchors } from './lib/anchors.mjs';
 import { lintControls, defaultPaths } from './lint-controls.mjs';
+import { checkRuleset } from './lib/ruleset.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const prdDir = join(root, 'docs', 'prd');
@@ -243,6 +244,28 @@ if (nodeSurfaces.length === 0) {
 // the first failure hiding the second.
 const controls = await lintControls({ root, ...defaultPaths(root) });
 errors.push(...controls.errors);
+
+// --- Every required check in the ruleset is a job that exists -------------
+// scripts/lib/ruleset.mjs says why: a required context that no job reports waits for
+// ever and blocks every pull request, and nothing else ties the string to a workflow.
+const rulesetPath = join(root, '.github', 'rulesets', 'main.json');
+if (existsSync(rulesetPath)) {
+  let ruleset;
+  try {
+    ruleset = JSON.parse(readFileSync(rulesetPath, 'utf-8'));
+  } catch (error) {
+    fail('.github/rulesets/main.json', `is not valid JSON: ${error.message}`);
+  }
+  if (ruleset) {
+    const workflows = existsSync(workflowDir)
+      ? readdirSync(workflowDir)
+          .filter((f) => /\.ya?ml$/.test(f))
+          .map((file) => ({ file, text: readFileSync(join(workflowDir, file), 'utf-8') }))
+      : [];
+    for (const problem of checkRuleset(ruleset, workflows))
+      fail('.github/rulesets/main.json', problem);
+  }
+}
 
 // --- Report ---------------------------------------------------------------
 if (errors.length) {

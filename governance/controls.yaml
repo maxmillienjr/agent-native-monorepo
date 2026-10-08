@@ -157,7 +157,7 @@ controls:
         tier: unit
 
   - id: CTL-EVAL-03
-    title: Agent evaluation runs on every pull request, and a failed trial fails its job
+    title: Agent evaluation runs on every pull request, and any change in a grader result fails its job
     status: implemented
     maps:
       - { framework: nist-ai-rmf-1.0, ref: MANAGE 1.1 }
@@ -165,7 +165,11 @@ controls:
       - { framework: iso-iec-42001-2023, ref: A.6.2.5 }
     evidence:
       - { kind: ci, workflow: agent-eval.yml, job: replay, run: yarn eval }
-    note: Delivered by P1-C. This is the replay axis, which grades a recorded sample rather than the live model. The live job runs nightly and on dispatch, and is skipped until a GOOGLE_API_KEY repository secret exists. A red job blocks a merge only once it is a required check, which P1-D owns.
+      - kind: test
+        file: packages/eval-harness/src/gate/compare-replay.test.ts
+        name: names every cell of a task that stopped running, and a deleted assertion, as missing
+        tier: unit
+    note: Delivered by P1-C, and gated by P1-D. This is the replay axis, which grades a recorded sample rather than the live model. The job's exit is the regression gate's verdict against the committed baselines/replay.json, so a skipped task, a deleted assertion or a moved score fails it and a failure accepted in the baseline does not. The live job runs nightly and on dispatch, and is skipped until a GOOGLE_API_KEY repository secret exists. A red job blocks a merge only once the owner applies .github/rulesets/main.json.
 
   - id: CTL-OUT-01
     title: Model output is schema-validated before it can reach memory

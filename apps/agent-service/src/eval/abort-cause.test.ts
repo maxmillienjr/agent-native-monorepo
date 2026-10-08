@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CassetteMissError } from '@repo/agent-cassette';
-import { RE_RECORD_COMMAND, explainAbort } from './abort-cause.js';
+import { RE_RECORD_COMMAND, UPDATE_BASELINE_COMMAND, explainAbort } from './abort-cause.js';
 
 const noTrials = { completed: [] };
 
@@ -13,6 +13,7 @@ describe('explainAbort', () => {
 
     expect(cause?.code).toBe('cassette-miss');
     expect(cause?.remedy).toContain(`\`${RE_RECORD_COMMAND}\``);
+    expect(cause?.remedy).toContain(`\`${UPDATE_BASELINE_COMMAND}\``);
   });
 
   it('is the README command, so the two cannot drift apart unnoticed', () => {

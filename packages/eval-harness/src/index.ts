@@ -214,6 +214,13 @@ export {
   type LabelSetReport,
 } from './retrieval/report.js';
 
+export {
+  abortError,
+  completedTrial,
+  renderAbortJson,
+  renderAbortSummary,
+} from './reporters/abort.js';
+
 // Statistics — nothing here knows what a query is; P1-D needs the same interval.
 export {
   DEFAULT_BOOTSTRAP_SEED,
@@ -223,10 +230,70 @@ export {
   type PairedBootstrapOptions,
   type PairedBootstrapResult,
 } from './stats/paired-bootstrap.js';
-
 export {
-  abortError,
-  completedTrial,
-  renderAbortJson,
-  renderAbortSummary,
-} from './reporters/abort.js';
+  stratifiedBootstrap,
+  type StratifiedBootstrapResult,
+  type StratifiedSample,
+} from './stats/stratified-bootstrap.js';
+
+// The regression gate (P1-D): the committed baselines, the live evidence, and
+// the two comparisons.
+export {
+  GradedReportSchema,
+  LivePoolSchema,
+  LiveReferenceSchema,
+  LiveRunSchema,
+  LiveTallySchema,
+  ReplayBaselineSchema,
+  ReplayCellSchema,
+  baselinesDir,
+  cassetteSetDigest,
+  compareCells,
+  digestFiles,
+  epochDir,
+  liveReferencePath,
+  liveTally,
+  loadLiveReference,
+  loadReplayBaseline,
+  poolTallies,
+  renderReplayBaseline,
+  replayBaseline,
+  replayBaselinePath,
+  replayCells,
+  tallyPath,
+  type DigestInput,
+  type GradedReport,
+  type LivePool,
+  type LiveReference,
+  type LiveRun,
+  type LiveTally,
+  type ReplayBaseline,
+  type ReplayCell,
+} from './gate/baseline.js';
+export {
+  REPLAY_DIFFERENCE_KINDS,
+  compareReplay,
+  countDifferences,
+  type ReplayComparison,
+  type ReplayDifference,
+  type ReplayDifferenceKind,
+} from './gate/compare-replay.js';
+export {
+  LIVE_DELTA,
+  TASKS_RANDOM_FROM,
+  compareLive,
+  trialFloor,
+  type CompareLiveOptions,
+  type LiveComparison,
+  type LiveRegime,
+  type LiveTaskArms,
+  type LiveVerdict,
+} from './gate/compare-live.js';
+export {
+  gateBlocks,
+  renderGateJson,
+  renderGateSection,
+  renderPool,
+  type GateResult,
+  type GateVerdict,
+} from './gate/render.js';

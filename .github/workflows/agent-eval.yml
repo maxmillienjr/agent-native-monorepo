@@ -11,8 +11,15 @@ name: Agent Eval
 #           worse and the client breaking. About eight generateContent calls
 #           per trial, against a daily free tier of twenty.
 #
-# Either tier goes red on any failed trial or aborted run. Deciding which of
-# those block a merge is P1-D's, and nothing here is a required check yet.
+# What goes red is the regression gate's verdict (P1-D), not "a trial failed":
+#
+#   replay  EVAL_GATE=replay compares every (task, trial, grader) cell with the
+#           committed baselines/replay.json. Any difference blocks, an
+#           improvement included, and so does an aborted run. `eval-replay` is
+#           the check .github/rulesets/main.json makes required.
+#   live    EVAL_GATE=live appends the night's tally to the orphan eval-history
+#           branch and compares the pooled epoch with baselines/live.json. A
+#           failed live trial is data; only `regressed` or an abort is red.
 
 on:
   pull_request:
@@ -88,6 +95,10 @@ jobs:
     env:
       EVAL_CASSETTE_MODE: replay
       EVAL_EXPECT_AXES: model=replay memory=live
+      # The verdict, not the pass rate, is the exit code. Accepting a change is
+      # `EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval` and a reviewed
+      # baseline diff, never a re-run.
+      EVAL_GATE: replay
 
     steps:
       - uses: actions/checkout@v7
@@ -151,6 +162,11 @@ jobs:
     concurrency:
       group: eval-live
       cancel-in-progress: false
+    # The one job that writes: it pushes its tally to eval-history. It runs only
+    # on schedule and dispatch, from main, and the concurrency group above means
+    # two runs never push at once. The ruleset targets the default branch only.
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     timeout-minutes: 30
     services:
@@ -182,6 +198,8 @@ jobs:
       # trial, rather than going green on the stub set.
       EVAL_EXPECT_AXES: model=live memory=live
       EVAL_TRIALS: ${{ inputs.trials || '1' }}
+      # A failed trial is an expected sample here; the pooled verdict decides.
+      EVAL_GATE: live
 
     steps:
       - uses: actions/checkout@v7
@@ -191,9 +209,20 @@ jobs:
           node-version: '24.x'
           cache: 'yarn'
 
-      - run: echo "EVAL_OUTPUT_DIR=$RUNNER_TEMP/eval-live" >> "$GITHUB_ENV"
+      - run: |
+          echo "EVAL_OUTPUT_DIR=$RUNNER_TEMP/eval-live" >> "$GITHUB_ENV"
+          echo "EVAL_HISTORY_DIR=$RUNNER_TEMP/eval-history" >> "$GITHUB_ENV"
 
       - run: yarn install --immutable
+
+      # The epoch this night pools into is the cassette set committed at HEAD,
+      # which the runner reads from the repository, so clearing the files below
+      # does not change it. The first nightly creates the orphan branch; every
+      # later one appends to it.
+      - name: Check out the evaluation history
+        run: |
+          yarn turbo build --filter=@repo/agent-service... --output-logs=errors-only
+          yarn workspace @repo/agent-service eval:history open
 
       # So the artifact holds this run's recordings and nothing else.
       # A trial that throws writes no cassette, and a committed file left in
@@ -216,6 +245,25 @@ jobs:
             echo '## Eval — did not start' >> "$GITHUB_STEP_SUMMARY"
             echo 'No summary was written. See the step that failed before `yarn eval`.' >> "$GITHUB_STEP_SUMMARY"
           fi
+
+      # Green is not "passed" when the evidence is short or there is nothing to
+      # compare with, so those two verdicts carry a notice.
+      - name: Live verdict notice
+        if: always()
+        run: |
+          gate="$EVAL_OUTPUT_DIR/eval-gate.json"
+          [ -f "$gate" ] || exit 0
+          verdict=$(jq -r .verdict "$gate")
+          case "$verdict" in
+            insufficient-evidence|incomparable)
+              echo "::notice title=Live gate: $verdict::Not a pass. The job summary lists the trials each task still needs." ;;
+          esac
+
+      # Even when the verdict is red: a regressed night is evidence too. An
+      # aborted run wrote no tally, and this pushes nothing.
+      - name: Push the tally to eval-history
+        if: ${{ !cancelled() }}
+        run: yarn workspace @repo/agent-service eval:history publish
 
       # In the same artifact as the reports: the decisions this run made are
       # what P1-E compares against the committed set.
