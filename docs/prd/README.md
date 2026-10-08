@@ -328,7 +328,7 @@ provider actually operates under. Uses synthetic data only.
 | [P3-B](P3-B-audit-replay.md)                  | Deterministic replay for audit reconstruction                 | L    | shipped     |
 | [P3-C](P3-C-decision-ledger.md)               | Hash-chained, tamper-evident decision ledger                  | L    | accepted    |
 | [P3-D](P3-D-payer-dataset-fhir-prior-auth.md) | Synthetic payer dataset and FHIR prior-authorization surface  | L    | in-progress |
-| [P3-E](P3-E-clinician-review-queue.md)        | Clinician review queue, `$inquire` and the decision clock     | M    | accepted    |
+| [P3-E](P3-E-clinician-review-queue.md)        | Clinician review queue, `$inquire` and the decision clock     | M    | in-progress |
 | P3-F                                          | Appeals: reconsideration lifecycle for adverse determinations | M    | draft       |
 
 ## Tier 4 — Governance and agent security as code

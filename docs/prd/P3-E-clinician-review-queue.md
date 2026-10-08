@@ -2,11 +2,11 @@
 id: P3-E
 title: Clinician review queue, `$inquire` and the decision clock
 tier: 3
-status: accepted
+status: in-progress
 size: M
 depends_on: [P3-A, P3-D]
 blocks: [P3-F]
-issue: null
+issue: 98
 superseded_by: null
 ---
 
