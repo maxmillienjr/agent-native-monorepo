@@ -18,4 +18,5 @@ and the answer is not obvious from the code.
 | [0007](0007-a-run-record-beside-the-checkpoints-for-audit-replay.md) | A run record beside the checkpoints, for audit replay                | accepted           |
 | [0008](0008-code-systems-the-repository-may-contain.md)              | The code systems this repository may contain                         | accepted           |
 | [0009](0009-the-second-store-after-the-retrieval-ablation.md)        | The second store, after the retrieval ablation                       | accepted           |
+| [0010](0010-the-prior-auth-case-lives-above-the-graph.md)            | The prior-authorization case lives above the graph                   | accepted           |
 | [0012](0012-the-graphs-explanation-role-stage-one.md)                | The graph's explanation role, after stage 1                          | proposed           |
