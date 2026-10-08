@@ -12,8 +12,18 @@ const RUN_BODY = {
 
 /** Every covered route, with a body that would otherwise be served. */
 const COVERED = [
-  { path: '/runs', body: RUN_BODY },
-  { path: '/runs/stream', body: RUN_BODY },
+  { path: '/runs', body: RUN_BODY, served: 200 },
+  { path: '/runs/stream', body: RUN_BODY, served: 201 },
+  {
+    path: '/a2a/jsonrpc',
+    body: {
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'SendMessage',
+      params: { message: { messageId: 'auth-1', role: 'ROLE_USER', parts: [{ text: 'Hi' }] } },
+    },
+    served: 200,
+  },
 ] as const;
 
 describe('Service authentication, enforced', () => {
@@ -27,7 +37,7 @@ describe('Service authentication, enforced', () => {
     await service.close();
   });
 
-  describe.each(COVERED)('POST $path', ({ path, body }) => {
+  describe.each(COVERED)('POST $path', ({ path, body, served }) => {
     it('answers 401 with a Bearer challenge to a missing token', async () => {
       const response = await request(service.app.getHttpServer()).post(path).send(body);
 
@@ -48,10 +58,12 @@ describe('Service authentication, enforced', () => {
     it('serves the request with the token', async () => {
       const response = await request(service.app.getHttpServer())
         .post(path)
+        .set('A2A-Version', '1.0')
         .set('Authorization', `Bearer ${TOKEN}`)
         .send(body);
 
-      expect(response.status).toBe(path === '/runs' ? 200 : 201);
+      expect(response.status).toBe(served);
+      expect(response.body?.error).toBeUndefined();
     }, 20_000);
   });
 
@@ -61,11 +73,14 @@ describe('Service authentication, enforced', () => {
     expect(response.status).toBe(401);
   });
 
-  it('serves GET /health with no token', async () => {
-    const response = await request(service.app.getHttpServer()).get('/health');
+  it.each(['/health', '/.well-known/agent-card.json', '/.well-known/jwks.json'])(
+    'serves GET %s with no token',
+    async (path) => {
+      const response = await request(service.app.getHttpServer()).get(path);
 
-    expect(response.status).toBe(200);
-  });
+      expect(response.status).toBe(200);
+    },
+  );
 
   it('gives a cross-origin preflight no Access-Control-Allow-Origin', async () => {
     const response = await request(service.app.getHttpServer())

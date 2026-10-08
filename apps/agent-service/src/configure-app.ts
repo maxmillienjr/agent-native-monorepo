@@ -2,6 +2,7 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import { SERVICE_CREDENTIALS, type ServiceCredentials } from './auth/credentials.js';
 import { announceAuthMode, requireCredential } from './auth/require-credential.js';
 import { extractTraceContext } from './auth/trace-context.js';
+import { mountA2a } from './a2a/mount.js';
 
 /** FHIR's JSON media type (R4 §2.6.1). */
 export const FHIR_JSON = 'application/fhir+json';
@@ -13,7 +14,7 @@ export const FHIR_JSON = 'application/fhir+json';
  * Order matters, and it is the order of the calls below. Authentication comes
  * first, so an unauthenticated body is never parsed. Then the body parser,
  * then the caller's trace context, then the routes this function owns:
- * `/health` here, the A2A routes later. Nest's controllers are registered at
+ * `/health` and the A2A routes. Nest's controllers are registered at
  * `init()`, after all of it.
  *
  * One JSON parser for both media types, replacing Nest's default rather than
@@ -43,4 +44,6 @@ export function configureApp(app: NestExpressApplication): void {
   httpAdapter.get('/health', (_req, res) => {
     httpAdapter.reply(res, { status: 'ok' }, 200);
   });
+
+  mountA2a(app);
 }

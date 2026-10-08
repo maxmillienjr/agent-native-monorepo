@@ -56,6 +56,22 @@ describe('W3C trace context on the external routes', () => {
     expect(await nodeTraceIds()).toEqual(new Set([TRACE_ID]));
   });
 
+  it('parents an A2A SendMessage run in the caller trace', async () => {
+    const response = await request(service.app.getHttpServer())
+      .post('/a2a/jsonrpc')
+      .set('A2A-Version', '1.0')
+      .set('traceparent', TRACEPARENT)
+      .send({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'SendMessage',
+        params: { message: { messageId: 'trace-1', role: 'ROLE_USER', parts: [{ text: 'Hi' }] } },
+      });
+
+    expect(response.body.result.task.status.state).toBe('TASK_STATE_COMPLETED');
+    expect(await nodeTraceIds()).toEqual(new Set([TRACE_ID]));
+  });
+
   it('starts a trace of its own when the caller sends none', async () => {
     await request(service.app.getHttpServer()).post('/runs').send(RUN_BODY);
 
