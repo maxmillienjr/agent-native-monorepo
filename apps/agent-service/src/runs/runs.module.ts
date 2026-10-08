@@ -8,5 +8,6 @@ import { MemoryModule } from '../memory/memory.module.js';
   imports: [AgentModule, MemoryModule],
   controllers: [RunsController],
   providers: [RunsService],
+  exports: [RunsService],
 })
 export class RunsModule {}

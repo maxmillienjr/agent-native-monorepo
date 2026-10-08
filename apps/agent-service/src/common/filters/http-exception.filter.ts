@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import type { Response, Request } from 'express';
 import { createLogger, getCorrelationId } from '@repo/telemetry';
+import { writeOperationOutcome } from '../../fhir/fhir-exception.filter.js';
 
 const logger = createLogger('http-exception');
 
@@ -16,6 +17,14 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const res = ctx.getResponse<Response>();
     const req = ctx.getRequest<Request>();
+
+    // A FHIR route answers in FHIR even when the failure is upstream of its
+    // controller, where `FhirExceptionFilter` cannot see it: a body the JSON
+    // parser rejected reaches this filter, not that one.
+    if (req.path.startsWith('/fhir/')) {
+      writeOperationOutcome(exception, res);
+      return;
+    }
 
     const status =
       exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
