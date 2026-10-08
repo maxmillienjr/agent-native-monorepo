@@ -1,0 +1,1812 @@
+{
+  "datasetSha256": "46e6f4b5bdbee3641de2bc9f04169e5f1dd77452e4700e019d7b53fe64617bdc",
+  "pairs": [
+    {
+      "queryId": "paraphrase-001",
+      "factHandle": "e06-f3",
+      "gold": [
+        {
+          "concepts": ["vendor_kestrel_review"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-002",
+      "factHandle": "e05-f5",
+      "gold": [
+        {
+          "concepts": ["vendor_kestrel_review"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-003",
+      "factHandle": "e07-f1",
+      "gold": [
+        {
+          "concepts": ["system_authtrack"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-004",
+      "factHandle": "e07-f2",
+      "gold": [
+        {
+          "concepts": ["system_authtrack"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-005",
+      "factHandle": "e07-f5",
+      "gold": [
+        {
+          "concepts": ["system_authtrack"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-006",
+      "factHandle": "e07-f4",
+      "gold": [
+        {
+          "concepts": ["system_authtrack"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-007",
+      "factHandle": "e12-f1",
+      "gold": [
+        {
+          "concepts": ["committee_cedarline_credentialing"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-008",
+      "factHandle": "e12-f6",
+      "gold": [
+        {
+          "concepts": ["committee_cedarline_credentialing"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-009",
+      "factHandle": "e12-f5",
+      "gold": [
+        {
+          "concepts": ["committee_cedarline_credentialing"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-010",
+      "factHandle": "e12-f2",
+      "gold": [
+        {
+          "concepts": ["form_cr_4"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-011",
+      "factHandle": "e12-f4",
+      "gold": [
+        {
+          "concepts": ["form_cr_4"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-012",
+      "factHandle": "e13-f1",
+      "gold": [
+        {
+          "concepts": ["dept_cedarline_member_services"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-013",
+      "factHandle": "e13-f5",
+      "gold": [
+        {
+          "concepts": ["dept_cedarline_member_services"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-014",
+      "factHandle": "e13-f4",
+      "gold": [
+        {
+          "concepts": ["form_gr_2"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-015",
+      "factHandle": "e13-f6",
+      "gold": [
+        {
+          "concepts": ["form_gr_2"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-016",
+      "factHandle": "e14-f2",
+      "gold": [
+        {
+          "concepts": ["network_summit_crest"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-017",
+      "factHandle": "e15-f5",
+      "gold": [
+        {
+          "concepts": ["network_bayline"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-018",
+      "factHandle": "e16-f3",
+      "gold": [
+        {
+          "concepts": ["network_riverbend"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-019",
+      "factHandle": "e22-f4",
+      "gold": [
+        {
+          "concepts": ["vendor_pinegate_pharmacy"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-020",
+      "factHandle": "e23-f2",
+      "gold": [
+        {
+          "concepts": ["vendor_tallowood_nurse_line"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-021",
+      "factHandle": "e23-f4",
+      "gold": [
+        {
+          "concepts": ["vendor_tallowood_nurse_line"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-022",
+      "factHandle": "e23-f5",
+      "gold": [
+        {
+          "concepts": ["vendor_tallowood_nurse_line"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-023",
+      "factHandle": "e24-f2",
+      "gold": [
+        {
+          "concepts": ["vendor_fennick_rides"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-024",
+      "factHandle": "e24-f4",
+      "gold": [
+        {
+          "concepts": ["vendor_fennick_rides"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-025",
+      "factHandle": "e24-f5",
+      "gold": [
+        {
+          "concepts": ["vendor_fennick_rides"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-026",
+      "factHandle": "e25-f3",
+      "gold": [
+        {
+          "concepts": ["vendor_sablefield_imaging"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-027",
+      "factHandle": "e27-f1",
+      "gold": [
+        {
+          "concepts": ["system_claimsdesk"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-028",
+      "factHandle": "e27-f2",
+      "gold": [
+        {
+          "concepts": ["system_claimsdesk"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-029",
+      "factHandle": "e27-f3",
+      "gold": [
+        {
+          "concepts": ["system_claimsdesk"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-030",
+      "factHandle": "e32-f1",
+      "gold": [
+        {
+          "concepts": ["dept_brightwater_siu"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-031",
+      "factHandle": "e32-f2",
+      "gold": [
+        {
+          "concepts": ["dept_brightwater_siu"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-032",
+      "factHandle": "e32-f3",
+      "gold": [
+        {
+          "concepts": ["dept_brightwater_siu"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-033",
+      "factHandle": "e37-f1",
+      "gold": [
+        {
+          "concepts": ["committee_orrin_valley_quality"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-034",
+      "factHandle": "e37-f3",
+      "gold": [
+        {
+          "concepts": ["committee_orrin_valley_quality"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-035",
+      "factHandle": "e37-f4",
+      "gold": [
+        {
+          "concepts": ["committee_orrin_valley_quality"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-036",
+      "factHandle": "e38-f1",
+      "gold": [
+        {
+          "concepts": ["program_steady_steps"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-037",
+      "factHandle": "e39-f5",
+      "gold": [
+        {
+          "concepts": ["program_clearpath_maternity"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-038",
+      "factHandle": "e40-f2",
+      "gold": [
+        {
+          "concepts": ["program_breathe_easy"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-039",
+      "factHandle": "e41-f3",
+      "gold": [
+        {
+          "concepts": ["program_homeward_transitions"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-040",
+      "factHandle": "e42-f3",
+      "gold": [
+        {
+          "concepts": ["program_mindful_access"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-041",
+      "factHandle": "e43-f1",
+      "gold": [
+        {
+          "concepts": ["form_pa_7"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-042",
+      "factHandle": "e43-f4",
+      "gold": [
+        {
+          "concepts": ["form_pa_7"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-043",
+      "factHandle": "e44-f1",
+      "gold": [
+        {
+          "concepts": ["form_ap_3"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-044",
+      "factHandle": "e44-f2",
+      "gold": [
+        {
+          "concepts": ["form_ap_3"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-045",
+      "factHandle": "e44-f3",
+      "gold": [
+        {
+          "concepts": ["dept_harbor_provider_relations"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-046",
+      "factHandle": "e44-f4",
+      "gold": [
+        {
+          "concepts": ["dept_harbor_provider_relations"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-047",
+      "factHandle": "e45-f1",
+      "gold": [
+        {
+          "concepts": ["payer_harbor_mutual"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-048",
+      "factHandle": "e46-f1",
+      "gold": [
+        {
+          "concepts": ["payer_cedarline_health"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-049",
+      "factHandle": "e48-f1",
+      "gold": [
+        {
+          "concepts": ["payer_brightwater"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "paraphrase-050",
+      "factHandle": "e49-f1",
+      "gold": [
+        {
+          "concepts": ["payer_orrin_valley"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "relational-001",
+      "factHandle": "e05-f1",
+      "gold": [
+        {
+          "concepts": ["plan_harbor_mutual_silver", "vendor_kestrel_review"],
+          "edgeTypes": ["DELEGATES_REVIEW_TO"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-002",
+      "factHandle": "e05-f2",
+      "gold": [
+        {
+          "concepts": ["plan_brightwater_select_ppo", "vendor_kestrel_review"],
+          "edgeTypes": ["DELEGATES_REVIEW_TO"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-003",
+      "factHandle": "e05-f3",
+      "gold": [
+        {
+          "concepts": ["plan_orrin_valley_premier", "vendor_kestrel_review"],
+          "edgeTypes": ["DELEGATES_REVIEW_TO"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-004",
+      "factHandle": "e06-f1",
+      "gold": [
+        {
+          "concepts": ["plan_harbor_mutual_bronze_flex", "vendor_kestrel_review"],
+          "edgeTypes": ["DELEGATES_REVIEW_TO"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-005",
+      "factHandle": "e05-f4",
+      "gold": [
+        {
+          "concepts": ["plan_harbor_mutual_silver", "vendor_kestrel_review"],
+          "edgeTypes": ["DELEGATES_REVIEW_TO"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-006",
+      "factHandle": "e05-f6",
+      "gold": [
+        {
+          "concepts": ["plan_orrin_valley_premier", "vendor_kestrel_review"],
+          "edgeTypes": ["DELEGATES_REVIEW_TO"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-007",
+      "factHandle": "e06-f2",
+      "gold": [
+        {
+          "concepts": ["plan_brightwater_select_ppo", "vendor_kestrel_review"],
+          "edgeTypes": ["DELEGATES_REVIEW_TO"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-008",
+      "factHandle": "e06-f4",
+      "gold": [
+        {
+          "concepts": ["plan_harbor_mutual_bronze_flex", "vendor_kestrel_review"],
+          "edgeTypes": ["DELEGATES_REVIEW_TO"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-009",
+      "factHandle": "e06-f5",
+      "gold": [
+        {
+          "concepts": ["plan_orrin_valley_premier", "vendor_kestrel_review"],
+          "edgeTypes": ["DELEGATES_REVIEW_TO"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-010",
+      "factHandle": "e15-f2",
+      "gold": [
+        {
+          "concepts": ["plan_harbor_mutual_silver", "network_bayline"],
+          "edgeTypes": ["USES_NETWORK"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-011",
+      "factHandle": "e15-f3",
+      "gold": [
+        {
+          "concepts": ["plan_brightwater_basic_hmo", "network_bayline"],
+          "edgeTypes": ["USES_NETWORK"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-012",
+      "factHandle": "e15-f4",
+      "gold": [
+        {
+          "concepts": ["plan_harbor_mutual_bronze_flex", "network_bayline"],
+          "edgeTypes": ["USES_NETWORK"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-013",
+      "factHandle": "e15-f6",
+      "gold": [
+        {
+          "concepts": ["plan_brightwater_basic_hmo", "network_bayline"],
+          "edgeTypes": ["USES_NETWORK"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-014",
+      "factHandle": "e14-f1",
+      "gold": [
+        {
+          "concepts": ["plan_cedarline_gold_access", "network_summit_crest"],
+          "edgeTypes": ["USES_NETWORK"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-015",
+      "factHandle": "e14-f5",
+      "gold": [
+        {
+          "concepts": ["plan_orrin_valley_premier", "network_summit_crest"],
+          "edgeTypes": ["USES_NETWORK"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-016",
+      "factHandle": "e14-f4",
+      "gold": [
+        {
+          "concepts": ["plan_cedarline_essential", "network_summit_crest"],
+          "edgeTypes": ["USES_NETWORK"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-017",
+      "factHandle": "e14-f3",
+      "gold": [
+        {
+          "concepts": ["plan_brightwater_select_ppo", "network_summit_crest"],
+          "edgeTypes": ["USES_NETWORK"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-018",
+      "factHandle": "e16-f2",
+      "gold": [
+        {
+          "concepts": ["plan_quillmark_family_choice", "network_riverbend"],
+          "edgeTypes": ["USES_NETWORK"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-019",
+      "factHandle": "e16-f4",
+      "gold": [
+        {
+          "concepts": ["plan_orrin_valley_community", "network_riverbend"],
+          "edgeTypes": ["USES_NETWORK"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-020",
+      "factHandle": "e16-f5",
+      "gold": [
+        {
+          "concepts": ["plan_quillmark_senior_advantage", "network_riverbend"],
+          "edgeTypes": ["USES_NETWORK"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-021",
+      "factHandle": "e22-f1",
+      "gold": [
+        {
+          "concepts": ["plan_cedarline_gold_access", "vendor_pinegate_pharmacy"],
+          "edgeTypes": ["PHARMACY_BENEFIT_BY"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-022",
+      "factHandle": "e22-f2",
+      "gold": [
+        {
+          "concepts": ["plan_quillmark_family_choice", "vendor_pinegate_pharmacy"],
+          "edgeTypes": ["PHARMACY_BENEFIT_BY"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-023",
+      "factHandle": "e22-f5",
+      "gold": [
+        {
+          "concepts": ["plan_orrin_valley_community", "vendor_pinegate_pharmacy"],
+          "edgeTypes": ["PHARMACY_BENEFIT_BY"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-024",
+      "factHandle": "e22-f6",
+      "gold": [
+        {
+          "concepts": ["plan_quillmark_senior_advantage", "vendor_pinegate_pharmacy"],
+          "edgeTypes": ["PHARMACY_BENEFIT_BY"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-025",
+      "factHandle": "e22-f3",
+      "gold": [
+        {
+          "concepts": ["plan_orrin_valley_community", "vendor_pinegate_pharmacy"],
+          "edgeTypes": ["PHARMACY_BENEFIT_BY"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-026",
+      "factHandle": "e25-f1",
+      "gold": [
+        {
+          "concepts": ["plan_cedarline_essential", "vendor_sablefield_imaging"],
+          "edgeTypes": ["IMAGING_REVIEW_BY"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-027",
+      "factHandle": "e25-f2",
+      "gold": [
+        {
+          "concepts": ["plan_brightwater_basic_hmo", "vendor_sablefield_imaging"],
+          "edgeTypes": ["IMAGING_REVIEW_BY"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-028",
+      "factHandle": "e25-f5",
+      "gold": [
+        {
+          "concepts": ["plan_brightwater_select_ppo", "vendor_sablefield_imaging"],
+          "edgeTypes": ["IMAGING_REVIEW_BY"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-029",
+      "factHandle": "e25-f4",
+      "gold": [
+        {
+          "concepts": ["plan_cedarline_essential", "vendor_sablefield_imaging"],
+          "edgeTypes": ["IMAGING_REVIEW_BY"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-030",
+      "factHandle": "e23-f1",
+      "gold": [
+        {
+          "concepts": ["plan_quillmark_senior_advantage", "vendor_tallowood_nurse_line"],
+          "edgeTypes": ["NURSE_LINE_BY"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-031",
+      "factHandle": "e23-f3",
+      "gold": [
+        {
+          "concepts": ["plan_orrin_valley_community", "vendor_tallowood_nurse_line"],
+          "edgeTypes": ["NURSE_LINE_BY"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-032",
+      "factHandle": "e24-f1",
+      "gold": [
+        {
+          "concepts": ["plan_quillmark_senior_advantage", "vendor_fennick_rides"],
+          "edgeTypes": ["TRANSPORTATION_BY"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-033",
+      "factHandle": "e24-f3",
+      "gold": [
+        {
+          "concepts": ["plan_orrin_valley_community", "vendor_fennick_rides"],
+          "edgeTypes": ["TRANSPORTATION_BY"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-034",
+      "factHandle": "e26-f1",
+      "gold": [
+        {
+          "concepts": ["payer_harbor_mutual", "vendor_corvane_claims"],
+          "edgeTypes": ["CLAIMS_ROUTED_THROUGH"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-035",
+      "factHandle": "e26-f2",
+      "gold": [
+        {
+          "concepts": ["payer_brightwater", "vendor_corvane_claims"],
+          "edgeTypes": ["CLAIMS_ROUTED_THROUGH"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-036",
+      "factHandle": "e26-f5",
+      "gold": [
+        {
+          "concepts": ["payer_orrin_valley", "vendor_corvane_claims"],
+          "edgeTypes": ["CLAIMS_ROUTED_THROUGH"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-037",
+      "factHandle": "e38-f2",
+      "gold": [
+        {
+          "concepts": ["plan_harbor_mutual_silver", "program_steady_steps"],
+          "edgeTypes": ["OFFERS_PROGRAM"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-038",
+      "factHandle": "e38-f3",
+      "gold": [
+        {
+          "concepts": ["plan_harbor_mutual_bronze_flex", "program_steady_steps"],
+          "edgeTypes": ["OFFERS_PROGRAM"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-039",
+      "factHandle": "e39-f4",
+      "gold": [
+        {
+          "concepts": ["plan_quillmark_family_choice", "program_clearpath_maternity"],
+          "edgeTypes": ["OFFERS_PROGRAM"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-040",
+      "factHandle": "e39-f2",
+      "gold": [
+        {
+          "concepts": ["plan_quillmark_family_choice", "program_clearpath_maternity"],
+          "edgeTypes": ["OFFERS_PROGRAM"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-041",
+      "factHandle": "e40-f3",
+      "gold": [
+        {
+          "concepts": ["plan_brightwater_basic_hmo", "program_breathe_easy"],
+          "edgeTypes": ["OFFERS_PROGRAM"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-042",
+      "factHandle": "e41-f1",
+      "gold": [
+        {
+          "concepts": ["plan_quillmark_senior_advantage", "program_homeward_transitions"],
+          "edgeTypes": ["OFFERS_PROGRAM"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-043",
+      "factHandle": "e41-f5",
+      "gold": [
+        {
+          "concepts": ["plan_orrin_valley_community", "program_homeward_transitions"],
+          "edgeTypes": ["OFFERS_PROGRAM"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-044",
+      "factHandle": "e42-f1",
+      "gold": [
+        {
+          "concepts": ["plan_cedarline_essential", "program_mindful_access"],
+          "edgeTypes": ["OFFERS_PROGRAM"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-045",
+      "factHandle": "e42-f4",
+      "gold": [
+        {
+          "concepts": ["plan_cedarline_essential", "program_mindful_access"],
+          "edgeTypes": ["OFFERS_PROGRAM"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-046",
+      "factHandle": "e38-f6",
+      "gold": [
+        {
+          "concepts": ["code_e11_9", "program_steady_steps"],
+          "edgeTypes": ["TARGETS"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-047",
+      "factHandle": "e40-f5",
+      "gold": [
+        {
+          "concepts": ["code_j45_40", "program_breathe_easy"],
+          "edgeTypes": ["TARGETS"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-048",
+      "factHandle": "e41-f4",
+      "gold": [
+        {
+          "concepts": ["code_i50_9", "program_homeward_transitions"],
+          "edgeTypes": ["TARGETS"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-049",
+      "factHandle": "e42-f5",
+      "gold": [
+        {
+          "concepts": ["code_f32_1", "program_mindful_access"],
+          "edgeTypes": ["TARGETS"]
+        }
+      ]
+    },
+    {
+      "queryId": "relational-050",
+      "factHandle": "e39-f1",
+      "gold": [
+        {
+          "concepts": ["code_o24_410", "program_clearpath_maternity"],
+          "edgeTypes": ["TARGETS"]
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-001",
+      "factHandle": "e01-f1",
+      "gold": [
+        {
+          "concepts": ["plan_harbor_mutual_silver"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-002",
+      "factHandle": "e02-f1",
+      "gold": [
+        {
+          "concepts": ["plan_harbor_mutual_silver"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-003",
+      "factHandle": "e02-f3",
+      "gold": [
+        {
+          "concepts": ["plan_harbor_mutual_silver"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-004",
+      "factHandle": "e01-f5",
+      "gold": [
+        {
+          "concepts": ["plan_harbor_mutual_silver"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-005",
+      "factHandle": "e03-f6",
+      "gold": [
+        {
+          "concepts": ["plan_harbor_mutual_bronze_flex"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-006",
+      "factHandle": "e03-f3",
+      "gold": [
+        {
+          "concepts": ["plan_harbor_mutual_bronze_flex"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-007",
+      "factHandle": "e03-f2",
+      "gold": [
+        {
+          "concepts": ["plan_harbor_mutual_bronze_flex"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-008",
+      "factHandle": "e03-f1",
+      "gold": [
+        {
+          "concepts": ["plan_harbor_mutual_bronze_flex"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-009",
+      "factHandle": "e09-f2",
+      "gold": [
+        {
+          "concepts": ["plan_cedarline_gold_access"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-010",
+      "factHandle": "e09-f3",
+      "gold": [
+        {
+          "concepts": ["plan_cedarline_gold_access"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-011",
+      "factHandle": "e08-f5",
+      "gold": [
+        {
+          "concepts": ["plan_cedarline_gold_access"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-012",
+      "factHandle": "e09-f5",
+      "gold": [
+        {
+          "concepts": ["plan_cedarline_gold_access"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-013",
+      "factHandle": "e10-f2",
+      "gold": [
+        {
+          "concepts": ["plan_cedarline_essential"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-014",
+      "factHandle": "e11-f1",
+      "gold": [
+        {
+          "concepts": ["plan_cedarline_essential"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-015",
+      "factHandle": "e11-f3",
+      "gold": [
+        {
+          "concepts": ["plan_cedarline_essential"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-016",
+      "factHandle": "e10-f6",
+      "gold": [
+        {
+          "concepts": ["plan_cedarline_essential"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-017",
+      "factHandle": "e18-f1",
+      "gold": [
+        {
+          "concepts": ["plan_quillmark_senior_advantage"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-018",
+      "factHandle": "e18-f4",
+      "gold": [
+        {
+          "concepts": ["plan_quillmark_senior_advantage"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-019",
+      "factHandle": "e18-f5",
+      "gold": [
+        {
+          "concepts": ["plan_quillmark_senior_advantage"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-020",
+      "factHandle": "e17-f6",
+      "gold": [
+        {
+          "concepts": ["plan_quillmark_senior_advantage"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-021",
+      "factHandle": "e19-f6",
+      "gold": [
+        {
+          "concepts": ["plan_quillmark_family_choice"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-022",
+      "factHandle": "e20-f5",
+      "gold": [
+        {
+          "concepts": ["plan_quillmark_family_choice"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-023",
+      "factHandle": "e20-f3",
+      "gold": [
+        {
+          "concepts": ["plan_quillmark_family_choice"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-024",
+      "factHandle": "e19-f1",
+      "gold": [
+        {
+          "concepts": ["plan_quillmark_family_choice"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-025",
+      "factHandle": "e29-f5",
+      "gold": [
+        {
+          "concepts": ["plan_brightwater_select_ppo"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-026",
+      "factHandle": "e29-f3",
+      "gold": [
+        {
+          "concepts": ["plan_brightwater_select_ppo"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-027",
+      "factHandle": "e29-f1",
+      "gold": [
+        {
+          "concepts": ["plan_brightwater_select_ppo"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-028",
+      "factHandle": "e28-f6",
+      "gold": [
+        {
+          "concepts": ["plan_brightwater_select_ppo"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-029",
+      "factHandle": "e31-f2",
+      "gold": [
+        {
+          "concepts": ["plan_brightwater_basic_hmo"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-030",
+      "factHandle": "e31-f4",
+      "gold": [
+        {
+          "concepts": ["plan_brightwater_basic_hmo"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-031",
+      "factHandle": "e31-f3",
+      "gold": [
+        {
+          "concepts": ["plan_brightwater_basic_hmo"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-032",
+      "factHandle": "e30-f2",
+      "gold": [
+        {
+          "concepts": ["plan_brightwater_basic_hmo"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-033",
+      "factHandle": "e34-f1",
+      "gold": [
+        {
+          "concepts": ["plan_orrin_valley_community"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-034",
+      "factHandle": "e34-f4",
+      "gold": [
+        {
+          "concepts": ["plan_orrin_valley_community"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-035",
+      "factHandle": "e34-f5",
+      "gold": [
+        {
+          "concepts": ["plan_orrin_valley_community"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-036",
+      "factHandle": "e34-f3",
+      "gold": [
+        {
+          "concepts": ["plan_orrin_valley_community"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-037",
+      "factHandle": "e35-f4",
+      "gold": [
+        {
+          "concepts": ["plan_orrin_valley_premier"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-038",
+      "factHandle": "e35-f6",
+      "gold": [
+        {
+          "concepts": ["plan_orrin_valley_premier"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-039",
+      "factHandle": "e36-f4",
+      "gold": [
+        {
+          "concepts": ["plan_orrin_valley_premier"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-040",
+      "factHandle": "e36-f3",
+      "gold": [
+        {
+          "concepts": ["plan_orrin_valley_premier"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-041",
+      "factHandle": "e04-f3",
+      "gold": [
+        {
+          "concepts": ["payer_harbor_mutual"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-042",
+      "factHandle": "e45-f5",
+      "gold": [
+        {
+          "concepts": ["payer_harbor_mutual"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-043",
+      "factHandle": "e05-f3",
+      "gold": [
+        {
+          "concepts": ["vendor_kestrel_review"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-044",
+      "factHandle": "e05-f6",
+      "gold": [
+        {
+          "concepts": ["vendor_kestrel_review"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-045",
+      "factHandle": "e52-f4",
+      "gold": [
+        {
+          "concepts": ["vendor_pinegate_pharmacy"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-046",
+      "factHandle": "e52-f1",
+      "gold": [
+        {
+          "concepts": ["vendor_pinegate_pharmacy"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-047",
+      "factHandle": "e48-f4",
+      "gold": [
+        {
+          "concepts": ["payer_brightwater"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-048",
+      "factHandle": "e49-f2",
+      "gold": [
+        {
+          "concepts": ["payer_orrin_valley"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-049",
+      "factHandle": "e46-f4",
+      "gold": [
+        {
+          "concepts": ["payer_cedarline_health"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "entity-distractor-050",
+      "factHandle": "e47-f3",
+      "gold": [
+        {
+          "concepts": ["payer_quillmark"],
+          "edgeTypes": []
+        }
+      ]
+    },
+    {
+      "queryId": "no-entity-001",
+      "factHandle": "e18-f2",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-002",
+      "factHandle": "e33-f1",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-003",
+      "factHandle": "e20-f4",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-004",
+      "factHandle": "e36-f5",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-005",
+      "factHandle": "e34-f2",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-006",
+      "factHandle": "e01-f6",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-007",
+      "factHandle": "e31-f1",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-008",
+      "factHandle": "e04-f4",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-009",
+      "factHandle": "e12-f3",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-010",
+      "factHandle": "e13-f3",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-011",
+      "factHandle": "e02-f1",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-011",
+      "factHandle": "e18-f6",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-012",
+      "factHandle": "e21-f1",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-013",
+      "factHandle": "e21-f4",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-014",
+      "factHandle": "e21-f5",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-015",
+      "factHandle": "e21-f2",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-016",
+      "factHandle": "e52-f3",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-017",
+      "factHandle": "e52-f2",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-018",
+      "factHandle": "e26-f3",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-019",
+      "factHandle": "e27-f4",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-020",
+      "factHandle": "e32-f4",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-021",
+      "factHandle": "e37-f5",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-022",
+      "factHandle": "e43-f2",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-023",
+      "factHandle": "e45-f2",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-024",
+      "factHandle": "e45-f3",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-025",
+      "factHandle": "e45-f4",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-026",
+      "factHandle": "e46-f2",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-027",
+      "factHandle": "e46-f5",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-028",
+      "factHandle": "e47-f2",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-029",
+      "factHandle": "e47-f4",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-030",
+      "factHandle": "e47-f5",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-031",
+      "factHandle": "e48-f2",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-032",
+      "factHandle": "e48-f3",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-033",
+      "factHandle": "e49-f3",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-034",
+      "factHandle": "e49-f4",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-035",
+      "factHandle": "e49-f5",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-036",
+      "factHandle": "e50-f1",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-037",
+      "factHandle": "e50-f2",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-038",
+      "factHandle": "e50-f3",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-039",
+      "factHandle": "e50-f4",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-040",
+      "factHandle": "e51-f1",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-041",
+      "factHandle": "e51-f2",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-042",
+      "factHandle": "e51-f4",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-043",
+      "factHandle": "e51-f5",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-044",
+      "factHandle": "e51-f3",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-045",
+      "factHandle": "e15-f1",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-046",
+      "factHandle": "e02-f6",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-047",
+      "factHandle": "e09-f1",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-048",
+      "factHandle": "e08-f6",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-049",
+      "factHandle": "e11-f5",
+      "gold": []
+    },
+    {
+      "queryId": "no-entity-050",
+      "factHandle": "e29-f4",
+      "gold": []
+    }
+  ],
+  "answerKeys": {
+    "relational-001": ["five business days", "5 business days"],
+    "relational-002": ["fax", "AuthTrack"],
+    "relational-003": ["24 hours"],
+    "relational-004": ["14 days", "fourteen days"],
+    "relational-005": ["three business days", "3 business days"],
+    "relational-006": ["7 a.m.", "7 p.m."],
+    "relational-007": ["licensed"],
+    "relational-008": ["rationale"],
+    "relational-009": ["ordering clinician"],
+    "relational-010": ["self-refer"],
+    "relational-011": ["48 hours"],
+    "relational-012": ["9 p.m."],
+    "relational-013": ["60 days", "sixty days"],
+    "relational-014": ["30 days", "thirty days"],
+    "relational-015": ["ten business days", "10 business days"],
+    "relational-016": ["90 days", "ninety days"],
+    "relational-017": ["14 hospitals", "fourteen hospitals"],
+    "relational-018": ["30 days", "thirty days"],
+    "relational-019": ["midnight"],
+    "relational-020": ["two business days", "2 business days"],
+    "relational-021": ["90"],
+    "relational-022": ["72 hours"],
+    "relational-023": ["75 percent", "75"],
+    "relational-024": ["around the clock"],
+    "relational-025": ["24 hours"],
+    "relational-026": ["two business days", "2 business days"],
+    "relational-027": ["six weeks", "6 weeks", "conservative treatment"],
+    "relational-028": ["60 days", "sixty days"],
+    "relational-029": ["does not review", "emergency department"],
+    "relational-030": ["24 hours", "including holidays"],
+    "relational-031": ["summary"],
+    "relational-032": ["48 hours"],
+    "relational-033": ["companion", "no charge"],
+    "relational-034": ["24 hours"],
+    "relational-035": ["member ID", "eligibility file"],
+    "relational-036": ["30 days", "thirty days"],
+    "relational-037": ["twelve", "12"],
+    "relational-038": ["test strips", "no cost"],
+    "relational-039": ["eight weeks", "8 weeks"],
+    "relational-040": ["lactation"],
+    "relational-041": ["respiratory therapist", "home visit"],
+    "relational-042": ["48 hours"],
+    "relational-043": ["30 days", "thirty days"],
+    "relational-044": ["seven days", "7 days"],
+    "relational-045": ["20"],
+    "relational-046": ["gift card", "100 dollar"],
+    "relational-047": ["six months", "6 months"],
+    "relational-048": ["weight"],
+    "relational-049": ["90 days", "ninety days", "questionnaire"],
+    "relational-050": ["twentieth week"]
+  }
+}
