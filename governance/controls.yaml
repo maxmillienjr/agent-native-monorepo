@@ -182,7 +182,11 @@ controls:
       - kind: symbol
         file: apps/agent-service/src/eval/run-retrieval-ablation.ts
         name: runConditions
-      - { kind: symbol, file: packages/eval-harness/src/retrieval/evaluate.ts, name: applyDecisionRule }
+      - {
+          kind: symbol,
+          file: packages/eval-harness/src/retrieval/evaluate.ts,
+          name: applyDecisionRule,
+        }
       - kind: test
         file: packages/eval-harness/src/retrieval/dataset.test.ts
         name: holds 200 queries, 50 per stratum, fixed before the first run
