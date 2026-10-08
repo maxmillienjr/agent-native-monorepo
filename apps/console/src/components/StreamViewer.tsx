@@ -11,6 +11,8 @@ const nodeColors: Record<string, string> = {
   retrieve: '#2196f3',
   plan: '#ff9800',
   act: '#9c27b0',
+  approve: '#ffc107',
+  compensate: '#795548',
   distill: '#f06292',
   reflect: '#e91e63',
   egress: '#00bcd4',
