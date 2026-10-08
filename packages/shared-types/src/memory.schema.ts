@@ -37,5 +37,15 @@ export const TokenCountsSchema = z.object({
 });
 export type TokenCounts = z.infer<typeof TokenCountsSchema>;
 
-export const OutcomeSchema = z.enum(['success', 'error', 'partial']);
+/**
+ * How a run ended, as its response reports it.
+ *
+ * `awaiting-approval` is a run paused before an irreversible tool call, with
+ * its checkpoint holding the call (P4-C). It is a value rather than a thrown
+ * error because a paused run has not failed, and rather than `success`
+ * because it has not finished: either would be the misreported outcome this
+ * schema exists to prevent. No production tool is irreversible yet, so no
+ * request reaches it until one is registered.
+ */
+export const OutcomeSchema = z.enum(['success', 'error', 'partial', 'awaiting-approval']);
 export type Outcome = z.infer<typeof OutcomeSchema>;

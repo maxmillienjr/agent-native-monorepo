@@ -38,6 +38,17 @@
         "REQUIRE_INTEGRATION_ENV"
       ]
     },
+    "@repo/agent-service#test:integration": {
+      "dependsOn": ["build", "@repo/memory-core#test:integration"],
+      "cache": false,
+      "env": [
+        "DATABASE_URL",
+        "NEO4J_URI",
+        "NEO4J_USER",
+        "NEO4J_PASSWORD",
+        "REQUIRE_INTEGRATION_ENV"
+      ]
+    },
     "test:e2e": {
       "dependsOn": ["build"],
       "cache": false,

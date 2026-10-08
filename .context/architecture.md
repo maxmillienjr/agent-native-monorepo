@@ -126,16 +126,36 @@ Working Memory ──[reflect]──▶ Episodic (Postgres)
 
 ## LangGraph Topology
 
-The agent runs as a compiled `StateGraph` with seven nodes:
+The agent runs as a compiled `StateGraph` with nine nodes:
 
 ```
-START → ingress → retrieve → plan → act ⟲ (loop) → distill → reflect → egress → END
+START → ingress → retrieve → plan → act ⟲ → distill → reflect → egress → END
+
+act        ──▶ act | approve | compensate | distill   (graph/edges.ts#shouldContinueActing)
+approve    ──▶ act | compensate | distill
+compensate ──▶ compensate | distill                   (graph/edges.ts#shouldKeepCompensating)
 ```
 
-- **act** self-loops while `stepCount < maxSteps && shouldContinue`. Its results go to
-  `toolOutputs`, and no prompt reads that channel: `plan` runs first, and its response is
-  already the assistant's answer. `selectTool` sees the plan and the tool names, and not
-  the previous call's output. P4-C owns both halves of that.
+- **act** self-loops while `stepCount < maxSteps` and the last selection ran. Each step
+  sends `selectTool` every tool's description, reversibility tier and input schema, and
+  this run's previous calls with their outputs, then checks the answer before anything
+  runs: an unknown tool or an input its schema refuses is a failed step, and a
+  `(tool, input)` pair that already succeeded ends the loop. Every call carries an
+  idempotency key, `runId:stepCount`, so a retried step cannot apply its effect twice.
+  The tools and their tiers are in `src/agent/tools/`; `.context/workflows.md` says how to
+  add one.
+- **compensate** runs when a step fails after a `compensable` step left an effect applied.
+  It undoes one effect per pass, newest first, and loops until none is applied, so each
+  undo is checkpointed as it lands (a saga's backward recovery). A compensation that
+  exhausts its retries fails the run, and the checkpoint says which effects were undone.
+- **approve** pauses the run with `interrupt()` before an `irreversible` call, and
+  executes or refuses it on the decision it is resumed with. A run compiled without a
+  checkpointer cannot pause, so `act` refuses an irreversible call there instead. A paused
+  run reports `outcome: 'awaiting-approval'`. Only a test fixture is irreversible, and no
+  HTTP route resumes a run yet.
+- **Tool output reaches the next selection, not the answer.** `plan` runs before `act`,
+  and its response is already the assistant's turn, so the reply is written before any
+  tool runs (`docs/STATUS.md` row 28, unowned).
 - **distill** extracts from every message, including the assistant's own turn, so what
   `reflect` promotes to semantic memory is mostly the model's plan restated. P4-B proposes
   changing that.
@@ -143,8 +163,8 @@ START → ingress → retrieve → plan → act ⟲ (loop) → distill → refle
   so that **reflect** can be retried: a node is only safe to re-run when it is a function of
   its input state, and a `reflect` that extracted its own entities was not.
 - **reflect** is the sole writer to Episodic and Semantic tiers.
-- Every node that performs I/O — `retrieve`, `plan`, `act`, `distill`, `reflect` — carries a
-  `retryPolicy`. `ingress` and `egress` do not, because they do no I/O.
+- Every node that performs I/O — `retrieve`, `plan`, `act`, `approve`, `compensate`, `distill`,
+  `reflect` — carries a `retryPolicy`. `ingress` and `egress` do not, because they do no I/O.
 - The graph is compiled with a `PostgresSaver` when the memory axis is configured. The
   `thread_id` is the `runId`, minted in `RunsService` before the invoke: a run is the unit
   that gets resumed and audited, and putting a session's runs on one thread would make each

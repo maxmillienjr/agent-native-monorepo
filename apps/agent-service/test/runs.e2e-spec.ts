@@ -6,6 +6,7 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import { RunResponseSchema, StreamEventSchema } from '@repo/agent-contracts';
 import { configureApp } from '../src/configure-app.js';
 import { RunsService } from '../src/runs/runs.service.js';
+import { defineRegistry } from '../src/agent/tools/registry.js';
 
 describe('RunsController (e2e)', () => {
   let app: INestApplication;
@@ -147,7 +148,7 @@ describe('POST /runs/stream when a node fails', () => {
         },
       },
       act: {
-        tools: [],
+        registry: defineRegistry([]),
         selectTool: async () => ({ selection: null, tokenCounts: { prompt: 0, completion: 0 } }),
       },
       distill: {

@@ -75,7 +75,7 @@ describe('TokenCountsSchema', () => {
 
 describe('OutcomeSchema', () => {
   it('accepts all valid outcomes', () => {
-    for (const outcome of ['success', 'error', 'partial'] as const) {
+    for (const outcome of ['success', 'error', 'partial', 'awaiting-approval'] as const) {
       const result = OutcomeSchema.safeParse(outcome);
       expect(result.success).toBe(true);
     }

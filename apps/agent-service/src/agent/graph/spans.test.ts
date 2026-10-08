@@ -13,6 +13,8 @@ import { CHAT_MODEL, RunsService } from '../../runs/runs.service.js';
 import { invokeChat, type ChatClient, type ChatReply } from '../model/gemini-chat.js';
 import { createGeminiEmbedder } from '../model/gemini-embedder.js';
 import type { GraphDeps } from './graph.js';
+import { defineRegistry } from '../tools/registry.js';
+import { webSearchTool } from '../tools/web-search.tool.js';
 
 const exporter = new InMemorySpanExporter();
 
@@ -91,9 +93,14 @@ function deps(tool: (input: unknown) => Promise<unknown>): GraphDeps {
     },
     plan: { callLlm: () => chat('plan.callLlm', 'a plan') },
     act: {
-      tools: [{ name: 'web-search', execute: tool }],
-      selectTool: async () => {
-        const response = await chat('act.selectTool', '{"toolName":"web-search","input":"q"}');
+      registry: defineRegistry([{ ...webSearchTool, execute: tool }]),
+      // A new query on every step, so the duplicate guard lets each one run.
+      selectTool: async (request) => {
+        const query = `q${request.previous.length}`;
+        const response = await chat(
+          'act.selectTool',
+          JSON.stringify({ toolName: 'web-search', input: { query } }),
+        );
         return {
           selection: JSON.parse(response.content) as { toolName: string; input: unknown },
           tokenCounts: response.tokenCounts,

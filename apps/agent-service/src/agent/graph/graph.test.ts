@@ -3,6 +3,7 @@ import { EMBEDDING_DIMENSIONS } from '@repo/memory-core';
 import { CassetteMissError } from '@repo/agent-cassette';
 import { buildAgentGraph, type GraphDeps } from './graph.js';
 import { NO_USAGE } from '../model/usage.js';
+import { defineRegistry } from '../tools/registry.js';
 
 /**
  * The graph is assembled at request time, so a construction error surfaces as a
@@ -21,7 +22,10 @@ function makeDeps(): GraphDeps {
     plan: {
       callLlm: async () => ({ content: 'a plan', tokenCounts: { prompt: 0, completion: 0 } }),
     },
-    act: { tools: [], selectTool: async () => ({ selection: null, tokenCounts: NO_USAGE }) },
+    act: {
+      registry: defineRegistry([]),
+      selectTool: async () => ({ selection: null, tokenCounts: NO_USAGE }),
+    },
     distill: {
       extractEntities: async () => ({
         extraction: { entities: [], relationships: [], facts: [] },
@@ -56,16 +60,27 @@ describe('buildAgentGraph', () => {
     expect(typeof compiled.stream).toBe('function');
   });
 
-  it('registers all seven nodes without colliding with a state channel', () => {
+  it('registers every node without colliding with a state channel', () => {
     const compiled = buildAgentGraph(makeDeps(), {}, 'corr-123');
     const nodes = Object.keys(compiled.getGraph().nodes)
       .filter((name) => !name.startsWith('__'))
       .sort();
 
-    // `distill` is the seventh. `extraction` is the channel it writes and
-    // `distill` is the node — the separation P0-A's rename established, and
-    // the collision this test exists to catch.
-    expect(nodes).toEqual(['act', 'distill', 'egress', 'ingress', 'plan', 'reflect', 'retrieve']);
+    // `extraction` is the channel `distill` writes and `distill` is the node —
+    // the separation P0-A's rename established, and the collision this test
+    // exists to catch. `approve` reads `pendingApproval` and `compensate`
+    // writes `toolOutputs`; neither has a channel of its own name.
+    expect(nodes).toEqual([
+      'act',
+      'approve',
+      'compensate',
+      'distill',
+      'egress',
+      'ingress',
+      'plan',
+      'reflect',
+      'retrieve',
+    ]);
   });
 
   it('carries `extraction` as a state channel, so reflect can read it', async () => {

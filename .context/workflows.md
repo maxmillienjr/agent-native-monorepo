@@ -97,6 +97,47 @@ workflow for you; the steps below are the tool-agnostic version.
    something that calls `buildAgentGraph` can, which is what
    `src/agent/graph/graph.test.ts` does.
 
+## Add a Tool
+
+Tools live in `apps/agent-service/src/agent/tools/`, one `<name>.tool.ts` each, and reach
+the agent only through `defaultRegistry` in `registry.ts`. Every dependency set builds from
+that one function — live, stub, recording and replay — because the `act.selectTool`
+request carries every tool's description, tier and schema.
+
+1. **Declare it with `defineTool`**, which infers the input and output so `execute` and
+   `compensate` are checked against them:
+   - `name` matches `/^[a-z][a-z0-9-]{2,40}$/` and is unique in the registry.
+   - `description` is at least 40 characters and says what the tool does, when to choose
+     it, and what it changes. The model chooses from it.
+   - `input` is a Zod **object**, `.strict()`, so a bare value where named fields belong is
+     refused rather than coerced. Its JSON Schema is generated from it for the prompt.
+2. **Pick the tier by what the call changes, and the type holds the rule.**
+   - `read-only` changes nothing.
+   - `compensable` changes something that can be taken back, and must declare
+     `compensate(input, output, ctx)` — omitting it is a type error
+     (`tools/types.test-d.ts`). The undo is semantic: say in the description what it
+     restores and what it cannot.
+   - `irreversible` cannot be undone. It runs only after `approve` pauses the run and a
+     person approves it, and never on a graph compiled without a checkpointer. Nothing
+     resumes a paused run over HTTP yet; adding the first real irreversible tool means
+     adding that route, and reusing P3-E's reviewer registry and signed approval for it.
+3. **Make the effect idempotent on `ctx.idempotencyKey`** (`runId:stepCount`). A retried
+   `act`, or a run resumed from its checkpoint, calls `execute` again with the same key,
+   and must get back the effect it already applied. `compensate` is called with the key of
+   the step it undoes and must be idempotent on it too, because a retried compensation
+   repeats it. A tool that throws is taken to have applied nothing.
+4. **Keep the run id out of the output.** The output reaches the next selection's prompt,
+   and a cassette request that carried the run id would miss on every replay.
+5. **Test the effect on the pure axis** against the real implementation, and the saga or
+   the gate with a scripted selection (`graph/fake-deps.ts#scriptedDeps`). The agent's
+   choice of the tool is checked only on the live and replay axes.
+6. **Re-record the cassettes.** A new tool changes the selection request of every task, so
+   every recorded `act.selectTool` decision misses. Record with
+   `EVAL_CASSETTE_MODE=record EVAL_TRIALS=1 yarn eval` on the live model axis, regenerate
+   the replay baseline with `EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval`, and
+   re-derive the task budgets by P1-F's rule. Count the calls against the day's quota first
+   (`.context/conventions.md`, "Live model quota").
+
 ## Add a New Package
 
 1. Create `packages/<name>/` with this structure:

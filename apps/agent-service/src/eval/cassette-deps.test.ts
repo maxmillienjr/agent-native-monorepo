@@ -22,6 +22,10 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { cassettePath } from '@repo/eval-harness';
 import { NO_USAGE } from '../agent/model/usage.js';
+import { SyntheticCaseBoard } from '../agent/tools/case-board.js';
+import { defaultRegistry, defineRegistry } from '../agent/tools/registry.js';
+import { selectionRequest } from '../agent/tools/selection.js';
+import { webSearchTool } from '../agent/tools/web-search.tool.js';
 import { CHAT_MODEL, RunsService, type ModelDeps } from '../runs/runs.service.js';
 import {
   MODEL_HOST,
@@ -30,6 +34,7 @@ import {
   replayDecks,
   replayModelDeps,
   tokenCountsFor,
+  watchForCaseBoardCalls,
   watchForModelRequests,
 } from './cassette-deps.js';
 
@@ -83,19 +88,26 @@ function fakeLive(calls: string[]): ModelDeps {
       },
     },
     act: {
-      tools: [
-        {
-          name: 'web-search',
-          execute: async (input) => {
-            calls.push(`tool:${JSON.stringify(input)}`);
-            return { results: ['a result'] };
-          },
-        },
-      ],
-      selectTool: async (plan) => {
-        calls.push(`select:${plan}`);
+      // The default registry, as every dependency set has it, with web-search
+      // answering without a network: the selection request carries every
+      // tool's description, so a replay built from any other list would miss.
+      registry: defineRegistry(
+        defaultRegistry(new SyntheticCaseBoard()).tools.map((tool) =>
+          tool.name === 'web-search'
+            ? {
+                ...webSearchTool,
+                execute: async (input: unknown) => {
+                  calls.push(`tool:${JSON.stringify(input)}`);
+                  return { results: ['a result'] };
+                },
+              }
+            : tool,
+        ),
+      ),
+      selectTool: async (request) => {
+        calls.push(`select:${request.plan}`);
         return {
-          selection: { toolName: 'web-search', input: { q: 'langgraph' } },
+          selection: { toolName: 'web-search', input: { query: 'langgraph' } },
           tokenCounts: { prompt: 23, completion: 130, reasoning: 120 },
         };
       },
@@ -130,12 +142,17 @@ function fakeLive(calls: string[]): ModelDeps {
   };
 }
 
+const CTX = { runId: 'run-1', idempotencyKey: 'run-1:0' };
+
+/** The selection request a first `act` step sends with this plan. */
+const firstRequest = (deps: ModelDeps) => selectionRequest('a plan', deps.act.registry, []);
+
 /** Drives every seam once, in the order a run would. */
 async function exercise(deps: ModelDeps): Promise<unknown[]> {
   const plan = await deps.plan.callLlm('system', 'user');
-  const { selection } = await deps.act.selectTool('a plan', deps.act.tools);
-  const tool = deps.act.tools.find((entry) => entry.name === selection?.toolName);
-  const output = await tool!.execute(selection!.input);
+  const { selection } = await deps.act.selectTool(firstRequest(deps));
+  const tool = deps.act.registry.get(selection!.toolName);
+  const output = await tool!.execute(selection!.input as { query: string }, CTX);
   const extraction = await deps.distill.extractEntities('a conversation');
   const vector = await deps.embed('a fact');
 
@@ -244,6 +261,92 @@ describe('the recording and replay directions of the same seam', () => {
 });
 
 /**
+ * A run whose saga ran, recorded through the service and replayed through it.
+ *
+ * Replay serves `act.tool` and `act.compensate` from the cassette, so the
+ * ordering logic runs and no effect does. The spy is on the class, so it sees
+ * any board in the process — the service's own included.
+ */
+describe('a compensated run, recorded and replayed', () => {
+  const key = process.env['GOOGLE_API_KEY'];
+
+  beforeEach(() => {
+    delete process.env['GOOGLE_API_KEY'];
+  });
+
+  afterEach(() => {
+    if (key !== undefined) process.env['GOOGLE_API_KEY'] = key;
+    vi.restoreAllMocks();
+  });
+
+  const body = {
+    sessionId: '550e8400-e29b-41d4-a716-446655440000',
+    messages: [{ role: 'user', content: 'Ask for the missing records on the case.' }],
+    config: { maxSteps: 3 },
+  };
+  const script = [
+    {
+      toolName: 'request-records',
+      input: { caseId: 'PA-100001', documents: ['lab-results'], dueInDays: 5 },
+    },
+    {
+      toolName: 'request-records',
+      input: { caseId: 'PA-999999', documents: ['lab-results'], dueInDays: 5 },
+    },
+  ];
+
+  it('replays the compensation from the cassette and never reaches the case board', async () => {
+    const recorder = new CassetteRecorder({ header: liveHeader, tokenCountsFor });
+    const recordingService = new RunsService(null, null, null, null, null);
+    const remaining = [...script];
+    recordingService.setModelDecorator((live) =>
+      recordingModelDeps(
+        {
+          ...live,
+          act: {
+            registry: live.act.registry,
+            selectTool: async () => ({
+              selection: remaining.shift() ?? null,
+              tokenCounts: NO_USAGE,
+            }),
+          },
+        },
+        recorder,
+      ),
+    );
+    const recorded = await recordingService.executeTraced({ body, correlationId: 'record-saga' });
+    const cassette = await recorder.close();
+
+    expect(
+      cassette.decisions
+        .filter((decision) => decision.seam.startsWith('act.'))
+        .map((decision) => [decision.seam, decision.label]),
+    ).toEqual([
+      ['act.selectTool', undefined],
+      ['act.tool', 'request-records'],
+      ['act.selectTool', undefined],
+      ['act.tool', 'request-records'],
+      ['act.compensate', 'request-records'],
+    ]);
+
+    const opened = vi.spyOn(SyntheticCaseBoard.prototype, 'openRequest');
+    const withdrawn = vi.spyOn(SyntheticCaseBoard.prototype, 'withdrawRequest');
+    const player = new CassettePlayer(cassette, replayConfig);
+    const replayingService = new RunsService(null, null, null, null, null);
+    replayingService.setModelDecorator(() => replayModelDeps(player));
+    const replayed = await replayingService.executeTraced({ body, correlationId: 'replay-saga' });
+
+    expect(replayed.nodeSequence).toEqual(recorded.nodeSequence);
+    expect(replayed.nodeSequence).toContain('compensate');
+    expect(replayed.toolOutputs.map((output) => output.effect)).toEqual(['compensated', 'none']);
+    expect(replayed.response.outcome).toBe('partial');
+    expect(player.remaining()).toBe(0);
+    expect(opened).not.toHaveBeenCalled();
+    expect(withdrawn).not.toHaveBeenCalled();
+  });
+});
+
+/**
  * The premise the whole scheme rests on, asserted by running rather than by
  * reading five call sites: no recorded request depends on the `runId`.
  *
@@ -328,7 +431,10 @@ describe('the decorator seam on RunsService', () => {
       plan: {
         callLlm: async () => ({ content: 'a plan', tokenCounts: { prompt: 1, completion: 1 } }),
       },
-      act: { tools: [], selectTool: async () => ({ selection: null, tokenCounts: NO_USAGE }) },
+      act: {
+        registry: defineRegistry([]),
+        selectTool: async () => ({ selection: null, tokenCounts: NO_USAGE }),
+      },
       distill: {
         extractEntities: async () => ({
           extraction: { entities: [], relationships: [], facts: [] },
@@ -398,8 +504,8 @@ describe('the decorator seam on RunsService', () => {
 
     const service = new RunsService(null, null, null, null, null);
     service.setModelDecorator((live) => {
-      // `tools` is the one member of the lazy set that has to resolve it.
-      void live.act.tools;
+      // `registry` is the one member of the lazy set that has to resolve it.
+      void live.act.registry;
       return replayModelDeps(deck);
     });
 
@@ -483,6 +589,21 @@ describe('the no-live-call watcher', () => {
     expect(seen).toEqual(violations());
   });
 
+  it('collects every case-board operation, from any board in the process', async () => {
+    const seen: string[] = [];
+    const violations = watchForCaseBoardCalls((operation) => seen.push(operation));
+
+    const board = new SyntheticCaseBoard();
+    const { requestId } = await board.openRequest(
+      { caseId: 'PA-100001', documents: ['lab-results'], dueInDays: 5 },
+      'run-1:0',
+    );
+    await board.withdrawRequest(requestId, 'run-1:0');
+
+    expect(violations()).toEqual(['openRequest', 'withdrawRequest']);
+    expect(seen).toEqual(violations());
+  });
+
   it('says nothing about the rest of the traffic a trial makes', () => {
     // Postgres and Neo4j are not undici clients, but an OTLP exporter is, and a
     // watcher that failed the run on one would make replay unusable with
@@ -519,9 +640,11 @@ describe('replayed spans', () => {
     exporter.reset();
 
     await deps.plan.callLlm('system', 'user');
-    const { selection } = await deps.act.selectTool('a plan', deps.act.tools);
+    const { selection } = await deps.act.selectTool(firstRequest(deps));
     // `act` opens this span around the tool; the decision is served inside it.
-    await withToolSpan('web-search', () => deps.act.tools[0]!.execute(selection!.input));
+    await withToolSpan('web-search', () =>
+      deps.act.registry.get('web-search')!.execute(selection!.input as { query: string }, CTX),
+    );
     await deps.distill.extractEntities('a conversation');
     await deps.embed('a fact');
 
