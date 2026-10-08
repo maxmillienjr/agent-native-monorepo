@@ -350,65 +350,141 @@ Each criterion names the axis that verifies it. **Stubbed transport** means `fet
 replaced and no request leaves the process. **Model `live`** means a real key; where it says
 **in CI**, it means the repository secret. The canary has no memory axis.
 
-- [ ] **Stubbed transport:** `probeChatVersion` makes exactly one request, to the id it is
+The `GOOGLE_API_KEY` repository secret was added on 2026-10-08, while this was in flight.
+Every criterion below that needs a CI run is open because no scheduled or dispatched run has
+used it yet, and each says which run verifies it. The implementation was cleared to spend no
+`generateContent` call and at most 25 `embedContent` calls; it spent 21.
+
+- [x] **Stubbed transport:** `probeChatVersion` makes exactly one request, to the id it is
       given. It returns the response's `modelVersion`. A response without the field yields
-      `unobserved`, never `unchanged`.
-- [ ] **Stubbed transport:** `probeEmbeddings` goes through `createGeminiEmbedder`. It returns
+      `unobserved`, never `unchanged`. `probes.test.ts` › "makes exactly one request, to the
+      id it is given, and returns modelVersion" and "yields unobserved, never unchanged, for
+      a response without modelVersion", which checks a pinned and a floating verdict against
+      a matching baseline and against none.
+- [x] **Stubbed transport:** `probeEmbeddings` goes through `createGeminiEmbedder`. It returns
       `unchanged` for vectors that are bit-identical after float32 encoding, and `changed`
       when one component of one vector differs, with that vector's cosine in `detail`.
-- [ ] **Stubbed transport:** the verdict table holds. A pinned `changed`, `gone` or
+      `probes.test.ts` › "goes through createGeminiEmbedder and reports bit-identical vectors
+      as unchanged" (21 `embedContent` requests in the production request shape) and
+      "reports one differing component of one vector as changed, with its cosine".
+- [x] **Stubbed transport:** the verdict table holds. A pinned `changed`, `gone` or
       `unobserved` exits 1 and writes `canary-report.json`. A floating `moved` exits 0 with a
       notice. A 404 on `models.get` for a pinned id is `gone`. One runner test per row.
-- [ ] **Stubbed transport:** a 429 whose details carry a per-day `QuotaFailure` on the chat
+      `runner.test.ts` › "the verdict table": metadata `gone` and `changed`; chat pinned
+      `changed`, `unobserved` and `gone`; chat floating `moved` and `unobserved`; embedding
+      `changed`. Each reads its verdict out of the written `canary-report.json`.
+- [x] **Stubbed transport:** a 429 whose details carry a per-day `QuotaFailure` on the chat
       probe makes one request, writes `canary-abort.json` and a summary naming the daily
-      quota, and writes no `canary-report.json`.
-- [ ] **Stubbed transport:** one canary run makes exactly 3 metadata requests, 2
+      quota, and writes no `canary-report.json`. `runner.test.ts` › "on a per-day 429 from
+      the chat probe: one request, an abort file naming the quota, no report". The directory
+      holds exactly the abort file and the summary, and the abort keeps the three metadata
+      results that finished first.
+- [x] **Stubbed transport:** one canary run makes exactly 3 metadata requests, 2
       `generateContent` requests and 21 `embedContent` requests, counted by an
-      `undici:request:create` subscription. The live summary prints the same three counts.
-- [ ] `GOOGLE_API_KEY= yarn canary` exits non-zero, names the variable, and makes no request.
-      **No model axis, on purpose:** the refusal is what is being tested.
-- [ ] **Model `live`, local key:** the first canary run observes `modelVersion` for
-      `gemini-2.5-flash` and `gemini-flash-latest`, and writes both into `baseline.json` with
-      the date. This PRD's Problem section is updated with the observed strings, because
-      today it can only say that no run has seen them.
-- [ ] **Model `live`, local key:** on that run the embedding probe reports `unchanged` for
-      all 21 baseline vectors. One of the 21 was already checked while drafting, on
-      2026-09-26. If any differs, the criterion stays unchecked and the finding goes into
-      this PRD's Problem section before anything else is built.
-- [ ] **Stubbed transport:** `compareCassettes` is unit-tested on fixture cassettes for a
+      `undici:request:create` subscription. `runner.test.ts` › "makes 3 metadata, 2
+      generateContent and 21 embedContent requests, and prints the counts". The stand-in
+      `fetch` publishes each request on the channel the way undici does, so the counts come
+      from the runner's subscription and not from the stub's own list.
+- [ ] **Model `live`, in CI:** the summary of a full live run prints the same three counts,
+      3, 2 and 21. Split from the criterion above. A local live run on 2026-10-08 printed
+      `3 models.get, 0 generateContent, 21 embedContent`, because it ran without the two chat
+      probes. **Verified by the first scheduled run after merge (secret now present).**
+- [x] `GOOGLE_API_KEY= yarn canary` exits non-zero, names the variable, and makes no request.
+      **No model axis, on purpose:** the refusal is what is being tested. Run on 2026-10-08:
+      exit 1, a `canary.aborted` log line reading `GOOGLE_API_KEY is not set` with every
+      request count 0, and a summary headed `## Canary — aborted` with cause `no-key`. An
+      empty ambient variable beats `.env`; that was checked with `process.loadEnvFile` before
+      the run. `runner.test.ts` › "without a key: names the variable and makes no request".
+- [ ] **Model `live`:** the first canary run observes `modelVersion` for `gemini-2.5-flash`
+      and `gemini-flash-latest`, and writes both into `baseline.json` with the date. This
+      PRD's Problem section is updated with the observed strings, because today it can only
+      say that no run has seen them. **Not run:** it costs two `generateContent` calls, and
+      this implementation was cleared for none. `baseline.json` therefore has an empty
+      `chat` block. An empty entry on a pinned id is `changed`, so **the first scheduled run
+      after merge is red on `chat-pinned` by design**, and its `canary-report.json` artifact
+      names both strings. **Owner:** the repository owner, who commits them with
+      `CANARY_BASELINE=update CANARY_PROBES=chat-pinned,chat-floating yarn canary` and the
+      developer key (two calls), or by copying the two strings from that artifact.
+- [x] **Model `live`, local key:** the embedding probe reports `unchanged` for all 21
+      baseline vectors. Run on 2026-10-08 at 16:55 UTC with
+      `CANARY_PROBES=metadata,embedding yarn canary`: 3 `models.get` and 21 `embedContent`
+      requests, every metadata entry `unchanged`, and `21 of 21 bit-identical` against the
+      vectors recorded on 2026-09-11. The summary reads "The embedding model
+      `gemini-embedding-001` has returned identical vectors since 2026-09-11, on all 21
+      baseline texts." It was not the run of the criterion above, which is why this one no
+      longer says "on that run".
+- [x] **Stubbed transport:** `compareCassettes` is unit-tested on fixture cassettes for a
       shared identical embed, a shared differing embed, a divergence at a known position,
-      and a changed tool sequence.
-- [ ] **Model `replay` / memory `live`:** all three reports name `models.chat` and
-      `models.embedding`, taken from the cassette headers. **Model `live` / memory `live`:**
-      the same, taken from the running configuration, checked on one local trial.
-- [ ] **Model `replay` / memory `live`:** `EVAL_CHAT_MODEL=gemini-flash-latest` with
+      and a changed tool sequence. `compare-cassettes.test.ts` has one test for each, and one
+      for the directory pairing. Run against the committed set itself, `canary:compare`
+      reports 14/14 and 7/7 identical, no divergence and zero requests to the model host.
+- [x] **Model `replay` / memory `live`:** all three reports name `models.chat` and
+      `models.embedding`, taken from the cassette headers. Run on 2026-10-08 with
+      `EVAL_GATE=replay` against throwaway stores: `eval-report.json` holds
+      `{"chat":"gemini-2.5-flash","embedding":"gemini-embedding-001"}`, the JUnit XML has
+      `chat_model` and `embedding_model` on both test suites, the summary prints a
+      `**Models:**` line under the replay provenance, and the gate verdict is `match`.
+      `cassette-deps.test.ts` › "names the chat and embedding ids the headers recorded".
+- [ ] **Model `live` / memory `live`:** the same, taken from the running configuration.
+      Split from the criterion above. The live path sets the ids from `CHAT_MODEL` and
+      `EMBEDDING_MODEL` (`run-eval.ts`), and the harness refuses a live or replayed run
+      without them (`harness.test.ts` › "names the model ids on the live and replay axes,
+      and refuses them on stub"), but no live trial was run. **Verified by the first
+      scheduled run after merge (secret now present)**, whose `eval-live` reports name them.
+- [x] **Model `replay` / memory `live`:** `EVAL_CHAT_MODEL=gemini-flash-latest` with
       `EVAL_CASSETTE_MODE=replay` refuses with `CassetteIncompatibleError` naming both ids,
       before any store is reset. `EVAL_CHAT_MODEL` is declared on `turbo.json`'s `eval`
-      task.
-- [ ] **Model `live` / memory `live`, local key:** one trial of each task with
+      task. Run on 2026-10-08: exit 1, and `eval-abort.json` reads
+      `chatModel is gemini-2.5-flash, running configuration is gemini-flash-latest`. A
+      `:P1EMarker` node created in Neo4j before the run was still there after it, and the
+      Postgres row count was unchanged. With `EVAL_GATE=replay` added, `assertGateModel`
+      refuses the run one step earlier and says why. `cassette-deps.test.ts` › "refuses a
+      set recorded on the pinned id when EVAL_CHAT_MODEL names another".
+- [ ] **Model `live` / memory `live`:** one trial of each task with
       `EVAL_CHAT_MODEL=gemini-flash-latest`. The report names that id, and the result is
       recorded in this PRD whether it passes or fails. A failure is a finding about the
       next model or about the pinned client (P5-C), not a defect in this PRD. About eight
-      calls on the alias target's limit.
+      calls on the alias target's limit. **Not run. Verified by a dispatch of
+      `agent-eval.yml` with `chat_model: gemini-flash-latest` after merge (secret now
+      present)**, which unsets the gate, pushes no tally and heads its summary as a
+      migration comparison.
 - [ ] **Model `live`, in CI:** with the secret present, one scheduled run runs `canary` and
       `compare`. Both write to `$GITHUB_STEP_SUMMARY` and upload an artifact. `compare`
       reports no request to `generativelanguage.googleapis.com`. With no secret, `canary`
       shows as skipped, and the replay job's summary says so. It never shows as passed.
+      **Verified by the first scheduled run after merge (secret now present).** The
+      no-secret half uses the `needs.gate.outputs.has_key` condition P1-C verified for
+      `eval-live` in run 36264269743, and the replay summary's no-secret line now names
+      `eval-canary` and `eval-compare`. Now that the secret exists, only a fork's scheduled
+      run can show that half again.
 - [ ] **Taken from P1-C, if P1-C ships without a secret:** with the secret present, one
       nightly run runs both tasks on model `live` / memory `live`, skips neither, and
       uploads the three reports and the recorded cassettes. This is P1-C:382-387
-      unchanged. It closes P1-G:183 through P1-C.
+      unchanged. It closes P1-G:183 through P1-C. **Verified by the first scheduled run
+      after merge (secret now present).**
 - [ ] **Taken from P1-C, if P1-C ships without a secret:** with the secret configured but
       the run detected on any other axis, the live job fails before any trial with the
       axis-expectation message. This is the secret-present half of P1-C:374-381. Its
-      no-secret half is checkable without a key and stays with P1-C.
-- [ ] Documentation the change makes false or incomplete is corrected in the same pull
+      no-secret half is checkable without a key and stays with P1-C. **A scheduled run
+      cannot show it**, because it runs on the right axis. **Owner:** one dispatch from a
+      throwaway branch whose live job sets `EVAL_CASSETTE_MODE: replay`. The runner refuses
+      that before the Nest context and before any model call, so it costs no quota.
+- [ ] **Taken from P1-D:** the nightly pushes its tally to `eval-history`, and after five
+      nights in one epoch its summary reports the pooled 5×2 rate with the list of runs.
+      This is P1-D's criterion unchanged. It passed here because no secret existed when
+      P1-D shipped, which was after this PRD was accepted, so it is added now. **Verified by
+      the scheduled runs after merge (secret now present)**, five nights on one cassette set
+      at the earliest.
+- [x] Documentation the change makes false or incomplete is corrected in the same pull
       request. `.context/conventions.md:125-128` adds "the canary reports `changed`" to the
       re-record triggers. `docs/STATUS.md` gains a row for the canary. Row 18's "(P1-E)"
       becomes a pointer to that row. `packages/agent-cassette/README.md:74` is updated the
-      same way.
-- [ ] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
-      pass.
+      same way. The trigger is in the re-record rule with the reason it matters, and the
+      conventions gain a rule for the canary itself. STATUS has row 24, with the date of the
+      last scheduled run; row 18 and the cassette README point at it; row 22 no longer says
+      there is no secret. `governance/controls.yaml` gains CTL-EVAL-05.
+- [x] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
+      pass. So do `yarn turbo test:unit` and `yarn turbo test:service`.
 
 **Why these two from P1-C.** P1-C's decision 1 says two criteria pass here, and names
 P1-E on one of them. The second is taken to be the secret-present half of its live-job
@@ -416,6 +492,75 @@ criterion, because that half is the only other part of P1-C that cannot be check
 a repository secret. The live 429 criterion (P1-C:366-373) says it can be checked with a
 local key, so it stays with P1-C. If P1-C ships **with** a secret, both close there and the
 two criteria above are removed from this PRD before it is accepted.
+
+## What shipped, and where it diverged from the design
+
+Measured 2026-10-08. The only model calls were 3 `models.get` reads to fill the metadata
+baseline, and one local run of the metadata and embedding probes: 3 more `models.get` and 21
+`embedContent`. No `generateContent` call was made.
+
+**The status stays `in-progress`.** Review decision 1 said P1-E ships only once the secret
+exists and its CI criteria are met. The secret was added on 2026-10-08, during this work, so
+the first half is now true and the second waits for a run. Every offline and local criterion
+that could be checked without a `generateContent` call is ticked. The open ones are verified
+by the first scheduled run after merge, by a dispatch with `chat_model`, or by five nights of
+the nightly, and one needs the owner to commit two strings.
+
+**The first scheduled canary run will be red, and that is the design working.** The chat
+baseline is empty, because filling it costs the two `generateContent` calls this work was
+not cleared to spend. An empty entry on a pinned id is `changed`, by the rule decision 3
+set: going green is a committed baseline update, never a re-run. The run's artifact names
+both `modelVersion` strings, which is what the owner commits.
+
+Where the build is not what the Design section describes:
+
+- **`ProbeResult` carries `pinned`.** The verdict table depends on it, and three of the four
+  probes cover a pinned id and the alias together. `probeEmbeddings` returns the vectors it
+  observed beside the result, so `CANARY_BASELINE=update` can write them. The runner removes
+  them from the report.
+- **The floating alias's metadata is a notice too.** The verdict table gives the metadata
+  probe no floating row. A changed `version` or `displayName` on `gemini-flash-latest` is
+  `moved`, and a 404 there is `gone`. Neither fails the run, for the reason a moved
+  `modelVersion` does not.
+- **An empty baseline entry is `changed` on a pinned id and `moved` on the alias.** The
+  Design assumed the first live run would fill the chat baseline before anything compared
+  against it, and did not say what a comparison with nothing returns.
+- **`CANARY_PROBES` selects a subset of the four probes.** It is not in the Design. It
+  exists so a local run on a tight quota can check the embeddings without spending
+  `generateContent`, which is how the embedding criterion was verified. The report lists
+  what was left out as `notRun`, and the summary prints it above the table. CI never sets
+  it.
+- **`yarn canary` is a root script over `yarn workspace`, not a Turbo task**, the shape
+  `eval:promote-live` already has. Strict env mode therefore cannot strip its variables,
+  and it needs no `turbo.json` entry. Its output directory is `CANARY_OUTPUT_DIR`, and the
+  comparison's are `COMPARE_LIVE_DIR` and `COMPARE_OUTPUT_DIR`, rather than the Design's
+  `EVAL_OUTPUT_DIR`. All three are set by a step, because P1-C found that `runner.temp` is
+  not available in a job's `env`.
+- **The jobs are `eval-canary` and `eval-compare`.** The names follow `eval-live` and
+  `eval-replay`. The key is on the `yarn canary` step only, as P1-C did for the live job.
+- **`EVAL_GATE` refuses an overridden chat id.** `assertGateModel` runs before the cassette
+  player, so a replay under `EVAL_CHAT_MODEL` and a gated run are both refused with the
+  reason. A live tally on the alias would otherwise pool into the pinned epoch. The live
+  job's `chat_model` input therefore unsets `EVAL_GATE`, skips both `eval-history` steps,
+  and heads its summary as a migration comparison.
+- **`SuiteReport.models` is enforced in both directions.** The harness requires it on the
+  `live` and `replay` axes and refuses it on `stub`, the rule it already applies to replay
+  provenance. A replay takes the ids from its cassette headers through
+  `ReplayDecks.models()`, and a live run takes them from `CHAT_MODEL` and `EMBEDDING_MODEL`.
+  P1-D's report schema drops unknown keys, so the replay baseline did not move.
+- **`sharedEmbeds.minCosine` is `number | null`.** It is `null` when nothing was shared,
+  rather than a cosine nobody measured. `canary:compare` also fails when the artifact has
+  no cassette to compare, so a job cannot go green on nothing.
+- **The metadata baseline is dated 2026-10-08**, from the three reads made to write it. The
+  values are the ones this PRD recorded on 2026-09-26: `001`, `001` and
+  `Gemini Flash Latest`. The display names are `Gemini 2.5 Flash`, `Gemini Embedding 001`
+  and `Gemini Flash Latest`.
+- **The client is `@langchain/google-genai@2.3.2` now, and it still drops `modelVersion`.**
+  `grep -rln modelVersion` over its installed `dist` returns nothing, so the Problem
+  section's reading of P5-C's target holds for the installed tree.
+- **The canary opens no spans.** It is a command, not a graph node, and it initialises no
+  telemetry, so the embedder's inference span is a no-op there, and the span allowlist that
+  `yarn eval` enforces has nothing to check.
 
 ## Risks and open questions
 

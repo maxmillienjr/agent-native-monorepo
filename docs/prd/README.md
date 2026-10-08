@@ -13,7 +13,7 @@ stores from an empty database: one run leaves episodic rows, `:Concept` and `:Fa
 `semantic_facts` rows and checkpoints under the runId its own response returned.
 
 **`docs/STATUS.md` is the authority on any capability sentence, including the ones above.**
-Twenty-three rows, each with a status and evidence cited by name — eighteen `implemented`, one
+Twenty-four rows, each with a status and evidence cited by name — nineteen `implemented`, one
 `planned`, three `stubbed`, one `removed`, none `broken`. The rule that keeps it true is in
 `.context/conventions.md`: a change that moves a row moves it there in the same pull
 request. `yarn lint:docs` fails CI when a PRD's status disagrees with its row below.
@@ -90,6 +90,20 @@ verdict `incomparable` and wrote a tally that validates against `LiveTallySchema
 **Nothing blocks a merge until the owner applies
 `.github/rulesets/main.json`**, which requires `eval-replay`; `yarn lint:docs` keeps its
 check names equal to real jobs.
+
+**[P1-E](P1-E-model-drift-canary.md) is in progress**, tracked in
+[#86](https://github.com/maxmillienjr/agent-native-monorepo/issues/86). `yarn canary` asks
+the API what serves the pinned ids and the floating alias: `models.get` on all three, one
+direct `generateContent` per chat id for the `modelVersion` the LangChain client drops, and
+21 embeddings compared bit for bit with the committed cassettes' vectors. A pinned change
+exits 1, and the way back to green is a committed baseline update. Measured locally on
+2026-10-08, all 21 vectors were identical to the 2026-09-11 recording. The `eval-canary` and
+`eval-compare` jobs run nightly under the `GOOGLE_API_KEY` secret, which was added on
+2026-10-08. Every report now names its chat and embedding ids, and `EVAL_CHAT_MODEL` runs the
+suite on the alias as a dispatch-only migration comparison. **It stays in progress until a
+scheduled run proves the CI criteria.** That first run will be red on the pinned chat probe
+until the owner commits the two `modelVersion` strings, because no `generateContent` call
+was spent to fill that baseline.
 
 **[P2-B](P2-B-retrieval-ablation.md) has shipped**, tracked in
 [#57](https://github.com/maxmillienjr/agent-native-monorepo/issues/57), and the answer to
@@ -200,6 +214,7 @@ application context and reports `pass@k` and `pass^k` per axis. P1-C, in progres
 from `.github/workflows/agent-eval.yml`: on replayed model decisions on every pull request,
 and on the live model nightly once a repository secret exists. P1-D, in progress, gates
 both on committed baselines. Nothing blocks a merge until the owner applies its ruleset.
+P1-E, in progress, watches whether the model behind the pinned ids has changed.
 
 | ID                                     | Title                                                         | Size | Status      |
 | -------------------------------------- | ------------------------------------------------------------- | ---- | ----------- |
