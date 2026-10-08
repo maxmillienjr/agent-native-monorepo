@@ -3020,6 +3020,7 @@ __metadata:
   resolution: "@repo/memory-core@workspace:packages/memory-core"
   dependencies:
     "@repo/agent-cassette": "workspace:*"
+    "@repo/determination": "workspace:*"
     "@repo/eslint-config": "workspace:*"
     "@repo/shared-types": "workspace:*"
     "@repo/telemetry": "workspace:*"

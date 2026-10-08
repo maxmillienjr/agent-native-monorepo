@@ -8,7 +8,7 @@ export {
   addTokenCounts,
 } from './working/index.js';
 
-// Schema ownership — the only DDL for `episodes` and `semantic_facts`
+// Schema ownership — the only DDL for every table this package owns
 export { runMigrations } from './migrate.js';
 
 // Episodic Memory — session-scoped, Postgres + Drizzle
@@ -21,6 +21,29 @@ export {
   type EpisodicRepository,
   DrizzleEpisodicRepository,
 } from './episodic/episodic.repo.js';
+
+// Prior-authorization cases (P3-E, ADR 0010) — the queue, the clock and the
+// determination for every request `$submit` received. Postgres on the
+// configured memory axis, a volatile in-process store on the unconfigured one.
+export {
+  priorAuthCases,
+  CaseStatusSchema,
+  NewCaseSchema,
+  DecisionSchema,
+  CaseRowSchema,
+  CaseExampleSchema,
+  DrizzleCaseRepository,
+  InMemoryCaseRepository,
+  type CaseStatus,
+  type NewCase,
+  type Decision,
+  type CaseRow,
+  type CaseExample,
+  type CaseRepository,
+  type DecideResult,
+  type DecideOptions,
+  type OverdueCase,
+} from './cases/index.js';
 
 // Semantic Memory — the embedding dimension every schema and DDL derives from
 export { EMBEDDING_DIMENSIONS, EMBEDDING_MODEL, l2Normalize } from './semantic/embedding.js';
