@@ -196,11 +196,20 @@ controls:
         name: maps each pair of outcomes onto a row of the PRD table
         tier: unit
       - {
+          kind: symbol,
+          file: packages/eval-harness/src/retrieval/explanation.ts,
+          name: applyExplanationRule,
+        }
+      - kind: test
+        file: packages/eval-harness/src/retrieval/explanation-labels.test.ts
+        name: load, validate, and equal the derivation from the dataset
+        tier: unit
+      - {
           kind: doc,
           file: docs/adr/0009-the-second-store-after-the-retrieval-ablation.md,
           heading: The measurement,
         }
-    note: Delivered by P2-B. The unit tests hold the dataset to its pre-registered shape and the rule to the PRD's outcome table; they do not re-run the ablation. yarn eval:retrieval runs in no CI pipeline, because P2-B left the tier to P1-C and P1-C shipped first, so a change to a reader is not re-measured until someone runs it. The result it recorded is that the graph does not earn its place in retrieval, and ADR 0009, accepted, took the graph out of the read path. The ablation now measures that retired design as history; P2-D owns whether it runs in a CI tier.
+    note: Delivered by P2-B. The unit tests hold the dataset to its pre-registered shape and the rule to the PRD's outcome table; they do not re-run the ablation. yarn eval:retrieval runs in no CI pipeline, because P2-B left the tier to P1-C and P1-C shipped first, so a change to a reader is not re-measured until someone runs it. The result it recorded is that the graph does not earn its place in retrieval, and ADR 0009, accepted, took the graph out of the read path. The ablation now measures that retired design as history. P2-D measured the graph's remaining role, explanation, the same way, with gold paths committed before the explainer, a rule fixed before the run, and yarn eval:explanation applying it. Stage 1 is good and stage 2, which costs model calls, decides (ADR 0012). P2-D wired neither command into CI. Under keep P2-E adds a reproduction step for both, and under removal it archives both.
 
   - id: CTL-EVAL-05
     title: A change to the model behind a pinned model id, or its retirement, turns a scheduled job red

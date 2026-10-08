@@ -103,10 +103,13 @@
 Each tier has one command, and the first five run in CI. Eval runs twice in
 `agent-eval.yml`: on the replay axis on every pull request, every push to `main` and
 nightly, and on the live axis nightly and on dispatch when a `GOOGLE_API_KEY` repository
-secret exists. `eval:retrieval` runs in no pipeline: P2-B left the choice of tier to P1-C,
-which shipped before the command existed, and P2-D now owns whether it runs in one at all.
-It measures the fused retrieval ADR 0009 retired, so it is a historical measurement: its
+secret exists. `eval:retrieval` and `eval:explanation` run in no pipeline, by P2-D's
+decision. Under ADR 0012's outcome, P2-E either adds a reproduction step for both to the
+replay job, if the graph is kept, or archives both, if it is removed. `eval:retrieval`
+measures the fused retrieval ADR 0009 retired, so it is a historical measurement: its
 `vector` condition is what a request gets, and its `graph` and `hybrid` conditions are not.
+`eval:explanation` is stage 1 of P2-D, the graph's explanation role, and reads the graph
+alone.
 
 | Tier        | Runner                 | Command                       | Scope                                                    |
 | ----------- | ---------------------- | ----------------------------- | -------------------------------------------------------- |
@@ -116,6 +119,7 @@ It measures the fused retrieval ADR 0009 retired, so it is a historical measurem
 | E2E         | Playwright             | `yarn turbo test:e2e`         | Browser against the full `docker compose` stack          |
 | Eval        | `@repo/eval-harness`   | `yarn eval`                   | Agent trials against real stores, model replayed or live |
 | Retrieval   | `@repo/eval-harness`   | `yarn eval:retrieval`         | The P2-B ablation, pre-0009 design: recorded embeddings  |
+| Explanation | `@repo/eval-harness`   | `yarn eval:explanation`       | P2-D stage 1: graph paths, no model and no embeddings    |
 
 - **Service tests need `--experimental-vm-modules`**, which the `test:service` script
   already carries. Jest's ESM support requires it, and without it every import in a spec
@@ -258,7 +262,11 @@ It measures the fused retrieval ADR 0009 retired, so it is a historical measurem
   correct by definition. The dataset commit precedes the embedding commit, every report
   prints the dataset's sha256, and a label is never edited after a run. Missing labels are
   found by pooling and blind adjudication, which adds to `adjudication/` in its own commit
-  and leaves the pre-registered set untouched.
+  and leaves the pre-registered set untouched. P2-D's gold concept paths are the one
+  deliberate exception, and they are computed from the strata construction the loader
+  already enforces, not from anything the measured explainer returns.
+  `explanation-labels.json` was committed before the explainer existed, and a unit test holds
+  it equal to `deriveGoldPaths`. Its answer keys are written by hand, like the labels above.
 - **An embedding file is recorded against a model, a width and a dataset, and replays
   nothing else.** `recorded/embeddings.json` pins `EMBEDDING_MODEL`,
   `EMBEDDING_DIMENSIONS` and the dataset sha256 in its header, and replay refuses a

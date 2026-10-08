@@ -84,12 +84,16 @@ path.
 - **Neo4j Knowledge Graph:** Typed nodes (`:Concept`, `:Fact`) joined by `:MENTIONS`, plus
   `:RELATES_TO` between concepts. Written on every run and read by no request. It is kept
   for an explanation role — which concepts a retrieved fact mentions, and how they connect
-  to the question's — that has not been measured, so `docs/STATUS.md` row 15 is `stubbed`.
-  P2-D measures that role or removes the graph (ADR 0009's fallback). `CypherNeo4jReader`
-  is kept in `memory-core`, unwired, for that measurement and for the ablation. It has no
-  session scope, so anything that reads the graph again takes P4-B's handed-over filter
-  first. Uniqueness constraints on `:Concept(id)` and `:Fact(contentHash)` are installed at
-  boot — `MERGE` is not an upsert without them.
+  to the question's — so `docs/STATUS.md` row 15 is `stubbed`. P2-D measures that role.
+  Stage 1 is `good` and stage 2 decides whether the graph stays or goes (ADR 0012, proposed).
+  Every graph write carries its session (P2-D's M1). A `:Fact` keeps its first writer's
+  `sessionId`, as pgvector does. `MENTIONS` and `RELATES_TO` carry the session in their
+  merge key. Concepts stay global. Both graph reads take a required session scope, with no
+  cross-session form. `CypherNeo4jReader` serves the ablation, and `CypherNeo4jExplainer`
+  serves the explanation measurement. Both are unwired. Uniqueness constraints on
+  `:Concept(id)` and `:Fact(contentHash)`, and range indexes on `:Fact(sessionId)` and
+  `RELATES_TO(sessionId)`, are installed at boot — `MERGE` is not an upsert without the
+  constraints.
 
 The dimension is one exported constant, `EMBEDDING_DIMENSIONS`, and every schema, DDL,
 fixture and stub derives from it. It is 768 because pgvector refuses an HNSW index above
