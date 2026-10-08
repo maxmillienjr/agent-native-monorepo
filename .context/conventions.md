@@ -228,8 +228,9 @@ alone.
   talks to Postgres and Neo4j directly — and export `DATABASE_URL`, `NEO4J_URI`,
   `NEO4J_USER` and `NEO4J_PASSWORD` to match `docker-compose.yml`. With any of the first two
   absent, `test/integration-env.ts` skips every suite so a laptop with no Docker is not a
-  crash, and `yarn turbo test:integration` then reports 51 skipped tests over two
-  workspaces and exits 0. That is a pass by shape and a no-op by content. `REQUIRE_INTEGRATION_ENV=1` turns the skip into
+  crash, and `yarn turbo test:integration` then reports 75 skipped tests over two
+  workspaces, runs only the unconfigured axis of the review spec, and exits 0. That is a
+  pass by shape and a no-op by content. `REQUIRE_INTEGRATION_ENV=1` turns the skip into
   a failure naming each missing variable; the integration job in `e2e.yml` sets it on every
   pull request, and it is the flag to reach for whenever a green integration run needs to
   mean something.

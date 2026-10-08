@@ -607,10 +607,12 @@ throwaway Postgres and Neo4j containers, ledger unconfigured, auth open. The rev
 `apps/agent-service/test/review.e2e-spec.ts`, runs both memory axes: unconfigured under
 `yarn turbo test:service`, and live too under `yarn turbo test:integration`, which is what
 the integration job in `e2e.yml` runs with `REQUIRE_INTEGRATION_ENV`. Run that way, the file
-passed 34 of 34 across both axes, and the memory-core suite 46 of 46.
+passed 34 of 34 across both axes. After the rebase onto P3-B, the same run passed
+memory-core's suite 61 of 61 and P3-B's audit-replay suite 14 of 14, whose prior-authorization
+replay now runs through a `$submit` that enqueues.
 
 **Built as designed.** ADR 0010 records the case layer and cites ADR 0001's revisit clause.
-`prior_auth_cases` is migration `0002` in `memory-core`, with `DrizzleCaseRepository` and the
+`prior_auth_cases` is migration `0003` in `memory-core`, with `DrizzleCaseRepository` and the
 volatile `InMemoryCaseRepository` held to one contract. `$submit` enqueues before it answers
 and answers 503 when it cannot. `src/review/` serves the queue, one case and the determination
 route; `$inquire` and the CapabilityStatement are in `src/fhir/`; `ReviewSweep` flags. No
@@ -668,13 +670,26 @@ is still typed `any`. ADR 0010 cites both runs.
 - **A `Date` from the service spec failed `z.date()`.** Jest's ESM VM context is another realm,
   so the first `$submit` through the real module answered 503. The case schemas check the
   `Date` tag instead, and the conventions now say so.
-- **`turbo.json` orders `test:integration` after its dependencies'.** `memory-core`'s contract
-  empties the table before each test, and the review spec's live axis runs at the same time
-  otherwise.
+- **The review spec is the second command of `agent-service`'s `test:integration`**, after
+  P3-B's Vitest suite. P3-B already orders that task after `memory-core`'s, and the case
+  contract empties `prior_auth_cases` before each test, so the same ordering keeps it from
+  running under the review spec's live axis.
+- **`$submit` writes two records, in a fixed order, and fails closed on either.** P3-B's run
+  record opens before the graph runs, takes the `assess.criteria` decision, and closes; only
+  then is the case row written. A failed record leaves no case, so the queue never holds a
+  request whose answer was not sent. A failed enqueue leaves a closed record with no case
+  beside it, an audit of agent work whose answer was never returned, which a resubmission
+  does not duplicate in the queue. The other order would leave a pended case for a response
+  never sent. `prior-auth.service.test.ts` asserts the order, that no record failure
+  (open, append or close) leaves a case, and that an enqueue failure leaves the record
+  closed as `success`. Both failures answer 503 with an `OperationOutcome`, with different
+  diagnostics.
 - **CTL-HUM-02** is new and `implemented`: a determination only over a verified signature, by
   a listed credential, once per case. CTL-HUM-01's note no longer says the route is to come.
-- **The migration is `0002`.** P3-B's run record adds a `memory-core` migration in parallel,
-  and whichever lands second renumbers its file and journal entry.
+- **The migration is `0003`.** P3-B's run record landed first and took `0002`. Against a
+  throwaway Postgres, a fresh database applied all four and a second run applied none, and a
+  database migrated with `main`'s three, holding a run record, advanced to `0003` with the
+  record intact.
 - **P3-C and P3-D were amended in this change.** P3-C named P3-D as the reviewer surface and
   the determinations row's owner; both are P3-E's since P3-D's review split. P3-D said its
   checkpoint was what P3-E resumes, and that a pended case lived only in the response; neither
@@ -723,7 +738,7 @@ one database and ran at once. A root script cannot reach workspace code, so a to
 agree with it byte for byte lives in the workspace. And `.context/architecture.md` described no
 FHIR surface at all. The conventions and the architecture now cover all four. One is left: the
 STATUS resolver treats only `*.test.ts` and `*.spec.ts` names as test files, so the shared
-`case.repo.contract.ts` cannot be cited by test title, and row 27 cites the two `decide`
+`case.repo.contract.ts` cannot be cited by test title, and row 28 cites the two `decide`
 methods instead.
 
 ## Risks and open questions
