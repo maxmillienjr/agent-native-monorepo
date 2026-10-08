@@ -155,9 +155,13 @@ but guaranteed by how `reflect` links facts, the label linker equals the oracle,
 extractor is the corpus. The PRD's predicted failure appeared in only 12 of 50 pairs.
 [ADR 0012](../adr/0012-the-graphs-explanation-role-stage-one.md), proposed, records that
 the rule selects no outcome yet and recommends stage 2 as pre-registered. Stage 2 is 76
-`generateContent` calls on `plan`'s answers, about eight days of spare free-tier quota, and
-its code is not yet written. Neither command runs in CI, by decision: P2-E reproduces or
-archives both, depending on the outcome.
+`generateContent` calls on `plan`'s answers, and its code exists with none of them spent:
+the prompts are pinned to `planNode`'s, the graders apply the rule, and the answer file is
+recorded resumably and replayed with no key. A dry run on a fake model was killed mid-run,
+resumed, and stopped by a per-day 429, and it ended with 76 answers, none asked twice once
+recorded. What remains is the calls, eight a day for ten days, on the schedule in the PRD.
+Neither command runs in CI, by decision: P2-E reproduces or archives both, depending on the
+outcome.
 
 **[P2-C](P2-C-otel-genai-semantics.md) has shipped**, tracked in
 [#74](https://github.com/maxmillienjr/agent-native-monorepo/issues/74). A run is now one
