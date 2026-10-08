@@ -10,6 +10,8 @@ import type { Clock } from '@repo/prior-auth';
 import { createLogger, errorType, withServiceSpan } from '@repo/telemetry';
 import { APPEAL_REPOSITORY, CASE_REPOSITORY } from '../memory/memory.tokens.js';
 import { PRIOR_AUTH_CLOCK } from '../fhir/prior-auth.service.js';
+import { RUN_LEDGER } from '../ledger/ledger.tokens.js';
+import type { RunLedger } from '../ledger/run-ledger.js';
 
 const logger = createLogger('review-sweep');
 
@@ -71,6 +73,7 @@ export class ReviewSweep implements OnModuleInit, OnModuleDestroy {
     @Inject(CASE_REPOSITORY) private readonly cases: CaseRepository,
     @Inject(APPEAL_REPOSITORY) private readonly appeals: AppealRepository,
     @Inject(PRIOR_AUTH_CLOCK) private readonly clock: Clock,
+    @Inject(RUN_LEDGER) private readonly runLedger: RunLedger | null = null,
   ) {}
 
   onModuleInit(): void {
@@ -116,7 +119,14 @@ export class ReviewSweep implements OnModuleInit, OnModuleDestroy {
       }
       span.setAttribute('review.flagged_count', flagged.length);
 
-      const forwarded = await this.appeals.forwardLapsed(now);
+      // With a ledger (P3-C), each forward is appended before it is recorded;
+      // a failed append stops the sweep there, and the appeal waits, filed,
+      // for the next one.
+      const runLedger = this.runLedger;
+      const forwarded = await this.appeals.forwardLapsed(
+        now,
+        runLedger === null ? {} : { beforeCommit: (next) => runLedger.appendAppeal(next) },
+      );
       for (const appeal of forwarded) {
         span.addEvent('review.appeal.forwarded', {
           'prior_auth.appeal_id': appeal.appealId,

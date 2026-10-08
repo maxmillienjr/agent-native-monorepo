@@ -1,12 +1,13 @@
 import type { BaseCheckpointSaver } from '@langchain/langgraph';
 import type { AgentDisposition } from '@repo/determination';
 import {
+  LedgerRefusedError,
   uuidV5,
   type Ledger,
   type StoredEntry,
   type DeterminationAttestedPayload,
 } from '@repo/decision-ledger';
-import type { RunRecordRepository } from '@repo/memory-core';
+import type { AppealRow, RunRecordRepository } from '@repo/memory-core';
 import { createLogger } from '@repo/telemetry';
 import { readRunDigest } from './run-digest.js';
 
@@ -117,6 +118,100 @@ export class RunLedger {
       }
     }
     return { registered: entries.length, revoked };
+  }
+
+  /**
+   * Appends what an appeal row is about to become (P3-F): its filing, a
+   * reconsideration and, for an affirmation, the forward it causes, a
+   * dismissal, or a lapse forward. Called from the appeal store's
+   * `beforeCommit`, so a failed append leaves the appeal as it was and the
+   * route answers 503, which is P3-C's rule for a determination.
+   *
+   * Each entry cites the case's `determination.attested` entry, and each after
+   * the filing cites the filing, by the seqs their derived ids find. A case
+   * decided, or an appeal filed, before the ledger was configured has neither,
+   * and its appeal cannot be recorded with one: that refuses, closed.
+   */
+  async appendAppeal(next: AppealRow): Promise<void> {
+    const { appealId, caseId } = next;
+    const determinationSeq = await this.seqOf(
+      `${caseId}\ndetermination`,
+      `the determination on case ${caseId}`,
+    );
+    if (next.status === 'filed') {
+      await this.ledger.append({
+        entryId: uuidV5(`${appealId}\nfiled`),
+        payload: {
+          kind: 'appeal.filed',
+          appealId,
+          caseId,
+          determinationSeq,
+          priority: next.priority,
+          timely: next.timely,
+          filerRole: next.filer.role,
+        },
+      });
+      return;
+    }
+
+    const appealSeq = await this.seqOf(`${appealId}\nfiled`, `the filing of appeal ${appealId}`);
+    const signed = (): { reviewerKeyId: string; signature: string } => {
+      if (next.reviewerKeyId === null || next.signature === null) {
+        throw new Error(`appeal ${appealId} is ${next.status} with no signature`);
+      }
+      return { reviewerKeyId: next.reviewerKeyId, signature: next.signature };
+    };
+    if (next.reconsideration !== null) {
+      await this.ledger.append({
+        entryId: uuidV5(`${appealId}\nreconsideration`),
+        payload: {
+          kind: 'reconsideration.attested',
+          appealId,
+          caseId,
+          appealSeq,
+          determinationSeq,
+          reconsideration: next.reconsideration,
+          ...signed(),
+        },
+      });
+    }
+    if (next.dismissal !== null) {
+      await this.ledger.append({
+        entryId: uuidV5(`${appealId}\ndismissal`),
+        payload: {
+          kind: 'appeal.dismissed',
+          appealId,
+          caseId,
+          appealSeq,
+          determinationSeq,
+          dismissal: next.dismissal,
+          ...signed(),
+        },
+      });
+    }
+    if (next.forwardReason !== null) {
+      if (next.caseFileDigest === null) throw new Error(`appeal ${appealId} forwards no case file`);
+      await this.ledger.append({
+        entryId: uuidV5(`${appealId}\nforwarded`),
+        payload: {
+          kind: 'appeal.forwarded',
+          appealId,
+          caseId,
+          appealSeq,
+          reason: next.forwardReason,
+          caseFileDigest: next.caseFileDigest,
+        },
+      });
+    }
+  }
+
+  /** The seq of the entry appended earlier under `name`'s derived id. */
+  private async seqOf(name: string, what: string): Promise<number> {
+    const found = await this.ledger.find(uuidV5(name));
+    if (found === null) {
+      throw new LedgerRefusedError('reference', `${what} has no entry in the ledger`);
+    }
+    return found.entry.seq;
   }
 
   /** Appends a clinician's signed determination; refused unless the chain's rules hold. */

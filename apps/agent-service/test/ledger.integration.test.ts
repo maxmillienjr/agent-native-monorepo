@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { execFile } from 'node:child_process';
-import { generateKeyPairSync, randomBytes, randomUUID, sign } from 'node:crypto';
+import { createPrivateKey, generateKeyPairSync, randomBytes, randomUUID, sign } from 'node:crypto';
 import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -30,6 +30,7 @@ import { PG_POOL } from '../src/memory/memory.tokens.js';
 import { createAgentServiceHarness } from '../src/eval/agent-harness.js';
 import { replayDecks, watchForModelRequests } from '../src/eval/cassette-deps.js';
 import { generateReviewerKey, signDetermination } from '../src/review/signer.js';
+import { appealSignedBytes } from '../src/review/signature.js';
 import { skipUnlessIntegrationEnv } from './integration-env.js';
 
 const BUNDLES = join(
@@ -41,6 +42,13 @@ const BUNDLES = join(
 const PHYSICIAN = generateReviewerKey({
   reviewerKeyId: 'synthetic-ledger-key-001',
   reviewerId: 'synthetic-ledger-reviewer-001',
+  credential: { type: 'synthetic-physician', jurisdiction: 'US-SYNTHETIC' },
+});
+
+/** A second synthetic physician, who took no part in PHYSICIAN's denials (P3-F). */
+const RECONSIDERER = generateReviewerKey({
+  reviewerKeyId: 'synthetic-ledger-key-002',
+  reviewerId: 'synthetic-ledger-reviewer-002',
   credential: { type: 'synthetic-physician', jurisdiction: 'US-SYNTHETIC' },
 });
 
@@ -253,7 +261,7 @@ describe.skipIf(SKIP)('decision ledger (integration)', () => {
       mkdtempSync(join(tmpdir(), 'synthetic-ledger-registry-')),
       'registry.json',
     );
-    writeFileSync(registry, JSON.stringify([PHYSICIAN.entry]));
+    writeFileSync(registry, JSON.stringify([PHYSICIAN.entry, RECONSIDERER.entry]));
     process.env['REVIEWER_REGISTRY'] = registry;
 
     const moduleFixture = await Test.createTestingModule({ imports: [AppModule] }).compile();
@@ -572,6 +580,146 @@ describe.skipIf(SKIP)('decision ledger (integration)', () => {
     });
   });
 
+  describe('appeals (P3-F)', () => {
+    /** A case denied by PHYSICIAN through the route, and an appeal filed on it. */
+    async function appealed(): Promise<{ caseId: string; appealId: string }> {
+      const submitted = await request(app.getHttpServer())
+        .post('/fhir/Claim/$submit')
+        .set('Content-Type', 'application/fhir+json')
+        .send(readFileSync(join(BUNDLES, 'pa-e0601-one-missing.bundle.json'), 'utf8'));
+      expect(submitted.status).toBe(200);
+      const latest = await pool.query<{ run_id: string }>(
+        `SELECT run_id FROM run_records WHERE graph = 'prior-auth' ORDER BY started_at DESC LIMIT 1`,
+      );
+      const caseId = latest.rows[0]!.run_id;
+      const view = await request(app.getHttpServer()).get(`/review/cases/${caseId}`);
+      const signing = (
+        view.body as { signing: { runId: string; recommendationSeq: number | null } }
+      ).signing;
+      const denial = signDetermination({
+        privateKeyPem: PHYSICIAN.privateKeyPem,
+        reviewerKeyId: PHYSICIAN.entry.reviewerKeyId,
+        signing,
+        determination: {
+          kind: 'denial',
+          specificReason: 'Synthetic fixture: the sleep study does not document the criterion.',
+          attestation: {
+            reviewerId: PHYSICIAN.entry.reviewerId,
+            credential: PHYSICIAN.entry.credential,
+            attestedAt: '2026-10-08T12:00:00+00:00',
+          },
+        },
+      });
+      const decided = await request(app.getHttpServer())
+        .post(`/review/cases/${caseId}/determination`)
+        .set('Content-Type', 'application/json')
+        .send(denial);
+      expect(decided.status).toBe(200);
+      const filed = await request(app.getHttpServer())
+        .post('/review/appeals')
+        .set('Content-Type', 'application/json')
+        .send({
+          caseId,
+          filer: { role: 'enrollee', name: 'Synthetic Enrollee' },
+          channel: 'written',
+          expedite: { requested: false, physicianSupport: false },
+          statement: 'Synthetic: the enrollee asks the plan to look again.',
+        });
+      expect(filed.status).toBe(201);
+      return { caseId, appealId: (filed.body as { appealId: string }).appealId };
+    }
+
+    /** RECONSIDERER's signed affirmation of an appeal. */
+    function affirmation(target: { caseId: string; appealId: string }) {
+      const reconsideration = {
+        kind: 'affirmation',
+        explanation: 'Synthetic fixture: the appeal evidence does not change the reading.',
+        goodCauseFound: false,
+        attestation: {
+          reviewerId: RECONSIDERER.entry.reviewerId,
+          credential: RECONSIDERER.entry.credential,
+          attestedAt: '2026-10-09T12:00:00+00:00',
+        },
+      };
+      const bytes = appealSignedBytes({
+        action: 'reconsideration',
+        ...target,
+        body: reconsideration,
+      });
+      return {
+        reconsideration,
+        reviewerKeyId: RECONSIDERER.entry.reviewerKeyId,
+        signature: sign(null, bytes, createPrivateKey(RECONSIDERER.privateKeyPem)).toString(
+          'base64url',
+        ),
+      };
+    }
+
+    it('appends the filing, the affirmation and the forward under derived ids, and ledger:verify exits 0', async () => {
+      const target = await appealed();
+      const affirmed = await request(app.getHttpServer())
+        .post(`/review/appeals/${target.appealId}/reconsideration`)
+        .set('Content-Type', 'application/json')
+        .send(affirmation(target));
+      expect(affirmed.status).toBe(200);
+
+      const rows = await service.ledger.readRows();
+      const kindOf = (name: string) =>
+        rows.entries.find((entry) => entry.entryId === uuidV5(`${target.appealId}\n${name}`))?.kind;
+      expect([kindOf('filed'), kindOf('reconsideration'), kindOf('forwarded')]).toEqual([
+        'appeal.filed',
+        'reconsideration.attested',
+        'appeal.forwarded',
+      ]);
+      const forward = rows.payloads.find(
+        (row) => row.entryId === uuidV5(`${target.appealId}\nforwarded`),
+      );
+      const file = await request(app.getHttpServer()).get(
+        `/review/appeals/${target.appealId}/case-file`,
+      );
+      expect(JSON.parse(forward!.payload)).toMatchObject({
+        reason: 'affirmed',
+        caseFileDigest: (file.body as { digest: string }).digest,
+      });
+
+      const verified = await cli('verify.js', [], env);
+      expect(verified.code).toBe(0);
+      expect(verified.stdout).toMatch(/reconsideration\.attested \d+/);
+    });
+
+    it('answers 503 to a reconsideration with the ledger’s database stopped, and the appeal stays filed', async () => {
+      const target = await appealed();
+      const body = affirmation(target);
+
+      await admin.query(`ALTER DATABASE ${service.name} ALLOW_CONNECTIONS false`);
+      await admin.query(
+        'SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = $1 AND pid <> pg_backend_pid()',
+        [service.name],
+      );
+      let status: number;
+      try {
+        status = (
+          await request(app.getHttpServer())
+            .post(`/review/appeals/${target.appealId}/reconsideration`)
+            .set('Content-Type', 'application/json')
+            .send(body)
+        ).status;
+      } finally {
+        await admin.query(`ALTER DATABASE ${service.name} ALLOW_CONNECTIONS true`);
+      }
+
+      expect(status).toBe(503);
+      const view = await request(app.getHttpServer()).get(`/review/appeals/${target.appealId}`);
+      expect((view.body as { status: string }).status).toBe('filed');
+      const rows = await service.ledger.readRows();
+      expect(
+        rows.entries.some(
+          (entry) => entry.entryId === uuidV5(`${target.appealId}\nreconsideration`),
+        ),
+      ).toBe(false);
+    });
+  });
+
   describe('anchoring', () => {
     it('ledger:anchor stores a token from the local test TSA that ledger:verify checks', async () => {
       await post();
@@ -691,6 +839,73 @@ describe.skipIf(SKIP)('decision ledger (integration)', () => {
       });
       const seq = await forge(db, reviewer.attest(runId, 2));
       await expectFailureAt(seq, 'signature');
+    });
+
+    it('exits 1 at a reconsideration signed by a second key of the reviewer who denied (P3-F)', async () => {
+      const { reviewer, runId } = await seeded();
+      const denial = await db.ledger.append({
+        entryId: uuidV5('denial'),
+        payload: reviewer.attest(runId, 2),
+      });
+      const appealId = randomUUID();
+      const filing = await db.ledger.append({
+        entryId: uuidV5('filing'),
+        payload: {
+          kind: 'appeal.filed',
+          appealId,
+          caseId: runId,
+          determinationSeq: denial.entry.seq,
+          priority: 'standard',
+          timely: true,
+          filerRole: 'enrollee',
+        },
+      });
+      // The same reviewer under a second key: registered honestly, because
+      // nothing in a key's registration says whose determinations it may not
+      // reconsider.
+      const { publicKey, privateKey } = generateKeyPairSync('ed25519');
+      await db.ledger.append({
+        entryId: uuidV5('second-key'),
+        payload: {
+          kind: 'reviewer-key.registered',
+          reviewerKeyId: 'synthetic-key-001-b',
+          reviewerId: 'synthetic-reviewer-001',
+          credential: { type: 'MD', jurisdiction: 'US-SYNTHETIC' },
+          publicKey: publicKey.export({ format: 'jwk' }).x!,
+        },
+      });
+      const reconsideration = {
+        kind: 'affirmation' as const,
+        explanation: 'Synthetic fixture: affirmed by the reviewer who denied.',
+        goodCauseFound: false,
+        attestation: {
+          reviewerId: 'synthetic-reviewer-001',
+          credential: { type: 'MD', jurisdiction: 'US-SYNTHETIC' },
+          attestedAt: '2026-10-09T12:00:00.000Z',
+        },
+      };
+      const bytes = appealSignedBytes({
+        action: 'reconsideration',
+        appealId,
+        caseId: runId,
+        body: reconsideration,
+      });
+      const own: LedgerPayload = {
+        kind: 'reconsideration.attested',
+        appealId,
+        caseId: runId,
+        appealSeq: filing.entry.seq,
+        determinationSeq: denial.entry.seq,
+        reconsideration: { ...reconsideration, initialReviewerId: 'synthetic-reviewer-001' },
+        reviewerKeyId: 'synthetic-key-001-b',
+        signature: sign(null, bytes, privateKey).toString('base64url'),
+      };
+      // The append refuses it; the owner, with the table to itself, does not.
+      await expect(db.ledger.append({ entryId: uuidV5('own'), payload: own })).rejects.toThrow(
+        /involvement/,
+      );
+      const seq = await forge(db, own);
+      await expectFailureAt(seq, 'involvement');
     });
 
     it('reports a deleted payload as withheld and exits 0', async () => {

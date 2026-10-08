@@ -18,11 +18,13 @@ import {
   FilerSchema,
   caseFileDigest,
   caseFileOf,
+  type ActionOptions,
   type ActionResult,
   type AppealRepository,
   type AppealRow,
   type CaseRepository,
   type CaseRow,
+  type FileResult,
   type Filer,
 } from '@repo/memory-core';
 import {
@@ -51,6 +53,8 @@ import { InvolvedReviewerError, attestReconsideration } from '@repo/determinatio
 import { createLogger, errorType, withServiceSpan } from '@repo/telemetry';
 import { APPEAL_REPOSITORY, CASE_REPOSITORY } from '../memory/memory.tokens.js';
 import { PRIOR_AUTH_CLOCK } from '../fhir/prior-auth.service.js';
+import { RUN_LEDGER } from '../ledger/ledger.tokens.js';
+import type { RunLedger } from '../ledger/run-ledger.js';
 import { REVIEWER_REGISTRY, type RegisteredKey, type ReviewerRegistry } from './registry.js';
 import { ReviewService, sameCredential, type CaseView } from './review.service.js';
 import { appealSignedBytes, verifySignature } from './signature.js';
@@ -206,6 +210,7 @@ export class AppealService {
     @Inject(PRIOR_AUTH_CLOCK) private readonly clock: Clock,
     @Inject(REVIEWER_REGISTRY) private readonly registry: ReviewerRegistry | null,
     @Inject(ReviewService) private readonly review: ReviewService,
+    @Inject(RUN_LEDGER) private readonly runLedger: RunLedger | null = null,
   ) {}
 
   /**
@@ -257,17 +262,34 @@ export class AppealService {
           ? {}
           : { noticeReceivedAt: new Date(filer.data.noticeReceivedAt) }),
       });
-      const result = await this.appeals.file({
-        appealId: randomUUID(),
-        caseId: caseRow.caseId,
-        priority,
-        filer: filer.data,
-        receivedAt: now,
-        filingDeadline: deadline,
-        timely: now.getTime() <= deadline.getTime(),
-        reconsiderationDueBy: reconsiderationDueBy(now, priority),
-        request,
-      });
+      const appealId = randomUUID();
+      let result: FileResult;
+      try {
+        result = await this.appeals.file(
+          {
+            appealId,
+            caseId: caseRow.caseId,
+            priority,
+            filer: filer.data,
+            receivedAt: now,
+            filingDeadline: deadline,
+            timely: now.getTime() <= deadline.getTime(),
+            reconsiderationDueBy: reconsiderationDueBy(now, priority),
+            request,
+          },
+          this.ledgered(),
+        );
+      } catch (error) {
+        logger.error({
+          msg: 'review.appeal.store_failed',
+          action: 'filing',
+          appealId,
+          errorType: errorType(error),
+        });
+        throw new ServiceUnavailableException(
+          'The appeal could not be recorded, so it was not filed.',
+        );
+      }
 
       span.setAttribute('review.outcome', result.outcome);
       if (result.outcome === 'not-found') throw new NotFoundException(`no case ${body.caseId}`);
@@ -436,7 +458,7 @@ export class AppealService {
             signature: body.signature,
             decidedAt: now,
           },
-          response === undefined ? {} : { response },
+          { ...this.ledgered(), ...(response === undefined ? {} : { response }) },
         );
       } catch (error) {
         throw storeFailure('reconsideration', appeal.appealId, error);
@@ -486,12 +508,17 @@ export class AppealService {
 
       let result: ActionResult;
       try {
-        result = await this.appeals.dismiss(appeal.appealId, body.dismissal, {
-          reviewerId: key.entry.reviewerId,
-          reviewerKeyId: key.entry.reviewerKeyId,
-          signature: body.signature,
-          decidedAt: now,
-        });
+        result = await this.appeals.dismiss(
+          appeal.appealId,
+          body.dismissal,
+          {
+            reviewerId: key.entry.reviewerId,
+            reviewerKeyId: key.entry.reviewerKeyId,
+            signature: body.signature,
+            decidedAt: now,
+          },
+          this.ledgered(),
+        );
       } catch (error) {
         throw storeFailure('dismissal', appeal.appealId, error);
       }
@@ -504,6 +531,17 @@ export class AppealService {
       });
       return this.viewOf(recorded.row);
     });
+  }
+
+  /**
+   * With a ledger configured (P3-C), every appeal write appends its entries
+   * before it commits, and a failed append leaves the appeal as it was. The
+   * ledger re-checks the signature, and checks non-involvement from the chain
+   * alone, against the keys it holds.
+   */
+  private ledgered(): ActionOptions {
+    const runLedger = this.runLedger;
+    return runLedger === null ? {} : { beforeCommit: (next) => runLedger.appendAppeal(next) };
   }
 
   private requireRegistry(): ReviewerRegistry {
