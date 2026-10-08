@@ -2,7 +2,7 @@
 id: P5-C
 title: Upgrade to LangGraph 1.x
 tier: 5
-status: in-progress
+status: shipped
 size: S
 depends_on: [P0-A]
 blocks: []
@@ -267,12 +267,12 @@ memory axis is `live` wherever stores are named.
 - [x] `git diff main -- packages/eval-harness/datasets` is empty on the implementing branch.
 - [x] Model live, memory live: one trial of `memory-recall-001` (`EVAL_TRIALS=1`, no cassette
       mode) passes all eleven graders at 1.x, logged as `eval.trial` with `failed: []`.
-- [ ] Model live, memory live: one trial of `tool-use-001` passes every grader. **Not met:**
-      the run aborted on a per-minute 429 before the trial finished (see "What the
-      implementation found"). Owned here; P5-C stays `in-progress` until it is run.
-- [ ] Model live: each live trial's transcript carries a non-empty assistant message.
-      **Not met:** an aborted suite writes no report, so the `memory-recall-001` transcript
-      never reached disk. Owned here, and closed by the same run as the one above.
+- [x] Model live, memory live: one trial of `tool-use-001` passes every grader. Met on
+      2026-10-08 by the run in "The live run at the 1.x head": all ten graders, with three
+      `web-search` calls, logged as `eval.trial` with `failed: []`.
+- [x] Model live: each live trial's transcript carries a non-empty assistant message. Met
+      by the same run: the plan is 4,778 characters on `memory-recall-001` and 1,005 on
+      `tool-use-001`, both read from `eval-report.json`.
 - [x] Model live: the live run used no more than 8 `generateContent` calls. At most 6: the
       three a passing `memory-recall-001` trial needs, at most two more before the limit of
       5 a minute, and the one rejected request, which nothing retried in the code that run
@@ -347,6 +347,34 @@ returning a value its channel does not allow, so the design stands. P2-C expecte
 upgrade to expose `gen_ai.response.model`, but `2.3.2` still sets only `model_provider`.
 `main` had already corrected P2-C from P1-E's reading, so that sentence was left as it
 stands.
+
+### The live run at the 1.x head
+
+Run on 2026-10-08 at `f7991ed`, Node 24.11.1, with `@langchain/langgraph` 1.4.18,
+`@langchain/core` 1.2.12, `@langchain/google-genai` 2.3.2 and `@google/generative-ai`
+0.24.1. Stores were fresh `pgvector/pgvector:pg16` and `neo4j:5-community` containers on
+ports 21432 and 21687. One run closed the two open criteria above and P1-D's local live one:
+
+```
+cd apps/agent-service
+EVAL_TRIALS=1 EVAL_GATE=live EVAL_HISTORY_DIR=<scratch> \
+  node --import <scratch>/throttle.mjs dist/eval/run-eval.js
+```
+
+That is what `yarn eval` runs, called directly so that the preload reaches the process.
+`EVAL_CASSETTE_MODE` was unset, so no cassette was written. The preload was scratch and is
+not committed. It counted every request to the model host from the main thread only, and
+spaced `generateContent` at four a minute so that the run stayed under the free tier's five.
+The run exited 0.
+
+- **8 `generateContent` calls, all `200`,** plus 15 `embedContent`. There was no 429, so
+  the run does not test `stopOnDailyQuota` against a live per-minute body.
+- **`memory-recall-001`: 11 of 11 graders. `tool-use-001`: 10 of 10.** That is 21 of 21,
+  and the pass rate is 100% over two tasks with none skipped.
+- The `tool-use-001` transcript holds three `web-search` calls with the query
+  `LangGraph latest release`. Two carry the input as `{ "query": … }` and one as a bare
+  string. `tool_trajectory_recall` grades the tool name, so it passes either way. No PRD
+  owns that shape difference; it is recorded here, not fixed.
 
 ## Risks and open questions
 
