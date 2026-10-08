@@ -680,6 +680,12 @@ portfolio's, not counsel's.
 - The root `package.json` workspaces array holds globs — `packages/*` and `apps/*` — not
   package names. A new package in either directory is registered by existing there, and
   `yarn workspaces list` is the check. Adding a name is only needed outside those globs.
+- **Run `yarn install` after a rebase or merge that adds a workspace.** Until it runs,
+  `node_modules/@repo/` has no link for the new package. In a git worktree nested inside
+  another checkout, as `.claude/worktrees/*` are, Node and TypeScript then walk up to the
+  outer checkout's `node_modules` and resolve that checkout's copy of the package, which
+  can be older, so the error names a missing export rather than a missing package. P3-F
+  met this when it rebased onto P3-C's `@repo/decision-ledger`.
 - Pin major versions. Use `^` for minor/patch ranges.
 - **Clear an advisory by version, and touch only what the dependent's range cannot reach.**
   When `dependency-audit` fails, run `yarn why <pkg>` first, then compare the via clause
