@@ -90,18 +90,6 @@ describe('the shipped dataset', () => {
     expect(task.requires).toEqual({ model: ['live', 'replay'] });
   });
 
-  it('grades graph-recall-001 on a graph-only fact reaching the prompt', () => {
-    const task = loadMemoryRecallSuite().tasks.find((t) => t.id === 'graph-recall-001')!;
-    expect(task.graders.map((g) => g.name)).toContain('retrieved_from_source');
-    // The fact the grader looks for exists in the graph and nowhere else.
-    const [graphFact] = task.seeds.graphFacts;
-    expect(graphFact?.entityIds).toEqual(['langgraph']);
-    expect(task.seeds.neo4j.map((c) => c.id)).toContain('langgraph');
-    expect(task.seeds.pgvector.map((f) => f.contentHash)).not.toContain(graphFact?.contentHash);
-    // It runs on every model axis; the stub axis cannot move retrieval.
-    expect(task.requires).toBeUndefined();
-  });
-
   it('leaves a task that declared nothing without a requirement', () => {
     const task = loadMemoryRecallSuite().tasks.find((t) => t.id === 'memory-recall-001')!;
     expect(task.requires).toBeUndefined();
@@ -186,18 +174,18 @@ describe('the shipped dataset', () => {
   });
 
   it('narrows the suite to EVAL_TASKS, in suite order', () => {
-    const ids = readTaskFilter({ EVAL_TASKS: ' tool-use-001, graph-recall-001 ' });
-    expect(ids).toEqual(['tool-use-001', 'graph-recall-001']);
+    const ids = readTaskFilter({ EVAL_TASKS: ' tool-use-001, memory-recall-001 ' });
+    expect(ids).toEqual(['tool-use-001', 'memory-recall-001']);
     const narrowed = selectTasks(loadMemoryRecallSuite(), ids);
-    expect(narrowed.tasks.map((t) => t.id)).toEqual(['graph-recall-001', 'tool-use-001']);
-    expect(narrowed.name).toBe('memory-recall [graph-recall-001, tool-use-001]');
+    expect(narrowed.tasks.map((t) => t.id)).toEqual(['memory-recall-001', 'tool-use-001']);
+    expect(narrowed.name).toBe('memory-recall [memory-recall-001, tool-use-001]');
     expect(readTaskFilter({})).toBeUndefined();
-    expect(selectTasks(loadMemoryRecallSuite(), undefined).tasks).toHaveLength(3);
+    expect(selectTasks(loadMemoryRecallSuite(), undefined).tasks).toHaveLength(2);
   });
 
   it('refuses an EVAL_TASKS id the suite does not hold', () => {
-    expect(() => selectTasks(loadMemoryRecallSuite(), ['graph-recall-01'])).toThrow(
-      /does not hold: graph-recall-01/,
+    expect(() => selectTasks(loadMemoryRecallSuite(), ['memory-recall-01'])).toThrow(
+      /does not hold: memory-recall-01/,
     );
   });
 
@@ -275,11 +263,11 @@ describe('the cassette directory', () => {
     }
   });
 
-  it('leaves the shipped suite at exactly three tasks', () => {
+  it('leaves the shipped suite at exactly two tasks', () => {
     // The regression the subdirectory exists to prevent, asserted against the
-    // real dataset rather than a fixture of it.
+    // real dataset rather than a fixture of it. P2-B's graph-recall-001 was
+    // the third until ADR 0009 took the graph out of retrieval.
     expect(loadMemoryRecallSuite().tasks.map((task) => task.id)).toEqual([
-      'graph-recall-001',
       'memory-recall-001',
       'tool-use-001',
     ]);
