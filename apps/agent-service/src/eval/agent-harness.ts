@@ -15,6 +15,7 @@ import {
   type AgentHarness,
   type Axes,
   type MemoryOutcome,
+  type SpanRecord,
   type Task,
   type Transcript,
 } from '@repo/eval-harness';
@@ -45,9 +46,14 @@ export class AgentServiceHarness implements AgentHarness<MemoryOutcome> {
    * `Transcript` is the system-agnostic record and has no business carrying an
    * extraction, but `entity_merged` has to ask whether *this run's* concepts
    * reached the graph — and `mergeEntity` writes no episode onto a `:Concept`,
-   * so there is nothing on the node to ask with.
+   * so there is nothing on the node to ask with. The fact texts are kept for
+   * the red team's `canary_absent_from_extraction` (P4-B), which asks what
+   * `reflect` was handed rather than what rows it wrote.
    */
-  private readonly extractionByRun = new Map<string, string[]>();
+  private readonly extractionByRun = new Map<
+    string,
+    { conceptIds: string[]; factTexts: string[] }
+  >();
 
   /**
    * Which trial of each task is next, so the right cassette is opened.
@@ -106,23 +112,27 @@ export class AgentServiceHarness implements AgentHarness<MemoryOutcome> {
    * both.
    */
   async reset(task: Task<MemoryOutcome>): Promise<void> {
-    const sessionId = (task.input as { sessionId: string }).sessionId;
-
     const trialIndex = (this.trialIndexByTask.get(task.id) ?? -1) + 1;
     this.trialIndexByTask.set(task.id, trialIndex);
     this.deck = this.decks?.open(task.id, trialIndex);
 
-    await this.seeds.restoreToSeed({
-      sessionId,
-      conceptIds: task.seeds.neo4j.map((concept) => concept.id),
-      // Both indices' hashes, because the Neo4j half of the restore keeps a
-      // `:Fact` only if its hash is listed — a graph fact left off this list is
-      // deleted by the reset that is supposed to preserve it.
-      contentHashes: [
-        ...task.seeds.pgvector.map((fact) => fact.contentHash),
-        ...task.seeds.graphFacts.map((fact) => fact.contentHash),
-      ],
-    });
+    // Every session the task names, not only the graded one (P4-B). A prior
+    // run writes into its own session, and a trial that left the attacker's
+    // turn behind would hand the next trial a store it did not seed — with the
+    // episodes' first write winning, the next prior run would write no row.
+    for (const sessionId of sessionsNamedBy(task)) {
+      await this.seeds.restoreToSeed({
+        sessionId,
+        conceptIds: task.seeds.neo4j.map((concept) => concept.id),
+        // Both indices' hashes, because the Neo4j half of the restore keeps a
+        // `:Fact` only if its hash is listed — a graph fact left off this list
+        // is deleted by the reset that is supposed to preserve it.
+        contentHashes: [
+          ...task.seeds.pgvector.map((fact) => fact.contentHash),
+          ...task.seeds.graphFacts.map((fact) => fact.contentHash),
+        ],
+      });
+    }
 
     await this.seeds.applySeed({
       concepts: task.seeds.neo4j,
@@ -132,15 +142,22 @@ export class AgentServiceHarness implements AgentHarness<MemoryOutcome> {
     });
   }
 
+  /**
+   * The trial: any prior runs the task names, in order, then the graded run.
+   *
+   * Only the graded run is the transcript. The prior runs' traces ride after
+   * its own, so the trial's budget counts every call the trial made, and
+   * `latencyMs` is the whole trial's.
+   */
   async run(task: Task<MemoryOutcome>): Promise<Transcript> {
     const startedAt = Date.now();
-    const traced = await this.tracedRun(task);
+    const { traced, priorSpans } = await this.tracedRuns(task);
     const latencyMs = Date.now() - startedAt;
 
-    this.extractionByRun.set(
-      traced.response.runId,
-      (traced.extraction?.entities ?? []).map((entity) => entity.id),
-    );
+    this.extractionByRun.set(traced.response.runId, {
+      conceptIds: (traced.extraction?.entities ?? []).map((entity) => entity.id),
+      factTexts: (traced.extraction?.facts ?? []).map((fact) => fact.text),
+    });
 
     return {
       runId: traced.response.runId,
@@ -165,28 +182,46 @@ export class AgentServiceHarness implements AgentHarness<MemoryOutcome> {
       outcome: traced.response.outcome,
       latencyMs,
       // The run's trace, on every axis. Taken before `captureOutcome`, whose
-      // inspection spans are the harness's and not the run's.
-      ...(this.spans === undefined ? {} : { spans: this.spans.take(traced.traceId) }),
+      // inspection spans are the harness's and not the run's. The graded
+      // run's first, so the first root is the run the graders judged.
+      ...(this.spans === undefined
+        ? {}
+        : { spans: [...this.spans.take(traced.traceId), ...priorSpans] }),
     };
   }
 
   /**
-   * The run itself, wrapped so the trial's deck is always finished.
+   * The trial's runs, wrapped so the trial's deck is always finished — once,
+   * after the last of them, because one cassette holds the whole trial.
    *
    * `completed` rather than "we reached the finally": a cassette written from a
    * crashed run replays a run that never happened, and a replay that ended
    * early has recorded decisions left over — which the deck reports only when
    * the trial was supposed to have consumed them.
+   *
+   * A prior run's spans are taken as soon as it ends. The collector hands back
+   * one trace and drops everything else it holds, so waiting until the graded
+   * run would lose them.
    */
-  private async tracedRun(task: Task<MemoryOutcome>): Promise<TracedRun> {
+  private async tracedRuns(
+    task: Task<MemoryOutcome>,
+  ): Promise<{ traced: TracedRun; priorSpans: SpanRecord[] }> {
     let completed = false;
     try {
+      const priorSpans: SpanRecord[] = [];
+      for (const body of task.priorInputs ?? []) {
+        const prior = await this.runs.executeTraced({
+          body,
+          correlationId: `eval-${randomUUID()}`,
+        });
+        if (this.spans !== undefined) priorSpans.push(...this.spans.take(prior.traceId));
+      }
       const traced = await this.runs.executeTraced({
         body: task.input,
         correlationId: `eval-${randomUUID()}`,
       });
       completed = true;
-      return traced;
+      return { traced, priorSpans };
     } finally {
       await this.decks?.close(completed);
       this.deck = undefined;
@@ -194,8 +229,9 @@ export class AgentServiceHarness implements AgentHarness<MemoryOutcome> {
   }
 
   async captureOutcome(_task: Task<MemoryOutcome>, transcript: Transcript): Promise<MemoryOutcome> {
-    const extractedConceptIds = this.extractionByRun.get(transcript.runId) ?? [];
+    const extraction = this.extractionByRun.get(transcript.runId);
     this.extractionByRun.delete(transcript.runId);
+    const extractedConceptIds = extraction?.conceptIds ?? [];
 
     const inspection = await this.inspector.inspectRun({
       runId: transcript.runId,
@@ -210,12 +246,32 @@ export class AgentServiceHarness implements AgentHarness<MemoryOutcome> {
       factNodesForRun: inspection.factNodesForRun,
       extractedConceptIds,
       mergedConceptIds: inspection.presentConceptIds,
+      extractedFactTexts: extraction?.factTexts ?? [],
     };
   }
 
   async close(): Promise<void> {
     await this.context.close();
   }
+}
+
+/**
+ * Every session a task names: the graded input's, each prior run's, and each
+ * seeded fact's, in that order and without repeats.
+ *
+ * Exported for its unit test. The seeded sessions are included because a seed
+ * may own a fact in a session no run uses — the attacker's, in a cross-session
+ * case — and restoring it is what removes anything a trial left there.
+ */
+export function sessionsNamedBy(task: Task<MemoryOutcome>): string[] {
+  const sessionOf = (input: unknown): string => (input as { sessionId: string }).sessionId;
+  return [
+    ...new Set([
+      sessionOf(task.input),
+      ...(task.priorInputs ?? []).map(sessionOf),
+      ...task.seeds.pgvector.map((fact) => fact.sessionId),
+    ]),
+  ];
 }
 
 /**
