@@ -2,6 +2,7 @@
   "id": "memory-recall-001",
   "description": "Basic single-turn research query with synthetic memory data",
   "retrievalPath": "vector",
+  "budgets": { "modelCalls": 7 },
   "notes": "This task exercises the vector path, which since ADR 0009 is the only retrieval path a run has. Its neo4j seed entries are :Concept nodes that no request reads; before ADR 0009 the graph retriever returned nothing from them either, because they carry no :Fact. trajectory_precision over the node sequence is reported rather than gated because act loops up to maxSteps and every extra iteration lowers it; the tool metrics are reported rather than gated because whether the model reaches for a tool is a property of the model, and the stub set never does.",
   "input": {
     "sessionId": "550e8400-e29b-41d4-a716-446655440000",
