@@ -60,16 +60,26 @@ describe('buildAgentGraph', () => {
     expect(typeof compiled.stream).toBe('function');
   });
 
-  it('registers all seven nodes without colliding with a state channel', () => {
+  it('registers every node without colliding with a state channel', () => {
     const compiled = buildAgentGraph(makeDeps(), {}, 'corr-123');
     const nodes = Object.keys(compiled.getGraph().nodes)
       .filter((name) => !name.startsWith('__'))
       .sort();
 
-    // `distill` is the seventh. `extraction` is the channel it writes and
-    // `distill` is the node — the separation P0-A's rename established, and
-    // the collision this test exists to catch.
-    expect(nodes).toEqual(['act', 'distill', 'egress', 'ingress', 'plan', 'reflect', 'retrieve']);
+    // `extraction` is the channel `distill` writes and `distill` is the node —
+    // the separation P0-A's rename established, and the collision this test
+    // exists to catch. `compensate` writes `toolOutputs`, never a channel of
+    // its own name.
+    expect(nodes).toEqual([
+      'act',
+      'compensate',
+      'distill',
+      'egress',
+      'ingress',
+      'plan',
+      'reflect',
+      'retrieve',
+    ]);
   });
 
   it('carries `extraction` as a state channel, so reflect can read it', async () => {

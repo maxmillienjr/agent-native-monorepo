@@ -154,10 +154,10 @@ export const ALLOWED_SPAN_ATTRIBUTES: ReadonlySet<string> = new Set<string>([
   'candidateCount',
   'outcome',
   // The tool registry (P4-C). A tier is one of three words the code declares,
-  // and the suppression flag is a boolean; neither is the call's input or
-  // output.
+  // and the other two are booleans; none is the call's input or output.
   'tool.tier',
   'tool.duplicate_suppressed',
+  'tool.compensation',
   // The prior-authorization nodes (P3-D). Times, a priority and the kind of
   // disposition: the request clock P1-F budgets and P3-E sorts by, and nothing
   // from the member's record. No code, no criterion, no finding.
