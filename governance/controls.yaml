@@ -427,6 +427,46 @@ controls:
       - { framework: iso-iec-42001-2023, ref: A.6.2.8 }
     note: The repository holds no ePHI (ADR 0003), so the §164.312 mappings describe the safeguard's shape, not a compliance obligation.
 
+  - id: CTL-AUD-02
+    title: Every run's inputs and decisions are recorded, and a replay proves the record complete against its checkpoints
+    status: implemented
+    maps:
+      - { framework: hipaa-164.312, ref: (b) }
+      - { framework: iso-iec-42001-2023, ref: A.6.2.8 }
+      - { framework: nist-ai-rmf-1.0, ref: MEASURE 2.4 }
+    evidence:
+      - { kind: symbol, file: apps/agent-service/src/audit/run-recorder.ts, name: RunRecorder }
+      - { kind: symbol, file: apps/agent-service/src/audit/replay-run.ts, name: replayRun }
+      - kind: test
+        file: apps/agent-service/test/audit-replay.integration.test.ts
+        name: leaves one run_records row holding the body sent and every decision in order
+        tier: integration
+      - kind: test
+        file: apps/agent-service/test/audit-replay.integration.test.ts
+        name: replays a stub run with every checkpoint matching, and derives what it wrote
+        tier: integration
+      - kind: test
+        file: apps/agent-service/test/audit-replay.integration.test.ts
+        name: editing one checkpoint blob exits 1 at that step
+        tier: integration
+      - kind: test
+        file: apps/agent-service/src/fhir/prior-auth.service.test.ts
+        name: answers 503 and returns no decision when the assessment cannot be recorded
+        tier: unit
+      - { kind: ci, workflow: e2e.yml, job: e2e, run: yarn turbo test:integration }
+    note: Delivered by P3-B (ADR 0007). The record holds the request, the commit, the models and every decision at the cassette seam plus memory.retrieve, appended as each resolves; audit:replay re-executes the run at its commit and compares every checkpoint. It proves the record complete and consistent, not unaltered — a consistent edit to a record and its checkpoints passes, and detecting one is CTL-AUD-01. The prior-authorization path fails closed when a record cannot be written; the chat path fails open and closes the record partial. The §164.312 mapping describes the safeguard's shape; the repository holds no ePHI (ADR 0003).
+
+  - id: CTL-AUD-03
+    title: Before real member data, run records and checkpoints are encrypted at rest, read-logged, read through a separate role and retained to the record-keeping floor
+    status: procedural
+    maps:
+      - { framework: hipaa-164.312, ref: (a)(1) }
+      - { framework: hipaa-164.312, ref: (b) }
+      - { framework: nist-ai-rmf-1.0, ref: MEASURE 2.10 }
+    evidence:
+      - { kind: doc, file: .context/conventions.md, heading: Before real data }
+    note: Written by P3-B. The deploying covered entity owns every item, and no test in this repository can evidence a deployment's configuration. Nothing here deletes a run record or a checkpoint, by decision; a prune built later must be a ledger event (P3-C).
+
   - id: CTL-OBS-01
     title: Model calls and evaluations emit OpenTelemetry GenAI semantic-convention telemetry
     status: implemented
