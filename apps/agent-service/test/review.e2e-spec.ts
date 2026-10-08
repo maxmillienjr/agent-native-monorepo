@@ -1,5 +1,6 @@
-import { randomUUID } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { generateKeyPairSync, randomUUID, sign, type KeyObject } from 'node:crypto';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { HttpStatus } from '@nestjs/common';
@@ -7,7 +8,8 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import request from 'supertest';
 import type { CaseRepository, NewCase } from '@repo/memory-core';
 import type { AgentDisposition } from '@repo/determination';
-import { ClaimResponseSchema } from '@repo/prior-auth';
+import { canonicalJson } from '@repo/agent-cassette';
+import { BundleSchema, ClaimResponseSchema } from '@repo/prior-auth';
 import { AppModule } from '../src/app.module.js';
 import { FHIR_JSON, configureApp } from '../src/configure-app.js';
 import { PRIOR_AUTH_CLOCK } from '../src/fhir/prior-auth.service.js';
@@ -57,7 +59,109 @@ const readBundle = (task: string): Record<string, unknown> =>
   JSON.parse(readFileSync(join(BUNDLES, `${task}.bundle.json`), 'utf8')) as Record<string, unknown>;
 
 const RECEIVED = new Date('2026-09-22T10:00:00Z');
+const DECIDED = new Date('2026-09-23T15:00:00Z');
 const SENTINEL = 'SENTINEL-REVIEW-RATIONALE-5b1d';
+
+/**
+ * Reviewer keys, generated in the test: no private key exists anywhere else.
+ * Every reviewer, credential and key id is labelled synthetic (ADR 0003).
+ */
+interface Reviewer {
+  readonly reviewerKeyId: string;
+  readonly reviewerId: string;
+  readonly credential: { readonly type: string; readonly jurisdiction: string };
+  readonly privateKey: KeyObject;
+  readonly publicKey: string;
+  readonly revokedAt?: string;
+}
+
+function reviewer(
+  reviewerKeyId: string,
+  reviewerId: string,
+  type: string,
+  revokedAt?: string,
+): Reviewer {
+  const { publicKey, privateKey } = generateKeyPairSync('ed25519');
+  const x = publicKey.export({ format: 'jwk' }).x;
+  if (x === undefined) throw new Error('no public key');
+  return {
+    reviewerKeyId,
+    reviewerId,
+    credential: { type, jurisdiction: 'synthetic-jurisdiction' },
+    privateKey,
+    publicKey: x,
+    ...(revokedAt === undefined ? {} : { revokedAt }),
+  };
+}
+
+const PHYSICIAN = reviewer(
+  'synthetic-key-physician-001',
+  'synthetic-reviewer-001',
+  'synthetic-physician',
+);
+const PHARMACIST = reviewer(
+  'synthetic-key-pharmacist-001',
+  'synthetic-reviewer-002',
+  'synthetic-pharmacist',
+);
+const REVOKED = reviewer(
+  'synthetic-key-revoked-001',
+  'synthetic-reviewer-003',
+  'synthetic-physician',
+  '2026-01-01T00:00:00Z',
+);
+const UNREGISTERED = reviewer(
+  'synthetic-key-unregistered',
+  'synthetic-reviewer-004',
+  'synthetic-physician',
+);
+
+function writeRegistry(reviewers: readonly Reviewer[]): string {
+  const path = join(mkdtempSync(join(tmpdir(), 'synthetic-review-registry-')), 'registry.json');
+  writeFileSync(
+    path,
+    JSON.stringify(
+      reviewers.map(({ privateKey: _private, ...entry }) => entry),
+      null,
+      2,
+    ),
+  );
+  return path;
+}
+const REGISTRY = writeRegistry([PHYSICIAN, PHARMACIST, REVOKED]);
+
+const attestation = (by: Reviewer) => ({
+  reviewerId: by.reviewerId,
+  credential: by.credential,
+  attestedAt: '2026-09-23T15:00:00+00:00',
+});
+const denialBy = (by: Reviewer, specificReason = 'Synthetic: the sleep study is out of date.') => ({
+  kind: 'denial',
+  specificReason,
+  attestation: attestation(by),
+});
+const approvalBy = (by: Reviewer) => ({ kind: 'clinician-approval', attestation: attestation(by) });
+
+/** The body a reviewer's client sends: the determination, signed over the case's bytes. */
+function signedBody(
+  caseId: string,
+  determination: object,
+  by: Reviewer,
+  options: { signFor?: string; recommendationSeq?: number | null } = {},
+) {
+  const recommendationSeq = options.recommendationSeq ?? null;
+  const bytes = canonicalJson({
+    determination,
+    recommendationSeq,
+    runId: options.signFor ?? caseId,
+  });
+  return {
+    determination,
+    recommendationSeq,
+    reviewerKeyId: by.reviewerKeyId,
+    signature: sign(null, Buffer.from(bytes, 'utf8'), by.privateKey).toString('base64url'),
+  };
+}
 
 describe.each(AXES)('clinician review surface (e2e), memory %s', (axis) => {
   let app: NestExpressApplication;
@@ -68,10 +172,9 @@ describe.each(AXES)('clinician review surface (e2e), memory %s', (axis) => {
 
   beforeAll(async () => {
     const cleared = ['GOOGLE_API_KEY', ...(axis === 'unconfigured' ? LIVE_VARIABLES : [])];
-    for (const name of cleared) {
-      saved[name] = process.env[name];
-      delete process.env[name];
-    }
+    for (const name of [...cleared, 'REVIEWER_REGISTRY']) saved[name] = process.env[name];
+    for (const name of cleared) delete process.env[name];
+    process.env['REVIEWER_REGISTRY'] = REGISTRY;
 
     fixture = await Test.createTestingModule({ imports: [AppModule] })
       .overrideProvider(PRIOR_AUTH_CLOCK)
@@ -86,7 +189,8 @@ describe.each(AXES)('clinician review surface (e2e), memory %s', (axis) => {
   afterAll(async () => {
     await app.close();
     for (const [name, value] of Object.entries(saved)) {
-      if (value !== undefined) process.env[name] = value;
+      if (value === undefined) delete process.env[name];
+      else process.env[name] = value;
     }
   });
 
@@ -286,5 +390,200 @@ describe.each(AXES)('clinician review surface (e2e), memory %s', (axis) => {
       expect((await http().get(`/review/cases/${randomUUID()}`)).status).toBe(HttpStatus.NOT_FOUND);
       expect((await http().get('/review/cases/not-a-case')).status).toBe(HttpStatus.NOT_FOUND);
     });
+  });
+
+  describe('the determination', () => {
+    const decide = (caseId: string, body: unknown) =>
+      http()
+        .post(`/review/cases/${caseId}/determination`)
+        .send(body as object);
+    const pended = async (task = 'pa-e0601-one-missing') => caseIdOf((await submit(task)).body);
+
+    it('issues a denial signed by a registered key whose credential the policy lists', async () => {
+      const caseId = await pended();
+      now = DECIDED;
+      const body = signedBody(caseId, denialBy(PHYSICIAN), PHYSICIAN);
+
+      const response = await decide(caseId, body);
+      expect(response.status).toBe(HttpStatus.OK);
+      const bundle = BundleSchema.parse(response.body);
+      const claimResponse = ClaimResponseSchema.parse(bundle.entry?.[0]?.resource);
+      expect(claimResponse.outcome).toBe('complete');
+      expect(claimResponse.preAuthRef).toBeUndefined();
+      expect(claimResponse.processNote?.[0]?.text).toBe(
+        'Synthetic: the sleep study is out of date.',
+      );
+
+      const row = await cases.get(caseId);
+      expect(row?.status).toBe('decided');
+      expect(row?.reviewerId).toBe('synthetic-reviewer-001');
+      expect(row?.reviewerKeyId).toBe('synthetic-key-physician-001');
+      expect(row?.signature).toBe(body.signature);
+      expect(row?.decidedAt?.toISOString()).toBe(DECIDED.toISOString());
+      expect(row?.determination).toEqual(denialBy(PHYSICIAN));
+
+      const queue = await http().get('/review/cases?limit=1000');
+      expect((queue.body.cases as { caseId: string }[]).map((c) => c.caseId)).not.toContain(caseId);
+    });
+
+    it('issues a clinician approval with a preAuthRef', async () => {
+      const caseId = await pended('pa-k0823-one-missing');
+      now = DECIDED;
+      const response = await decide(caseId, signedBody(caseId, approvalBy(PHYSICIAN), PHYSICIAN));
+      expect(response.status).toBe(HttpStatus.OK);
+      const claimResponse = ClaimResponseSchema.parse(response.body.entry[0].resource);
+      expect(claimResponse.outcome).toBe('complete');
+      expect(claimResponse.preAuthRef).toBe(caseId);
+      // K0823's policy approves for 180 days from the service date.
+      expect(claimResponse.preAuthPeriod).toEqual({ start: '2026-09-30', end: '2027-03-28' });
+    });
+
+    it('refuses each malformed, unverified or unqualified determination and leaves the case pended', async () => {
+      const caseId = await pended();
+      const other = await pended('pa-e0470-one-missing');
+      const unknown = randomUUID();
+      const { signature: _dropped, ...unsigned } = signedBody(
+        caseId,
+        denialBy(PHYSICIAN),
+        PHYSICIAN,
+      );
+      const wrongReviewer = {
+        ...denialBy(PHYSICIAN),
+        attestation: { ...attestation(PHYSICIAN), reviewerId: 'synthetic-reviewer-002' },
+      };
+      const partial = { ...denialBy(PHYSICIAN), kind: 'partial-approval' };
+
+      const attempts: [string, string, unknown, number][] = [
+        ['no signature', caseId, unsigned, 400],
+        [
+          'a key not in the registry',
+          caseId,
+          signedBody(caseId, denialBy(UNREGISTERED), UNREGISTERED),
+          401,
+        ],
+        ['a revoked key', caseId, signedBody(caseId, denialBy(REVOKED), REVOKED), 401],
+        [
+          'a signature over another case id',
+          caseId,
+          signedBody(caseId, denialBy(PHYSICIAN), PHYSICIAN, { signFor: other }),
+          401,
+        ],
+        [
+          "an attestation that is not the key's reviewer",
+          caseId,
+          signedBody(caseId, wrongReviewer, PHYSICIAN),
+          401,
+        ],
+        [
+          'a credential the policy does not list',
+          caseId,
+          signedBody(caseId, denialBy(PHARMACIST), PHARMACIST),
+          403,
+        ],
+        ['a partial approval', caseId, signedBody(caseId, partial, PHYSICIAN), 422],
+        [
+          'an empty specificReason',
+          caseId,
+          signedBody(caseId, denialBy(PHYSICIAN, '  '), PHYSICIAN),
+          400,
+        ],
+        ['an unknown case id', unknown, signedBody(unknown, denialBy(PHYSICIAN), PHYSICIAN), 404],
+      ];
+      for (const [label, target, body, status] of attempts) {
+        const response = await decide(target, body);
+        expect({ label, status: response.status }).toEqual({ label, status });
+      }
+
+      for (const id of [caseId, other]) {
+        const view = await http().get(`/review/cases/${id}`);
+        expect(view.body.status).toBe('pended');
+        expect(view.body.decision).toBeNull();
+      }
+    });
+
+    it('answers a byte-identical resubmission with the stored body, and another determination with 409', async () => {
+      const caseId = await pended('pa-e0260-one-missing');
+      now = DECIDED;
+      const body = signedBody(caseId, denialBy(PHYSICIAN), PHYSICIAN);
+      const first = await decide(caseId, body);
+      expect(first.status).toBe(HttpStatus.OK);
+
+      now = new Date('2026-09-24T09:00:00Z');
+      const retry = await decide(caseId, body);
+      expect(retry.status).toBe(HttpStatus.OK);
+      expect(retry.text).toBe(first.text);
+
+      const different = await decide(caseId, signedBody(caseId, approvalBy(PHYSICIAN), PHYSICIAN));
+      expect(different.status).toBe(HttpStatus.CONFLICT);
+      expect((await cases.get(caseId))?.signature).toBe(body.signature);
+    });
+
+    it('answers 409 to a determination on an automated approval', async () => {
+      approveEverything();
+      const caseId = caseIdOf((await submit('pa-e0470-all-met-structured')).body);
+      const response = await decide(caseId, signedBody(caseId, approvalBy(PHYSICIAN), PHYSICIAN));
+      expect(response.status).toBe(HttpStatus.CONFLICT);
+      expect((await cases.get(caseId))?.status).toBe('approved-automated');
+    });
+  });
+});
+
+describe('the reviewer registry (e2e), memory unconfigured', () => {
+  const saved: Record<string, string | undefined> = {};
+  const variables = ['GOOGLE_API_KEY', ...LIVE_VARIABLES, 'REVIEWER_REGISTRY'];
+
+  beforeAll(() => {
+    for (const name of variables) {
+      saved[name] = process.env[name];
+      delete process.env[name];
+    }
+  });
+
+  afterAll(() => {
+    for (const [name, value] of Object.entries(saved)) {
+      if (value === undefined) delete process.env[name];
+      else process.env[name] = value;
+    }
+  });
+
+  it('unset: the determination route answers 503 and the queue still serves', async () => {
+    const fixture = await Test.createTestingModule({ imports: [AppModule] }).compile();
+    const app = fixture.createNestApplication<NestExpressApplication>();
+    configureApp(app);
+    await app.init();
+    try {
+      const submitted = await request(app.getHttpServer())
+        .post('/fhir/Claim/$submit')
+        .set('Content-Type', FHIR_JSON)
+        .send(JSON.stringify(readBundle('pa-e0601-one-missing')));
+      const caseId = String(
+        ClaimResponseSchema.parse(submitted.body.entry[0].resource).identifier?.[0]?.value,
+      );
+
+      const decided = await request(app.getHttpServer())
+        .post(`/review/cases/${caseId}/determination`)
+        .send(signedBody(caseId, denialBy(PHYSICIAN), PHYSICIAN));
+      expect(decided.status).toBe(HttpStatus.SERVICE_UNAVAILABLE);
+      expect(decided.text).toContain('REVIEWER_REGISTRY');
+
+      const queue = await request(app.getHttpServer()).get('/review/cases');
+      expect(queue.status).toBe(HttpStatus.OK);
+      expect((queue.body.cases as { caseId: string }[]).map((c) => c.caseId)).toContain(caseId);
+    } finally {
+      await app.close();
+    }
+  });
+
+  it('malformed: the application does not start, and the error names REVIEWER_REGISTRY', async () => {
+    const path = join(mkdtempSync(join(tmpdir(), 'synthetic-review-registry-')), 'bad.json');
+    writeFileSync(path, JSON.stringify([{ reviewerKeyId: 'synthetic-key', publicKey: 'short' }]));
+    process.env['REVIEWER_REGISTRY'] = path;
+    try {
+      await expect(Test.createTestingModule({ imports: [AppModule] }).compile()).rejects.toThrow(
+        /^REVIEWER_REGISTRY names .* which is not a reviewer registry/,
+      );
+    } finally {
+      delete process.env['REVIEWER_REGISTRY'];
+    }
   });
 });

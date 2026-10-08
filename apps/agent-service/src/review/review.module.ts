@@ -1,8 +1,12 @@
 import { Module } from '@nestjs/common';
+import { createLogger } from '@repo/telemetry';
 import { FhirModule } from '../fhir/fhir.module.js';
 import { MemoryModule } from '../memory/memory.module.js';
 import { ReviewController } from './review.controller.js';
 import { ReviewService } from './review.service.js';
+import { REVIEWER_REGISTRY, loadReviewerRegistry, type ReviewerRegistry } from './registry.js';
+
+const logger = createLogger('review');
 
 /**
  * The clinician review surface (P3-E, ADR 0010): the queue, one case, and the
@@ -13,6 +17,26 @@ import { ReviewService } from './review.service.js';
 @Module({
   imports: [MemoryModule, FhirModule],
   controllers: [ReviewController],
-  providers: [ReviewService],
+  providers: [
+    ReviewService,
+    {
+      // Unset: no registry, and the determination route answers 503 while the
+      // read routes serve. Malformed: the factory throws naming the variable,
+      // and boot exits 1 with that message.
+      provide: REVIEWER_REGISTRY,
+      useFactory: (): ReviewerRegistry | null => {
+        const registry = loadReviewerRegistry();
+        if (registry === null) {
+          logger.warn({
+            msg: 'review.registry.absent',
+            detail: 'REVIEWER_REGISTRY is unset: determinations answer 503 until it names a file.',
+          });
+        } else {
+          logger.info({ msg: 'review.registry.ready', keys: registry.size });
+        }
+        return registry;
+      },
+    },
+  ],
 })
 export class ReviewModule {}

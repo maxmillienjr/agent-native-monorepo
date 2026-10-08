@@ -1,4 +1,5 @@
-import { Controller, Get, Inject, Param, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Inject, Param, Post, Query } from '@nestjs/common';
+import type { FhirBundle } from '@repo/prior-auth';
 import { z } from 'zod';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe.js';
 import { ReviewService, type CaseView, type QueueItem } from './review.service.js';
@@ -34,5 +35,16 @@ export class ReviewController {
   @Get('cases/:caseId')
   view(@Param('caseId') caseId: string): Promise<CaseView> {
     return this.review.view(caseId);
+  }
+
+  /**
+   * A clinician's signed determination. The body is read at the boundary by
+   * `ReviewService.determine`, which says what each status means. There is
+   * no authenticated principal until P5-A covers `/review/*`.
+   */
+  @Post('cases/:caseId/determination')
+  @HttpCode(200)
+  determine(@Param('caseId') caseId: string, @Body() body: unknown): Promise<FhirBundle> {
+    return this.review.determine(caseId, body, undefined);
   }
 }

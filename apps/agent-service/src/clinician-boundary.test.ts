@@ -6,7 +6,7 @@ import { describe, it, expect } from 'vitest';
  * A lint rule that has never fired proves nothing. This lints the same two
  * lines at two paths with the service's own ESLint config: once inside the
  * graph, where importing the clinician constructor must be an error, and once
- * in the HTTP layer, where the clinician review surface will live.
+ * in the HTTP layer, where the clinician review surface lives (P3-E).
  */
 const serviceRoot = fileURLToPath(new URL('..', import.meta.url));
 const eslint = new ESLint({ cwd: serviceRoot });
@@ -34,7 +34,7 @@ describe('the clinician gate lint rule', () => {
   });
 
   it('allows it outside the graph', async () => {
-    const restricted = await restrictedImports('src/runs/review.controller.ts');
+    const restricted = await restrictedImports('src/review/review.service.ts');
     expect(restricted).toHaveLength(0);
   });
 });
