@@ -1,0 +1,92 @@
+name: FHIR validate
+
+# The HL7 FHIR Validator over the prior-authorization dataset and the
+# responses the service spec captures (P3-D). It is its own workflow and not a
+# job in ci.yml because the validator is a ~200 MB jar on a Java 17 runtime
+# that downloads IG packages when it runs; the paths filter keeps it to the
+# changes it can judge, and the weekly run catches a package that moved.
+#
+# Gated: zero errors on base R4 4.0.1 and US Core 6.1.0. Reported: the
+# distance to PAS 2.2.1, in the job summary, sorted into the X12-bound classes
+# ADR 0008 expects and `other`. scripts/fhir-validate.mjs says why each option
+# is set.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'packages/prior-auth/**'
+      - 'packages/eval-harness/datasets/prior-auth/**'
+      - 'apps/agent-service/src/fhir/**'
+      - 'apps/agent-service/test/fhir.e2e-spec.ts'
+      - 'scripts/fhir-validate.mjs'
+      - '.github/workflows/fhir-validate.yml'
+  schedule:
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+
+env:
+  # Pinned. A bump is a pull request that changes these three and reads the
+  # summary's diff; scripts/fhir-validate.mjs repeats them in PINNED.
+  FHIR_VALIDATOR_VERSION: '6.10.4'
+  US_CORE_PACKAGE: 'hl7.fhir.us.core#6.1.0'
+  PAS_PACKAGE: 'hl7.fhir.us.davinci-pas#2.2.1'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24.x'
+          cache: 'yarn'
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      # The jar and the IG package cache, keyed on the pinned versions, so a
+      # run downloads them once per bump rather than once per pull request.
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.fhir/packages
+            ~/.fhir/validator
+          key: fhir-validator-${{ env.FHIR_VALIDATOR_VERSION }}-${{ env.US_CORE_PACKAGE }}-${{ env.PAS_PACKAGE }}
+
+      - name: Fetch the validator
+        run: |
+          mkdir -p ~/.fhir/validator
+          jar=~/.fhir/validator/validator_cli-${FHIR_VALIDATOR_VERSION}.jar
+          if [ ! -f "$jar" ]; then
+            curl -fsSL -o "$jar" \
+              "https://github.com/hapifhir/org.hl7.fhir.core/releases/download/${FHIR_VALIDATOR_VERSION}/validator_cli.jar"
+          fi
+
+      - run: yarn install --immutable
+      - run: yarn turbo build --filter=@repo/agent-service...
+
+      # The responses to validate are the ones the service actually returns:
+      # the spec posts every committed bundle and writes each response here.
+      - name: Capture the service's responses
+        run: yarn workspace @repo/agent-service test:service
+        env:
+          FHIR_CAPTURE_DIR: ${{ runner.temp }}/fhir-captured
+
+      - name: Validate
+        run: >
+          node scripts/fhir-validate.mjs
+          --jar ~/.fhir/validator/validator_cli-${FHIR_VALIDATOR_VERSION}.jar
+          --captured ${{ runner.temp }}/fhir-captured
+          --out ${{ runner.temp }}/fhir-validate
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: fhir-validate
+          path: |
+            ${{ runner.temp }}/fhir-captured
+            ${{ runner.temp }}/fhir-validate
