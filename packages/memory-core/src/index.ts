@@ -40,6 +40,18 @@ export {
   type Neo4jReader,
   CypherNeo4jReader,
 } from './semantic/neo4j/neo4j.reader.js';
+export {
+  MAX_EXPLANATION_HOPS,
+  MAX_PATHS_PER_FACT,
+  type ConceptPath,
+  type ExplanationScope,
+  type Neo4jExplainer,
+  CypherNeo4jExplainer,
+  assembleExplanations,
+  compareConceptPaths,
+  conceptPathKey,
+  matchConceptLabels,
+} from './semantic/neo4j/neo4j.explainer.js';
 export { createNeo4jClient } from './semantic/neo4j/neo4j.client.js';
 export { ensureSemanticConstraints } from './semantic/neo4j/neo4j.constraints.js';
 
