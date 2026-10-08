@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type { AdverseDetermination, AgentDisposition } from '@repo/determination';
-import { toClaimResponse, toResponseBundle } from './claim-response.js';
+import { toClaimResponse, toDeterminationResponse, toResponseBundle } from './claim-response.js';
 import { PRIOR_AUTH_DATASET_DIR } from './dataset/location.js';
 import { PolicyCatalogue, loadPayer } from './policy.js';
 import { readSubmission, type PriorAuthRequest } from './request.js';
@@ -92,6 +92,67 @@ describe('toClaimResponse', () => {
     );
     expect(referred.outcome).toBe('queued');
     expect(referred.processNote?.[0]?.text).toContain('not active on the date of service');
+  });
+});
+
+describe('toDeterminationResponse', () => {
+  const attestation = {
+    reviewerId: 'synthetic-reviewer-001',
+    credential: { type: 'synthetic-physician', jurisdiction: 'synthetic-jurisdiction' },
+    attestedAt: '2026-10-08T12:00:00+00:00',
+  };
+  const decided = { decidedAt: new Date('2026-09-23T15:00:00Z'), caseId: 'case-synthetic-2' };
+  const REASON = 'Synthetic: the sleep study is older than twelve months.';
+  // A denial built the way attestAdverseDetermination builds one. The brand is
+  // a type, so the unit test casts; the route mints it through ./clinician.
+  const denial = {
+    kind: 'denial',
+    specificReason: REASON,
+    attestation,
+  } as unknown as AdverseDetermination;
+
+  it('answers a clinician approval with complete, a preAuthRef and the period', () => {
+    const approved = toDeterminationResponse(
+      structured.claim,
+      { kind: 'clinician-approval', attestation },
+      policy,
+      decided,
+    );
+    expect(approved.outcome).toBe('complete');
+    expect(approved.preAuthRef).toBe('case-synthetic-2');
+    expect(approved.preAuthPeriod).toEqual({ start: '2026-09-21', end: '2026-12-19' });
+    expect(approved.created).toBe('2026-09-23T15:00:00.000Z');
+  });
+
+  it('answers a denial with complete, no preAuthRef and the specific reason in a note', () => {
+    const denied = toDeterminationResponse(structured.claim, denial, policy, decided);
+    expect(denied.outcome).toBe('complete');
+    expect(denied.preAuthRef).toBeUndefined();
+    expect(denied.preAuthPeriod).toBeUndefined();
+    expect(denied.processNote).toEqual([{ number: 1, type: 'display', text: REASON }]);
+    expect(denied.identifier?.[0]?.value).toBe('case-synthetic-2');
+    expect(denied.meta?.security?.[0]?.code).toBe('HTEST');
+  });
+
+  it('carries nothing of the reviewer: who decided stays on the case', () => {
+    for (const response of [
+      toDeterminationResponse(structured.claim, denial, policy, decided),
+      toDeterminationResponse(
+        structured.claim,
+        { kind: 'clinician-approval', attestation },
+        policy,
+        decided,
+      ),
+    ]) {
+      expect(JSON.stringify(response)).not.toContain('synthetic-reviewer-001');
+    }
+  });
+
+  it('refuses a partial approval and an automated approval', () => {
+    const partial = { ...denial, kind: 'partial-approval' } as unknown as AdverseDetermination;
+    expect(() => toDeterminationResponse(structured.claim, partial, policy, decided)).toThrow();
+    const automated = approval as unknown as AdverseDetermination;
+    expect(() => toDeterminationResponse(structured.claim, automated, policy, decided)).toThrow();
   });
 });
 

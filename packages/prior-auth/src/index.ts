@@ -39,6 +39,11 @@ export {
   type SubmissionIssue,
 } from './request.js';
 export { decideDisposition, normalizeFindings, type ReferralReason } from './disposition.js';
-export { toClaimResponse, toResponseBundle, type ResponseContext } from './claim-response.js';
+export {
+  toClaimResponse,
+  toDeterminationResponse,
+  toResponseBundle,
+  type ResponseContext,
+} from './claim-response.js';
 export { operationOutcome, capabilityStatement, CLAIM_SUBMIT_DEFINITION } from './outcomes.js';
 export { SYSTEMS, HTEST } from './systems.js';

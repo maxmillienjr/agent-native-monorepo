@@ -1,4 +1,12 @@
-import { AgentDispositionSchema, type AgentDisposition } from '@repo/determination';
+import { z } from 'zod';
+import {
+  AdverseDeterminationRecordSchema,
+  AgentDispositionSchema,
+  ClinicianApprovalSchema,
+  type AdverseDetermination,
+  type AgentDisposition,
+  type ClinicianApproval,
+} from '@repo/determination';
 import type { FhirBundle, PasClaim, PasClaimResponse } from './fhir/resources.js';
 import type { ReferralReason } from './disposition.js';
 import type { Policy } from './policy.js';
@@ -13,6 +21,41 @@ export interface ResponseContext {
   readonly caseId: string;
   /** Why a referral happened. Ignored for an approval. */
   readonly referralReason?: ReferralReason;
+}
+
+/**
+ * The fields every `ClaimResponse` this surface writes shares, whatever its
+ * outcome. `created` is when the response was made: the `$submit` exchange
+ * for the agent's answer, the determination for a clinician's.
+ */
+function responseBase(
+  claim: PasClaim,
+  context: { readonly caseId: string; readonly createdAt: Date },
+): PasClaimResponse {
+  return {
+    resourceType: 'ClaimResponse',
+    id: `cr-${context.caseId}`,
+    meta: { security: [{ ...HTEST }] },
+    identifier: [{ system: SYSTEMS.CASE_ID, value: context.caseId }],
+    status: 'active',
+    type: claim.type,
+    use: 'preauthorization',
+    patient: claim.patient,
+    created: context.createdAt.toISOString(),
+    insurer: claim.insurer ?? { display: 'unknown insurer' },
+    requestor: claim.provider,
+    ...(claim.id === undefined ? {} : { request: { reference: `Claim/${claim.id}` } }),
+    outcome: 'queued',
+  };
+}
+
+/** The approval period: from the service date, for the policy's number of days. */
+function approvalPeriod(claim: PasClaim, policy: Policy): { start: string; end: string } {
+  const serviceDate = claim.item?.[0]?.servicedDate ?? claim.created;
+  return {
+    start: serviceDate.slice(0, 10),
+    end: addDays(serviceDate, policy.approvalPeriodDays - 1),
+  };
 }
 
 function titlesOf(policy: Policy, criterionIds: readonly string[]): string {
@@ -85,36 +128,18 @@ export function toClaimResponse(
 ): PasClaimResponse {
   const parsed = AgentDispositionSchema.parse(disposition);
 
-  const base: PasClaimResponse = {
-    resourceType: 'ClaimResponse',
-    id: `cr-${context.caseId}`,
-    meta: { security: [{ ...HTEST }] },
-    identifier: [{ system: SYSTEMS.CASE_ID, value: context.caseId }],
-    status: 'active',
-    type: claim.type,
-    use: 'preauthorization',
-    patient: claim.patient,
-    created: context.respondedAt.toISOString(),
-    insurer: claim.insurer ?? { display: 'unknown insurer' },
-    requestor: claim.provider,
-    ...(claim.id === undefined ? {} : { request: { reference: `Claim/${claim.id}` } }),
-    outcome: 'queued',
-  };
+  const base = responseBase(claim, { caseId: context.caseId, createdAt: context.respondedAt });
 
   if (parsed.kind === 'automated-approval') {
     if (policy === undefined) {
       throw new Error('an automated approval needs the policy it was made under');
     }
-    const serviceDate = claim.item?.[0]?.servicedDate ?? claim.created;
     return {
       ...base,
       outcome: 'complete',
       disposition: 'Approved by automated review: every criterion of the policy is met.',
       preAuthRef: context.caseId,
-      preAuthPeriod: {
-        start: serviceDate.slice(0, 10),
-        end: addDays(serviceDate, policy.approvalPeriodDays - 1),
-      },
+      preAuthPeriod: approvalPeriod(claim, policy),
       processNote: [
         {
           number: 1,
@@ -138,6 +163,69 @@ export function toClaimResponse(
         text: referralNote(claim, parsed, policy, context.referralReason ?? 'criteria'),
       },
     ],
+  };
+}
+
+/**
+ * What a clinician may decide on a pended case through the review route. A
+ * `partial-approval` is adverse and P3-A types it, but it carries no
+ * statement of what was approved, so a response built from it could not say
+ * what the provider may deliver. It is refused here, and the route answers
+ * 422 before it gets this far.
+ */
+const ClinicianDeterminationSchema = z.discriminatedUnion('kind', [
+  ClinicianApprovalSchema,
+  AdverseDeterminationRecordSchema.extend({ kind: z.literal('denial') }),
+]);
+
+/**
+ * The `ClaimResponse` for a clinician's determination on a pended case (P3-E).
+ *
+ * Both branches are `outcome: complete`: the request has been decided. An
+ * approval carries a `preAuthRef` and, when a policy covers the service, a
+ * `preAuthPeriod`. A denial carries neither, and its `processNote` is the
+ * clinician's `specificReason`, which CMS-0057-F requires for every denied
+ * prior authorization (42 CFR 422.122(a)). `disposition` is a fixed template.
+ * No branch carries model text: the findings and their rationale stay on the
+ * case, where the reviewer read them.
+ *
+ * The determination is parsed before it is read, so a value that is not a
+ * clinician approval or a denial throws, a cast one included.
+ */
+export function toDeterminationResponse(
+  claim: PasClaim,
+  determination: ClinicianApproval | AdverseDetermination,
+  policy: Policy | undefined,
+  context: { readonly decidedAt: Date; readonly caseId: string },
+): PasClaimResponse {
+  const parsed = ClinicianDeterminationSchema.parse(determination);
+  const base = responseBase(claim, { caseId: context.caseId, createdAt: context.decidedAt });
+
+  if (parsed.kind === 'clinician-approval') {
+    return {
+      ...base,
+      outcome: 'complete',
+      disposition: 'Approved after clinician review.',
+      preAuthRef: context.caseId,
+      ...(policy === undefined ? {} : { preAuthPeriod: approvalPeriod(claim, policy) }),
+      processNote: [
+        {
+          number: 1,
+          type: 'display',
+          text:
+            policy === undefined
+              ? 'Approved by a clinician.'
+              : `Approved by a clinician under ${policy.title} (${policy.id} ${policy.version}).`,
+        },
+      ],
+    };
+  }
+
+  return {
+    ...base,
+    outcome: 'complete',
+    disposition: 'Denied after clinician review. The reason is stated in the note.',
+    processNote: [{ number: 1, type: 'display', text: parsed.specificReason }],
   };
 }
 
