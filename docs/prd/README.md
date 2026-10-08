@@ -5,7 +5,7 @@
 _Last updated 2026-10-08. If this section is more than a few weeks stale, trust the code
 over it and update it._
 
-**Fourteen PRDs are shipped and the system they describe is running.** The service answers
+**Fifteen PRDs are shipped and the system they describe is running.** The service answers
 `POST /runs` and `POST /runs/stream`; `memory-core` is constructed by the app rather than
 sitting beside it; the graph compiles with a checkpointer and a retry policy on every node
 that performs I/O; and `packages/eval-harness` measures the result. Verified against live
@@ -13,7 +13,7 @@ stores from an empty database: one run leaves episodic rows, `:Concept` and `:Fa
 `semantic_facts` rows and checkpoints under the runId its own response returned.
 
 **`docs/STATUS.md` is the authority on any capability sentence, including the ones above.**
-Twenty-seven rows, each with a status and evidence cited by name — twenty-two `implemented`,
+Twenty-eight rows, each with a status and evidence cited by name — twenty-three `implemented`,
 one `planned`, three `stubbed`, one `removed`, none `broken`. The rule that keeps it true is in
 `.context/conventions.md`: a change that moves a row moves it there in the same pull
 request. `yarn lint:docs` fails CI when a PRD's status disagrees with its row below.
@@ -246,6 +246,18 @@ a replay writes nothing. The prior-authorization path fails closed with a 503 wh
 record cannot be written. ADR 0007 records the design. A match proves the record complete,
 not unaltered: P3-C, now unblocked, owns tamper evidence, and "Before real data" lists what
 a real deployment owes.
+**[P3-E](P3-E-clinician-review-queue.md) has shipped**, tracked in
+[#98](https://github.com/maxmillienjr/agent-native-monorepo/issues/98). A pended request now
+has somewhere to go. ADR 0010 keeps the case in a `prior_auth_cases` table above the graph
+rather than in a thread paused by `interrupt()`, whose silent resume behaviours a re-run probe
+found unchanged at LangGraph 1.4.18. `$submit` enqueues once P3-B's run record has closed, before it answers,
+and answers 503 when it cannot. A clinician sees the queue in clock order and nothing else, and reads the model's
+rationale on one case. The service accepts a determination only over an Ed25519 signature
+that it verifies against `REVIEWER_REGISTRY` and cannot produce, from a credential the policy
+lists, and only once per case. `POST /fhir/Claim/$inquire` returns each case's current
+response, and an overdue sweep flags cases and never decides them. STATUS row 28 says that on
+time means decided, not notified. P3-C still has to add the ledger append, and P5-A the
+authentication of `/review/*`. Appeals belong to P3-F.
 
 **Where the detail lives.** Each PRD carries its own risks, its divergences from the design
 that was reviewed, and — where a shipped record turned out to be wrong — the correction that
@@ -328,7 +340,7 @@ provider actually operates under. Uses synthetic data only.
 | [P3-B](P3-B-audit-replay.md)                  | Deterministic replay for audit reconstruction                 | L    | shipped     |
 | [P3-C](P3-C-decision-ledger.md)               | Hash-chained, tamper-evident decision ledger                  | L    | accepted    |
 | [P3-D](P3-D-payer-dataset-fhir-prior-auth.md) | Synthetic payer dataset and FHIR prior-authorization surface  | L    | in-progress |
-| [P3-E](P3-E-clinician-review-queue.md)        | Clinician review queue, `$inquire` and the decision clock     | M    | in-progress |
+| [P3-E](P3-E-clinician-review-queue.md)        | Clinician review queue, `$inquire` and the decision clock     | M    | shipped     |
 | P3-F                                          | Appeals: reconsideration lifecycle for adverse determinations | M    | draft       |
 
 ## Tier 4 — Governance and agent security as code

@@ -2,7 +2,7 @@
 id: P3-E
 title: Clinician review queue, `$inquire` and the decision clock
 tier: 3
-status: in-progress
+status: shipped
 size: M
 depends_on: [P3-A, P3-D]
 blocks: [P3-F]
@@ -580,9 +580,10 @@ case store), the **ledger** axis (P3-C's `LEDGER_DATABASE_URL`) and the **auth**
       matching no case returns a `Parameters` with no `return` parameter. A non-`Bundle`
       body returns `400` with an `OperationOutcome`.
 - [x] `GET /fhir/metadata` lists `$submit` and `$inquire`, and no `Subscription` resource.
-- [ ] P3-D's `fhir-validate.yml` validates the captured `$inquire` responses against base R4
-      with zero errors, and its PAS report lists only X12-bound elements for them. Ticked once
-      the workflow has run on the pull request; the local run is in "What shipped".
+- [x] P3-D's `fhir-validate.yml` validates the captured `$inquire` responses against base R4
+      with zero errors, and its PAS report lists only X12-bound elements for them. On the pull
+      request's run (run 37831155950): 61 files gated with 0 errors, 5 `$inquire`
+      returns reported, and 0 errors in `other`.
 
 **Bookkeeping**
 
@@ -687,6 +688,11 @@ with the specific reason in the note; and `$inquire` returned it `complete`. Boo
 registry missing a field, it exited 1 with an error that begins `REVIEWER_REGISTRY names`
 and names the field, `0.reviewerId`. Booted with memory configured and the Postgres container
 stopped, it exited 1 with `connect ECONNREFUSED`.
+
+**The validator, on the pull request** (`fhir-validate.yml`, job `validate`, run 37831155950). It gated
+61 files with 0 errors and reported 5 `$inquire` return bundles against PAS's inquiry
+response bundle. The `other` row was empty, and the `queued` outcome class held 54 errors,
+the `$submit` responses' and the pended returns' together. That agrees with the local run.
 
 **The validator, locally.** The service specs were run with `FHIR_CAPTURE_DIR`, and
 `scripts/fhir-validate.mjs` with the pinned 6.10.4 jar in an `eclipse-temurin:17-jre`
