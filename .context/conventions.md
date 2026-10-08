@@ -318,6 +318,27 @@ It measures the fused retrieval ADR 0009 retired, so it is a historical measurem
   server instead, which serves the UI with no backend behind it — assertions pass without
   proving anything.
 
+### Live model quota
+
+One budget, shared by everything that calls the model live. The free tier allows **20
+`generateContent` requests per day and 5 per minute, per Google Cloud project and model**
+(`gemini-2.5-flash`); `embedContent` is a separate quota with its own per-minute limit. The
+day resets at midnight Pacific. The `GOOGLE_API_KEY` repository secret and the developer
+key in `.env` are, as of 2026-10-08, in the **same project**, so CI and local work draw on
+one pool.
+
+Standing consumers, before any development spends a call:
+
+| Consumer                                     | `generateContent` per day |
+| -------------------------------------------- | ------------------------- |
+| `agent-eval.yml` `eval-live`, one trial each | about 8                   |
+| `agent-eval.yml` `eval-canary` (P1-E)        | 2–3                       |
+
+That leaves roughly 9–10 a day for recordings and live criteria. A PRD that needs live
+calls states its count and how it splits across days; whoever schedules the run checks this
+table first and does not start a recording that the day's remainder cannot finish. A key
+from a separate project doubles the pool and is the owner's decision.
+
 ## Documentation
 
 - **Planned work goes in `docs/prd/`**, one file per PRD, indexed by `docs/prd/README.md`.

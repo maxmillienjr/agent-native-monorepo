@@ -282,13 +282,13 @@ remains is the knowledge graph that `reflect` still writes: P2-D measures what i
 removes it. The standard vocabulary for reporting either is in place: P2-C emits the
 OpenTelemetry GenAI conventions.
 
-| ID                                           | Title                                                                    | Size | Status  |
-| -------------------------------------------- | ------------------------------------------------------------------------ | ---- | ------- |
-| [P2-A](P2-A-wire-memory-core.md)             | Wire memory-core into the service; add checkpointing and retry           | L    | shipped |
-| [P2-B](P2-B-retrieval-ablation.md)           | Hybrid retrieval evaluation and the graph/vector/hybrid ablation         | L    | shipped |
-| [P2-C](P2-C-otel-genai-semantics.md)         | OpenTelemetry GenAI semantics, including evaluation events               | L    | shipped |
-| [P2-D](P2-D-graph-explanation-or-removal.md) | Measure the graph's explanation role, or remove it (ADR 0009's fallback) | M    | draft   |
-| P2-E                                         | Act on P2-D's outcome: remove the graph, or wire its explanation         | M    | draft   |
+| ID                                           | Title                                                                    | Size | Status   |
+| -------------------------------------------- | ------------------------------------------------------------------------ | ---- | -------- |
+| [P2-A](P2-A-wire-memory-core.md)             | Wire memory-core into the service; add checkpointing and retry           | L    | shipped  |
+| [P2-B](P2-B-retrieval-ablation.md)           | Hybrid retrieval evaluation and the graph/vector/hybrid ablation         | L    | shipped  |
+| [P2-C](P2-C-otel-genai-semantics.md)         | OpenTelemetry GenAI semantics, including evaluation events               | L    | shipped  |
+| [P2-D](P2-D-graph-explanation-or-removal.md) | Measure the graph's explanation role, or remove it (ADR 0009's fallback) | M    | accepted |
+| P2-E                                         | Act on P2-D's outcome: remove the graph, or wire its explanation         | M    | draft    |
 
 ## Tier 3 — Regulated-domain credibility
 

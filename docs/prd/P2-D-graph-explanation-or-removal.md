@@ -2,7 +2,7 @@
 id: P2-D
 title: Measure the graph's explanation role, or remove it (ADR 0009's fallback)
 tier: 2
-status: draft
+status: accepted
 size: M
 depends_on: [P1-A, P1-B, P2-B]
 blocks: [P2-E]
@@ -506,19 +506,24 @@ no network. "Memory live" means `pgvector:pg16` and `neo4j:5-community` containe
 
 ## Risks and open questions
 
-**Open questions that change scope.**
+**Open questions, decided at review 2026-10-08.**
 
 1. **The thresholds.** Recall 0.70 and precision 0.50 in stage 1, and +0.10 in stage 2, are
    this draft's proposals. They have to be agreed before acceptance, because agreeing them
-   after a run is what pre-registration prevents.
+   after a run is what pre-registration prevents. _Decided: agreed as proposed._
 2. **Stage 2's budget.** Seven days of spare free-tier quota, shared with P3-D and P4-B, or
-   one sitting on a billed key. Only stage 1's outcome makes this real.
+   one sitting on a billed key. Only stage 1's outcome makes this real. _Decided: the free
+   tier_, scheduled against the quota table in `.context/conventions.md`; a billed key is the
+   owner's decision and is not assumed.
 3. **P2-E as a separate PRD.** The alternative folds the outcome into this one and makes it
    an `L` whose second half depends on a number nobody has. This draft splits them, so that
-   each review covers one kind of change.
+   each review covers one kind of change. _Decided: split._ P2-E enters the index as a draft
+   and is drafted only once this PRD's rule has selected an outcome.
 4. **M1 extended to edges.** P4-B's text scopes `:Fact` only. This draft adds per-session
    `MENTIONS` and `RELATES_TO`, because an explanation returns the edges it crosses. The
    reviewer should confirm that, or reject it and accept that explanations cross sessions.
+   _Decided: edges are session-scoped._ An explanation that crosses sessions is the leak P4-B
+   exists to close, reached by a different reader.
 
 **Risks.**
 
