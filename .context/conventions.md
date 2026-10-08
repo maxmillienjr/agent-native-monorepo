@@ -589,9 +589,10 @@ portfolio's, not counsel's.
 - **Every `pg` pool has an `error` listener.** An idle client whose server terminates it
   emits `error` on the pool, and with no listener that is an uncaught exception that ends
   the process: a database restart becomes a service crash. The ledger's pool, from
-  `createLedgerPool`, has one. `memory-core`'s pools do not yet, so a Postgres restart
-  under a running service is that crash today. The fix is a one-line listener, and it is
-  open.
+  `createLedgerPool`, has one, and so do `memory-core`'s `createPgvectorPool` and
+  `createReadOnlyPool`, through `listenForIdleErrors`; the service logs the event as
+  `memory.postgres.idle_client_error`. A new pool goes through one of those or attaches
+  its own listener.
 - **The ledger follows the same split (P3-C).** With `LEDGER_DATABASE_URL` set, `$submit`
   answers `503` when `run.recorded` or `disposition.recommended` cannot be appended, and
   enqueues no case. The determination route answers `503` and leaves the case pended when

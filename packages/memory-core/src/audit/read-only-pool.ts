@@ -1,4 +1,5 @@
 import pg from 'pg';
+import { listenForIdleErrors } from '../semantic/pgvector/pgvector.client.js';
 
 /**
  * A pool whose every session is read-only, for a reader that must make no
@@ -11,6 +12,12 @@ import pg from 'pg';
  * auditing. It also does none of what `createPgvectorPool` does on connect,
  * which creates an extension.
  */
-export function createReadOnlyPool(connectionString: string): pg.Pool {
-  return new pg.Pool({ connectionString, options: '-c default_transaction_read_only=on' });
+export function createReadOnlyPool(
+  connectionString: string,
+  onError?: (error: Error) => void,
+): pg.Pool {
+  return listenForIdleErrors(
+    new pg.Pool({ connectionString, options: '-c default_transaction_read_only=on' }),
+    onError,
+  );
 }

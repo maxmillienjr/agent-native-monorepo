@@ -62,7 +62,12 @@ const logger = createLogger('memory-module');
         // Boot order: connect, then migrate, then let anything else resolve.
         // A migration failure here fails the container's healthcheck, which is
         // the intended loud failure.
-        const pool = await createPgvectorPool({ connectionString: config.databaseUrl });
+        const pool = await createPgvectorPool({
+          connectionString: config.databaseUrl,
+          // An idle client dropped by a restarting server must not end the
+          // process; the next query reconnects or fails on its own.
+          onError: (error) => logger.warn({ msg: 'memory.postgres.idle_client_error', err: error }),
+        });
         await runMigrations(pool);
         logger.info({ msg: 'memory.postgres.ready' });
         return pool;
