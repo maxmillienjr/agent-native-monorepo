@@ -4,22 +4,29 @@ import {
   EvalHarness,
   MEMORY_RECALL_DATASET_DIR,
   MEMORY_RECALL_SUITE,
+  PRIOR_AUTH_DATASET_DIR,
+  PRIOR_AUTH_SUITE,
   assertExpectedAxes,
   capTrialsToCassettes,
   describeAxes,
   detectAxes,
   gateBlocks,
   loadMemoryRecallSuite,
+  loadPriorAuthSuite,
+  priorAuthFigures,
   readCassetteMode,
   readTaskFilter,
   selectTasks,
   skippedTasks,
   trialsFor,
+  type AgentHarness,
   type Axes,
   type MemoryOutcome,
   type ModelIds,
+  type PriorAuthOutcome,
   type ReplayProvenance,
   type Suite,
+  type SuiteReport,
 } from '@repo/eval-harness';
 import { EMBEDDING_MODEL } from '@repo/memory-core';
 import { InMemoryLogRecordExporter, SimpleLogRecordProcessor } from '@opentelemetry/sdk-logs';
@@ -27,6 +34,7 @@ import { createLogger, initTelemetry, shutdownTelemetry } from '@repo/telemetry'
 import { loadEnvFile } from '../load-env.js';
 import { explainAbort } from './abort-cause.js';
 import { createAgentServiceHarness } from './agent-harness.js';
+import { createPriorAuthHarness } from './prior-auth-harness.js';
 import {
   MODEL_HOST,
   gitHead,
@@ -84,9 +92,81 @@ async function main(): Promise<RunEnd> {
   // in the mode included — can be written down as an abort.
   const outputDir = resolve(process.env['EVAL_OUTPUT_DIR'] ?? 'eval-results');
 
-  const end = await runAndReport<MemoryOutcome>({
+  const name = readSuiteName(process.argv.slice(2), process.env);
+  if (name === PRIOR_AUTH_SUITE) return runSuite(priorAuthSuite(), outputDir);
+  if (name === MEMORY_RECALL_SUITE) return runSuite(memoryRecallSuite(), outputDir);
+  throw new Error(
+    `unknown suite \`${name}\`: expected \`${MEMORY_RECALL_SUITE}\` or \`${PRIOR_AUTH_SUITE}\``,
+  );
+}
+
+/**
+ * One evaluation suite, as the runner needs it: where its dataset lives, how
+ * to load it, the adapter that runs it, and what it adds to the report.
+ */
+interface SuiteDefinition<TOutcome> {
+  readonly name: string;
+  readonly datasetDir: string;
+  /**
+   * Trials per task when `EVAL_TRIALS` is unset. One for prior-auth, whose
+   * recording is one trial per task: at five, a live run of its 20 model
+   * calls a trial would be 100, five times the free tier's daily quota.
+   */
+  readonly defaultTrials: number;
+  load(trials: number): Suite<TOutcome>;
+  harness(
+    decks: TrialDecks | undefined,
+    spans: SpanCollector,
+  ): Promise<AgentHarness<TOutcome> & { close(): Promise<void> }>;
+  finish(report: SuiteReport<TOutcome>): SuiteReport<TOutcome>;
+}
+
+function memoryRecallSuite(): SuiteDefinition<MemoryOutcome> {
+  return {
+    name: MEMORY_RECALL_SUITE,
+    datasetDir: MEMORY_RECALL_DATASET_DIR,
+    defaultTrials: 5,
+    load: (trials) => loadMemoryRecallSuite(trials),
+    harness: (decks, spans) => createAgentServiceHarness(decks, spans),
+    finish: (report) => report,
+  };
+}
+
+function priorAuthSuite(): SuiteDefinition<PriorAuthOutcome> {
+  let labels: ReturnType<typeof loadPriorAuthSuite>['labels'] | undefined;
+  return {
+    name: PRIOR_AUTH_SUITE,
+    datasetDir: PRIOR_AUTH_DATASET_DIR,
+    defaultTrials: 1,
+    load: (trials) => {
+      const suite = loadPriorAuthSuite(trials);
+      labels = suite.labels;
+      return suite;
+    },
+    harness: (decks, spans) => createPriorAuthHarness(decks, spans),
+    finish: (report) =>
+      labels === undefined ? report : { ...report, figures: priorAuthFigures(report, labels) },
+  };
+}
+
+/**
+ * The suite to run: `--suite <name>` when the script is called directly, or
+ * `EVAL_SUITE`, which is how `yarn eval` reaches it — Turbo reads a flag after
+ * the task name as its own. Unset, it is memory-recall, the suite CI gates.
+ */
+function readSuiteName(argv: readonly string[], env: NodeJS.ProcessEnv): string {
+  const index = argv.indexOf('--suite');
+  const fromFlag = index >= 0 ? argv[index + 1] : undefined;
+  return fromFlag ?? env['EVAL_SUITE'] ?? MEMORY_RECALL_SUITE;
+}
+
+async function runSuite<TOutcome>(
+  definition: SuiteDefinition<TOutcome>,
+  outputDir: string,
+): Promise<RunEnd> {
+  const end = await runAndReport<TOutcome>({
     outputDir,
-    suite: MEMORY_RECALL_SUITE,
+    suite: definition.name,
     explain: explainAbort,
     onAbort: (error, abort) =>
       logger.error({
@@ -99,7 +179,7 @@ async function main(): Promise<RunEnd> {
     body: async (progress, onTrial) => {
       const mode = readCassetteMode();
       const gate = readGateMode();
-      const trials = Number(process.env['EVAL_TRIALS'] ?? 5);
+      const trials = Number(process.env['EVAL_TRIALS'] ?? definition.defaultTrials);
       const axes = detectAxes();
       progress.axes = axes;
 
@@ -116,7 +196,7 @@ async function main(): Promise<RunEnd> {
               logger.error({ msg: 'eval.replay.live-call', target }),
             )
           : () => [];
-      const { suite, decks, replay, models } = prepare(mode, trials, axes);
+      const { suite, decks, replay, models } = prepare(definition, mode, trials, axes);
       if (replay !== undefined) progress.replay = replay;
 
       // Before the Nest context, so every span the run opens reaches a
@@ -131,7 +211,7 @@ async function main(): Promise<RunEnd> {
         logRecordProcessors: [new SimpleLogRecordProcessor({ exporter: events })],
       });
 
-      const agent = await createAgentServiceHarness(decks, spans);
+      const agent = await definition.harness(decks, spans);
 
       try {
         logger.info({ msg: 'eval.start', axes: describeAxes(axes), trials, cassettes: mode });
@@ -155,7 +235,7 @@ async function main(): Promise<RunEnd> {
           });
         }
 
-        const report = await new EvalHarness<MemoryOutcome>({
+        const report = await new EvalHarness<TOutcome>({
           agent,
           suite,
           ...(replay === undefined ? {} : { replay }),
@@ -241,7 +321,7 @@ async function main(): Promise<RunEnd> {
           outputDir,
         });
 
-        return report;
+        return definition.finish(report);
       } finally {
         await agent.close();
         // Flushes the OTLP export, when there is one.
@@ -250,7 +330,7 @@ async function main(): Promise<RunEnd> {
     },
   });
 
-  return gateTheRun(end, outputDir);
+  return gateTheRun(end, outputDir, definition.datasetDir);
 }
 
 /**
@@ -261,7 +341,7 @@ async function main(): Promise<RunEnd> {
  * output directory the way CI does — an abort file, or a report — and so
  * judges an aborted run by the same rule as a completed one.
  */
-function gateTheRun(end: RunEnd, outputDir: string): RunEnd {
+function gateTheRun(end: RunEnd, outputDir: string, datasetDir: string): RunEnd {
   let mode: GateMode | undefined;
   try {
     mode = readGateMode();
@@ -275,9 +355,9 @@ function gateTheRun(end: RunEnd, outputDir: string): RunEnd {
   const result = applyGate({
     mode,
     outputDir,
-    datasetDir: MEMORY_RECALL_DATASET_DIR,
+    datasetDir,
     displayRoot: resolve(process.cwd(), '..', '..'),
-    committedDigest: () => committedCassetteDigest(MEMORY_RECALL_DATASET_DIR),
+    committedDigest: () => committedCassetteDigest(datasetDir),
     gitSha: () => gitHead().sha,
     ...(historyDir === undefined || historyDir === '' ? {} : { historyDir: resolve(historyDir) }),
   });
@@ -305,17 +385,18 @@ function gateTheRun(end: RunEnd, outputDir: string): RunEnd {
  * fail without having reset a database, and because the decorator has to be
  * installed on the service the moment the harness exists.
  */
-function prepare(
+function prepare<TOutcome>(
+  definition: SuiteDefinition<TOutcome>,
   mode: 'off' | 'record' | 'replay',
   trials: number,
   axes: Axes,
 ): {
-  suite: Suite<MemoryOutcome>;
+  suite: Suite<TOutcome>;
   decks: TrialDecks | undefined;
   replay: ReplayProvenance | undefined;
   models: ModelIds | undefined;
 } {
-  const suite = selectTasks(loadMemoryRecallSuite(trials), readTaskFilter());
+  const suite = selectTasks(definition.load(trials), readTaskFilter());
   // The running configuration's ids, on the one axis that calls a model with
   // them. A replay names the ids its cassette headers recorded instead.
   const configured: ModelIds | undefined =
@@ -338,7 +419,7 @@ function prepare(
 
     return {
       suite,
-      decks: recordingDecks({ datasetDir: MEMORY_RECALL_DATASET_DIR, axes, gitSha: head.sha }),
+      decks: recordingDecks({ datasetDir: definition.datasetDir, axes, gitSha: head.sha }),
       replay: undefined,
       models: configured,
     };
@@ -346,10 +427,10 @@ function prepare(
 
   // A task has as many replayable trials as it has cassettes, and a skipped
   // task needs none — it never runs.
-  const capped = capTrialsToCassettes(suite, MEMORY_RECALL_DATASET_DIR);
+  const capped = capTrialsToCassettes(suite, definition.datasetDir);
   const skipped = new Set(skippedTasks(capped.tasks, axes).map((task) => task.taskId));
   const decks = replayDecks(
-    MEMORY_RECALL_DATASET_DIR,
+    definition.datasetDir,
     capped.tasks
       .filter((task) => !skipped.has(task.id))
       .map((task) => ({ taskId: task.id, trials: trialsFor(task, capped) })),

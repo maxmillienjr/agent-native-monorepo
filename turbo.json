@@ -61,7 +61,8 @@
         "EVAL_GATE",
         "EVAL_HISTORY_DIR",
         "EVAL_TASKS",
-        "EVAL_CHAT_MODEL"
+        "EVAL_CHAT_MODEL",
+        "EVAL_SUITE"
       ]
     },
     "eval:retrieval": {
