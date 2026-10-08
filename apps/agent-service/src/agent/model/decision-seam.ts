@@ -21,7 +21,7 @@ import type { AssessDeps } from '../prior-auth/assessment.js';
 import type { CaseBoard } from '../tools/case-board.js';
 import { defaultRegistry, defineRegistry, type ToolRegistry } from '../tools/registry.js';
 import type { ToolSelectionRequest } from '../tools/selection.js';
-import type { ToolDefinition } from '../tools/types.js';
+import type { CompensableTool, ToolDefinition } from '../tools/types.js';
 import { CHAT_MODEL, type ModelDeps } from './model-deps.js';
 
 /**
@@ -70,6 +70,14 @@ export const calls = {
     label: name,
     request: input,
   }),
+  // The step's input and output, which is what an undo is a function of. The
+  // idempotency key is left out: it carries the run id, and a replayed run
+  // mints a new one.
+  compensate: (name: string, input: unknown, output: unknown): DecisionCall => ({
+    seam: 'act.compensate',
+    label: name,
+    request: { input, output },
+  }),
   extract: (context: string): DecisionCall => ({
     seam: 'distill.extractEntities',
     request: { context },
@@ -109,7 +117,7 @@ const CHAT_SEAMS: ReadonlySet<string> = new Set([
  * The usage a chat seam returned beside its answer.
  *
  * Every chat seam returns `{ ..., tokenCounts }` from format 2 on (P1-F), so
- * the recorder reads it at all three. `embed`, `act.tool` and
+ * the recorder reads it at all three. `embed`, `act.tool`, `act.compensate` and
  * `memory.retrieve` report none, and none is claimed for them.
  */
 export function tokenCountsFor(
@@ -137,10 +145,14 @@ function recordPlan(live: PlanNodeDeps, deck: Deck): PlanNodeDeps {
 
 function recordAct(live: ActNodeDeps, deck: Deck): ActNodeDeps {
   return {
-    registry: throughDeck(live.registry, (tool) => ({
-      execute: (input, ctx) =>
+    registry: throughDeck(live.registry, {
+      execute: (tool) => (input, ctx) =>
         deck.resolve(calls.tool(tool.name, input), () => tool.execute(input, ctx)),
-    })),
+      compensate: (tool) => (input, output, ctx) =>
+        deck.resolve(calls.compensate(tool.name, input, output), () =>
+          tool.compensate(input, output, ctx),
+        ),
+    }),
     selectTool: (request) =>
       deck.resolve(calls.selectTool(request), () => live.selectTool(request)),
   };
@@ -153,10 +165,17 @@ function recordAct(live: ActNodeDeps, deck: Deck): ActNodeDeps {
  */
 function throughDeck(
   registry: ToolRegistry,
-  route: (tool: ToolDefinition) => Partial<Pick<ToolDefinition, 'execute'>>,
+  route: {
+    execute: (tool: ToolDefinition) => ToolDefinition['execute'];
+    compensate: (tool: CompensableTool) => CompensableTool['compensate'];
+  },
 ): ToolRegistry {
   return defineRegistry(
-    registry.tools.map((tool) => ({ ...tool, ...route(tool) }) as ToolDefinition),
+    registry.tools.map((tool): ToolDefinition =>
+      tool.tier === 'compensable'
+        ? { ...tool, execute: route.execute(tool), compensate: route.compensate(tool) }
+        : { ...tool, execute: route.execute(tool) },
+    ),
   );
 }
 
@@ -282,9 +301,11 @@ export function replayModelDeps(deck: Deck): ModelDeps {
         ),
     },
     act: {
-      registry: throughDeck(defaultRegistry(UNREACHABLE_BOARD), (tool) => ({
-        execute: (input) => deck.resolve(calls.tool(tool.name, input), unreachable),
-      })),
+      registry: throughDeck(defaultRegistry(UNREACHABLE_BOARD), {
+        execute: (tool) => (input) => deck.resolve(calls.tool(tool.name, input), unreachable),
+        compensate: (tool) => (input, output) =>
+          deck.resolve(calls.compensate(tool.name, input, output), unreachable),
+      }),
       selectTool: (request) =>
         withInferenceSpan(chat('act.selectTool', true), () =>
           deck.resolve(calls.selectTool(request), unreachable),
