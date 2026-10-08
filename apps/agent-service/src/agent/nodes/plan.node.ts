@@ -2,7 +2,30 @@ import { withNodeSpan } from '@repo/telemetry';
 import type { AgentState } from '../graph/state.js';
 import { addUsage, type CallUsage } from '../model/usage.js';
 
-const SYSTEM_PROMPT = 'You are a helpful research assistant.';
+export const PLAN_SYSTEM_PROMPT = 'You are a helpful research assistant.';
+
+/** The last line of `plan`'s user prompt, after the transcript and the context. */
+export const PLAN_INSTRUCTION = "Based on the above, create a plan to address the user's request.";
+
+/**
+ * `plan`'s user prompt for a state: the transcript, the retrieved context if
+ * there is any, and the instruction.
+ *
+ * Exported so that P2-D's stage 2 can ask the model exactly what this node
+ * asks it, and a test can hold the two equal. A copy of the template in the
+ * evaluation would let the measured prompt drift from the shipped one.
+ */
+export function buildPlanPrompt(state: Pick<AgentState, 'messages' | 'retrievedContext'>): string {
+  // Build context from messages and retrieved context
+  const contextBlock =
+    state.retrievedContext.length > 0
+      ? `\n\nRelevant context:\n${state.retrievedContext.map((c) => `- [${c.source}] ${c.content}`).join('\n')}`
+      : '';
+
+  const conversationHistory = state.messages.map((m) => `${m.role}: ${m.content}`).join('\n');
+
+  return `${conversationHistory}${contextBlock}\n\n${PLAN_INSTRUCTION}`;
+}
 
 export interface PlanNodeDeps {
   callLlm: (
@@ -24,17 +47,7 @@ export async function planNode(
       span.setAttribute('run_id', state.runId);
       span.setAttribute('session_id', state.sessionId);
 
-      // Build context from messages and retrieved context
-      const contextBlock =
-        state.retrievedContext.length > 0
-          ? `\n\nRelevant context:\n${state.retrievedContext.map((c) => `- [${c.source}] ${c.content}`).join('\n')}`
-          : '';
-
-      const conversationHistory = state.messages.map((m) => `${m.role}: ${m.content}`).join('\n');
-
-      const userPrompt = `${conversationHistory}${contextBlock}\n\nBased on the above, create a plan to address the user's request.`;
-
-      const response = await deps.callLlm(SYSTEM_PROMPT, userPrompt);
+      const response = await deps.callLlm(PLAN_SYSTEM_PROMPT, buildPlanPrompt(state));
 
       // Usage is on the inference span beneath this one, where the client
       // recorded it. A copy here would be counted twice by anything summing
