@@ -407,6 +407,13 @@ export const LAPSE_EXPLANATION = {
  * The findings are in it because a reconsideration reviews "the evidence and
  * findings upon which it was based" (§ 422.580). That makes it the second
  * place the model's rationale is served, after the case view.
+ *
+ * It holds no instant the forward itself sets: not when the reconsideration
+ * was recorded, nor when the case was forwarded. Those are on the row and in
+ * the ledger entry's own time. So the digest is a function of what was
+ * decided and filed, and a forward retried after a crash between its ledger
+ * append and its commit digests to the same value, which the append under a
+ * derived id needs to find its first attempt's entry rather than conflict.
  */
 export function caseFileOf(appeal: AppealRow, caseRow: CaseRow): Record<string, unknown> {
   if (appeal.caseId !== caseRow.caseId) {
@@ -446,16 +453,8 @@ export function caseFileOf(appeal: AppealRow, caseRow: CaseRow): Record<string, 
             record: appeal.reconsideration,
             reviewerKeyId: appeal.reviewerKeyId,
             signature: appeal.signature,
-            decidedAt: appeal.decidedAt?.toISOString() ?? null,
           },
-    forward:
-      appeal.forwardReason === null
-        ? null
-        : {
-            reason: appeal.forwardReason,
-            forwardedAt: appeal.forwardedAt?.toISOString() ?? null,
-            explanation,
-          },
+    forward: appeal.forwardReason === null ? null : { reason: appeal.forwardReason, explanation },
   };
 }
 

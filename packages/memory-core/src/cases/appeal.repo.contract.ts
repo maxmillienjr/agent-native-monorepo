@@ -386,6 +386,22 @@ export function describeAppealRepositoryContract(
       expect(lapses).toEqual([`${lapsing.appealId} deadline-lapsed`]);
     });
 
+    it('digests a forward to the same value whenever it is made, so a retried ledger append matches', async () => {
+      const one = await filed();
+      const caseRow = await cases.get(one.caseId);
+      const row = await appeals.get(one.appealId);
+      if (caseRow === null || row === null) throw new Error('missing row');
+      const at = (iso: string) => ({
+        ...row,
+        status: 'forwarded' as const,
+        forwardReason: 'deadline-lapsed' as const,
+        forwardedAt: new Date(iso),
+      });
+      expect(caseFileDigest(caseFileOf(at('2026-05-01T10:00:00Z'), caseRow))).toBe(
+        caseFileDigest(caseFileOf(at('2026-05-01T10:05:00Z'), caseRow)),
+      );
+    });
+
     it('refuses, in the store, a dismissal by the reviewer who denied', async () => {
       const appeal = await filed();
       const own: Dismissal = { ...dismissal('withdrawn'), attestation: INITIAL };
