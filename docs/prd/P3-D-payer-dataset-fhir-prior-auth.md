@@ -450,7 +450,10 @@ here as it does in the chat graph. The graph compiles with the service's checkpo
 the case id as `thread_id`, and the case id is `ClaimResponse.identifier`. That checkpoint
 is what P3-E resumes. On the unconfigured memory axis the checkpointer is `null`
 (`runs.service.ts:287`), and the pended case lives only in the response. That is the
-existing axis rule, not a new fallback.
+existing axis rule, not a new fallback. _Amended 2026-10-08:_ P3-E resumes nothing (ADR
+0010). The checkpoint is the record of the agent's run, and the case is a `prior_auth_cases`
+row that `$submit` writes before it answers, in Postgres or, on the unconfigured axis, a
+volatile in-process store.
 
 **The seam.** `ModelDeps` gains `assess: { assessCriteria(criteria, evidence) }`, and
 `SEAMS` gains `'assess.criteria'` (`packages/agent-cassette/src/types.ts:27-33`). The

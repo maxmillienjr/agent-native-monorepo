@@ -102,8 +102,11 @@ append-only ledger, and this PRD claims no Part 11 compliance.
 ### Non-goals
 
 - **A reviewer surface, and who holds the private keys.** The ledger verifies a signature;
-  producing one needs a clinician-facing route. **P3-D** owns it, and its
-  `determination.attested` appends are the ledger's first producer of that kind.
+  producing one needs a clinician-facing route. **P3-E** owns it, and its
+  `determination.attested` appends are the ledger's first producer of that kind. _Amended
+  2026-10-08:_ this said P3-D, which handed the review surface to P3-E at its review. P3-E
+  has shipped the route, its reviewers' clients sign, and its `decide` has a `beforeCommit`
+  hook where this PRD's append goes.
 - **Identity proofing and key custody.** A signature binds an attestation to a key, not to a
   person. That the key's holder is the licensed reviewer named in the registration is
   § 164.312(d) person-or-entity authentication, a deployment control with an identity
@@ -270,7 +273,7 @@ everything else.
 ESLint rule keeps it there: the agent cannot write the ledger, as it cannot mint a denial
 (P3-A). A failed append does not fail the response; it is logged, and the verifier lists
 every `run_records` row with no `run.recorded` entry, so the gap is visible rather than
-silent. `determination.attested` is the opposite: P3-D's surface must not issue a
+silent. `determination.attested` is the opposite: P3-E's review route must not issue a
 determination whose append failed.
 
 ### Appending
@@ -343,7 +346,7 @@ and would be a new PRD.
 `CTL-AUD-01` is `planned` under this PRD. P4-A is accepted, not shipped, so
 `governance/controls.yaml` does not exist at `77e3191`. Whichever of the two lands second
 moves the control, as `implemented` for runs — the one kind with a live producer — with
-determinations noted as P3-D's.
+determinations noted as P3-E's.
 
 ## Acceptance criteria
 
@@ -382,7 +385,9 @@ determinations noted as P3-D's.
       `.context/conventions.md`'s "Before real data" includes the keyed span digest and key
       custody.
 - [ ] `docs/STATUS.md` has two rows: run records committed to the ledger, `implemented`;
-      determinations and attestations in the ledger, `stubbed`, owner P3-D.
+      determinations and attestations in the ledger, appended from P3-E's review route, with
+      the evidence of that append. _Amended 2026-10-08:_ this row was `stubbed` with owner
+      P3-D; P3-E shipped the producer first, so this PRD wires the append into it.
 - [ ] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
       pass.
 
