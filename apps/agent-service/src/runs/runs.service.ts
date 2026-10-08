@@ -30,6 +30,13 @@ import { NO_USAGE } from '../agent/model/usage.js';
 import type { ActNodeDeps, ToolSelection } from '../agent/nodes/act.node.js';
 import type { DistillNodeDeps } from '../agent/nodes/distill.node.js';
 import type { PlanNodeDeps } from '../agent/nodes/plan.node.js';
+import {
+  ASSESS_PROMPT,
+  assessmentPrompt,
+  parseAssessment,
+  stubAssessment,
+  type AssessDeps,
+} from '../agent/prior-auth/assessment.js';
 
 const logger = createLogger('runs-service');
 
@@ -108,12 +115,20 @@ export function createGeminiChat(
   });
 }
 
-/** The model half of a dependency set: everything that costs a model call. */
+/**
+ * The model half of a dependency set: everything that costs a model call.
+ *
+ * `assess` is the prior-authorization graph's (P3-D). It lives here rather
+ * than in a second set so that both graphs take their model from one axis
+ * switch and one decorator, and a cassette records either graph's decisions
+ * without the service learning which one it is serving.
+ */
 export interface ModelDeps {
   plan: PlanNodeDeps;
   act: ActNodeDeps;
   distill: DistillNodeDeps;
   embed: (text: string) => Promise<number[]>;
+  assess: AssessDeps;
 }
 
 /**
@@ -163,6 +178,9 @@ function lazyModelDeps(create: () => ModelDeps): ModelDeps {
     },
     distill: { extractEntities: (context) => deps().distill.extractEntities(context) },
     embed: (text) => deps().embed(text),
+    assess: {
+      assessCriteria: (criteria, evidence) => deps().assess.assessCriteria(criteria, evidence),
+    },
   };
 }
 
@@ -212,17 +230,7 @@ export class RunsService {
   private getDeps(): GraphDeps {
     if (this.graphDeps) return this.graphDeps;
 
-    const apiKey = process.env['GOOGLE_API_KEY'];
-    const axis = (): ModelDeps =>
-      apiKey ? this.createGeminiModelDeps(apiKey) : this.createStubModelDeps();
-
-    // Between the axis switch and the assembly below, so the decorator reaches
-    // the model half and nothing else. Undecorated, the axis is built here and
-    // the path is the one a request takes; decorated, it is built lazily and a
-    // decorator that ignores its argument — which is what replay does — never
-    // causes a model client to exist at all.
-    const model =
-      this.decorateModel === undefined ? axis() : this.decorateModel(lazyModelDeps(axis));
+    const model = this.modelDeps();
 
     return {
       ...model,
@@ -237,6 +245,26 @@ export class RunsService {
         embedText: model.embed,
       },
     };
+  }
+
+  /**
+   * The model half for one request, on the axis `GOOGLE_API_KEY` selects and
+   * through the decorator, if one is installed.
+   *
+   * Public because the prior-authorization graph takes its model from here
+   * too (P3-D): one axis switch and one decorator for both graphs, so an
+   * evaluation that records or replays one records or replays the other.
+   */
+  modelDeps(): ModelDeps {
+    const apiKey = process.env['GOOGLE_API_KEY'];
+    const axis = (): ModelDeps =>
+      apiKey ? this.createGeminiModelDeps(apiKey) : this.createStubModelDeps();
+
+    // The decorator reaches the model half and nothing else. Undecorated, the
+    // axis is built here and the path is the one a request takes; decorated,
+    // it is built lazily and a decorator that ignores its argument — which is
+    // what replay does — never causes a model client to exist at all.
+    return this.decorateModel === undefined ? axis() : this.decorateModel(lazyModelDeps(axis));
   }
 
   private createGeminiModelDeps(apiKey: string): ModelDeps {
@@ -257,6 +285,7 @@ export class RunsService {
     const callLlm = callWith(prose, { seam: 'plan.callLlm', json: false });
     const callSelect = callWith(json, { seam: 'act.selectTool', json: true });
     const callExtract = callWith(json, { seam: 'distill.extractEntities', json: true });
+    const callAssess = callWith(json, { seam: 'assess.criteria', json: true });
 
     return {
       plan: { callLlm },
@@ -289,6 +318,12 @@ export class RunsService {
         },
       },
       embed: createGeminiEmbedder(apiKey),
+      assess: {
+        assessCriteria: async (criteria, evidence) => {
+          const response = await callAssess(ASSESS_PROMPT, assessmentPrompt(criteria, evidence));
+          return parseAssessment(response.content);
+        },
+      },
     };
   }
 
@@ -323,6 +358,7 @@ export class RunsService {
         }),
       },
       embed: stubEmbedding,
+      assess: stubAssessment,
     };
   }
 

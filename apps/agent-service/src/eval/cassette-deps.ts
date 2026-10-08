@@ -21,6 +21,7 @@ import {
   type InferenceRequest,
   type InferenceSeam,
 } from '@repo/telemetry';
+import type { EvidenceItem, PolicyCriterion } from '@repo/prior-auth';
 import { CHAT_MODEL, defaultTools, type ModelDeps } from '../runs/runs.service.js';
 import { RE_RECORD_COMMAND, UPDATE_BASELINE_COMMAND } from './abort-cause.js';
 
@@ -68,6 +69,13 @@ const calls = {
     request: { context },
   }),
   embed: (text: string): DecisionCall => ({ seam: 'embed', request: { text } }),
+  assess: (
+    criteria: readonly PolicyCriterion[],
+    evidence: readonly EvidenceItem[],
+  ): DecisionCall => ({
+    seam: 'assess.criteria',
+    request: { criteria: [...criteria], evidence: [...evidence] },
+  }),
 } as const;
 
 /** The three seams that are a `generateContent` call, and so carry usage. */
@@ -117,6 +125,12 @@ export function recordingModelDeps(live: ModelDeps, deck: Deck): ModelDeps {
         deck.resolve(calls.extract(context), () => live.distill.extractEntities(context)),
     },
     embed: (text) => deck.resolve(calls.embed(text), () => live.embed(text)),
+    assess: {
+      assessCriteria: (criteria, evidence) =>
+        deck.resolve(calls.assess(criteria, evidence), () =>
+          live.assess.assessCriteria(criteria, evidence),
+        ),
+    },
   };
 }
 
@@ -189,6 +203,12 @@ export function replayModelDeps(deck: Deck): ModelDeps {
     },
     embed: (text) =>
       withInferenceSpan(embedding, () => deck.resolve(calls.embed(text), unreachable)),
+    assess: {
+      assessCriteria: (criteria, evidence) =>
+        withInferenceSpan(chat('assess.criteria', true), () =>
+          deck.resolve(calls.assess(criteria, evidence), unreachable),
+        ),
+    },
   };
 }
 

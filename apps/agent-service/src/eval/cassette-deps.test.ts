@@ -116,6 +116,17 @@ function fakeLive(calls: string[]): ModelDeps {
       // is the loss pgvector's `float4` column makes on the way in anyway.
       return new Array(EMBEDDING_DIMENSIONS).fill(0).map((_, i) => ((i % 8) - 4) * 0.25);
     },
+    assess: {
+      assessCriteria: async (criteria, evidence) => {
+        calls.push(`assess:${criteria.length}|${evidence.length}`);
+        return criteria.map((criterion) => ({
+          criterionId: criterion.id,
+          status: 'met' as const,
+          evidence: evidence.map((item) => item.reference),
+          rationale: 'a rationale',
+        }));
+      },
+    },
   };
 }
 
@@ -162,6 +173,26 @@ describe('the recording and replay directions of the same seam', () => {
       'embed',
     ]);
     expect(cassette.decisions[2]!.label).toBe('web-search');
+  });
+
+  it('records and replays the prior-authorization seam, which the chat graph never calls', async () => {
+    const criteria = [{ id: 'c1', title: 'A criterion', requirement: 'A requirement.' }];
+    const evidence = [{ reference: 'DocumentReference/doc-1', text: 'A synthetic note.' }];
+    const calls: string[] = [];
+
+    const recorder = new CassetteRecorder({ header: liveHeader, tokenCountsFor });
+    const recorded = await recordingModelDeps(fakeLive(calls), recorder).assess.assessCriteria(
+      criteria,
+      evidence,
+    );
+    const cassette = await recorder.close();
+    expect(cassette.decisions.map((decision) => decision.seam)).toEqual(['assess.criteria']);
+
+    const replayed = await replayModelDeps(
+      new CassettePlayer(cassette, replayConfig),
+    ).assess.assessCriteria(criteria, evidence);
+    expect(replayed).toEqual(recorded);
+    expect(calls).toEqual(['assess:1|1']);
   });
 
   it('stores the embedding as a vector rather than a JSON float array', async () => {
@@ -308,6 +339,7 @@ describe('the decorator seam on RunsService', () => {
         seen.push(text);
         return new Array(EMBEDDING_DIMENSIONS).fill(0);
       },
+      assess: { assessCriteria: async () => [] },
     }));
 
     const traced = await service.executeTraced({

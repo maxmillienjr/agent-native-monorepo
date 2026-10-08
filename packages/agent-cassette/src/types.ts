@@ -18,11 +18,15 @@ import { z } from 'zod';
  */
 
 /**
- * The five functions that cost a model call, plus tool execution. Freeze these
- * and the run is determined: the graph's one conditional edge branches on what
+ * The functions that cost a model call, plus tool execution. Freeze these and
+ * a run is determined: the chat graph's one conditional edge branches on what
  * `act.selectTool` returned, `plan`'s prompt is built from state, and every
  * `embed` argument is either the user's message or a fact from the recorded
  * extraction.
+ *
+ * `assess.criteria` is the prior-authorization graph's one call (P3-D). The
+ * chat graph never makes it, so a memory-recall cassette holds none and
+ * replays unchanged.
  */
 export const SEAMS = [
   'plan.callLlm',
@@ -30,6 +34,7 @@ export const SEAMS = [
   'act.tool',
   'distill.extractEntities',
   'embed',
+  'assess.criteria',
 ] as const;
 
 export type Seam = (typeof SEAMS)[number];

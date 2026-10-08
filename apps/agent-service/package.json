@@ -37,6 +37,7 @@
     "@repo/determination": "workspace:*",
     "@repo/eval-harness": "workspace:*",
     "@repo/memory-core": "workspace:*",
+    "@repo/prior-auth": "workspace:*",
     "@repo/shared-types": "workspace:*",
     "@repo/telemetry": "workspace:*",
     "reflect-metadata": "^0.2.2",

@@ -2914,6 +2914,7 @@ __metadata:
     "@repo/eslint-config": "workspace:*"
     "@repo/eval-harness": "workspace:*"
     "@repo/memory-core": "workspace:*"
+    "@repo/prior-auth": "workspace:*"
     "@repo/shared-types": "workspace:*"
     "@repo/telemetry": "workspace:*"
     "@repo/tsconfig": "workspace:*"
@@ -3035,7 +3036,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@repo/prior-auth@workspace:packages/prior-auth":
+"@repo/prior-auth@workspace:*, @repo/prior-auth@workspace:packages/prior-auth":
   version: 0.0.0-use.local
   resolution: "@repo/prior-auth@workspace:packages/prior-auth"
   dependencies:

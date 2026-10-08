@@ -338,7 +338,8 @@ export function withToolSpan<T>(toolName: string, fn: (span: Span) => Promise<T>
 // --- generate_content, embeddings ----------------------------------------------
 
 /** The decision seams, in the cassette's vocabulary, so P1-F can attribute cost. */
-export type InferenceSeam = 'plan.callLlm' | 'act.selectTool' | 'distill.extractEntities' | 'embed';
+export type InferenceSeam =
+  'plan.callLlm' | 'act.selectTool' | 'distill.extractEntities' | 'embed' | 'assess.criteria';
 
 export interface InferenceRequest {
   readonly operation: typeof GEN_AI_OPERATION.GENERATE_CONTENT | typeof GEN_AI_OPERATION.EMBEDDINGS;
