@@ -515,11 +515,13 @@ own, and stage 2 is the next piece of this PRD.
       the report states that stage 2 has not run and made 0 `generateContent` calls.
 - [ ] Stage 2's recording run reports both graders for 38 queries × 2 conditions on **model
       live, memory live**. **Model replay** then reproduces every grader result with no
-      request to the model host. **Reviewer, from the committed report.** _Open, P2-D stage
-      2: 76 calls, about eight days of free-tier quota._
-- [ ] `renderExplanationBlock` and the `without` prompt are pinned. The `without` prompt
-      equals `planNode`'s for the same state. **Pure.** _Open, P2-D stage 2. Not written:
-      it is needed only once stage 1 is `good`, and this pass delivered stage 1._
+      request to the model host. **Reviewer, from the committed report.** _Open, P2-D stage 2. The code exists, and a dry run on a fake model showed it resumable ("Stage 2's
+      code, and the run that remains"). The 76 calls remain, ten days at eight a day._
+- [x] `renderExplanationBlock` and the `without` prompt are pinned. The `without` prompt
+      equals `planNode`'s for the same state. **Pure.** `explanation-prompt.test.ts` runs
+      `planNode` on the same state and holds what it sends equal to `without`. It pins the
+      bytes of `with`, and checks that deleting the block from `with` gives `without`.
+      `plan.node.test.ts` pins `planNode`'s own bytes, which both cassettes key on.
 - [x] The ADR is listed in `docs/adr/README.md`, states that the result is under an oracle
       extractor, and is `proposed` until the owner accepts it. **Reviewer.** ADR 0012.
 - [ ] The ADR records the row the rule selected and, for a C row, supersedes ADR 0004.
@@ -549,8 +551,8 @@ guaranteed by the `reflect` shape and the relational construction, the label lin
 the oracle on every pair, and the extractor is the corpus. **The Problem section's
 prediction did not hold.** A length-0 path ranked first in 12 of 50 pairs, the program
 episodes. Most answer facts sit in an episode about B alone, so the `reflect` shape never
-linked them to A. Stage 2 is next. Its code is unwritten, and its 76 calls are scheduled
-against the quota table in `.context/conventions.md`.
+linked them to A. Stage 2 is next. Its code exists (the next section), and its 76 calls
+are scheduled against the quota table in `.context/conventions.md`.
 
 Where the implementation is not what the Design section describes:
 
@@ -580,6 +582,114 @@ Where the implementation is not what the Design section describes:
    `seedEntityCount`, `factCount` and `resultCount`. `memory.neo4j.linkQuestionConcepts`
    sets `conceptCount` and `resultCount`. All are counts, and all were already in
    `ALLOWED_SPAN_ATTRIBUTES`, so the allowlist is unchanged.
+
+## Stage 2's code, and the run that remains
+
+Written 2026-10-08, with no `generateContent` call. Stage 2 has not started, and the rule
+selects no row until it has.
+
+- **The prompts.** `planNode` now calls `buildPlanPrompt`, whose bytes are unchanged and
+  pinned. `explanation-prompt.ts` takes `without` from it, and makes `with` by placing
+  `renderExplanationBlock`'s block after the context and before the instruction.
+- **The answer file**, `answer-file.ts`. `recordAnswers` writes after every call through a
+  rename, and never asks a recorded (query, condition) again. It refuses a file recorded
+  for another prompt, model, dataset, label set or selection, and it holds a pid lock. It
+  stops without recording on a per-day 429, or on a 429 the client could not retry past.
+  `replayAnswers` serves the file with no key and refuses the same mismatches.
+- **The graders and the rule**, `explanation-answers.ts` in `eval-harness`:
+  `selectStage2Queries`, `answer_key_present`, `bridge_named`, the paired bootstrap and
+  `applyAnswerRule`. The rule is applied only once all 76 answers are recorded.
+- **The runner.** `runStage2` in `run-explanation.ts` runs after a good stage 1 and
+  replays by default, failing on any request to the model host. With no answer file the
+  stage-1 report is unchanged.
+
+**The dry run.** On 2026-10-08 the real runner ran against empty `pgvector:pg16` and
+`neo4j:5-community` containers. `fetch` was replaced by a fake Gemini API, so no request
+left the process, and the fake logged a hash of every prompt it answered.
+
+1. Replay with no answer file and no key selected 38 queries and found 0 of 76 answers.
+   The stage-1 JSON and Markdown equalled the committed reports once timestamps were
+   masked.
+2. Record with no budget, at 1.5 s a call, was killed with `SIGKILL` after 11 answers. The
+   dead process left its lock behind.
+3. Record with a budget of 8 took over the dead lock. It finished the query the kill had
+   split, recorded three more whole queries, and stopped on the budget, at 18 answers.
+4. Record with the fake sending a per-day 429 after 5 calls recorded 5 answers, stopped
+   and exited 1, at 23 answers.
+5. Record to completion recorded 53 answers, 76 in all. One more invocation made no
+   request.
+6. Two replays with no key made no request, and their reports were identical once
+   timestamps were masked. The fake's answers grade 0 in both conditions, so the rule read
+   `not met`. That shows only that the arithmetic runs.
+
+The file held 76 answers, each (query, condition) once, over four invocations. The fake
+answered 77 prompts and sent one 429. The only prompt it answered twice was
+`relational-012/with`, the call in flight when the process was killed, whose first answer
+was never written. No recorded answer was asked for again. The report names the two pairs
+split across invocations: `relational-012` by the kill and `relational-020` by the 429.
+
+**The command**, once per Pacific day. It reseeds the stores from empty, so any throwaway
+pair of containers will do:
+
+```bash
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/agentdb \
+NEO4J_URI=bolt://localhost:7687 NEO4J_USER=neo4j NEO4J_PASSWORD=password \
+GOOGLE_API_KEY=<key> EVAL_ANSWERS_MODE=record EVAL_STAGE2_MAX_CALLS=8 \
+yarn eval:explanation
+```
+
+Exit 0 means the day's slice was recorded, and 1 means a 429 stopped it early: what was
+recorded is kept, and the next day resumes. After each day, commit `explanation-answers.json`
+from `recorded/` beside the embeddings. After the last, run the same command with
+`GOOGLE_API_KEY=` empty and no mode, which replays. Commit the four files it writes under
+`apps/agent-service/eval-results/` into `reports/explanation/`.
+
+**The schedule.** Eight calls a day is four whole queries, in the order the answer file's
+header fixes:
+
+| Day | Queries                                                        | Calls | Answers after |
+| --- | -------------------------------------------------------------- | ----- | ------------- |
+| 1   | relational-003, relational-005, relational-009, relational-010 | 8     | 8             |
+| 2   | relational-011, relational-012, relational-013, relational-014 | 8     | 16            |
+| 3   | relational-015, relational-016, relational-018, relational-020 | 8     | 24            |
+| 4   | relational-021, relational-022, relational-023, relational-024 | 8     | 32            |
+| 5   | relational-025, relational-026, relational-027, relational-028 | 8     | 40            |
+| 6   | relational-029, relational-030, relational-031, relational-032 | 8     | 48            |
+| 7   | relational-033, relational-034, relational-035, relational-036 | 8     | 56            |
+| 8   | relational-038, relational-039, relational-040, relational-041 | 8     | 64            |
+| 9   | relational-042, relational-046, relational-047, relational-048 | 8     | 72            |
+| 10  | relational-049, relational-050                                 | 4     | 76            |
+
+The nightly takes about 11 calls at 03:00 UTC, which is the evening of the Pacific day
+(20:00 PDT, 19:00 PST), so a slice of 8 leaves 19 of the 20 used whenever it runs that
+day. A day that P3-D or P4-B records on is skipped, and the table shifts by a day.
+
+Where stage 2's code differs from the Design:
+
+1. **The 38 are recomputed, not read.** The Design says the list "is printed" from P2-B's
+   committed run, but that report keeps aggregates and no per-query ranking. The runner
+   retrieves again over the recorded vectors and refuses any count but 38. The answer
+   file's header pins the list on its first write.
+2. **A pair stays in one invocation where the recorder can choose.** The Design asks for
+   both calls of a query in the same invocation. The budget never splits a pair, but a
+   429 or a kill can. The next invocation finishes that query first, and the report names
+   it.
+3. **Eight a day for ten days, not eleven for seven.** The Budget section counted the
+   nightly at 9 calls; the quota table in `.context/conventions.md` counts 10 to 11.
+4. **The answers are cassette decisions in one file, not cassettes.** Each answer is a
+   format-2 `Decision` built by `buildDecision` over `calls.plan`. Its `requestHash` is the
+   prompt sha256 the Design keys on, and the hash a cassette would give the same call. A
+   cassette is one trial written when it ends, and this recording has to survive ten days
+   and a kill. Committed, the file makes replay keyless and re-scoring free.
+5. **Calls are paced 13 seconds apart**, under the free tier's five a minute, so the
+   client's 429 retry is not what paces them.
+6. **`context <n>` counts positions.** `plan`'s context lines carry no number, and
+   `without` must stay byte-identical to `planNode`'s prompt, so the model has to count.
+7. **The `with` block explains nearly every retrieved fact.** Building the prompts, the
+   explainer returned a path for all ten retrieved facts in 32 of the 38 queries, and for
+   the answer fact in all 38. That is the `reflect` shape's over-linking again: the gold
+   path is in the block, among about twenty others. It is recorded before any answer
+   exists, so it cannot be used afterwards to explain a `not met` or to discount a `met`.
 
 ## Risks and open questions
 
