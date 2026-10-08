@@ -333,6 +333,46 @@ export function describeAppealRepositoryContract(
       expect((await appeals.file(newAppeal(caseId))).outcome).toBe('filed');
     });
 
+    it('hands beforeCommit the row about to be written, a forward with its digest, and writes nothing when it throws', async () => {
+      const affirmed = await filed();
+      const seen: { status: string; digest: string | null }[] = [];
+      await appeals.reconsider(affirmed.appealId, reconsideration('affirmation'), signedBy(OTHER), {
+        beforeCommit: async (next) => {
+          seen.push({ status: next.status, digest: next.caseFileDigest });
+        },
+      });
+      const stored = await appeals.get(affirmed.appealId);
+      expect(seen).toEqual([{ status: 'forwarded', digest: stored?.caseFileDigest }]);
+
+      const lapsing = await filed({ receivedAt: new Date('2026-04-01T10:00:00Z') });
+      const now = new Date('2026-05-01T10:00:00Z');
+      const failing = {
+        beforeCommit: async () => {
+          throw new Error('the ledger append failed');
+        },
+      };
+      await expect(appeals.forwardLapsed(now, failing)).rejects.toThrow('the ledger append failed');
+      expect((await appeals.get(lapsing.appealId))?.status).toBe('filed');
+      await expect(
+        appeals.dismiss(
+          lapsing.appealId,
+          dismissal('withdrawn'),
+          { ...signedBy(OTHER), decidedAt: now },
+          failing,
+        ),
+      ).rejects.toThrow('the ledger append failed');
+      expect((await appeals.get(lapsing.appealId))?.status).toBe('filed');
+
+      const lapses: string[] = [];
+      const forwarded = await appeals.forwardLapsed(now, {
+        beforeCommit: async (next) => {
+          lapses.push(`${next.appealId} ${next.forwardReason}`);
+        },
+      });
+      expect(forwarded.map((row) => row.appealId)).toEqual([lapsing.appealId]);
+      expect(lapses).toEqual([`${lapsing.appealId} deadline-lapsed`]);
+    });
+
     it('refuses, in the store, a dismissal by the reviewer who denied', async () => {
       const appeal = await filed();
       const own: Dismissal = { ...dismissal('withdrawn'), attestation: INITIAL };

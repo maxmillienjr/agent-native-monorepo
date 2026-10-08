@@ -255,11 +255,14 @@ export type ActionResult =
 
 export interface ActionOptions {
   /**
-   * Runs with both rows locked, after the checks pass and before anything is
-   * written. If it throws, nothing is written, the appeal stays filed, and the
-   * error propagates. It is where P3-C's ledger append goes.
+   * Runs with both rows locked, with the appeal row about to be written, and
+   * before it is: the action's, or a lapse forward's when the action found
+   * the appeal past its deadline. If it throws, nothing is written, the appeal
+   * stays filed, and the error propagates. It is where P3-C's ledger append
+   * goes, and it is given the row so the append can carry what the row will
+   * hold, a forward's case-file digest included.
    */
-  readonly beforeCommit?: (appeal: AppealRow, caseRow: CaseRow) => Promise<void>;
+  readonly beforeCommit?: (next: AppealRow, caseRow: CaseRow) => Promise<void>;
 }
 
 export interface ReconsiderOptions extends ActionOptions {
@@ -272,7 +275,7 @@ export interface FileOptions {
    * Runs once the appeal is inserted and before the transaction commits. If
    * it throws, the insert is rolled back and the error propagates.
    */
-  readonly beforeCommit?: (appeal: NewAppeal, caseRow: CaseRow) => Promise<void>;
+  readonly beforeCommit?: (filed: AppealRow, caseRow: CaseRow) => Promise<void>;
 }
 
 /** One appeal `forwardLapsed` forwarded on this sweep. */
@@ -313,10 +316,12 @@ export interface AppealRepository {
   ): Promise<ActionResult>;
   /**
    * Forwards every filed appeal at or past its deadline as `deadline-lapsed`
-   * (§ 422.590(d), (g)), each in one conditional update, and returns those it
-   * forwarded. An appeal is forwarded once.
+   * (§ 422.590(d), (g)), each under its own lock and in one conditional
+   * update, and returns those it forwarded. An appeal is forwarded once. A
+   * `beforeCommit` that throws stops the sweep at that appeal, which stays
+   * filed for the next one; those forwarded before it stand.
    */
-  forwardLapsed(now: Date): Promise<ForwardedAppeal[]>;
+  forwardLapsed(now: Date, options?: ActionOptions): Promise<ForwardedAppeal[]>;
 }
 
 // --- Shared by both stores, so they cannot drift -----------------------------
@@ -637,7 +642,7 @@ export class DrizzleAppealRepository implements AppealRepository {
         if (inserted.length === 1) {
           // A throw here rolls the insert back: an appeal whose ledger entry
           // failed is never recorded.
-          await options.beforeCommit?.(validated, caseRow);
+          await options.beforeCommit?.(filed, caseRow);
           return { outcome: 'filed', row: filed };
         }
 
@@ -693,10 +698,10 @@ export class DrizzleAppealRepository implements AppealRepository {
   ): Promise<ActionResult> {
     const checked = checkReconsideration(reconsideration, signed, options);
     return span('memory.appeals.reconsider', () =>
-      this.act(appealId, checked.signed, async (tx, appeal, caseRow) => {
+      this.act(appealId, checked.signed, options, async (tx, appeal, caseRow) => {
         checkInvolvement(appeal, checked.signed.reviewerId, checked.record.initialReviewerId);
-        await options.beforeCommit?.(appeal, caseRow);
         const next = reconsideredRow(appeal, caseRow, checked.record, checked.signed);
+        await options.beforeCommit?.(next, caseRow);
         await this.write(tx, next);
         if (checked.record.kind !== 'reversal' || options.response === undefined) {
           return { row: next, caseRow };
@@ -718,20 +723,20 @@ export class DrizzleAppealRepository implements AppealRepository {
   ): Promise<ActionResult> {
     const checked = checkDismissal(dismissal, signed);
     return span('memory.appeals.dismiss', () =>
-      this.act(appealId, checked.signed, async (tx, appeal, caseRow) => {
+      this.act(appealId, checked.signed, options, async (tx, appeal, caseRow) => {
         checkInvolvement(appeal, checked.signed.reviewerId);
-        await options.beforeCommit?.(appeal, caseRow);
         const next = dismissedRow(appeal, checked.dismissal, checked.signed);
+        await options.beforeCommit?.(next, caseRow);
         await this.write(tx, next);
         return { row: next, caseRow };
       }),
     );
   }
 
-  async forwardLapsed(now: Date): Promise<ForwardedAppeal[]> {
+  async forwardLapsed(now: Date, options: ActionOptions = {}): Promise<ForwardedAppeal[]> {
     return span('memory.appeals.forward_lapsed', async () => {
       const lapsed = await this.db
-        .select()
+        .select({ appealId: priorAuthAppeals.appealId })
         .from(priorAuthAppeals)
         .where(
           and(
@@ -742,28 +747,31 @@ export class DrizzleAppealRepository implements AppealRepository {
         .orderBy(asc(priorAuthAppeals.reconsiderationDueBy), asc(priorAuthAppeals.appealId));
 
       const forwarded: ForwardedAppeal[] = [];
-      for (const record of lapsed) {
-        const appeal = toAppealRow(record);
-        const [caseRecord] = await this.db
-          .select()
-          .from(priorAuthCases)
-          .where(eq(priorAuthCases.caseId, appeal.caseId))
-          .limit(1);
-        if (caseRecord === undefined) throw new Error(`appeal ${appeal.appealId} has no case`);
-        const next = lapsedRow(appeal, toCaseRow(caseRecord), now);
-        // One conditional update per appeal: a concurrent sweep, or a write
-        // that forwarded it first, leaves nothing for this one to match.
-        const updated = await this.db
-          .update(priorAuthAppeals)
-          .set(actionColumns(next))
-          .where(
-            and(
-              eq(priorAuthAppeals.appealId, appeal.appealId),
-              eq(priorAuthAppeals.status, 'filed'),
-            ),
-          )
-          .returning({ appealId: priorAuthAppeals.appealId });
-        if (updated.length === 1) forwarded.push(forwardedOf(next));
+      for (const { appealId } of lapsed) {
+        // Each under its own lock: a concurrent sweep, or a write that
+        // forwarded it first, leaves it not filed, and this one passes over it.
+        const next = await this.db.transaction(async (tx): Promise<AppealRow | null> => {
+          const [record] = await tx
+            .select()
+            .from(priorAuthAppeals)
+            .where(eq(priorAuthAppeals.appealId, appealId))
+            .for('update');
+          if (record === undefined) return null;
+          const appeal = toAppealRow(record);
+          if (appeal.status !== 'filed') return null;
+          const [caseRecord] = await tx
+            .select()
+            .from(priorAuthCases)
+            .where(eq(priorAuthCases.caseId, appeal.caseId))
+            .limit(1);
+          if (caseRecord === undefined) throw new Error(`appeal ${appealId} has no case`);
+          const caseRow = toCaseRow(caseRecord);
+          const forward = lapsedRow(appeal, caseRow, now);
+          await options.beforeCommit?.(forward, caseRow);
+          await this.write(tx, forward);
+          return forward;
+        });
+        if (next !== null) forwarded.push(forwardedOf(next));
       }
       return forwarded;
     });
@@ -777,6 +785,7 @@ export class DrizzleAppealRepository implements AppealRepository {
   private async act(
     appealId: string,
     signed: SignedAction,
+    options: ActionOptions,
     apply: (
       tx: Transaction,
       appeal: AppealRow,
@@ -805,6 +814,7 @@ export class DrizzleAppealRepository implements AppealRepository {
         return { outcome: kind, row: appeal, caseRow };
       if (kind === 'lapse') {
         const next = lapsedRow(appeal, caseRow, signed.decidedAt);
+        await options.beforeCommit?.(next, caseRow);
         await this.write(tx, next);
         return { outcome: 'lapsed', row: next, caseRow };
       }

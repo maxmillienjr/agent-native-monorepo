@@ -61,7 +61,7 @@ export class InMemoryAppealRepository implements AppealRepository {
       }
 
       const filed = filedRow(structuredClone(validated), initialReviewerId);
-      await options.beforeCommit?.(structuredClone(validated), caseRow);
+      await options.beforeCommit?.(copy(filed), caseRow);
       this.rows.set(filed.appealId, filed);
       return { outcome: 'filed', row: copy(filed) };
     });
@@ -92,10 +92,10 @@ export class InMemoryAppealRepository implements AppealRepository {
     options: ReconsiderOptions = {},
   ): Promise<ActionResult> {
     const checked = checkReconsideration(reconsideration, signed, options);
-    return this.act(appealId, checked.signed, async (appeal, caseRow, writeCase) => {
+    return this.act(appealId, checked.signed, options, async (appeal, caseRow, writeCase) => {
       checkInvolvement(appeal, checked.signed.reviewerId, checked.record.initialReviewerId);
-      await options.beforeCommit?.(copy(appeal), caseRow);
       const next = reconsideredRow(appeal, caseRow, checked.record, checked.signed);
+      await options.beforeCommit?.(copy(next), caseRow);
       if (checked.record.kind === 'reversal' && options.response !== undefined) {
         const reversed = { ...caseRow, response: structuredClone(options.response) };
         writeCase(reversed);
@@ -112,14 +112,15 @@ export class InMemoryAppealRepository implements AppealRepository {
     options: ActionOptions = {},
   ): Promise<ActionResult> {
     const checked = checkDismissal(dismissal, signed);
-    return this.act(appealId, checked.signed, async (appeal, caseRow) => {
+    return this.act(appealId, checked.signed, options, async (appeal, caseRow) => {
       checkInvolvement(appeal, checked.signed.reviewerId);
-      await options.beforeCommit?.(copy(appeal), caseRow);
-      return { row: dismissedRow(appeal, checked.dismissal, checked.signed), caseRow };
+      const next = dismissedRow(appeal, checked.dismissal, checked.signed);
+      await options.beforeCommit?.(copy(next), caseRow);
+      return { row: next, caseRow };
     });
   }
 
-  async forwardLapsed(now: Date): Promise<ForwardedAppeal[]> {
+  async forwardLapsed(now: Date, options: ActionOptions = {}): Promise<ForwardedAppeal[]> {
     const candidates = [...this.rows.values()]
       .filter(
         (row) => row.status === 'filed' && row.reconsiderationDueBy.getTime() <= now.getTime(),
@@ -137,6 +138,7 @@ export class InMemoryAppealRepository implements AppealRepository {
         if (appeal === undefined || appeal.status !== 'filed') return;
         if (caseRow === undefined) throw new Error(`appeal ${appeal.appealId} has no case`);
         const next = lapsedRow(appeal, caseRow, now);
+        await options.beforeCommit?.(copy(next), caseRow);
         this.rows.set(next.appealId, next);
         forwarded.push(forwardedOf(next));
       });
@@ -147,6 +149,7 @@ export class InMemoryAppealRepository implements AppealRepository {
   private async act(
     appealId: string,
     signed: SignedAction,
+    options: ActionOptions,
     apply: (
       appeal: AppealRow,
       caseRow: CaseRow,
@@ -167,6 +170,7 @@ export class InMemoryAppealRepository implements AppealRepository {
       }
       if (kind === 'lapse') {
         const next = lapsedRow(appeal, caseRow, signed.decidedAt);
+        await options.beforeCommit?.(copy(next), caseRow);
         this.rows.set(next.appealId, next);
         return { outcome: 'lapsed', row: copy(next), caseRow };
       }
