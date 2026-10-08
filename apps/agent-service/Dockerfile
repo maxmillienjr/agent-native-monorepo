@@ -9,7 +9,7 @@ WORKDIR /app
 # workspace was not, so `yarn install` failed with "Workspace not found".
 # Pinned to the root devDependency; `--docker` is what splits json/ from full/.
 FROM base AS pruner
-RUN npm install -g turbo@2.10.11
+RUN npm install -g turbo@2.11.5
 COPY . .
 RUN turbo prune @repo/agent-service --docker
 
