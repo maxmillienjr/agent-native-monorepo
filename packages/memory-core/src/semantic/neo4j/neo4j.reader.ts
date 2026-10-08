@@ -17,6 +17,18 @@ export interface Neo4jReader {
   expandFromSeeds(seedEntityIds: string[], hopDepth: number): Promise<RetrievalCandidate[]>;
 }
 
+/**
+ * Facts reachable in the knowledge graph from a set of seed concepts, scored
+ * by hop distance alone.
+ *
+ * Not on any request path. ADR 0009 took the graph out of retrieval after
+ * P2-B's ablation, and `MemoryModule` no longer constructs this class. It is
+ * kept in `memory-core`, and not deleted with the fusion, for two callers: the
+ * ablation runner, which reproduces the measurement that decided ADR 0002, and
+ * P2-D, whose explanation measurement reads the graph. It returns facts from
+ * every session — there is no scope parameter — so P4-B's graph session filter
+ * (M1) is a precondition of wiring it into a request again, and P2-D owns it.
+ */
 export class CypherNeo4jReader implements Neo4jReader {
   constructor(private readonly driver: Driver) {}
 

@@ -25,7 +25,9 @@ export {
 // Semantic Memory — the embedding dimension every schema and DDL derives from
 export { EMBEDDING_DIMENSIONS, EMBEDDING_MODEL, l2Normalize } from './semantic/embedding.js';
 
-// Semantic Memory — Neo4j knowledge graph
+// Semantic Memory — Neo4j knowledge graph. `reflect` writes it; no request
+// reads it since ADR 0009, and the reader is kept for the P2-B ablation and
+// for P2-D's explanation measurement.
 export {
   EntityWriteSchema,
   RelationshipWriteSchema,
@@ -50,7 +52,7 @@ export {
 } from './semantic/pgvector/pgvector.reader.js';
 export { createPgvectorPool } from './semantic/pgvector/pgvector.client.js';
 
-// Retrieval Facade — hybrid Neo4j + pgvector with RRF merge
+// Retrieval Facade — session-scoped pgvector search; vector-only since ADR 0009
 export {
   RetrievalQuerySchema,
   RetrievalCandidateSchema,
@@ -58,8 +60,7 @@ export {
   type RetrievalQueryInput,
   type RetrievalCandidate,
   type RetrievalFacade,
-  HybridRetrievalFacade,
-  rrfMerge,
+  VectorRetrievalFacade,
 } from './semantic/retrieval-facade.js';
 
 // Inspection — reading back what one run persisted, and restoring a session to

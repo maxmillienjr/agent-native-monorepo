@@ -74,18 +74,14 @@ function deps(tool: (input: unknown) => Promise<unknown>): GraphDeps {
 
   return {
     retrieve: {
-      // Stands in for HybridRetrievalFacade, which opens exactly these two
-      // spans from PgPgvectorReader and CypherNeo4jReader.
+      // Stands in for VectorRetrievalFacade, which opens exactly this span,
+      // from PgPgvectorReader. It opens no `memory.neo4j.expand`: since ADR
+      // 0009 no request reads the graph.
       retrievalFacade: {
         retrieve: async (query) => {
           await withSpan(
             'memory.pgvector.search',
             { topK: query.topK ?? -1, 'gen_ai.operation.name': 'search_memory' },
-            null,
-          );
-          await withSpan(
-            'memory.neo4j.expand',
-            { hopDepth: query.hopDepth ?? -1, 'gen_ai.operation.name': 'search_memory' },
             null,
           );
           return [];
@@ -303,11 +299,10 @@ describe('trace shape', () => {
     expect(find(failed, 'invoke_agent agent-service')?.status.code).toBe(SpanStatusCode.ERROR);
   });
 
-  it('nests the retrieval store spans under agent.node.retrieve', () => {
+  it('nests the retrieval store span under agent.node.retrieve', () => {
     expect(parentOf(spans, find(spans, 'memory.pgvector.search'))?.name).toBe(
       'agent.node.retrieve',
     );
-    expect(parentOf(spans, find(spans, 'memory.neo4j.expand'))?.name).toBe('agent.node.retrieve');
   });
 
   it('nests the write spans under agent.node.reflect', () => {
@@ -317,10 +312,9 @@ describe('trace shape', () => {
     expect(parentOf(spans, find(spans, 'memory.pgvector.upsert'))?.name).toBe('agent.node.reflect');
   });
 
-  it('carries the request’s topK and hopDepth into the store spans', () => {
-    // RunRequestConfig validated these and retrieve then hardcoded 10 and 2.
+  it('carries the request’s topK into the store span', () => {
+    // RunRequestConfig validated it and retrieve then hardcoded 10.
     expect(find(spans, 'memory.pgvector.search')?.attributes['topK']).toBe(3);
-    expect(find(spans, 'memory.neo4j.expand')?.attributes['hopDepth']).toBe(1);
   });
 
   // Last, so it covers every span every test above produced.

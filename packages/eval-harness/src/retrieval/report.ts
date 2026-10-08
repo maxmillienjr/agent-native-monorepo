@@ -530,7 +530,7 @@ export function renderAblationMarkdown(report: AblationReport): string {
   );
   out.push('');
 
-  out.push('## Primary table — the deployed path, pre-registered labels');
+  out.push('## Primary table — the path deployed until ADR 0009, pre-registered labels');
   out.push('');
   out.push(
     'Overall, over all queries (unweighted). The per-stratum tables below are the ones to trust.',

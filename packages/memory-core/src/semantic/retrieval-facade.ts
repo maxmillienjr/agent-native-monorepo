@@ -1,13 +1,10 @@
 import { z } from 'zod';
 import { EMBEDDING_DIMENSIONS } from './embedding.js';
-import type { Neo4jReader } from './neo4j/neo4j.reader.js';
 import type { PgvectorReader } from './pgvector/pgvector.reader.js';
 
 export const RetrievalQuerySchema = z.object({
   queryEmbedding: z.array(z.number()).length(EMBEDDING_DIMENSIONS),
-  seedEntityIds: z.array(z.string()),
   topK: z.number().int().positive().default(10),
-  hopDepth: z.number().int().min(1).max(3).default(2),
   sessionId: z.string().uuid().optional(),
   /**
    * Opts out of session isolation. Retrieval is session-scoped by default;
@@ -17,16 +14,20 @@ export const RetrievalQuerySchema = z.object({
 });
 export type RetrievalQuery = z.infer<typeof RetrievalQuerySchema>;
 /**
- * What a caller passes. `topK`, `hopDepth` and `crossSession` carry defaults,
- * so they are required on the parsed value and optional on the way in.
+ * What a caller passes. `topK` and `crossSession` carry defaults, so they are
+ * required on the parsed value and optional on the way in.
  */
 export type RetrievalQueryInput = z.input<typeof RetrievalQuerySchema>;
 
 export const RetrievalCandidateSchema = z.object({
+  /**
+   * Which reader produced the candidate. A run only ever sees `pgvector`;
+   * `neo4j` is what `CypherNeo4jReader` returns, to the P2-B ablation.
+   */
   source: z.enum(['neo4j', 'pgvector']),
   score: z.number(),
   content: z.string(),
-  /** sha256 of `content`. The fusion key — see `rrfMerge`. */
+  /** sha256 of `content`, and the key both readers break a tied score on. */
   contentHash: z.string().optional(),
   entityId: z.string().optional(),
   episodeId: z.string().uuid().optional(),
@@ -38,75 +39,28 @@ export interface RetrievalFacade {
 }
 
 /**
- * Reciprocal Rank Fusion constant. Higher values produce more uniform
- * blending between result sources; 60 is the standard default from
- * the original RRF paper (Cormack et al., 2009).
- */
-const RRF_K = 60;
-
-/**
- * Merges two ranked lists using Reciprocal Rank Fusion.
+ * Semantic retrieval for a run: one session-scoped cosine search over
+ * `semantic_facts`, returned in the reader's order with the reader's scores.
  *
- * For each candidate, the RRF score is: 1 / (k + rank)
- * where rank is 1-indexed. Candidates appearing in both lists
- * receive the sum of their RRF scores from each list.
+ * Vector-only by decision, not by omission. This facade used to read the
+ * knowledge graph beside pgvector and fuse the two lists with Reciprocal Rank
+ * Fusion (ADR 0002). P2-B measured that against pre-registered labels: on the
+ * deployed path the graph list was empty for every query, so the fused list
+ * equalled the vector list, and with perfect seeds fusion lowered Recall@10 by
+ * 0.145. ADR 0009 took the graph out of the request path. `reflect` still
+ * writes it, for an explanation role that P2-D measures or removes.
  *
- * The key is `contentHash`, falling back to `content`. It used to be
- * `entityId ?? content`, and Neo4j candidates always carried an `entityId`
- * while pgvector candidates never did, so the two lists keyed differently and
- * no score was ever summed. Fixing the key alone would not have helped: the
- * graph returned `:Concept` nodes and pgvector returned facts, and two lists
- * drawn from disjoint universes cannot intersect under any key. Both readers
- * now return facts. The fallback is exact rather than defensive — a fact's
- * hash is sha256 of the same text `content` carries, so both spellings of the
- * key identify a fact identically.
+ * It stays a facade, rather than `retrieve` calling the reader, because it is
+ * where a query is validated and so where the session scope is decided.
  */
-export function rrfMerge(lists: RetrievalCandidate[][], topK: number): RetrievalCandidate[] {
-  const scoreMap = new Map<string, { candidate: RetrievalCandidate; rrfScore: number }>();
-
-  for (const list of lists) {
-    for (let rank = 0; rank < list.length; rank++) {
-      const candidate = list[rank]!;
-      const key = candidate.contentHash ?? candidate.content;
-      const rrfScore = 1 / (RRF_K + rank + 1);
-
-      const existing = scoreMap.get(key);
-      if (existing) {
-        existing.rrfScore += rrfScore;
-      } else {
-        scoreMap.set(key, { candidate, rrfScore });
-      }
-    }
-  }
-
-  return Array.from(scoreMap.values())
-    .sort((a, b) => b.rrfScore - a.rrfScore)
-    .slice(0, topK)
-    .map(({ candidate, rrfScore }) => ({
-      ...candidate,
-      score: rrfScore,
-    }));
-}
-
-export class HybridRetrievalFacade implements RetrievalFacade {
-  constructor(
-    private readonly pgvectorReader: PgvectorReader,
-    private readonly neo4jReader: Neo4jReader,
-  ) {}
+export class VectorRetrievalFacade implements RetrievalFacade {
+  constructor(private readonly pgvectorReader: PgvectorReader) {}
 
   async retrieve(query: RetrievalQueryInput): Promise<RetrievalCandidate[]> {
     const validated = RetrievalQuerySchema.parse(query);
-
-    // Run both retrievals in parallel
-    const [pgvectorResults, neo4jResults] = await Promise.all([
-      this.pgvectorReader.searchByCosine(validated.queryEmbedding, validated.topK * 2, {
-        sessionId: validated.sessionId,
-        crossSession: validated.crossSession,
-      }),
-      this.neo4jReader.expandFromSeeds(validated.seedEntityIds, validated.hopDepth),
-    ]);
-
-    // Merge via Reciprocal Rank Fusion
-    return rrfMerge([pgvectorResults, neo4jResults], validated.topK);
+    return this.pgvectorReader.searchByCosine(validated.queryEmbedding, validated.topK, {
+      sessionId: validated.sessionId,
+      crossSession: validated.crossSession,
+    });
   }
 }

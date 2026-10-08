@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { rrfMerge, type RetrievalCandidate } from '@repo/memory-core';
+import type { RetrievalCandidate } from '@repo/memory-core';
 import { buildRetrievalDataset, sha256Hex, type Corpus, type LabelledQuery } from './dataset.js';
+import { rrfMerge } from './rrf.js';
 import {
   applyDecisionRule,
   buildPool,

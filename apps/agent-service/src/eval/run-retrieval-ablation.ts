@@ -5,7 +5,6 @@ import {
   CypherNeo4jReader,
   EMBEDDING_DIMENSIONS,
   EMBEDDING_MODEL,
-  HybridRetrievalFacade,
   PgNeo4jSeedManager,
   PgPgvectorReader,
   createNeo4jClient,
@@ -25,6 +24,7 @@ import {
   renderAblationJson,
   renderAblationMarkdown,
   renderPoolFiles,
+  rrfMerge,
   textsToEmbed,
   type AdjudicationSummary,
   type GraphShape,
@@ -37,7 +37,6 @@ import {
 import { createLogger } from '@repo/telemetry';
 import { loadEnvFile } from '../load-env.js';
 import { createGeminiEmbedder } from '../agent/model/gemini-embedder.js';
-import { extractSeedEntityIds } from '../agent/nodes/retrieve.node.js';
 import { readMemoryConfig } from '../memory/memory.config.js';
 import { MODEL_HOST, gitHead, watchForModelRequests } from './cassette-deps.js';
 import {
@@ -47,10 +46,11 @@ import {
   replayEmbeddings,
   type EmbeddingExpectation,
 } from './embedding-file.js';
+import { extractSeedEntityIds } from './seed-linker.js';
 
 const logger = createLogger('eval-retrieval');
 
-/** The service's defaults (`retrieval-facade.ts`): what a request gets. */
+/** The defaults a request got when the ablation ran, before ADR 0009. */
 const TOP_K = 10;
 const HOP_DEPTH = 2;
 const HOP_DEPTHS = [1, 2, 3] as const;
@@ -65,11 +65,16 @@ const BOOTSTRAP = { resamples: 10_000, seed: 0x5eed } as const;
  * vectors come from the committed embedding file, and the runner fails if
  * anything reaches the model host anyway.
  *
- * Every condition is built from the classes the service constructs —
- * `PgPgvectorReader`, `CypherNeo4jReader`, `HybridRetrievalFacade` and the
- * exported seed linker — over stores reset and seeded through
- * `PgNeo4jSeedManager`, so the only thing that differs from a request is where
- * the query vector came from.
+ * Every condition is built from the classes the service constructed when the
+ * ablation ran — `PgPgvectorReader`, `CypherNeo4jReader`, the seed linker and
+ * the fused path (`fusedRetrieve`) — over stores reset and seeded through
+ * `PgNeo4jSeedManager`, so the only thing that differed from a request was
+ * where the query vector came from.
+ *
+ * It measures the design ADR 0009 retired. Retrieval is vector-only since
+ * then: `vector` is still what a request gets, and the `graph` and `hybrid`
+ * conditions are a historical measurement, kept runnable so the result that
+ * decided ADR 0002 can be reproduced from the committed dataset.
  */
 async function main(): Promise<void> {
   loadEnvFile(resolve(process.cwd(), '..', '..'));
@@ -319,6 +324,32 @@ interface Stores {
   readonly seeds: PgNeo4jSeedManager;
 }
 
+/**
+ * `HybridRetrievalFacade.retrieve` as the service ran it until ADR 0009: both
+ * readers in parallel, pgvector over-fetched at `2 × topK`, fused by
+ * `rrfMerge` and cut to `topK`. The facade left `memory-core` when retrieval
+ * became vector-only; it is reproduced here, its one remaining caller, so the
+ * `hybrid` conditions and their latencies measure what was deployed.
+ */
+async function fusedRetrieve(
+  stores: Pick<Stores, 'pgReader' | 'neo4jReader'>,
+  query: {
+    queryEmbedding: number[];
+    seedEntityIds: string[];
+    topK: number;
+    hopDepth: number;
+    sessionId: string;
+  },
+): Promise<RetrievalCandidate[]> {
+  const [vector, graph] = await Promise.all([
+    stores.pgReader.searchByCosine(query.queryEmbedding, query.topK * 2, {
+      sessionId: query.sessionId,
+    }),
+    stores.neo4jReader.expandFromSeeds(query.seedEntityIds, query.hopDepth),
+  ]);
+  return rrfMerge([vector, graph], query.topK);
+}
+
 async function timed<T>(f: () => Promise<T>): Promise<[T, number]> {
   const start = performance.now();
   const value = await f();
@@ -354,7 +385,6 @@ async function runConditions(
   stores: Stores,
 ): Promise<{ conditions: RawCondition[]; vectorPlan: string[]; linkerIds: Map<string, string[]> }> {
   const { pgReader, neo4jReader, seeds } = stores;
-  const facade = new HybridRetrievalFacade(pgReader, neo4jReader);
   const sessionId = dataset.sessionId;
 
   const linkerIds = new Map(
@@ -432,7 +462,7 @@ async function runConditions(
           const queryEmbedding = vectorFor(query.text);
           const seedEntityIds = seedMap.get(query.id) ?? [];
 
-          // The two lists the facade fuses, read on their own so provenance
+          // The two lists `fusedRetrieve` fuses, read on their own so provenance
           // never depends on `source`, which rrfMerge keeps from whichever
           // list saw a fact first.
           const vector: RetrievalCandidate[] = await pgReader.searchByCosine(
@@ -446,7 +476,7 @@ async function runConditions(
             neo4jReader.expandFromSeeds(seedEntityIds, hop),
           );
           const [hybrid, hybridMs] = await timed(() =>
-            facade.retrieve({
+            fusedRetrieve(stores, {
               queryEmbedding,
               seedEntityIds,
               topK: TOP_K,

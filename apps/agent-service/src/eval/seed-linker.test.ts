@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { extractSeedEntityIds } from './retrieve.node.js';
+import { extractSeedEntityIds } from './seed-linker.js';
 
 const user = (content: string) => [{ role: 'user' as const, content }];
 

@@ -21,6 +21,5 @@ export {
   type RetrievalQuery,
   type RetrievalCandidate,
   type RetrievalFacade,
-  HybridRetrievalFacade,
-  rrfMerge,
+  VectorRetrievalFacade,
 } from './retrieval-facade.js';

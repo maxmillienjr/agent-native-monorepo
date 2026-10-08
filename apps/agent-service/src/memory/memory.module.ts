@@ -11,10 +11,9 @@ import {
   ensureSemanticConstraints,
   DrizzleEpisodicRepository,
   CypherNeo4jWriter,
-  CypherNeo4jReader,
   PgPgvectorWriter,
   PgPgvectorReader,
-  HybridRetrievalFacade,
+  VectorRetrievalFacade,
 } from '@repo/memory-core';
 import { readMemoryConfig, type MemoryConfig } from './memory.config.js';
 import {
@@ -99,12 +98,12 @@ const logger = createLogger('memory-module');
       useFactory: (pool: pg.Pool | null) => (pool ? new PgPgvectorWriter(pool) : null),
     },
     {
+      // Vector-only (ADR 0009). The driver is still constructed above, because
+      // `reflect` writes the graph; nothing on a request reads it.
       provide: RETRIEVAL_FACADE,
-      inject: [PG_POOL, NEO4J_DRIVER],
-      useFactory: (pool: pg.Pool | null, driver: Driver | null) =>
-        pool && driver
-          ? new HybridRetrievalFacade(new PgPgvectorReader(pool), new CypherNeo4jReader(driver))
-          : null,
+      inject: [PG_POOL],
+      useFactory: (pool: pg.Pool | null) =>
+        pool ? new VectorRetrievalFacade(new PgPgvectorReader(pool)) : null,
     },
     {
       provide: CHECKPOINTER,

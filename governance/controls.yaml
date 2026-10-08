@@ -293,7 +293,7 @@ controls:
     evidence:
       - kind: test
         file: apps/agent-service/src/agent/graph/spans.test.ts
-        name: nests the retrieval store spans under agent.node.retrieve
+        name: nests the retrieval store span under agent.node.retrieve
         tier: unit
       - kind: test
         file: apps/agent-service/src/agent/graph/spans.test.ts

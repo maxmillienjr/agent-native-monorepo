@@ -5,7 +5,7 @@ import { CypherNeo4jWriter } from '../src/semantic/neo4j/neo4j.writer.js';
 import { CypherNeo4jReader } from '../src/semantic/neo4j/neo4j.reader.js';
 import { PgPgvectorWriter } from '../src/semantic/pgvector/pgvector.writer.js';
 import { PgPgvectorReader } from '../src/semantic/pgvector/pgvector.reader.js';
-import { HybridRetrievalFacade } from '../src/semantic/retrieval-facade.js';
+import { VectorRetrievalFacade } from '../src/semantic/retrieval-facade.js';
 import { EMBEDDING_DIMENSIONS } from '../src/semantic/embedding.js';
 import { runMigrations } from '../src/migrate.js';
 import { skipUnlessIntegrationEnv } from './integration-env.js';
@@ -16,15 +16,18 @@ const NEO4J_USER = process.env['NEO4J_USER'] ?? 'neo4j';
 const NEO4J_PASSWORD = process.env['NEO4J_PASSWORD'] ?? 'password';
 
 const SKIP = skipUnlessIntegrationEnv(
-  'HybridRetrievalFacade (integration)',
+  'VectorRetrievalFacade (integration)',
   'DATABASE_URL',
   'NEO4J_URI',
 );
 
-describe.skipIf(SKIP)('HybridRetrievalFacade (integration)', () => {
+// Neo4j is seeded here although the facade never reads it. ADR 0009 took the
+// graph out of retrieval while `reflect` keeps writing it, so the property
+// worth holding is that a fact the graph can reach does not reach a run.
+describe.skipIf(SKIP)('VectorRetrievalFacade (integration)', () => {
   let neo4jDriver: Driver;
   let pgPool: pg.Pool;
-  let facade: HybridRetrievalFacade;
+  let facade: VectorRetrievalFacade;
   let neo4jReader: CypherNeo4jReader;
   let pgReader: PgPgvectorReader;
 
@@ -104,10 +107,9 @@ describe.skipIf(SKIP)('HybridRetrievalFacade (integration)', () => {
       sessionId: '550e8400-e29b-41d4-a716-4466554400bb',
     });
 
-    // Seed the same facts into Neo4j, keyed on the hashes pgvector used. This
-    // is what gives the two retrievers one candidate universe: the graph
-    // traversal reaches a :Fact, not a :Concept, so a fact both paths find is
-    // one candidate and RRF sums its ranks.
+    // Write facts into Neo4j as `reflect` does, keyed on the hashes pgvector
+    // uses (ADR 0004): one the vector index also holds, and one only the
+    // graph holds, reachable from `langgraph` in one hop.
     await neo4jWriter.mergeFact({
       contentHash: 'sha256-facade-test-1',
       text: 'LangGraph enables stateful agent workflows with memory.',
@@ -118,13 +120,12 @@ describe.skipIf(SKIP)('HybridRetrievalFacade (integration)', () => {
       contentHash: 'sha256-facade-graph-only',
       text: 'Graph traversal reaches facts no vector search returned.',
       episodeId: '550e8400-e29b-41d4-a716-446655440000',
-      entityIds: ['memory'],
+      entityIds: ['langgraph'],
     });
 
-    // Build the facade
     neo4jReader = new CypherNeo4jReader(neo4jDriver);
     pgReader = new PgPgvectorReader(pgPool);
-    facade = new HybridRetrievalFacade(pgReader, neo4jReader);
+    facade = new VectorRetrievalFacade(pgReader);
   });
 
   afterAll(async () => {
@@ -132,66 +133,39 @@ describe.skipIf(SKIP)('HybridRetrievalFacade (integration)', () => {
     await pgPool.end();
   });
 
-  it('returns candidates from both Neo4j and pgvector', async () => {
-    const queryEmbedding = new Array(EMBEDDING_DIMENSIONS)
-      .fill(0)
-      .map((_, i) => Math.sin((i + 1) * 0.01));
+  const sessionA = '550e8400-e29b-41d4-a716-446655440001';
+  const queryEmbedding = new Array(EMBEDDING_DIMENSIONS)
+    .fill(0)
+    .map((_, i) => Math.sin((i + 1) * 0.01));
 
-    const results = await facade.retrieve({
-      queryEmbedding,
-      seedEntityIds: ['langgraph'],
-      topK: 10,
-      hopDepth: 2,
-    });
+  it('returns the vector reader’s list for the session, and nothing from the graph', async () => {
+    const results = await facade.retrieve({ queryEmbedding, topK: 10, sessionId: sessionA });
+    const direct = await pgReader.searchByCosine(queryEmbedding, 10, { sessionId: sessionA });
 
     expect(results.length).toBeGreaterThan(0);
-
-    const sources = new Set(results.map((r) => r.source));
-    // Both sources should contribute candidates
-    expect(sources.has('pgvector')).toBe(true);
-    expect(sources.has('neo4j')).toBe(true);
+    expect(results).toEqual(direct);
+    expect(new Set(results.map((r) => r.source))).toEqual(new Set(['pgvector']));
   });
 
-  it('sums the reciprocal ranks of a fact both retrievers found', async () => {
-    const queryEmbedding = new Array(EMBEDDING_DIMENSIONS)
-      .fill(0)
-      .map((_, i) => Math.sin((i + 1) * 0.01));
-    const fused = 'sha256-facade-test-1';
-
-    // Take the ranks from the readers themselves rather than hardcoding them,
-    // so the assertion is about fusion and not about seed ordering.
-    const [pgList, neoList] = await Promise.all([
-      pgReader.searchByCosine(queryEmbedding, 20),
-      neo4jReader.expandFromSeeds(['langgraph'], 2),
-    ]);
-    const pgRank = pgList.findIndex((c) => c.contentHash === fused);
-    const neoRank = neoList.findIndex((c) => c.contentHash === fused);
-
-    expect(pgRank).toBeGreaterThanOrEqual(0);
-    expect(neoRank).toBeGreaterThanOrEqual(0);
+  it('does not return a fact only the graph holds, though the graph reaches it', async () => {
+    // The graph still holds and reaches the fact, so its absence below is the
+    // facade not reading the graph, and not a seed that failed to land.
+    const reachable = await neo4jReader.expandFromSeeds(['langgraph'], 1);
+    expect(reachable.map((c) => c.contentHash)).toContain('sha256-facade-graph-only');
 
     const results = await facade.retrieve({
       queryEmbedding,
-      seedEntityIds: ['langgraph'],
       topK: 10,
-      hopDepth: 2,
+      sessionId: sessionA,
+      crossSession: true,
     });
-
-    const matches = results.filter((r) => r.contentHash === fused);
-    expect(matches).toHaveLength(1);
-    expect(matches[0]!.score).toBeCloseTo(1 / (60 + pgRank + 1) + 1 / (60 + neoRank + 1), 12);
+    expect(results.map((r) => r.contentHash)).not.toContain('sha256-facade-graph-only');
   });
 
   describe('session scoping', () => {
-    const sessionA = '550e8400-e29b-41d4-a716-446655440001';
-    const queryEmbedding = new Array(EMBEDDING_DIMENSIONS)
-      .fill(0)
-      .map((_, i) => Math.sin((i + 1) * 0.01));
-
     it('does not return a fact written in another session', async () => {
       const results = await facade.retrieve({
         queryEmbedding,
-        seedEntityIds: ['langgraph'],
         sessionId: sessionA,
       });
 
@@ -201,7 +175,6 @@ describe.skipIf(SKIP)('HybridRetrievalFacade (integration)', () => {
     it('returns it when crossSession is set', async () => {
       const results = await facade.retrieve({
         queryEmbedding,
-        seedEntityIds: ['langgraph'],
         sessionId: sessionA,
         crossSession: true,
       });
@@ -210,17 +183,8 @@ describe.skipIf(SKIP)('HybridRetrievalFacade (integration)', () => {
     });
   });
 
-  it('returns RRF scores in monotonically decreasing order', async () => {
-    const queryEmbedding = new Array(EMBEDDING_DIMENSIONS)
-      .fill(0)
-      .map((_, i) => Math.sin((i + 1) * 0.01));
-
-    const results = await facade.retrieve({
-      queryEmbedding,
-      seedEntityIds: ['langgraph'],
-      topK: 10,
-      hopDepth: 2,
-    });
+  it('returns cosine scores in monotonically decreasing order', async () => {
+    const results = await facade.retrieve({ queryEmbedding, topK: 10, sessionId: sessionA });
 
     for (let i = 1; i < results.length; i++) {
       expect(results[i]!.score).toBeLessThanOrEqual(results[i - 1]!.score);

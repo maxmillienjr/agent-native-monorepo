@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
-import { rrfMerge, type RetrievalCandidate } from '@repo/memory-core';
+import type { RetrievalCandidate } from '@repo/memory-core';
 import { mulberry32, type PairedBootstrapResult } from '../stats/paired-bootstrap.js';
+import { rrfMerge } from './rrf.js';
 import {
   adjacency,
   STRATA,

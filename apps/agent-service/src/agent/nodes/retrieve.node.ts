@@ -2,33 +2,21 @@ import { withNodeSpan } from '@repo/telemetry';
 import type { RetrievalFacade } from '@repo/memory-core';
 import type { AgentState } from '../graph/state.js';
 
-/**
- * The seed linker: the graph retriever's only way in from a query.
- *
- * It keeps capitalized words longer than two characters, lowercases them and
- * deletes every character outside `[a-z0-9-]`. It does not match concepts:
- * each word becomes a candidate id on its own, so `Prior Authorization` is
- * `["prior", "authorization"]`, and an id containing `_` — which the live
- * extraction writes for most entities — can never be produced.
- *
- * Exported for P2-B's ablation, which measures this function as deployed. A
- * copy there would measure a linker nobody runs.
- */
-export function extractSeedEntityIds(messages: AgentState['messages']): string[] {
-  const lastUserMessage = [...messages].reverse().find((m) => m.role === 'user');
-  if (!lastUserMessage) return [];
-
-  const words = lastUserMessage.content.split(/\s+/);
-  return words
-    .filter((w) => w.length > 2 && /^[A-Z]/.test(w))
-    .map((w) => w.toLowerCase().replace(/[^a-z0-9-]/g, ''));
-}
-
 export interface RetrieveNodeDeps {
   retrievalFacade: RetrievalFacade;
   embedQuery: (text: string) => Promise<number[]>;
 }
 
+/**
+ * Semantic recall: the last user turn, embedded and searched in the
+ * requesting session's facts.
+ *
+ * Vector-only since ADR 0009. The node used to derive graph seed ids from the
+ * query's capitalized words and pass them to a facade that fused the graph's
+ * list with the vector list. P2-B measured that and it did not help, so the
+ * seed linker left the request path; it is kept, frozen, only where the
+ * ablation reproduces the fused path (`eval/seed-linker.ts`).
+ */
 export async function retrieveNode(
   state: AgentState,
   deps: RetrieveNodeDeps,
@@ -43,13 +31,10 @@ export async function retrieveNode(
     }
 
     const queryEmbedding = await deps.embedQuery(lastUserMessage.content);
-    const seedEntityIds = extractSeedEntityIds(state.messages);
 
     const candidates = await deps.retrievalFacade.retrieve({
       queryEmbedding,
-      seedEntityIds,
       topK: state.topK,
-      hopDepth: state.hopDepth,
       sessionId: state.sessionId,
     });
 

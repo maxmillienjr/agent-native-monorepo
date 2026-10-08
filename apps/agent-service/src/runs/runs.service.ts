@@ -467,11 +467,12 @@ const stubRetrievalFacade: RetrievalFacade = {
       score: 0.85,
       content: 'LangGraph enables stateful agent workflows.',
     },
+    // Both from pgvector, because a configured run's are: retrieval is
+    // vector-only since ADR 0009.
     {
-      source: 'neo4j',
+      source: 'pgvector',
       score: 0.78,
       content: 'Agents use a Three-Brain memory architecture.',
-      entityId: 'memory',
     },
   ],
 };

@@ -126,6 +126,9 @@ export { renderMarkdownSummary } from './reporters/summary.js';
 // Retrieval metrics — a ranked list per query, not a trial, so not `Grader`s.
 export { recallAtK, reciprocalRank, ndcgAtK } from './retrieval/metrics.js';
 
+// The fusion the service ran until ADR 0009; the ablation is its only caller.
+export { rrfMerge } from './retrieval/rrf.js';
+
 // The retrieval-ablation dataset: corpus, labelled queries, and the checks
 // that hold each stratum to its declared construction.
 export {
