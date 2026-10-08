@@ -1,5 +1,6 @@
 import { GENAI_SEMCONV } from '@repo/telemetry/genai';
 import { assertAxesSatisfy, skippedTasks } from './axes.js';
+import { checkBudgets, trialUsage } from './budgets.js';
 import { ModelGrader } from './graders/model.js';
 import { emitEvaluationResults } from './telemetry.js';
 import type {
@@ -8,12 +9,14 @@ import type {
   Grader,
   GraderResult,
   ModelIds,
+  PriceTable,
   ReplayProvenance,
   Suite,
   SuiteReport,
   Task,
   TaskReport,
   Trial,
+  UsageReport,
 } from './types.js';
 
 export interface EvalHarnessOptions<TOutcome> {
@@ -36,6 +39,11 @@ export interface EvalHarnessOptions<TOutcome> {
    * the clients or to read the cassette headers.
    */
   readonly models?: ModelIds;
+  /**
+   * List prices for the cost column. The package knows no provider, so the
+   * caller supplies them; without a table every model is reported unpriced.
+   */
+  readonly prices?: PriceTable;
 }
 
 async function runGraders<TOutcome>(
@@ -141,6 +149,10 @@ export class EvalHarness<TOutcome> {
         const transcript = await agent.run(task);
         const outcome = await agent.captureOutcome(task, transcript);
         const results = await runGraders(task.graders, { transcript, outcome });
+        // After the graders and apart from them: a trial that did the task and
+        // spent too much is a breach, not a failure, and `passed` must not
+        // move — P1-D compares pass rates and would read cost as quality.
+        const budgets = checkBudgets(transcript, task.budgets, axes);
 
         const trial: Trial<TOutcome> = {
           taskId: task.id,
@@ -149,6 +161,8 @@ export class EvalHarness<TOutcome> {
           outcome,
           results,
           passed: results.every((result) => result.score.label === 'pass'),
+          budgets,
+          withinBudget: budgets.every((budget) => budget.label === 'within'),
         };
 
         // Before `onTrial`, so a caller counting what reached its exporter
@@ -184,8 +198,43 @@ export class EvalHarness<TOutcome> {
       skipped,
       uncalibratedGraders: uncalibrated(running),
       genAiSemconvCommit: GENAI_SEMCONV.commit,
+      budgetBreaches: allTrials
+        .flatMap((trial) => trial.budgets)
+        .filter((budget) => budget.label !== 'within').length,
+      usage: usageReport(allTrials, axes, this.options.prices),
     };
   }
+}
+
+/** The usage section: one row per trial, and why there is none on the stub axis. */
+function usageReport<TOutcome>(
+  trials: readonly Trial<TOutcome>[],
+  axes: Axes,
+  prices: PriceTable | undefined,
+): UsageReport {
+  if (axes.model === 'stub') {
+    return {
+      checked: false,
+      reason:
+        'budgets not checked on model=stub: the canned model set opens no inference span, ' +
+        'so there is no usage to read',
+      trials: [],
+    };
+  }
+  return {
+    checked: true,
+    ...(prices === undefined
+      ? {}
+      : {
+          prices: {
+            source: prices.source,
+            pageLastUpdated: prices.pageLastUpdated,
+            readOn: prices.readOn,
+            tier: prices.tier,
+          },
+        }),
+    trials: trials.map((trial) => trialUsage(trial.taskId, trial.index, trial.transcript, prices)),
+  };
 }
 
 /**

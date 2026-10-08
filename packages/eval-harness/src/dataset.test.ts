@@ -124,6 +124,48 @@ describe('the shipped dataset', () => {
     ).toThrow();
   });
 
+  it('accepts budgets beside requires, and carries them onto the task', () => {
+    const spec = TaskSpecSchema.parse({
+      ...minimalSpec,
+      requires: { model: ['live', 'replay'] },
+      budgets: { inputTokens: 3000, outputTokens: 2000, modelCalls: 5 },
+    });
+
+    expect(taskFromSpec(spec).budgets).toEqual({
+      inputTokens: 3000,
+      outputTokens: 2000,
+      modelCalls: 5,
+    });
+    // A task with none has none, rather than an empty object read as "checked".
+    expect(taskFromSpec(TaskSpecSchema.parse(minimalSpec)).budgets).toBeUndefined();
+  });
+
+  it('rejects a latency budget, naming the key and saying why', () => {
+    const result = TaskSpecSchema.safeParse({
+      ...minimalSpec,
+      budgets: { modelCalls: 5, latencyMs: 30_000 },
+    });
+
+    expect(result.success).toBe(false);
+    const message = result.error?.issues.map((issue) => issue.message).join('\n') ?? '';
+    expect(message).toContain('`budgets.latencyMs` is not a budget');
+    expect(message).toContain('never asserted');
+    expect(message).toContain('P1-F');
+  });
+
+  it('rejects any other unknown budget key by name, and a ceiling that is not a positive integer', () => {
+    const unknown = TaskSpecSchema.safeParse({
+      ...minimalSpec,
+      budgets: { toolCalls: 3 },
+    });
+    expect(unknown.error?.issues[0]?.message).toBe(
+      '`budgets.toolCalls` is not a budget; the budgets are `inputTokens`, `outputTokens`, `modelCalls`',
+    );
+
+    expect(() => TaskSpecSchema.parse({ ...minimalSpec, budgets: { modelCalls: 0 } })).toThrow();
+    expect(() => TaskSpecSchema.parse({ ...minimalSpec, budgets: { inputTokens: 1.5 } })).toThrow();
+  });
+
   it('builds no grader for an assertion the task does not declare', () => {
     const task = taskFromSpec({
       id: 'minimal',

@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
 import {
   AxisRequirementsSchema,
+  BudgetsSchema,
   OutcomeSchema,
   TaskSeedsSchema,
   type Grader,
@@ -120,6 +121,14 @@ export const TaskSpecSchema = z.object({
    * reads the declaration next to the assertion it qualifies.
    */
   requires: AxisRequirementsSchema.optional(),
+  /**
+   * Per-trial ceilings on input tokens, output tokens and model calls (P1-F).
+   *
+   * Beside `requires` for the same reason: it describes the scenario, and a
+   * change in what the scenario costs is a reviewed diff to the file next to
+   * the assertions it rides with. Checked beside the graders, never among them.
+   */
+  budgets: BudgetsSchema.optional(),
   expectedSeeds: TaskSeedsSchema.default({}),
   expectedOutcome: OutcomeSchema,
   assertions: z.object({
@@ -181,6 +190,7 @@ export function taskFromSpec(spec: TaskSpec): Task<MemoryOutcome> {
     seeds: spec.expectedSeeds,
     graders: buildGraders(spec),
     ...(spec.requires === undefined ? {} : { requires: spec.requires }),
+    ...(spec.budgets === undefined ? {} : { budgets: spec.budgets }),
   };
 }
 

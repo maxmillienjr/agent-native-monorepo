@@ -88,6 +88,88 @@ export const AxisRequirementsSchema: z.ZodType<AxisRequirements> = z.object({
   memory: axisRequirement(MemoryAxisSchema).optional(),
 });
 
+// --- Budgets ---------------------------------------------------------------
+
+/** The three per-trial ceilings a task file may declare (P1-F). */
+export const BUDGET_NAMES = ['inputTokens', 'outputTokens', 'modelCalls'] as const;
+export type BudgetName = (typeof BUDGET_NAMES)[number];
+
+/**
+ * Keys a reader might expect in `budgets` and will not find, with the reason.
+ * Rejected rather than ignored: a budget that is silently dropped asserts
+ * nothing while reading as if it did.
+ */
+const REJECTED_BUDGETS: Readonly<Record<string, string>> = {
+  latencyMs:
+    'latency is reported on the live axis and never asserted. Identical requests in one ' +
+    'recording took 1.1 s and 23.1 s, so a ceiling loose enough to hold catches only a hang, ' +
+    'which the job timeout already catches; on replay a duration measures the cassette read. ' +
+    'See docs/prd/P1-F-cost-and-step-budgets.md, "Latency, rejected as an assertion"',
+  costUsd:
+    'dollars are not asserted: with one model at one price a dollar ceiling is a combination ' +
+    'of the two token ceilings, and on the free tier it would pass whatever the run did',
+};
+
+function unknownBudgetMessage(keys: readonly string[]): string {
+  return keys
+    .map((key) =>
+      key in REJECTED_BUDGETS
+        ? `\`budgets.${key}\` is not a budget: ${REJECTED_BUDGETS[key]}`
+        : `\`budgets.${key}\` is not a budget; the budgets are ${BUDGET_NAMES.map((name) => `\`${name}\``).join(', ')}`,
+    )
+    .join('; ');
+}
+
+const ceiling = z.number().int().positive();
+
+/**
+ * The `budgets` block of a task file: per-trial ceilings, each optional.
+ *
+ * Strict, with a message naming the key, so `latencyMs` — the budget a reader
+ * is most likely to reach for — is refused with the reason rather than read as
+ * no budget at all.
+ */
+export const BudgetsSchema = z
+  .object(
+    {
+      /** Σ `gen_ai.usage.input_tokens` over the trial's `generate_content` spans. */
+      inputTokens: ceiling.optional(),
+      /** Σ `gen_ai.usage.output_tokens`: billed output, thinking included. */
+      outputTokens: ceiling.optional(),
+      /** The trial's `generate_content` spans, errored ones included. */
+      modelCalls: ceiling.optional(),
+    },
+    {
+      errorMap: (issue, ctx) =>
+        issue.code === 'unrecognized_keys'
+          ? { message: unknownBudgetMessage(issue.keys) }
+          : { message: ctx.defaultError },
+    },
+  )
+  .strict();
+export type Budgets = z.infer<typeof BudgetsSchema>;
+
+/**
+ * One budget, checked against one trial.
+ *
+ * `unmeasurable` counts as a breach. Absent is not zero: a trial whose spans do
+ * not carry what a budget sums cannot be shown to be within it.
+ */
+export interface BudgetResult {
+  readonly budget: BudgetName;
+  readonly limit: number;
+  /** `null` when the transcript cannot support the figure; see `label`. */
+  readonly actual: number | null;
+  readonly label: 'within' | 'breached' | 'unmeasurable';
+  /**
+   * `recorded` when every inference span carries `agent_native.replayed`, so
+   * the figure is the cassette's; `measured` when none does. Absent when the
+   * spans settle neither — none at all, or a mix.
+   */
+  readonly source?: 'measured' | 'recorded';
+  readonly explanation: string;
+}
+
 // --- Transcript ------------------------------------------------------------
 
 export { MessageSchema, OutcomeSchema } from '@repo/shared-types';
@@ -280,6 +362,11 @@ export interface Task<TOutcome = Outcome> {
    * presented as a reliability measurement.
    */
   readonly trialsPerTask?: number;
+  /**
+   * Per-trial ceilings on what the trial may use, checked beside the graders
+   * and never among them (P1-F): a trial over budget still `passed`.
+   */
+  readonly budgets?: Budgets;
 }
 
 export interface Suite<TOutcome = Outcome> {
@@ -303,8 +390,15 @@ export interface Trial<TOutcome = Outcome> {
   readonly transcript: Transcript;
   readonly outcome: TOutcome;
   readonly results: readonly GraderResult[];
-  /** A trial passes when every grader on the task passed. */
+  /** A trial passes when every grader on the task passed. Budgets play no part. */
   readonly passed: boolean;
+  /**
+   * The task's budgets, checked against this trial's spans. Empty when the task
+   * declares none, and on `model=stub`, where there are no inference spans.
+   */
+  readonly budgets: readonly BudgetResult[];
+  /** Every budget `within`. Independent of `passed`. */
+  readonly withinBudget: boolean;
 }
 
 export interface TaskReport<TOutcome = Outcome> {
@@ -404,6 +498,87 @@ export interface SuiteReport<TOutcome = Outcome> {
    * it, and one field now is cheaper than migrating stored reports later.
    */
   readonly genAiSemconvCommit: string;
+  /**
+   * Budget results that are not `within`, over every trial. Beside `passRate`
+   * and not inside it: a correct answer that cost too much is a breach, not a
+   * failed trial, so P1-D's pass-rate comparison stays about quality.
+   */
+  readonly budgetBreaches: number;
+  /** What each trial used and what it would have cost at list price. */
+  readonly usage: UsageReport;
+}
+
+// --- Usage and cost ----------------------------------------------------------
+
+/**
+ * List prices for the models a run calls, with where they came from.
+ *
+ * The harness takes this as data because it knows no provider; the service
+ * supplies its own. Nothing asserts a dollar figure, so a stale table can make
+ * the cost column wrong and cannot turn a run red.
+ */
+export interface PriceTable {
+  /** The page the prices were copied from. */
+  readonly source: string;
+  /** The date the page itself says it was last updated. */
+  readonly pageLastUpdated: string;
+  /** The date someone read it. */
+  readonly readOn: string;
+  /** Which of the page's tiers these are. */
+  readonly tier: string;
+  /** Keyed by `gen_ai.request.model`. */
+  readonly models: Readonly<
+    Record<string, { readonly inputUsdPerMTok: number; readonly outputUsdPerMTok: number }>
+  >;
+}
+
+/** A list-price equivalent. Never zero for a model the table does not price. */
+export interface CostEstimate {
+  /** Over the priced models only; `null` when nothing could be priced. */
+  readonly usd: number | null;
+  /** Chat models with calls in the trial and no row in the table. */
+  readonly unpricedModels: readonly string[];
+  /** The embedding API reports no usage, so these calls cannot be priced. */
+  readonly unpricedEmbeddingCalls: number;
+}
+
+/** What one trial used, read from its spans. */
+export interface TrialUsage {
+  readonly taskId: string;
+  readonly index: number;
+  /**
+   * `recorded` on replay, `measured` live, `mixed` when the spans disagree,
+   * `none` when the trial has no inference span to read.
+   */
+  readonly source: 'measured' | 'recorded' | 'mixed' | 'none';
+  /** `generate_content` spans, errored ones included. */
+  readonly modelCalls: number;
+  readonly erroredModelCalls: number;
+  /** `null` when a successful call's span carries no input count. */
+  readonly inputTokens: number | null;
+  /** Billed output, thinking included. `null` as above. */
+  readonly outputTokens: number | null;
+  /** The thinking share of `outputTokens`, over the spans that report one. */
+  readonly reasoningTokens: number;
+  readonly embeddingCalls: number;
+  /**
+   * Summed duration of the trial's model and embedding calls, on the live axis
+   * only. `null` on replay, where a span's duration is how fast a cassette was
+   * read. One sample, never asserted.
+   */
+  readonly modelLatencyMs: number | null;
+  readonly cost: CostEstimate;
+}
+
+/** The usage section of a report. */
+export interface UsageReport {
+  /** `false` on `model=stub`, which has no inference spans to check. */
+  readonly checked: boolean;
+  /** Why nothing was checked, when `checked` is false. */
+  readonly reason?: string;
+  /** The table the costs came from, without its rows. Absent when none was given. */
+  readonly prices?: Omit<PriceTable, 'models'>;
+  readonly trials: readonly TrialUsage[];
 }
 
 // --- A run that did not complete --------------------------------------------

@@ -31,6 +31,8 @@ function trial(index: number, passed: boolean): Trial {
       },
     ],
     passed,
+    budgets: [],
+    withinBudget: true,
   };
 }
 
@@ -56,6 +58,8 @@ const report: SuiteReport = {
   skipped: [],
   uncalibratedGraders: ['answer_is_grounded'],
   genAiSemconvCommit: 'e57c543b4889619eb2a05702471937db5119165d',
+  budgetBreaches: 0,
+  usage: { checked: true, trials: [] },
 };
 
 /** The stub-axis shape: one task ran, one was not measurable here. */

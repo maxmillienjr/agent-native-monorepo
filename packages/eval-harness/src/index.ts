@@ -4,6 +4,8 @@
 // ablation) are all consumers of these.
 export {
   AxisRequirementsSchema,
+  BUDGET_NAMES,
+  BudgetsSchema,
   MemoryAxisSchema,
   MessageSchema,
   ModelAxisSchema,
@@ -16,7 +18,11 @@ export {
   type Axes,
   type AxisRequirement,
   type AxisRequirements,
+  type BudgetName,
+  type BudgetResult,
+  type Budgets,
   type CompletedTrial,
+  type CostEstimate,
   type EvalAbort,
   type Grader,
   type GraderKind,
@@ -26,6 +32,7 @@ export {
   type ModelAxis,
   type Outcome,
   type ModelIds,
+  type PriceTable,
   type ReplayProvenance,
   type Score,
   type SkippedTask,
@@ -38,6 +45,8 @@ export {
   type ToolCall,
   type Transcript,
   type Trial,
+  type TrialUsage,
+  type UsageReport,
 } from './types.js';
 
 // The environment state a grader for this system asserts against.
@@ -110,6 +119,9 @@ export {
 
 // The vector a seeded fact is stored with.
 export { fixtureEmbedding } from './fixture-embedding.js';
+
+// Budgets beside the pass rate, and what a trial used (P1-F).
+export { checkBudgets, estimateCost, trialUsage } from './budgets.js';
 
 // Runner.
 export { EvalHarness, trialsFor, type EvalHarnessOptions } from './harness.js';

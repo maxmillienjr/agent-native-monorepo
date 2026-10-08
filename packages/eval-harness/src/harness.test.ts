@@ -5,11 +5,11 @@ import {
   LoggerProvider,
   SimpleLogRecordProcessor,
 } from '@opentelemetry/sdk-logs';
-import { GENAI_SEMCONV } from '@repo/telemetry/genai';
+import { GEN_AI, GEN_AI_OPERATION, GENAI_SEMCONV } from '@repo/telemetry/genai';
 import { EvalHarness } from './harness.js';
 import { AxisRequirementError } from './axes.js';
 import { ModelGrader } from './graders/model.js';
-import type { AgentHarness, Axes, Grader, Task, Transcript } from './types.js';
+import type { AgentHarness, Axes, Grader, SpanRecord, Task, Transcript } from './types.js';
 
 interface FakeOutcome {
   readonly wrote: boolean;
@@ -319,6 +319,76 @@ describe('the per-task trial cap', () => {
     }).run();
 
     expect(report.tasks[0]!.trialsPerTask).toBe(2);
+  });
+});
+
+describe('budgets', () => {
+  /** A trial that made two model calls, 600 input tokens and 900 output between them. */
+  function spentAgent(axes: Axes): AgentHarness<FakeOutcome> {
+    const call = (input: number, output: number, spanId: string): SpanRecord => ({
+      name: 'generate_content gemini-2.5-flash',
+      kind: 'client',
+      traceId: 't'.repeat(32),
+      spanId,
+      startTimeUnixMs: 0,
+      durationMs: 10,
+      status: 'unset',
+      attributes: {
+        [GEN_AI.OPERATION_NAME]: GEN_AI_OPERATION.GENERATE_CONTENT,
+        [GEN_AI.REQUEST_MODEL]: 'gemini-2.5-flash',
+        [GEN_AI.USAGE_INPUT_TOKENS]: input,
+        [GEN_AI.USAGE_OUTPUT_TOKENS]: output,
+      },
+    });
+    const agent = fakeAgent(axes, [{ wrote: true }], []);
+    return {
+      ...agent,
+      run: async () => ({
+        ...transcript(0),
+        spans: axes.model === 'stub' ? [] : [call(400, 300, 'a'), call(200, 600, 'b')],
+      }),
+    };
+  }
+
+  const overInput = task([wroteSomething], {
+    budgets: { inputTokens: 500, outputTokens: 1000, modelCalls: 5 },
+  });
+
+  it('keeps a correct trial that spent too much passed, and counts the breach beside the rate', async () => {
+    const report = await new EvalHarness<FakeOutcome>({
+      agent: spentAgent(liveAxes),
+      models: MODELS,
+      suite: { name: 's', tasks: [overInput], trialsPerTask: 1 },
+    }).run();
+    const trial = report.tasks[0]!.trials[0]!;
+
+    expect(trial.passed).toBe(true);
+    expect(trial.withinBudget).toBe(false);
+    expect(trial.budgets.map((budget) => [budget.budget, budget.label, budget.actual])).toEqual([
+      ['inputTokens', 'breached', 600],
+      ['outputTokens', 'within', 900],
+      ['modelCalls', 'within', 2],
+    ]);
+    // Beside the rate, not inside it: P1-D compares pass rates.
+    expect(report.passRate).toBe(1);
+    expect(report.tasks[0]!.passHatK).toBe(true);
+    expect(report.budgetBreaches).toBe(1);
+    expect(report.usage.trials).toEqual([
+      expect.objectContaining({ taskId: 'memory-recall-001', inputTokens: 600, modelCalls: 2 }),
+    ]);
+  });
+
+  it('checks nothing on model=stub and says why in the usage section', async () => {
+    const report = await new EvalHarness<FakeOutcome>({
+      agent: spentAgent({ model: 'stub', memory: 'live' }),
+      suite: { name: 's', tasks: [overInput], trialsPerTask: 1 },
+    }).run();
+
+    expect(report.tasks[0]!.trials[0]!.budgets).toEqual([]);
+    expect(report.tasks[0]!.trials[0]!.withinBudget).toBe(true);
+    expect(report.budgetBreaches).toBe(0);
+    expect(report.usage).toMatchObject({ checked: false, trials: [] });
+    expect(report.usage.reason).toContain('budgets not checked on model=stub');
   });
 });
 
