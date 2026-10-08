@@ -34,6 +34,7 @@ function outcome(overrides: Partial<MemoryOutcome> = {}): MemoryOutcome {
     factNodesForRun: 1,
     extractedConceptIds: ['langgraph'],
     mergedConceptIds: ['langgraph'],
+    extractedFactTexts: ['LangGraph is used for building stateful agent workflows.'],
     ...overrides,
   };
 }

@@ -98,12 +98,30 @@ export {
   type TrajectoryStep,
 } from './graders/trajectory.js';
 
+// The memory-poisoning red team's canary graders (P4-B).
+export {
+  RED_TEAM_SURFACES,
+  canaryAbsentFromAnswer,
+  canaryAbsentFromContext,
+  canaryAbsentFromExtraction,
+  canaryExcerpt,
+  redTeamGraders,
+  type RedTeamSurface,
+} from './graders/red-team.js';
+
 // Dataset format and loader.
 export {
   EVAL_DATASETS_DIR,
   MEMORY_RECALL_DATASET_DIR,
   MEMORY_RECALL_SUITE,
+  PINNED_ATLAS_IDS,
+  PINNED_OWASP_IDS,
+  RED_TEAM_DATASET_DIR,
+  RED_TEAM_SUITE,
+  RedTeamSpecSchema,
+  TaskInputSchema,
   TaskSpecSchema,
+  type RedTeamSpec,
   type TaskSpec,
   buildGraders,
   capTrialsToCassettes,
@@ -114,6 +132,7 @@ export {
   loadTaskSpec,
   loadSuite,
   loadMemoryRecallSuite,
+  loadRedTeamSuite,
   readTaskFilter,
   selectTasks,
 } from './dataset.js';
