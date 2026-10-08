@@ -323,9 +323,25 @@ controls:
     note: Rule 4 of the reviewer checklist. No lint rule or test enforces it.
 
   - id: CTL-DATA-01
-    title: No real PHI or PII, CPT code or proprietary payer content enters the repository
-    status: planned
-    owner: P3-D
+    title: Payer data names only permitted code systems, carries no CPT, and is synthetic by construction; no CPT- or SSN-shaped token enters any tracked file
+    status: implemented
+    maps:
+      - { framework: owasp-llm-2025, ref: 'LLM02:2025' }
+      - { framework: nist-ai-rmf-1.0, ref: MAP 4.1 }
+      - { framework: nist-ai-rmf-1.0, ref: MEASURE 2.10 }
+    evidence:
+      - {
+          kind: doc,
+          file: docs/adr/0008-code-systems-the-repository-may-contain.md,
+          heading: Decision,
+        }
+      - { kind: symbol, file: scripts/lint-data.mjs, name: lintData }
+      - { kind: ci, workflow: ci.yml, job: ci, run: yarn lint:docs }
+    note: Delivered by P3-D. lint-data.mjs checks every Coding.system in payer data against ADR 0008's list, the HCPCS Level II and ICD-10-CM shapes, CPT-shaped values, and the synthetic markers (HTEST on every resource, example.org identifiers, no NPI that passes its check digit, digit-suffixed names, 555-01xx telephones); in every other tracked file it fails a CPT shape on a line that names CPT or HCPCS, and an SSN shape anywhere. Its fixture tests run in the same yarn lint:docs step. Narrowed at P3-D's review from "no real PHI or PII, CPT code or proprietary payer content", because no detector can show that a record describing a person is not real or that policy text is not a payer's; that remainder is CTL-DATA-02.
+
+  - id: CTL-DATA-02
+    title: No real PHI or PII, and no proprietary payer content, enters the repository
+    status: procedural
     maps:
       - { framework: owasp-llm-2025, ref: 'LLM02:2025' }
       - { framework: nist-ai-rmf-1.0, ref: MAP 4.1 }
@@ -337,7 +353,7 @@ controls:
           heading: Decision,
         }
       - { kind: doc, file: .agents/reviewer.md, heading: Checklist }
-    note: Until P3-D ships, a reviewer enforces this by hand under rule 10 of the checklist, and no check does. P3-D owns the automated CPT and synthetic-data detector, because it introduces the payer dataset the detector guards. At review P3-D decided to narrow this row to what the detector checks, and to move the rest — proprietary payer content, and real PHI outside payer data — to a new procedural CTL-DATA-02 in its own implementation.
+    note: Split from CTL-DATA-01 by P3-D. Rule 10 of the reviewer checklist. A reviewer reads for real PHI written to look synthetic, a name without digits in prose, and medical policy text paraphrased from a real payer; CTL-DATA-01's detector cannot see any of them.
 
   - id: CTL-MEM-02
     title: Memory poisoning is red-teamed against the live write path

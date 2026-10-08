@@ -8,7 +8,7 @@ depends_on: [P1-A, P1-B, P3-A]
 blocks: [P3-E]
 issue: 84
 superseded_by: null
-controls: [CTL-DATA-01]
+controls: [CTL-DATA-01, CTL-DATA-02]
 ---
 
 # P3-D · Synthetic payer dataset and FHIR prior-authorization surface

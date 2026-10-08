@@ -46,7 +46,11 @@ against the project's conventions.
       labelled fabricated fixtures are the substitute);
     - **CPT / HCPCS Level I codes anywhere, including fixtures and tests.** HCPCS Level I
       _is_ CPT, so "it is only HCPCS" is not a defence. ICD-10-CM and HCPCS Level II are
-      fine;
+      fine, except Level II's D range, which is the ADA's CDT. ADR 0008 lists every code
+      system payer data may name. `scripts/lint-data.mjs`, run by `yarn lint:docs`, checks
+      the code systems, CPT-shaped values and the synthetic markers in payer data, and
+      anchored CPT and SSN shapes everywhere else; this rule is what is left for you, so
+      read a payer-data change for what the detector cannot see;
     - proprietary payer content — plan documents, medical policy text, contracted rates, or
       internal system names carried over from prior work;
     - real credentials;
