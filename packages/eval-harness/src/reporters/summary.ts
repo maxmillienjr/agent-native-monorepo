@@ -213,7 +213,9 @@ function usageSection(report: SuiteReport<unknown>): string[] {
     (trial.erroredModelCalls > 0 ? ` (${trial.erroredModelCalls} errored)` : '') +
     ` | ${number(trial.inputTokens)} | ${number(trial.outputTokens)} (${trial.reasoningTokens}) | ` +
     `${trial.embeddingCalls} (unpriced) | ${describeCost(trial.cost)} |` +
-    (live ? ` ${trial.modelLatencyMs === null ? '—' : `${trial.modelLatencyMs} ms`} |` : '');
+    (live
+      ? ` ${trial.modelLatencyMs === null ? '—' : `${Math.round(trial.modelLatencyMs)} ms`} |`
+      : '');
 
   const lines = ['', '### Usage', '', header, rule, ...usage.trials.map(row), ''];
 

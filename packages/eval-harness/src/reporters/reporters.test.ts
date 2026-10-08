@@ -379,7 +379,7 @@ describe('budgets and usage', () => {
       usage: {
         checked: true,
         prices,
-        trials: [{ ...usageRow, source: 'measured', modelLatencyMs: 40169 }],
+        trials: [{ ...usageRow, source: 'measured', modelLatencyMs: 40169.44 }],
       },
     });
 
