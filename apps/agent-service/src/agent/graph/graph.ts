@@ -2,11 +2,12 @@ import { StateGraph, END, START, Annotation } from '@langchain/langgraph';
 import type { BaseCheckpointSaver } from '@langchain/langgraph';
 import type { AgentState } from './state.js';
 import type { Node } from './node.js';
-import { shouldContinueActing } from './edges.js';
+import { shouldContinueActing, shouldKeepCompensating } from './edges.js';
 import { ingressNode } from '../nodes/ingress.node.js';
 import { retrieveNode, type RetrieveNodeDeps } from '../nodes/retrieve.node.js';
 import { planNode, type PlanNodeDeps } from '../nodes/plan.node.js';
 import { actNode, type ActNodeDeps } from '../nodes/act.node.js';
+import { compensateNode } from '../nodes/compensate.node.js';
 import { distillNode, type DistillNodeDeps } from '../nodes/distill.node.js';
 import { reflectNode, type ReflectNodeDeps } from '../nodes/reflect.node.js';
 import { egressNode } from '../nodes/egress.node.js';
@@ -53,6 +54,7 @@ export function buildAgentGraph(
   const retrieve: Node = async (state) => retrieveNode(state, deps.retrieve);
   const plan: Node = async (state) => planNode(state, deps.plan);
   const act: Node = async (state) => actNode(state, deps.act);
+  const compensate: Node = async (state) => compensateNode(state, deps.act);
   const distill: Node = async (state) => distillNode(state, deps.distill);
   const reflect: Node = async (state) => reflectNode(state, deps.reflect);
   const egress: Node = async (state) => egressNode(state);
@@ -66,6 +68,9 @@ export function buildAgentGraph(
     .addNode('retrieve', retrieve, { retryPolicy: IO_RETRY })
     .addNode('plan', plan, { retryPolicy: IO_RETRY })
     .addNode('act', act, { retryPolicy: IO_RETRY })
+    // A compensation is a call to the world like any other, and a retried
+    // attempt repeats it under the same key.
+    .addNode('compensate', compensate, { retryPolicy: IO_RETRY })
     .addNode('distill', distill, { retryPolicy: IO_RETRY })
     .addNode('reflect', reflect, { retryPolicy: IO_RETRY })
     .addNode('egress', egress)
@@ -75,8 +80,14 @@ export function buildAgentGraph(
     .addEdge('plan', 'act')
     .addConditionalEdges('act', (state) => shouldContinueActing(state as AgentState), {
       act: 'act',
+      compensate: 'compensate',
       distill: 'distill',
     })
+    .addConditionalEdges(
+      'compensate',
+      (state) => shouldKeepCompensating(state as AgentState),
+      { compensate: 'compensate', distill: 'distill' },
+    )
     .addEdge('distill', 'reflect')
     .addEdge('reflect', 'egress')
     .addEdge('egress', END);
