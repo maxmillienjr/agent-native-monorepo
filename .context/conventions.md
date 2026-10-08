@@ -216,9 +216,11 @@ which shipped before the command existed.
   cleanly and measures nothing.
   **Re-record when any of these moves:** a prompt string (`plan.node.ts`,
   `extraction.ts`, the `selectTool` instruction in `runs.service.ts`), the request a seam
-  sends, the chat or embedding model id, the embedding width, the tool registry, or a
-  graph change that alters which decisions a run makes. The first four are mechanical —
-  the request hash moves, every replay misses, and `CassetteMissError` prints the diff. The
+  sends, the chat or embedding model id, the embedding width, the tool registry, a graph
+  change that alters which decisions a run makes, or the canary reporting `changed` on a
+  pinned id. The first four are mechanical — the request hash moves, every replay misses,
+  and `CassetteMissError` prints the diff. The last is the one nothing else notices: the id
+  is the same, so the cassettes replay cleanly with the old model's answers. The
   cost is real and it falls on prompt changes, which are common here; the alternative,
   keying on a normalized shape, serves the old answer to the new prompt and calls it a
   pass. Re-recording needs a live key and about eight `generateContent` calls against a
@@ -258,6 +260,19 @@ which shipped before the command existed.
   one task and recording its cassette otherwise re-records every other cassette and
   spends their `generateContent` calls. An unknown id is refused, and the selection is
   printed in the suite name.
+- **The drift canary watches the model behind the pinned ids, and its baseline moves only
+  by a commit.** `yarn canary` (P1-E) reads `models.get` for `gemini-2.5-flash`,
+  `gemini-embedding-001` and `gemini-flash-latest`, makes one direct `generateContent` per
+  chat id for `modelVersion`, and embeds the 21 baseline texts, comparing each vector bit for
+  bit with `packages/eval-harness/datasets/canary/baseline.json`. It needs a key and no
+  stores, refuses to run without `GOOGLE_API_KEY`, and exits 1 when a pinned id is
+  `changed`, `gone` or `unobserved`; a moved floating alias is a notice. Accepting a change
+  is `CANARY_BASELINE=update yarn canary` with a key and a committed baseline diff, never a
+  re-run, and a pinned `changed` usually means a re-record as well. `CANARY_PROBES` runs a
+  subset (`metadata,embedding` spends no `generateContent`), and the summary names what was
+  left out. It is a root script over `yarn workspace`, not a Turbo task, so strict env mode
+  does not strip its variables. `EVAL_CHAT_MODEL` runs `yarn eval` on another chat id for a
+  hand-started comparison; replay and `EVAL_GATE` both refuse it.
 - **A retriever's `ORDER BY` needs a unique secondary key.** Both semantic readers produce
   ties by construction — `expandFromSeeds` scores on hop distance, and the eval harness
   seeds every fact in a task with one vector — and an untied order is decided by whatever

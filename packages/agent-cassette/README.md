@@ -71,9 +71,11 @@ it durable.
 **A replayed `pass^k` is a frozen sample, not a reliability measurement.** It reproduces the
 recorded run's result and will keep reproducing it until the set is re-recorded. It catches
 a change in the graph, in the prompts' effect on branching, in the memory writes, in the
-graders and in the retrieval path. It cannot catch the model getting worse (P1-E) and it
-cannot catch the client breaking (the nightly live tier, P1-C). Read a replayed rate as a
-regression test that happens to be spelled as a percentage.
+graders and in the retrieval path. It cannot catch the model getting worse, and it cannot
+catch the client breaking (the nightly live tier, P1-C). Whether the model behind the
+pinned ids has changed since the set was recorded is the drift canary's question
+(`yarn canary`, `docs/STATUS.md` row 24). Read a replayed rate as a regression test that
+happens to be spelled as a percentage.
 
 **When to re-record** is in `.context/conventions.md`, next to the rest of the eval
 conventions. A prompt edit is the common case: the request hash moves, every replay misses,

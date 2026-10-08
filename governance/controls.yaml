@@ -202,6 +202,24 @@ controls:
         }
     note: Delivered by P2-B. The unit tests hold the dataset to its pre-registered shape and the rule to the PRD's outcome table; they do not re-run the ablation. yarn eval:retrieval runs in no CI pipeline, because P2-B left the tier to P1-C and P1-C shipped first, so a change to a reader, the facade or the linker is not re-measured until someone runs it. The result it recorded is that the graph does not earn its place in retrieval, and ADR 0009, proposed, decides what follows.
 
+  - id: CTL-EVAL-05
+    title: A change to the model behind a pinned model id, or its retirement, turns a scheduled job red
+    status: implemented
+    maps:
+      - { framework: nist-ai-rmf-1.0, ref: MEASURE 2.4 }
+      - { framework: nist-ai-rmf-1.0, ref: MANAGE 3.1 }
+    evidence:
+      - { kind: ci, workflow: agent-eval.yml, job: canary, run: yarn canary }
+      - kind: test
+        file: apps/agent-service/src/eval/canary/runner.test.ts
+        name: 'chat, pinned: a changed modelVersion exits 1'
+        tier: unit
+      - kind: test
+        file: apps/agent-service/src/eval/canary/probes.test.ts
+        name: reports one differing component of one vector as changed, with its cosine
+        tier: unit
+    note: Delivered by P1-E. `yarn canary` reads models.get for the two pinned ids and the floating alias, modelVersion from one direct generateContent call per chat id, and 21 embeddings compared bit for bit with the vectors the committed cassettes recorded. A pinned changed, gone or unobserved exits 1, and the way back to green is a committed baseline update. The eval-canary job runs it nightly and on dispatch under the GOOGLE_API_KEY repository secret, added 2026-10-08, and is skipped where the secret is absent, as on a fork. Until its first scheduled run the live evidence is one local run of the metadata and embedding probes on 2026-10-08, and the chat baseline is empty, so that first run is red on the pinned chat probe until its modelVersion is committed.
+
   - id: CTL-OUT-01
     title: Model output is schema-validated before it can reach memory
     status: implemented
