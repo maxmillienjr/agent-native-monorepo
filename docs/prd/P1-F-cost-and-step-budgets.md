@@ -2,7 +2,7 @@
 id: P1-F
 title: Cost, latency, and step budgets as CI assertions
 tier: 1
-status: in-progress
+status: shipped
 size: M
 depends_on: [P1-A, P1-B, P1-C, P2-C]
 blocks: []
@@ -384,56 +384,163 @@ packages/eval-harness/datasets/memory-recall/*.json, cassettes/*   budgets; re-r
 Every criterion names its axis. "Fakes" means a unit test with in-process fakes. It
 verifies a mapping or a rule, on neither model axis.
 
-- [ ] `checkBudgets` returns `within`, `breached` and `unmeasurable` for fake span sets:
+- [x] `checkBudgets` returns `within`, `breached` and `unmeasurable` for fake span sets:
       within the limit, over it, a `generate_content` span with no usage key, no inference
       spans at all, and a mix of replayed and non-replayed spans. An errored span counts
-      toward `modelCalls` and is not unmeasurable. Fakes.
-- [ ] The dataset loader accepts `budgets` beside `requires`, and rejects `latencyMs` or any
-      other unknown key with a message naming the key. Fakes.
-- [ ] With a fake `AgentHarness` whose trial breaches a budget, the trial has
+      toward `modelCalls` and is not unmeasurable. Fakes: `budgets.test.ts`, one case each.
+- [x] The dataset loader accepts `budgets` beside `requires`, and rejects `latencyMs` or any
+      other unknown key with a message naming the key. Fakes: `dataset.test.ts` › "rejects
+      a latency budget, naming the key and saying why" and the two cases beside it.
+- [x] With a fake `AgentHarness` whose trial breaches a budget, the trial has
       `passed: true` and `withinBudget: false`, `passRate` is unchanged,
-      `budgetBreaches` is 1, and the runner's exit code is 1. Fakes.
-- [ ] **Model `stub` / memory `live`:** no budget is checked, the summary says
+      `budgetBreaches` is 1, and the runner's exit code is 1. Fakes: `harness.test.ts` ›
+      "keeps a correct trial that spent too much passed, and counts the breach beside the
+      rate"; `run-suite.test.ts` › "ends failed on a budget breach although every trial
+      passed" (`failed` is exit 1); `gate.test.ts` for the same with `EVAL_GATE` set.
+- [x] **Model `stub` / memory `live`:** no budget is checked, the summary says
       `budgets not checked on model=stub`, and the exit code is what it would be without
-      budgets.
-- [ ] **Model `replay` / memory `live`**, before the re-recording: the version-2 player
+      budgets. Run 2026-10-08, two trials, budgets declared: the notice sits beside the
+      skipped `tool-use-001`, no Budgets table is printed, 100% over one task, exit 0.
+- [x] **Model `replay` / memory `live`**, before the re-recording: the version-2 player
       refuses the committed version-1 set before any store is reset, with a message naming
-      `EVAL_CASSETTE_MODE=record`.
-- [ ] **Model `live` / memory `live`:** the re-recording (one trial per task, eight
+      `EVAL_CASSETTE_MODE=record`. Run 2026-10-08: `eval-abort.json` with cause
+      `cassette-incompatible` naming the file, both commands in the message, and `\dt` on
+      the fresh Postgres afterwards listed no relations, so not even the migration had run.
+- [x] **Model `live` / memory `live`:** the re-recording (one trial per task, eight
       `generateContent` calls) writes `tokenCounts` with `prompt > 0` and `completion > 0`
       on every `plan.callLlm`, `act.selectTool` and `distill.extractEntities` decision, and
-      `reasoning` wherever the response reported `total_tokens`. Its report shows every
-      budget `within`, with source `measured`.
-- [ ] **Model `live` / memory `live`**, on the same run: for each trial,
+      `reasoning` wherever the response reported `total_tokens`. Every reply reported a
+      total, and all eight decisions carry `reasoning`. The two runs made eight calls and no 429.
+- [ ] **Model `live` / memory `live`:** a live report shows every budget `within`, with
+      source `measured`. Split from the criterion above, because the token budgets are
+      derived from the recording and did not exist when it ran. The recording's reports
+      showed `modelCalls` `within`, `measured` (3 of 7, 5 of 5); the token budgets were then
+      checked against those reports' own transcripts with `checkBudgets`, all `within`,
+      `measured`. That is the same function over the same spans, not the report the
+      criterion names. The first nightly `eval-live` run after merge produces it; the
+      secret exists since 2026-10-08. Owner: **P1-E**, which takes the nightly.
+- [x] **Model `live` / memory `live`**, on the same run: for each trial,
       `RunResponse.tokenCounts.prompt` equals the sum of `gen_ai.usage.input_tokens` over its
       `generate_content` spans, and `completion` equals the sum of
       `gen_ai.usage.output_tokens`. A plan-only total fails this for both tasks.
-- [ ] **Model `replay` / memory `live`**, on the new set: each trial's span sums equal the
+      `memory-recall-001`: 1730/6442 on both sides, plan alone 58/1563. `tool-use-001`:
+      1435/4240 on both sides, plan alone 68/675. The rule is also a unit test over a
+      two-step graph run (`spans.test.ts` › "reports a RunResponse.tokenCounts equal to the
+      usage summed over its inference spans").
+- [x] **Model `replay` / memory `live`**, on the new set: each trial's span sums equal the
       sums of its cassette's decision `tokenCounts`, the source is `recorded`, and two
-      consecutive replays produce identical usage sections.
-- [ ] **Model `replay` / memory `live`:** raising one decision's recorded `prompt` count in
+      consecutive replays produce identical usage sections. Run 2026-10-08 on the two
+      re-recorded tasks with `EVAL_GATE=replay`: span sums 1730/6442 (3524 thinking) and
+      1435/4240 (1481), as in the cassettes; every inference span replayed; the two runs'
+      `usage`, budget results and `budgetBreaches` byte-identical; both gate verdicts
+      `match`. Repeated on main `75a60e7`, after ADR 0009 removed `graph-recall-001`, with
+      the same figures, identical usage and `match` twice.
+- [x] **Model `replay` / memory `live`:** raising one decision's recorded `prompt` count in
       a copy of the set above `inputTokens` makes that trial `breached`, with the limit and
       the actual value in the summary. The trial still `passed`, and the run exits 1. This
-      is the replay-tier path for a token increase that arrives with a re-recording.
-- [ ] Both task files declare `inputTokens`, `outputTokens` and `modelCalls`, with values
+      is the replay-tier path for a token increase that arrives with a re-recording. Run
+      2026-10-08: `tool-use-001`'s distill decision raised by 1000, summary row
+      `` `inputTokens` | 2200 | 2435 | ❌ breached | recorded ``, overall pass rate 100%,
+      exit 1.
+- [x] Both task files declare `inputTokens`, `outputTokens` and `modelCalls`, with values
       derived from the re-recording by the rule in the Design. `modelCalls` is 7 and 5.
-- [ ] The summary prints the cost as a list-price equivalent, naming the price table's
+      `memory-recall-001`: 2600, 12900, 7. `tool-use-001`: 2200, 8500, 5.
+- [x] The replay baseline is regenerated for the re-recorded set, with no key. P2-B merged
+      `graph-recall-001` in format 1 while this was open, and the format-2 player refused
+      it, which is the refusal working. ADR 0009 then deleted that task, its cassette and its
+      cells, so no third recording was needed. On `75a60e7`,
+      `EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval` wrote the same 21 cells as
+      before, moving only the digest (now `93302b4f…`) and the provenance.
+- [x] The summary prints the cost as a list-price equivalent, naming the price table's
       source and `pageLastUpdated`. A model missing from the table prints `unpriced`, and
-      embedding calls are counted and printed `unpriced`. Fakes for the arithmetic; the
-      replay run for the rendering.
-- [ ] Latency appears in the summary only on the `live` axis, summed from spans without
+      embedding calls are counted and printed `unpriced`. Fakes for the arithmetic
+      (`budgets.test.ts` › `estimateCost`); the replay run for the rendering: $0.0166 and
+      $0.0110, `16 (unpriced)` and `11 (unpriced)` embedding calls, the source and
+      `page last updated 2026-10-07`.
+- [x] Latency appears in the summary only on the `live` axis, summed from spans without
       `agent_native.replayed`. On `replay` the summary prints no model latency and says why.
-      Replay run, plus the live re-recording.
-- [ ] **In CI, model `replay` / memory `live`:** P1-C's replay job on this pull request
-      shows the budget table in its job summary, and passes.
-- [ ] `TokenCountsSchema`'s and `RunResponseSchema`'s doc comments state the new meaning.
+      Replay run, plus the live re-recording: 33967 ms and 22298 ms on the two recording
+      runs; no latency column on replay, and the sentence saying a replayed span's duration
+      is the cassette read.
+- [x] **In CI, model `replay` / memory `live`:** P1-C's replay job on this pull request
+      shows the budget table in its job summary, and passes. Run 37818299276 on `fb370dd`:
+      `eval-replay` passed with gate verdict `match` and `budgetBreaches` 0, and its
+      `eval-summary.md` carries the Budgets table, all six budgets `within`, source
+      `recorded`.
+- [x] `TokenCountsSchema`'s and `RunResponseSchema`'s doc comments state the new meaning.
       `README.md:207` lists `tokenCounts` among the outputs of `act` and `distill`.
       `packages/eval-harness/README.md` documents `budgets` and why latency is not one.
       `docs/STATUS.md` gains a row for per-task budgets with file and line evidence.
       `.context/conventions.md` says that raising a budget is an edit to the task file,
-      reviewed in the pull request that needs it.
-- [ ] `yarn turbo typecheck`, `yarn turbo lint`, `yarn turbo test:unit`, `yarn lint:docs`
-      and `yarn format:check` pass.
+      reviewed in the pull request that needs it. The STATUS row is 25, and it cites
+      evidence by name, since P4-A moved the matrix off line anchors.
+- [x] `yarn turbo typecheck`, `yarn turbo lint`, `yarn turbo test:unit`, `yarn lint:docs`
+      and `yarn format:check` pass, on `75a60e7`, with `test:unit` run with `--force`.
+      Before ADR 0009 landed, `test:unit` failed on `graph-recall-001`'s format-1 cassette,
+      and Turbo's cache had hidden that locally: the committed-set tests read a directory
+      outside the package's task inputs. `turbo.json` now names it.
+
+## What shipped, and where it diverged from the design
+
+Implemented on 2026-10-08 in sixteen commits. The design held. These are the places the
+code differs from it, or the design did not say.
+
+- **`graph-recall-001` arrived in the old format, and then left.** P2-B merged a third
+  task and its version-1 cassette while this branch was open. The format bump did what
+  the design meant it to: the player refused the cassette before any store was reset and
+  named the commands, and CI went red on it. Re-recording it would have cost three calls
+  beyond this session's allowance, and before that was needed ADR 0009 removed the graph
+  path and the task with it. The baseline was then regenerated on the two-task set with
+  no key.
+- **Two things merged meanwhile read the cassette format.** P1-E's `compareCassettes`
+  read `toolName` off a recorded `selectTool` value; under format 2 it reads
+  `selection.toolName`, or it would have seen no tool on every step. P1-E also made
+  `CHAT_MODEL` follow `EVAL_CHAT_MODEL`, so `GEMINI_PRICES` is keyed on
+  `PINNED_CHAT_MODEL`: a run on the floating alias prints it `unpriced` rather than
+  charging it the pinned id's price.
+- **Turbo now keys `@repo/agent-cassette`'s unit tests on the committed cassettes.** The
+  committed-set tests read a directory outside the package, so a changed cassette replayed
+  a green result from cache. Found during this work, fixed in its own commit.
+- **The recording ran one task at a time**, the other's file held out of the dataset, so a
+  model that reached for more tools than in September could not spend past the allowance
+  unseen. It did not: 3 and 5 calls. The header names `94efb6a`, which this branch's rebase
+  rewrote, as every pre-merge recording here has been (`021c6f2` is not on main either).
+- **`modelCalls` landed before the recording, token budgets after.** The rule-derived call
+  ceilings went in first, so the recording run checked them. The token ceilings are
+  functions of the recording, so its own report could not show them; the criterion is
+  split and the half it could not meet is P1-E's nightly.
+- **A breach fails beside P1-D's gate, not through it.** The design's
+  `run-eval.ts:145` line predates the gate, which replaced the pass-rate exit. The gate
+  compares grader cells and cannot see a breach, so `gatedEnd` fails a run that breached
+  whatever the verdict, on every gate mode, `update` and `live` included. It reads
+  `budgetBreaches` from `eval-report.json`, as the gate reads everything else.
+- **`BudgetResult.source` is optional.** The design typed it as `measured | recorded`; a
+  trial with no inference span, or a mix, has neither, and the field is then absent. The
+  per-trial usage row says `none` or `mixed`.
+- **`SuiteReport.usage` is per trial.** One row per trial, with calls, tokens, the
+  thinking share, embedding calls, cost and live latency, plus the price table's
+  provenance; there is no suite total. `budgetBreaches` counts budget results not
+  `within`, not trials.
+- **The refusal's commands come from the wiring.** `@repo/agent-cassette` keeps this
+  repository's commands out of its messages, so the player says the cassette must be
+  re-recorded and `replayDecks` adds the file path, the re-record and the baseline
+  command. `explainAbort` names the cause `cassette-incompatible`.
+- **Usage goes through one module.** `agent/model/usage.ts` holds `CallUsage`, `usageOf`
+  and `addUsage`. `usageOf` calls P2-C's `chatUsage`, the same function the inference
+  span uses, which is how the two cannot drift. `reasoning` is kept on the seam and in the
+  cassette and not carried into state, whose shape the design kept.
+- **`costUsd` is rejected too**, with the reason the design gives for not asserting
+  dollars, beside `latencyMs`.
+- **JUnit gives budgets a suite per task**, named `<task> budgets`, so the task's own suite
+  stays at k cases.
+- **The price table was re-read on 2026-10-08.** The page was last updated 2026-10-07 and
+  the figures are unchanged: $0.30 input and $2.50 output, thinking included, per million
+  tokens, paid tier. It still lists no price for `gemini-embedding-001`.
+- **The recording varied as the PRD expected.** P2-C's live `memory-recall-001` trial used
+  2586/9664 tokens; this one used 1730/6442. In `tool-use-001` the three `selectTool`
+  requests were again byte-identical, and this time the model chose three different
+  queries for them. The repeated two cost 658 input and 308 output tokens, which the task's
+  notes record beside the budgets they inflate.
 
 ## Risks and open questions
 

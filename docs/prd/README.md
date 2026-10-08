@@ -5,7 +5,7 @@
 _Last updated 2026-10-08. If this section is more than a few weeks stale, trust the code
 over it and update it._
 
-**Eleven PRDs are shipped and the system they describe is running.** The service answers
+**Thirteen PRDs are shipped and the system they describe is running.** The service answers
 `POST /runs` and `POST /runs/stream`; `memory-core` is constructed by the app rather than
 sitting beside it; the graph compiles with a checkpointer and a retry policy on every node
 that performs I/O; and `packages/eval-harness` measures the result. Verified against live
@@ -13,7 +13,7 @@ stores from an empty database: one run leaves episodic rows, `:Concept` and `:Fa
 `semantic_facts` rows and checkpoints under the runId its own response returned.
 
 **`docs/STATUS.md` is the authority on any capability sentence, including the ones above.**
-Twenty-four rows, each with a status and evidence cited by name — eighteen `implemented`, one
+Twenty-five rows, each with a status and evidence cited by name — nineteen `implemented`, one
 `planned`, four `stubbed`, one `removed`, none `broken`. The rule that keeps it true is in
 `.context/conventions.md`: a change that moves a row moves it there in the same pull
 request. `yarn lint:docs` fails CI when a PRD's status disagrees with its row below.
@@ -104,6 +104,18 @@ suite on the alias as a dispatch-only migration comparison. **It stays in progre
 scheduled run proves the CI criteria.** That first run will be red on the pinned chat probe
 until the owner commits the two `modelVersion` strings, because no `generateContent` call
 was spent to fill that baseline.
+
+**[P1-F](P1-F-cost-and-step-budgets.md) has shipped**, tracked in
+[#85](https://github.com/maxmillienjr/agent-native-monorepo/issues/85). Each task file now
+sets per-trial ceilings on input tokens, output tokens and model calls, checked against the
+trial's spans beside the graders: a breach fails the run and leaves the pass rate alone.
+`RunResponse.tokenCounts` is every chat call's usage, thinking included, where it was the
+plan call's: 1730/6442 tokens against 58/1563 on one live `memory-recall-001` trial. Every
+report prints usage and a list-price cost, and live latency, none of them asserted. That
+needed cassette format 2, and both tasks were re-recorded on 2026-10-08 for eight calls, with
+the replay baseline regenerated after ADR 0009 removed the third. Budgets are set on today's
+`act` loop, repeats included; P4-C's fix tightens them. The one open criterion, a live report
+showing every budget within, is the nightly's, which P1-E takes.
 
 **[P2-B](P2-B-retrieval-ablation.md) has shipped**, tracked in
 [#57](https://github.com/maxmillienjr/agent-native-monorepo/issues/57), and the answer to
@@ -227,7 +239,8 @@ application context and reports `pass@k` and `pass^k` per axis. P1-C, in progres
 from `.github/workflows/agent-eval.yml`: on replayed model decisions on every pull request,
 and on the live model nightly once a repository secret exists. P1-D, in progress, gates
 both on committed baselines. Nothing blocks a merge until the owner applies its ruleset.
-P1-E, in progress, watches whether the model behind the pinned ids has changed.
+P1-E, in progress, watches whether the model behind the pinned ids has changed. P1-F,
+shipped, checks each task's tokens and model calls beside the pass rate.
 
 | ID                                     | Title                                                         | Size | Status      |
 | -------------------------------------- | ------------------------------------------------------------- | ---- | ----------- |
@@ -236,7 +249,7 @@ P1-E, in progress, watches whether the model behind the pinned ids has changed.
 | [P1-C](P1-C-tiered-eval-pipeline.md)   | Tiered evaluation pipeline replacing the nightly stub         | M    | shipped     |
 | [P1-D](P1-D-regression-gate.md)        | Statistical regression gate against committed baselines       | L    | in-progress |
 | [P1-E](P1-E-model-drift-canary.md)     | Model-drift canary against pinned and floating model ids      | M    | in-progress |
-| [P1-F](P1-F-cost-and-step-budgets.md)  | Cost, latency, and step budgets as CI assertions              | M    | in-progress |
+| [P1-F](P1-F-cost-and-step-budgets.md)  | Cost, latency, and step budgets as CI assertions              | M    | shipped     |
 | [P1-G](P1-G-task-axis-requirements.md) | Task-level axis requirements for the evaluation suite         | S    | shipped     |
 
 ## Tier 2 — Make the architecture real
