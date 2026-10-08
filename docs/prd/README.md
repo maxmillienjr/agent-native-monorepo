@@ -58,23 +58,23 @@ cannot catch the model getting worse (P1-E) or the client breaking (ADR 0005 nam
 defect class), and a task runs at most as many trials as it has cassettes so that one
 recording is never averaged with itself. It is now the pull-request tier P1-C runs.
 
-**[P1-C](P1-C-tiered-eval-pipeline.md) is in progress**, tracked in
+**[P1-C](P1-C-tiered-eval-pipeline.md) has shipped**, tracked in
 [#56](https://github.com/maxmillienjr/agent-native-monorepo/issues/56), with its pull
-request open and green. `agent-eval.yml` no longer runs the memory integration suite: its
+request merged. `agent-eval.yml` no longer runs the memory integration suite: its
 `eval-replay` job runs the agent on every pull request, every push to `main` and nightly,
 against the committed cassettes and two service containers, with no key. Its `eval-live`
-job runs nightly and on dispatch only when a `GOOGLE_API_KEY` repository secret exists.
-There is none, so it shows as skipped, never passed, and the replay summary says why. Each
+job runs nightly and on dispatch only when a `GOOGLE_API_KEY` repository secret exists;
+without one it shows as skipped, never passed, and the replay summary says why. The owner
+added the secret on 2026-10-08. Each
 job declares `EVAL_EXPECT_AXES`, so a job that lost its key or its mode refuses before a
 trial. A run that cannot complete now writes `eval-abort.json` and a summary headed
 `aborted`, with the trials that finished, and never `eval-report.json`. That is how a stale
 cassette differs from a failed grader, since Turbo reduces both exit codes to 1. A
 daily-quota 429 is terminal on both model paths, so the chat client makes one request
-instead of seven, and the abort names it. **Three criteria are open.** Two need a
-repository secret and pass to P1-E. The third, the classifier against a real free-tier
-429, spends a day's quota and waits for the owner to schedule it. Moving
-`REQUIRE_INTEGRATION_ENV` onto `e2e.yml` needed a `turbo.json` declaration the PRD did not
-foresee. Without it, strict env mode strips the flag, and the suite skips again.
+instead of seven, and the abort names it. The first dispatch with the secret proved that
+against a real free-tier 429 (run 37812971653): one request, `daily-quota`, `aborted`, the
+real `errorDetails` in the artifact. The two criteria that need a nightly run with the
+secret present pass to P1-E, by name.
 
 **[P1-D](P1-D-regression-gate.md) is in progress**, tracked in
 [#76](https://github.com/maxmillienjr/agent-native-monorepo/issues/76). `eval-replay` now
@@ -205,7 +205,7 @@ both on committed baselines. Nothing blocks a merge until the owner applies its 
 | -------------------------------------- | ------------------------------------------------------------- | ---- | ----------- |
 | [P1-A](P1-A-eval-harness.md)           | `packages/eval-harness` — evaluation as a first-class package | L    | shipped     |
 | [P1-B](P1-B-agent-cassette.md)         | `packages/agent-cassette` — decision-level record and replay  | L    | shipped     |
-| [P1-C](P1-C-tiered-eval-pipeline.md)   | Tiered evaluation pipeline replacing the nightly stub         | M    | in-progress |
+| [P1-C](P1-C-tiered-eval-pipeline.md)   | Tiered evaluation pipeline replacing the nightly stub         | M    | shipped     |
 | [P1-D](P1-D-regression-gate.md)        | Statistical regression gate against committed baselines       | L    | in-progress |
 | [P1-E](P1-E-model-drift-canary.md)     | Model-drift canary against pinned and floating model ids      | M    | accepted    |
 | [P1-F](P1-F-cost-and-step-budgets.md)  | Cost, latency, and step budgets as CI assertions              | M    | accepted    |
