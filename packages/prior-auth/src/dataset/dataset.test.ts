@@ -3,28 +3,13 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { PolicyCatalogue, loadPayer } from '../policy.js';
 import { coverageActiveOn, readSubmission, resolveReference } from '../request.js';
-import { authorDataset, invalidNpi } from './author.js';
+import { authorDataset } from './author.js';
 import { PRIOR_AUTH_DATASET_DIR } from './location.js';
 import { STRATA } from './scenarios.js';
 
 const payer = loadPayer();
 const catalogue = PolicyCatalogue.load();
 const dataset = authorDataset(payer, catalogue.all());
-
-/** NPI check: Luhn over `80840` and all ten digits. */
-function npiLuhnValid(npi: string): boolean {
-  const digits = `80840${npi}`;
-  let sum = 0;
-  for (let i = 0; i < digits.length; i += 1) {
-    let digit = Number(digits[digits.length - 1 - i]);
-    if (i % 2 === 1) {
-      digit *= 2;
-      if (digit > 9) digit -= 9;
-    }
-    sum += digit;
-  }
-  return sum % 10 === 0;
-}
 
 describe('the committed prior-authorization dataset', () => {
   it('is exactly what scenarios.ts authors, so the readable copy is the real one', () => {
@@ -84,27 +69,17 @@ describe('the committed prior-authorization dataset', () => {
     }
   });
 
-  it('gives every practitioner and supplier an NPI that fails the check digit', () => {
+  it('holds no NPI at all, and an example.org identifier on every practitioner and supplier', () => {
     for (const task of dataset.tasks) {
       const bundle = JSON.parse(dataset.files.get(task.bundle) ?? '') as {
-        entry: { resource: { identifier?: { system?: string; value?: string }[] } }[];
+        entry: { resource: { resourceType: string; identifier?: { system?: string }[] } }[];
       };
-      const npis = bundle.entry
-        .flatMap((entry) => entry.resource.identifier ?? [])
-        .filter((identifier) => identifier.system === 'http://hl7.org/fhir/sid/us-npi');
-      expect(npis.length).toBeGreaterThan(0);
-      for (const npi of npis) {
-        expect(npi.value).toMatch(/^[0-9]{10}$/);
-        expect(npiLuhnValid(npi.value ?? ''), npi.value).toBe(false);
+      for (const { resource } of bundle.entry) {
+        for (const identifier of resource.identifier ?? []) {
+          expect(identifier.system, resource.resourceType).toMatch(/^https:\/\/example\.org\//);
+        }
       }
+      expect(dataset.files.get(task.bundle)).not.toContain('us-npi');
     }
-  });
-
-  it('makes invalidNpi fail the check whatever the base', () => {
-    for (const base of ['123456789', '000000000', '999999999', '190100150']) {
-      expect(npiLuhnValid(invalidNpi(base))).toBe(false);
-    }
-    // And the check itself is right: the CMS published example NPI passes.
-    expect(npiLuhnValid('1234567893')).toBe(true);
   });
 });

@@ -67,9 +67,15 @@
         },
         "careTeam": [
           {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/us/davinci-pas/StructureDefinition/extension-careTeamClaimScope",
+                "valueBoolean": true
+              }
+            ],
             "sequence": 1,
             "provider": {
-              "reference": "Practitioner/practitioner-e0470-one-missing"
+              "reference": "PractitionerRole/role-e0470-one-missing"
             }
           }
         ],
@@ -179,7 +185,7 @@
             }
           ],
           "profile": [
-            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient"
+            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient|6.1.0"
           ]
         },
         "identifier": [
@@ -239,7 +245,7 @@
             }
           ],
           "profile": [
-            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-coverage"
+            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-coverage|6.1.0"
           ]
         },
         "identifier": [
@@ -258,6 +264,9 @@
         ],
         "status": "active",
         "subscriberId": "CBK-M-1009",
+        "subscriber": {
+          "reference": "Patient/patient-e0470-one-missing"
+        },
         "beneficiary": {
           "reference": "Patient/patient-e0470-one-missing"
         },
@@ -308,13 +317,13 @@
             }
           ],
           "profile": [
-            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitioner"
+            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitioner|6.1.0"
           ]
         },
         "identifier": [
           {
-            "system": "http://hl7.org/fhir/sid/us-npi",
-            "value": "1909009503"
+            "system": "https://example.org/fhir/sid/practitioner-id",
+            "value": "PRAC-09"
           }
         ],
         "active": true,
@@ -339,6 +348,33 @@
       }
     },
     {
+      "fullUrl": "https://example.org/fhir/PractitionerRole/role-e0470-one-missing",
+      "resource": {
+        "resourceType": "PractitionerRole",
+        "id": "role-e0470-one-missing",
+        "meta": {
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "active": true,
+        "practitioner": {
+          "reference": "Practitioner/practitioner-e0470-one-missing"
+        },
+        "telecom": [
+          {
+            "system": "phone",
+            "value": "217-555-0125",
+            "use": "work"
+          }
+        ]
+      }
+    },
+    {
       "fullUrl": "https://example.org/fhir/Organization/supplier-e0470-one-missing",
       "resource": {
         "resourceType": "Organization",
@@ -352,14 +388,10 @@
             }
           ],
           "profile": [
-            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization"
+            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization|6.1.0"
           ]
         },
         "identifier": [
-          {
-            "system": "http://hl7.org/fhir/sid/us-npi",
-            "value": "1709309905"
-          },
           {
             "system": "https://example.org/fhir/sid/supplier-id",
             "value": "SUP-09"
@@ -408,7 +440,7 @@
             }
           ],
           "profile": [
-            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization"
+            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization|6.1.0"
           ]
         },
         "identifier": [
@@ -445,7 +477,7 @@
             }
           ],
           "profile": [
-            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-problems-health-concerns"
+            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-problems-health-concerns|6.1.0"
           ]
         },
         "clinicalStatus": {

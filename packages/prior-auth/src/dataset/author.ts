@@ -11,9 +11,12 @@ import { SCENARIOS, type ScenarioSpec } from './scenarios.js';
  * and every identifying field is synthetic by construction —
  *
  * - every resource carries `meta.security` `HTEST`;
- * - every `identifier.system` is under `https://example.org/`, except NPIs,
- *   whose check digit is chosen to fail the NPI Luhn check so that none can
- *   ever have been issued;
+ * - every `identifier.system` is under `https://example.org/`, and there is
+ *   no NPI. P3-D planned NPI-shaped values that fail the check digit, but US
+ *   Core 6.1.0's invariant `us-core-17` requires a valid check digit on any
+ *   NPI, so a failing one breaks the profile the validator gates on, and a
+ *   passing one could be a real provider's. US Core requires an identifier,
+ *   not an NPI, so the practitioner and the supplier carry example.org ones;
  * - every `HumanName` part ends in digits;
  * - telephone numbers are 555-0100 to 555-0199, which NANPA reserves;
  * - addresses carry a city and a state and no postal code.
@@ -22,16 +25,24 @@ import { SCENARIOS, type ScenarioSpec } from './scenarios.js';
  */
 
 const US_CORE = 'http://hl7.org/fhir/us/core/StructureDefinition';
+/**
+ * Pinned, because an unversioned canonical resolves to whichever US Core the
+ * validator has loaded, and loading PAS 2.2.1 brings 7.0.0 with it. CMS lists
+ * 6.1.0 for the Prior Authorization API, and that is the version gated on.
+ */
+const US_CORE_VERSION = '6.1.0';
 const PROFILES = {
-  patient: `${US_CORE}/us-core-patient`,
-  practitioner: `${US_CORE}/us-core-practitioner`,
-  organization: `${US_CORE}/us-core-organization`,
-  coverage: `${US_CORE}/us-core-coverage`,
-  condition: `${US_CORE}/us-core-condition-problems-health-concerns`,
+  patient: `${US_CORE}/us-core-patient|${US_CORE_VERSION}`,
+  practitioner: `${US_CORE}/us-core-practitioner|${US_CORE_VERSION}`,
+  organization: `${US_CORE}/us-core-organization|${US_CORE_VERSION}`,
+  coverage: `${US_CORE}/us-core-coverage|${US_CORE_VERSION}`,
+  condition: `${US_CORE}/us-core-condition-problems-health-concerns|${US_CORE_VERSION}`,
 } as const;
 
 const THO = 'http://terminology.hl7.org/CodeSystem';
 const EXAMPLE = 'https://example.org/fhir';
+const CARE_TEAM_CLAIM_SCOPE =
+  'http://hl7.org/fhir/us/davinci-pas/StructureDefinition/extension-careTeamClaimScope';
 const PLACE_OF_SERVICE =
   'https://www.cms.gov/Medicare/Coding/place-of-service-codes/Place_of_Service_Code_Set';
 
@@ -42,30 +53,6 @@ const SHORT_DESCRIPTOR: Record<ScenarioSpec['hcpcs'], string> = {
   K0823: 'Pwc gp 2 std cap chair',
   E0260: 'Hosp bed semi-electr w/ matt',
 };
-
-/**
- * An NPI-shaped value that fails the NPI check digit.
- *
- * The NPI check digit is the Luhn digit of the nine-digit base prefixed with
- * the card-issuer prefix `80840`, which contributes a constant 24 to the sum.
- * Taking the next digit round makes the value fail, so it names no provider
- * NPPES could have enumerated.
- */
-export function invalidNpi(base9: string): string {
-  if (!/^[0-9]{9}$/.test(base9)) throw new Error(`an NPI base is nine digits: ${base9}`);
-  let sum = 24;
-  for (let i = 0; i < 9; i += 1) {
-    // From the right of the base, the first digit is doubled.
-    let digit = Number(base9[8 - i]);
-    if (i % 2 === 0) {
-      digit *= 2;
-      if (digit > 9) digit -= 9;
-    }
-    sum += digit;
-  }
-  const valid = (10 - (sum % 10)) % 10;
-  return `${base9}${(valid + 1) % 10}`;
-}
 
 const security = (): { security: [typeof HTEST] } => ({ security: [{ ...HTEST }] });
 
@@ -130,6 +117,7 @@ function authorBundle(
     patient: `patient-${slug}`,
     coverage: `coverage-${slug}`,
     practitioner: `practitioner-${slug}`,
+    role: `role-${slug}`,
     supplier: `supplier-${slug}`,
     insurer: `insurer-${slug}`,
     condition: (key: string) => `condition-${slug}-${key}`,
@@ -162,7 +150,15 @@ function authorBundle(
     insurer: { reference: `Organization/${ids.insurer}` },
     provider: { reference: `Organization/${ids.supplier}` },
     priority: { coding: [{ system: SYSTEMS.PROCESS_PRIORITY, code: spec.priority }] },
-    careTeam: [{ sequence: 1, provider: { reference: `Practitioner/${ids.practitioner}` } }],
+    careTeam: [
+      {
+        // PAS requires the scope flag and a PractitionerRole or Organization
+        // here; neither is an X12 element, so the bundle carries both.
+        extension: [{ url: CARE_TEAM_CLAIM_SCOPE, valueBoolean: true }],
+        sequence: 1,
+        provider: { reference: `PractitionerRole/${ids.role}` },
+      },
+    ],
     supportingInfo: spec.notes.map((note, i) => ({
       sequence: i + 1,
       category: { coding: [{ system: `${THO}/claiminformationcategory`, code: 'attachment' }] },
@@ -227,6 +223,9 @@ function authorBundle(
     ],
     status: 'active',
     subscriberId: memberId,
+    // The member is their own subscriber. PAS's `self-beneficiary` invariant
+    // reads `self` in X12's code list, so the subscriber is stated instead.
+    subscriber: patientRef,
     beneficiary: patientRef,
     relationship: { coding: [{ system: `${THO}/subscriber-relationship`, code: 'self' }] },
     period: { start: '2026-01-01', end: spec.coverageEnd },
@@ -244,9 +243,18 @@ function authorBundle(
     resourceType: 'Practitioner',
     id: ids.practitioner,
     meta: { ...security(), profile: [PROFILES.practitioner] },
-    identifier: [{ system: SYSTEMS.NPI, value: invalidNpi(`19${n}0${n}5${n}`.slice(0, 9)) }],
+    identifier: [{ system: `${EXAMPLE}/sid/practitioner-id`, value: `PRAC-${n}` }],
     active: true,
     name: [{ family: spec.prescriber.family, given: [spec.prescriber.given], prefix: ['Dr'] }],
+    telecom: [{ system: 'phone', value: phone(1), use: 'work' }],
+  };
+
+  const role: FhirResource = {
+    resourceType: 'PractitionerRole',
+    id: ids.role,
+    meta: security(),
+    active: true,
+    practitioner: { reference: `Practitioner/${ids.practitioner}` },
     telecom: [{ system: 'phone', value: phone(1), use: 'work' }],
   };
 
@@ -254,10 +262,7 @@ function authorBundle(
     resourceType: 'Organization',
     id: ids.supplier,
     meta: { ...security(), profile: [PROFILES.organization] },
-    identifier: [
-      { system: SYSTEMS.NPI, value: invalidNpi(`17${n}3${n}9${n}`.slice(0, 9)) },
-      { system: `${EXAMPLE}/sid/supplier-id`, value: `SUP-${n}` },
-    ],
+    identifier: [{ system: `${EXAMPLE}/sid/supplier-id`, value: `SUP-${n}` }],
     active: true,
     type: [{ coding: [{ system: `${THO}/organization-type`, code: 'prov' }] }],
     name: `Synthetic Home Medical Supply ${n}`,
@@ -312,6 +317,7 @@ function authorBundle(
     patient,
     coverage,
     practitioner,
+    role,
     supplier,
     insurer,
     ...conditions,
