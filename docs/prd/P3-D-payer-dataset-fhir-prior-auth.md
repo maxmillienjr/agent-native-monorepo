@@ -642,10 +642,10 @@ Each criterion names the axis it is checked on where the model or the memory is 
       token is absent fails.
 - [x] A mutation is recorded in the pull request. A bundle's HCPCS code is replaced with
       `00000` and `yarn lint:docs` exits 1 naming D2 and D4. The mutation is then reverted.
-- [ ] `fhir-validate.yml` passes with zero errors on base R4 and US Core 6.1.0 for all 24
+- [x] `fhir-validate.yml` passes with zero errors on base R4 and US Core 6.1.0 for all 24
       bundles and every captured response. The pinned validator, US Core and PAS versions
       are in the workflow file.
-- [ ] The same job's PAS 2.2.1 report lists only errors on the X12-bound elements named in
+- [x] The same job's PAS 2.2.1 report lists only errors on the X12-bound elements named in
       Design. A reviewer checks the job summary and finds no other error class.
 - [x] ADR 0008 exists, is indexed in `docs/adr/README.md`, and names every system D1
       allows.
@@ -819,6 +819,13 @@ E0260 tasks. Afterwards, run
 a prior-auth replay step to `agent-eval.yml`, and write the recorded figures into STATUS
 row 26.
 
+**The validator job, on the pull request's first run** (`fhir-validate.yml`, job
+`validate`, 2026-10-08). The gated run covered the 24 bundles and 27 captured responses,
+51 files, and found 0 errors. The PAS report had 0 errors in its `other` row. Its expected
+classes held 48 errors each for `requestType`, `certificationType`, their cardinality,
+`item.category` and the queued outcome, 24 for the claim-update branch and 48 for the
+unmatched Claim profile. That agrees with the local run in a Java 17 container.
+
 **Open criteria.**
 
 - **The labels commit precedes the first cassette commit.** The labels have a commit of
@@ -828,10 +835,6 @@ row 26.
   These wait for the recording above. The replay path is built: on model `stub` all 24
   tasks are skipped and each figure says "not measured". With no cassettes, a replay aborts
   and names the first task that has none.
-- **`fhir-validate.yml` passes, and its PAS report lists only X12-bound errors.** Both
-  were verified locally with the pinned validator 6.10.4 in a Java 17 container. The run
-  covered the 24 bundles and 27 captured responses: 51 files, 0 gated errors, 0 `other`.
-  Each criterion is ticked only once the workflow has run on the pull request.
 
 ## Risks and open questions
 
