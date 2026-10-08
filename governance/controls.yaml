@@ -432,11 +432,21 @@ controls:
 
   - id: CTL-COST-01
     title: A trial is bounded in input tokens, output tokens and model calls, asserted in CI
-    status: planned
-    owner: P1-F
+    status: implemented
     maps:
       - { framework: owasp-llm-2025, ref: 'LLM10:2025' }
-    note: P1-F reports latency and an estimated dollar cost without asserting either. It rejects a latency budget outright; a dollar assertion waits for two model ids with different prices, which P1-E compares.
+    evidence:
+      - { kind: symbol, file: packages/eval-harness/src/budgets.ts, name: checkBudgets }
+      - kind: test
+        file: packages/eval-harness/src/harness.test.ts
+        name: keeps a correct trial that spent too much passed, and counts the breach beside the rate
+        tier: unit
+      - kind: test
+        file: apps/agent-service/src/eval/run-suite.test.ts
+        name: ends failed on a budget breach although every trial passed
+        tier: unit
+      - { kind: ci, workflow: agent-eval.yml, job: replay, run: yarn eval }
+    note: Delivered by P1-F. Each task file sets per-trial ceilings, checked against the trial's own inference spans beside the graders, so a breach fails the run without moving the pass rate. On the replay job a budget checks the committed cassettes, so it fails on a re-recording that costs more and on nothing else; the nightly live job checks a fresh sample once a repository secret exists. Latency and an estimated dollar cost are reported and not asserted. A latency budget is rejected outright; a dollar assertion waits for two model ids with different prices, which P1-E compares. modelCalls counts operations, not HTTP requests, so a client's own retries inside one call are bounded by P1-C's 429 classifier, not here.
 
   - id: CTL-ACC-01
     title: Access to the service is authenticated, authorized and encrypted in transit
