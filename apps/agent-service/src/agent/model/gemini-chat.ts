@@ -1,5 +1,6 @@
 import { HumanMessage, SystemMessage } from '@langchain/core/messages';
 import { chatUsage, createLogger, withInferenceSpan, type InferenceSeam } from '@repo/telemetry';
+import { usageOf, type CallUsage } from './usage.js';
 
 const logger = createLogger('gemini-chat');
 
@@ -36,11 +37,11 @@ export interface ChatRequest {
 export interface ChatResult {
   readonly content: string;
   /**
-   * `completion` is the candidate count, as it always was. Whether a run's
-   * total should include thought tokens is P1-F's to decide; the span below
-   * carries both.
+   * The span's figures, from the same derivation: `completion` is billed
+   * output, thought tokens included (P1-F). It used to be the candidate count,
+   * which left out most of what a thinking model is billed for.
    */
-  readonly tokenCounts: { prompt: number; completion: number };
+  readonly tokenCounts: CallUsage;
 }
 
 function finishReasonsOf(reply: ChatReply): string[] {
@@ -87,7 +88,7 @@ export async function invokeChat(
 
       return {
         content: typeof reply.content === 'string' ? reply.content : '',
-        tokenCounts: { prompt: meta?.input_tokens ?? 0, completion: meta?.output_tokens ?? 0 },
+        tokenCounts: usageOf(meta),
       };
     },
   );

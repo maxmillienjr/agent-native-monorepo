@@ -94,16 +94,22 @@ function deps(tool: (input: unknown) => Promise<unknown>): GraphDeps {
       tools: [{ name: 'web-search', execute: tool }],
       selectTool: async () => {
         const response = await chat('act.selectTool', '{"toolName":"web-search","input":"q"}');
-        return JSON.parse(response.content) as { toolName: string; input: unknown };
+        return {
+          selection: JSON.parse(response.content) as { toolName: string; input: unknown },
+          tokenCounts: response.tokenCounts,
+        };
       },
     },
     distill: {
       extractEntities: async () => {
-        await chat('distill.extractEntities', '{}');
+        const response = await chat('distill.extractEntities', '{}');
         return {
-          entities: [{ id: 'langgraph', label: 'LangGraph' }],
-          relationships: [],
-          facts: [{ text: 'A fact.' }],
+          extraction: {
+            entities: [{ id: 'langgraph', label: 'LangGraph' }],
+            relationships: [],
+            facts: [{ text: 'A fact.' }],
+          },
+          tokenCounts: response.tokenCounts,
         };
       },
     },
@@ -266,6 +272,26 @@ describe('trace shape', () => {
         false,
       );
     }
+  });
+
+  it('reports a RunResponse.tokenCounts equal to the usage summed over its inference spans', async () => {
+    // P1-F. Two act steps, so four chat calls of { input 10, output 35 } each.
+    // A plan-only total — what the field held before — would be { 10, 35 }.
+    exporter.reset();
+    const service = new RunsService(null, null, null, null, null);
+    service.setDeps(deps(async (input) => ({ results: [String(input)] })));
+    const traced = await service.executeTraced({ body: body(2), correlationId: 'corr-usage' });
+    const chats = named(exporter.getFinishedSpans(), `generate_content ${CHAT_MODEL}`);
+    everySpan.push(...exporter.getFinishedSpans());
+    const sum = (key: string) =>
+      chats.reduce((total, span) => total + Number(span.attributes[key] ?? 0), 0);
+
+    expect(chats).toHaveLength(4);
+    expect(traced.response.tokenCounts).toEqual({
+      prompt: sum('gen_ai.usage.input_tokens'),
+      completion: sum('gen_ai.usage.output_tokens'),
+    });
+    expect(traced.response.tokenCounts).toEqual({ prompt: 40, completion: 140 });
   });
 
   it('opens execute_tool under agent.node.act', () => {

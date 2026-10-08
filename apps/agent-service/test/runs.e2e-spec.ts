@@ -145,9 +145,15 @@ describe('POST /runs/stream when a node fails', () => {
           throw new Error('upstream model unavailable');
         },
       },
-      act: { tools: [], selectTool: async () => null },
+      act: {
+        tools: [],
+        selectTool: async () => ({ selection: null, tokenCounts: { prompt: 0, completion: 0 } }),
+      },
       distill: {
-        extractEntities: async () => ({ entities: [], relationships: [], facts: [] }),
+        extractEntities: async () => ({
+          extraction: { entities: [], relationships: [], facts: [] },
+          tokenCounts: { prompt: 0, completion: 0 },
+        }),
       },
       reflect: {
         episodicRepo: {

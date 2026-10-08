@@ -70,18 +70,23 @@ const calls = {
   embed: (text: string): DecisionCall => ({ seam: 'embed', request: { text } }),
 } as const;
 
+/** The three seams that are a `generateContent` call, and so carry usage. */
+const CHAT_SEAMS: ReadonlySet<DecisionCall['seam']> = new Set([
+  'plan.callLlm',
+  'act.selectTool',
+  'distill.extractEntities',
+]);
+
 /**
- * The only seam whose response carries usage metadata by the time it gets here.
+ * The usage a chat seam returned beside its answer.
  *
- * `selectTool` and `extractEntities` both go through a JSON model call inside
- * `RunsService` and return the parsed value, so their token counts are gone
- * before this wrapper sees them. P1-F owns cost assertions and will want them;
- * recording what is reachable now is free, and claiming the rest would not be.
+ * Every chat seam returns `{ ..., tokenCounts }` from format 2 on (P1-F), so
+ * the recorder reads it at all three. `embed` and `act.tool` report none, and
+ * none is claimed for them.
  */
 export function tokenCountsFor(call: DecisionCall, response: unknown): TokenCounts | undefined {
-  if (call.seam !== 'plan.callLlm') return undefined;
-  const counts = (response as { tokenCounts?: TokenCounts } | null | undefined)?.tokenCounts;
-  return counts === undefined ? undefined : counts;
+  if (!CHAT_SEAMS.has(call.seam)) return undefined;
+  return (response as { tokenCounts?: TokenCounts } | null | undefined)?.tokenCounts;
 }
 
 /** Recording: the live set, with every decision it makes appended to the deck. */
@@ -198,11 +203,10 @@ export function replayModelDeps(deck: Deck): ModelDeps {
  *
  * The recorded usage is set where the cassette has it, and only there. Token
  * usage is a property of the request-and-response pair a cassette freezes, so
- * the recording measured it. `act.selectTool` and `distill.extractEntities`
- * decisions carry none, because the set predates their usage being reachable,
- * and an absent count is not written as zero. The recorded `completion` is the
- * candidate count, not the derived output a live span carries, so a replayed
- * `output_tokens` undercounts a thinking model until the set is re-recorded.
+ * the recording measured it. From format 2 every chat decision carries it, with
+ * `completion` as billed output — the same figure the live span derived — so a
+ * replayed trial's `gen_ai.usage.*` sums are the recording's. A recorded error
+ * carries none, and an absent count is not written as zero.
  */
 export function recordServedDecision(decision: Decision): void {
   const span = activeInferenceSpan();
@@ -212,6 +216,9 @@ export function recordServedDecision(decision: Decision): void {
     span.recordUsage({
       input: decision.tokenCounts.prompt,
       output: decision.tokenCounts.completion,
+      ...(decision.tokenCounts.reasoning === undefined
+        ? {}
+        : { reasoningOutput: decision.tokenCounts.reasoning }),
     });
   }
 }

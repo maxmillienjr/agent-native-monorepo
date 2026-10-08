@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { EMBEDDING_DIMENSIONS } from '@repo/memory-core';
 import { CassetteMissError } from '@repo/agent-cassette';
 import { buildAgentGraph, type GraphDeps } from './graph.js';
+import { NO_USAGE } from '../model/usage.js';
 
 /**
  * The graph is assembled at request time, so a construction error surfaces as a
@@ -20,9 +21,12 @@ function makeDeps(): GraphDeps {
     plan: {
       callLlm: async () => ({ content: 'a plan', tokenCounts: { prompt: 0, completion: 0 } }),
     },
-    act: { tools: [], selectTool: async () => null },
+    act: { tools: [], selectTool: async () => ({ selection: null, tokenCounts: NO_USAGE }) },
     distill: {
-      extractEntities: async () => ({ entities: [], relationships: [], facts: [] }),
+      extractEntities: async () => ({
+        extraction: { entities: [], relationships: [], facts: [] },
+        tokenCounts: NO_USAGE,
+      }),
     },
     reflect: {
       episodicRepo: {
@@ -72,9 +76,12 @@ describe('buildAgentGraph', () => {
     const deps = makeDeps();
     deps.distill = {
       extractEntities: async () => ({
-        entities: [{ id: 'langgraph', label: 'LangGraph' }],
-        relationships: [],
-        facts: [{ text: 'A fact worth keeping.' }],
+        extraction: {
+          entities: [{ id: 'langgraph', label: 'LangGraph' }],
+          relationships: [],
+          facts: [{ text: 'A fact worth keeping.' }],
+        },
+        tokenCounts: NO_USAGE,
       }),
     };
     deps.reflect.neo4jWriter = {

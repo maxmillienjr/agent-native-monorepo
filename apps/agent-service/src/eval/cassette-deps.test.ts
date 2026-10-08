@@ -21,6 +21,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { cassettePath } from '@repo/eval-harness';
+import { NO_USAGE } from '../agent/model/usage.js';
 import { CHAT_MODEL, RunsService, type ModelDeps } from '../runs/runs.service.js';
 import {
   MODEL_HOST,
@@ -93,13 +94,19 @@ function fakeLive(calls: string[]): ModelDeps {
       ],
       selectTool: async (plan) => {
         calls.push(`select:${plan}`);
-        return { toolName: 'web-search', input: { q: 'langgraph' } };
+        return {
+          selection: { toolName: 'web-search', input: { q: 'langgraph' } },
+          tokenCounts: { prompt: 23, completion: 130, reasoning: 120 },
+        };
       },
     },
     distill: {
       extractEntities: async (context) => {
         calls.push(`extract:${context}`);
-        return { entities: [], relationships: [], facts: [{ text: 'a fact' }] };
+        return {
+          extraction: { entities: [], relationships: [], facts: [{ text: 'a fact' }] },
+          tokenCounts: { prompt: 41, completion: 900, reasoning: 850 },
+        };
       },
     },
     embed: async (text) => {
@@ -115,7 +122,7 @@ function fakeLive(calls: string[]): ModelDeps {
 /** Drives every seam once, in the order a run would. */
 async function exercise(deps: ModelDeps): Promise<unknown[]> {
   const plan = await deps.plan.callLlm('system', 'user');
-  const selection = await deps.act.selectTool('a plan', deps.act.tools);
+  const { selection } = await deps.act.selectTool('a plan', deps.act.tools);
   const tool = deps.act.tools.find((entry) => entry.name === selection?.toolName);
   const output = await tool!.execute(selection!.input);
   const extraction = await deps.distill.extractEntities('a conversation');
@@ -167,13 +174,20 @@ describe('the recording and replay directions of the same seam', () => {
     expect(JSON.stringify(embed.response).length).toBeLessThan(EMBEDDING_DIMENSIONS * 8);
   });
 
-  it('records the token counts it can actually reach, and claims no others', async () => {
+  it('records the token counts of every chat seam, and claims none for the others', async () => {
     const { cassette } = await record(fakeLive([]));
+    const counts = Object.fromEntries(
+      cassette.decisions.map((decision) => [decision.seam, decision.tokenCounts]),
+    );
 
-    expect(cassette.decisions[0]!.tokenCounts).toEqual({ prompt: 11, completion: 7 });
-    // `selectTool` and `extractEntities` return a parsed value; their usage
-    // metadata is gone before this wrapper sees it. P1-F owns the rest.
-    expect(cassette.decisions[1]!.tokenCounts).toBeUndefined();
+    // Format 2: all three chat seams return their usage beside the answer.
+    expect(counts).toEqual({
+      'plan.callLlm': { prompt: 11, completion: 7 },
+      'act.selectTool': { prompt: 23, completion: 130, reasoning: 120 },
+      'act.tool': undefined,
+      'distill.extractEntities': { prompt: 41, completion: 900, reasoning: 850 },
+      embed: undefined,
+    });
   });
 
   it('misses rather than inventing an answer when the prompt moves', async () => {
@@ -253,8 +267,11 @@ describe('request hashes across two runs of the same task', () => {
 /** One canned answer per seam, so a stand-in deck can serve a whole run. */
 const seamAnswers: Record<string, unknown> = {
   'plan.callLlm': { content: 'a plan', tokenCounts: { prompt: 1, completion: 1 } },
-  'act.selectTool': null,
-  'distill.extractEntities': { entities: [], relationships: [], facts: [] },
+  'act.selectTool': { selection: null, tokenCounts: { prompt: 1, completion: 1 } },
+  'distill.extractEntities': {
+    extraction: { entities: [], relationships: [], facts: [] },
+    tokenCounts: { prompt: 1, completion: 1 },
+  },
   embed: new Array(EMBEDDING_DIMENSIONS).fill(0),
 };
 
@@ -280,9 +297,12 @@ describe('the decorator seam on RunsService', () => {
       plan: {
         callLlm: async () => ({ content: 'a plan', tokenCounts: { prompt: 1, completion: 1 } }),
       },
-      act: { tools: [], selectTool: async () => null },
+      act: { tools: [], selectTool: async () => ({ selection: null, tokenCounts: NO_USAGE }) },
       distill: {
-        extractEntities: async () => ({ entities: [], relationships: [], facts: [] }),
+        extractEntities: async () => ({
+          extraction: { entities: [], relationships: [], facts: [] },
+          tokenCounts: NO_USAGE,
+        }),
       },
       embed: async (text) => {
         seen.push(text);
@@ -459,7 +479,7 @@ describe('replayed spans', () => {
     );
   });
 
-  it('carry the recorded usage where the cassette has it, none where it does not, all marked', async () => {
+  it('carry the recorded usage at every chat seam, none elsewhere, all marked', async () => {
     const { cassette } = await record(fakeLive([]));
     const deps = replayModelDeps(
       new CassettePlayer(cassette, replayConfig, { onServe: recordServedDecision }),
@@ -467,7 +487,7 @@ describe('replayed spans', () => {
     exporter.reset();
 
     await deps.plan.callLlm('system', 'user');
-    const selection = await deps.act.selectTool('a plan', deps.act.tools);
+    const { selection } = await deps.act.selectTool('a plan', deps.act.tools);
     // `act` opens this span around the tool; the decision is served inside it.
     await withToolSpan('web-search', () => deps.act.tools[0]!.execute(selection!.input));
     await deps.distill.extractEntities('a conversation');
@@ -494,8 +514,18 @@ describe('replayed spans', () => {
       'gen_ai.usage.input_tokens': 11,
       'gen_ai.usage.output_tokens': 7,
     });
-    expect(usageKeys(bySeam('act.selectTool'))).toEqual([]);
-    expect(usageKeys(bySeam('distill.extractEntities'))).toEqual([]);
+    // The reasoning share, where the recording had one, rides along too.
+    expect(bySeam('act.selectTool')).toMatchObject({
+      'gen_ai.usage.input_tokens': 23,
+      'gen_ai.usage.output_tokens': 130,
+      'gen_ai.usage.reasoning.output_tokens': 120,
+    });
+    expect(bySeam('distill.extractEntities')).toMatchObject({
+      'gen_ai.usage.input_tokens': 41,
+      'gen_ai.usage.output_tokens': 900,
+      'gen_ai.usage.reasoning.output_tokens': 850,
+    });
+    expect(usageKeys(bySeam('plan.callLlm'))).not.toContain('gen_ai.usage.reasoning.output_tokens');
     expect(usageKeys(bySeam('embed'))).toEqual([]);
     expect(unlistedAttributeKeys(spans)).toEqual([]);
   });
@@ -513,7 +543,10 @@ describe('loading a set for replay', () => {
     // refusal before any store is reset.
     const path = cassettePath(datasetDir, 'memory-recall-001', 0);
     mkdirSync(join(datasetDir, 'cassettes'), { recursive: true });
-    writeFileSync(path, JSON.stringify({ header: { ...liveHeader, formatVersion: 1 }, decisions: [] }));
+    writeFileSync(
+      path,
+      JSON.stringify({ header: { ...liveHeader, formatVersion: 1 }, decisions: [] }),
+    );
 
     const refusal = (() => {
       try {

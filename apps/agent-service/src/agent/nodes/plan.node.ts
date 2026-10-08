@@ -1,5 +1,6 @@
 import { withNodeSpan } from '@repo/telemetry';
 import type { AgentState } from '../graph/state.js';
+import { addUsage, type CallUsage } from '../model/usage.js';
 
 const SYSTEM_PROMPT = 'You are a helpful research assistant.';
 
@@ -9,7 +10,7 @@ export interface PlanNodeDeps {
     userPrompt: string,
   ) => Promise<{
     content: string;
-    tokenCounts: { prompt: number; completion: number };
+    tokenCounts: CallUsage;
   }>;
 }
 
@@ -46,10 +47,7 @@ export async function planNode(
         // and `reflect` persisted a conversation with only one side of it —
         // against an Episodic tier specified to hold the full turn history.
         messages: [...state.messages, { role: 'assistant' as const, content: response.content }],
-        tokenCounts: {
-          prompt: state.tokenCounts.prompt + response.tokenCounts.prompt,
-          completion: state.tokenCounts.completion + response.tokenCounts.completion,
-        },
+        tokenCounts: addUsage(state.tokenCounts, response.tokenCounts),
       };
     },
     { operation: 'plan' },

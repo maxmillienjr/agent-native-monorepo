@@ -1,8 +1,10 @@
 import { withNodeSpan } from '@repo/telemetry';
 import type { AgentState, Extraction } from '../graph/state.js';
+import { addUsage, type CallUsage } from '../model/usage.js';
 
 export interface DistillNodeDeps {
-  extractEntities: (context: string) => Promise<Extraction>;
+  /** The extraction, and what the call that produced it cost (P1-F). */
+  extractEntities: (context: string) => Promise<{ extraction: Extraction; tokenCounts: CallUsage }>;
 }
 
 /**
@@ -32,12 +34,12 @@ export async function distillNode(
     span.setAttribute('session_id', state.sessionId);
 
     const sessionContext = state.messages.map((m) => `${m.role}: ${m.content}`).join('\n');
-    const extraction = await deps.extractEntities(sessionContext);
+    const { extraction, tokenCounts } = await deps.extractEntities(sessionContext);
 
     span.setAttribute('entity_count', extraction.entities.length);
     span.setAttribute('relationship_count', extraction.relationships.length);
     span.setAttribute('fact_count', extraction.facts.length);
 
-    return { extraction };
+    return { extraction, tokenCounts: addUsage(state.tokenCounts, tokenCounts) };
   });
 }

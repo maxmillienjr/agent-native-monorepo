@@ -26,7 +26,8 @@ import {
   RETRIEVAL_FACADE,
   CHECKPOINTER,
 } from '../memory/memory.tokens.js';
-import type { ActNodeDeps } from '../agent/nodes/act.node.js';
+import { NO_USAGE } from '../agent/model/usage.js';
+import type { ActNodeDeps, ToolSelection } from '../agent/nodes/act.node.js';
 import type { DistillNodeDeps } from '../agent/nodes/distill.node.js';
 import type { PlanNodeDeps } from '../agent/nodes/plan.node.js';
 
@@ -267,17 +268,24 @@ export class RunsService {
             'You select the best tool for a task. Respond with JSON: {"toolName": "...", "input": ...} or null if no tool is needed.',
             `Plan: ${plan}\nAvailable tools: ${toolNames}`,
           );
+          // The call is paid for whether or not its answer parses, so the
+          // usage goes back either way.
+          let selection: ToolSelection | null;
           try {
-            return JSON.parse(response.content);
+            selection = JSON.parse(response.content) as ToolSelection | null;
           } catch {
-            return null;
+            selection = null;
           }
+          return { selection, tokenCounts: response.tokenCounts };
         },
       },
       distill: {
         extractEntities: async (context: string) => {
           const response = await callExtract(EXTRACTION_PROMPT, context);
-          return parseExtraction(response.content);
+          return {
+            extraction: parseExtraction(response.content),
+            tokenCounts: response.tokenCounts,
+          };
         },
       },
       embed: createGeminiEmbedder(apiKey),
@@ -298,15 +306,20 @@ export class RunsService {
       },
       act: {
         tools: defaultTools(),
-        selectTool: async () => null, // Stub: no tool needed
+        // Stub: no tool needed. No model was called, so nothing was used —
+        // unlike `plan`'s canned figures, which predate P1-F and stay.
+        selectTool: async () => ({ selection: null, tokenCounts: NO_USAGE }),
       },
       distill: {
         extractEntities: async () => ({
-          entities: [
-            { id: 'langgraph', label: 'LangGraph', description: 'Framework for stateful agents' },
-          ],
-          relationships: [],
-          facts: [{ text: 'LangGraph is used for building stateful agent workflows.' }],
+          extraction: {
+            entities: [
+              { id: 'langgraph', label: 'LangGraph', description: 'Framework for stateful agents' },
+            ],
+            relationships: [],
+            facts: [{ text: 'LangGraph is used for building stateful agent workflows.' }],
+          },
+          tokenCounts: NO_USAGE,
         }),
       },
       embed: stubEmbedding,
