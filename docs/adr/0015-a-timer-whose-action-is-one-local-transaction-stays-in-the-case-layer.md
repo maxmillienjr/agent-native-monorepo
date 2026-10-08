@@ -42,8 +42,9 @@ P3-F's lapse qualifies on every count:
 
 - **The action is one conditional `UPDATE`.** `AppealRepository.forwardLapsed` moves each
   `filed` appeal at or past its deadline to `forwarded` with
-  `forward_reason = 'deadline-lapsed'`, a case-file digest and `forwarded_at`, in one
-  statement guarded by `WHERE status = 'filed'`.
+  `forward_reason = 'deadline-lapsed'`, a case-file digest and `forwarded_at`. Each appeal
+  is its own short transaction: lock the row, check it is still `filed`, and update it
+  `WHERE status = 'filed'`.
 - **A crash leaves no intermediate state.** The row is `filed` or `forwarded`, never between.
   A second sweep, or a sweep running beside another instance's, finds nothing to do for a
   row already moved, and the e2e spec runs two sweeps over one lapsed appeal to show one
@@ -55,6 +56,16 @@ P3-F's lapse qualifies on every count:
   lapsed forwards it in its own transaction before answering `409`, and every read computes
   `lapsed` from the clock. A sweep that never runs delays the record of a forward, not the
   forward's effect on what the service will accept.
+
+**With P3-C's ledger configured, the forward also appends an entry**, to a second database,
+before the row commits. That is the pattern P3-C already uses for a determination, and it
+does not cross the line this record draws. The ledger is the plan's own store, not an
+outside party's, and the append converges under retry rather than needing compensation.
+The entry's id is derived from the appeal, and its payload, the reason and the case-file
+digest, holds no instant the forward sets. So a crash after the append and before the
+commit leaves an entry and a filed appeal, and the next attempt appends the same bytes,
+gets the stored entry back and commits. A failed append rolls the forward back, the appeal
+stays filed, and the sweep goes on to the next one.
 
 The sweep stays P3-E's `ReviewSweep`, which gains one call per period after `flagOverdue`.
 It still never decides a pended case: the forward is the consequence § 422.590(d) and (g)
