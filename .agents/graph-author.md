@@ -43,6 +43,11 @@ root on its own.
   only when its value is not content: nothing the user or the model wrote, and no id the
   model extracted.
 - **No token usage on the node span** — the model client's inference span carries it.
+- **A node that makes a model call adds its usage to state.** The seam returns
+  `tokenCounts` beside its answer, as `callLlm`, `selectTool` and `extractEntities` do, and
+  the node writes `addUsage(state.tokenCounts, …)` from `agent/model/usage.ts`, so
+  `RunResponse.tokenCounts` stays the run's total (P1-F). A new chat seam also goes in
+  `CHAT_SEAMS` in `eval/cassette-deps.ts`, or its cassette decisions record no usage.
 - **No direct database calls** — use `@repo/memory-core` interfaces.
 - **No `console.log`** — use the structured logger.
 - **No `any`** — use `unknown` + Zod parse at boundaries.

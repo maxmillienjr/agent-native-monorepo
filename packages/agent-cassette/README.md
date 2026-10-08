@@ -15,13 +15,13 @@ axes as an argument.
 Not HTTP traffic. A cassette holds the decisions a run made at the seams where it spends
 money:
 
-| Seam                      | Request                    | Response                      |
-| ------------------------- | -------------------------- | ----------------------------- |
-| `plan.callLlm`            | system prompt, user prompt | content, token counts         |
-| `act.selectTool`          | plan text, tool names      | `{toolName, input}` or `null` |
-| `act.tool`                | tool name, input           | tool output                   |
-| `distill.extractEntities` | conversation context       | `Extraction`                  |
-| `embed`                   | text                       | 768 floats                    |
+| Seam                      | Request                    | Response                                    |
+| ------------------------- | -------------------------- | ------------------------------------------- |
+| `plan.callLlm`            | system prompt, user prompt | content, token counts                       |
+| `act.selectTool`          | plan text, tool names      | `{toolName, input}` or `null`, token counts |
+| `act.tool`                | tool name, input           | tool output                                 |
+| `distill.extractEntities` | conversation context       | `Extraction`, token counts                  |
+| `embed`                   | text                       | 768 floats                                  |
 
 ADR 0005 argues that choice against the transport-level alternative and names what it stops
 measuring. The short version: a decision cassette carries no credential and survives the
@@ -35,9 +35,17 @@ two entries; when a queue empties that is a miss, not a reuse. It is what makes 
 replayable — `IO_RETRY` re-runs a throwing node with the same input, so attempt 1's error
 and attempt 2's success are two entries under one hash and replay reproduces both.
 
+The format is version 2. Version 1 recorded token counts for `plan.callLlm` alone, because
+the other two chat seams returned their parsed value without them; P1-F made all three
+return usage, and every chat decision now carries `tokenCounts` — `completion` as billed
+output, thinking included, and `reasoning` as the thinking share where the response
+reported a total. The requests did not change, so a version-1 decision would still match
+on its hash and then hand `act` a response with no `selection` in it, which `act` reads as
+"no tool". The player refuses any other version before the first decision is served.
+
 Embeddings are stored as base64 float32. Measured over 768 dimensions a vector is 16,345
 bytes as a JSON float array and 4,096 as base64 float32, and the two committed trials make
-fourteen and seven embedding calls. The precision is not lost twice: `semantic_facts.embedding` is
+sixteen and eleven embedding calls. The precision is not lost twice: `semantic_facts.embedding` is
 `vector(768)` and pgvector's `vector` is an array of `float4`, so the database would round
 the same values on the way in.
 
@@ -50,15 +58,15 @@ rather than importing `EVAL_DATASETS_DIR`, for the dependency reason above.
 
 <!-- RECORDED-SET:START -->
 
-| Cassette                         | Axes                        | Recorded                 | Decisions                                 | Size    |
-| -------------------------------- | --------------------------- | ------------------------ | ----------------------------------------- | ------- |
-| `memory-recall-001.trial-0.json` | model `live`, memory `live` | 2026-09-10, at `021c6f2` | 3 model calls, 14 embeddings              | 93.9 KB |
-| `tool-use-001.trial-0.json`      | model `live`, memory `live` | 2026-09-10, at `021c6f2` | 5 model calls, 3 tool calls, 7 embeddings | 48.3 KB |
+| Cassette                         | Axes                        | Recorded                 | Decisions                                  | Size    |
+| -------------------------------- | --------------------------- | ------------------------ | ------------------------------------------ | ------- |
+| `memory-recall-001.trial-0.json` | model `live`, memory `live` | 2026-10-08, at `94efb6a` | 3 model calls, 16 embeddings               | 92.3 KB |
+| `tool-use-001.trial-0.json`      | model `live`, memory `live` | 2026-10-08, at `94efb6a` | 5 model calls, 3 tool calls, 11 embeddings | 70.8 KB |
 
 One trial of each task, not five. Recording five would cost about forty
 `generateContent` calls against a 20-request daily free tier; P1-C owns the pipeline that
-would want them. The recording run itself passed every grader on both tasks, which is the
-only 1 × 2 live-axis result this repository has.
+would want them. Format 2 was recorded by P1-F, each task in a run of its own, for eight
+calls; both recording runs passed every grader, as P1-B's did on the version-1 set.
 
 <!-- RECORDED-SET:END -->
 

@@ -190,12 +190,12 @@ It measures the fused retrieval ADR 0009 retired, so it is a historical measurem
   XML emits a `<skipped/>` case rather than a pass or an absence, and the Markdown summary
   prints it between the rate and the table. Never report a rate computed over fewer tasks
   without the list of what was left out.
-- **`EVAL_TRIALS` is per task, and there is no task filter.** `EVAL_TRIALS=1 yarn eval` on
-  the live axis runs one trial of every task that is not skipped: about three
-  `generateContent` calls for `memory-recall-001` and five for `tool-use-001`. To measure
-  one task live on a tight quota, move the other task's file out of
-  `packages/eval-harness/datasets/memory-recall/` for the run and put it back afterwards.
-  The loader reads every top-level `.json` there. P2-C's live criteria were run this way.
+- **`EVAL_TRIALS` is per task.** `EVAL_TRIALS=1 yarn eval` on the live axis runs one trial
+  of every task that is not skipped: three `generateContent` calls for `memory-recall-001`
+  and five for `tool-use-001`. To measure or record one task on
+  a tight quota, name it in `EVAL_TASKS` (below) rather than moving the other files out of
+  `packages/eval-harness/datasets/memory-recall/`, which is how P2-C's live criteria and
+  P1-F's re-recording were run before that variable existed.
 - **Integration needs the stores exported, and says nothing when they are not.** Bring the
   infrastructure up with `docker compose up -d --wait` — no `--profile full`, the suite
   talks to Postgres and Neo4j directly — and export `DATABASE_URL`, `NEO4J_URI`,
@@ -231,7 +231,10 @@ It measures the fused retrieval ADR 0009 retired, so it is a historical measurem
   regenerate the replay baseline** with `EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval`
   and commit both: the baseline is tied to the set by a digest, and a new set with the old
   baseline fails the gate as `stale-digest`. A contributor without a key cannot re-record;
-  a maintainer with one pushes the new set and baseline to the pull request's branch.
+  a maintainer with one pushes the new set and baseline to the pull request's branch. A
+  cassette in an older format is refused before any store is reset, with the same two
+  commands in the message: P1-F's format 2 changed what two seams return and not what they
+  ask, so an old set would otherwise match and replay the wrong shape.
   **The free tier also allows 5 `generateContent` calls a minute**, and a record or live
   run of both tasks makes about eight in half a minute, so it reaches that limit. The chat
   client is meant to wait it out: `stopOnDailyQuota` retries any 429 that does not name a
@@ -275,6 +278,19 @@ It measures the fused retrieval ADR 0009 retired, so it is a historical measurem
   left out. It is a root script over `yarn workspace`, not a Turbo task, so strict env mode
   does not strip its variables. `EVAL_CHAT_MODEL` runs `yarn eval` on another chat id for a
   hand-started comparison; replay and `EVAL_GATE` both refuse it.
+- **A budget is a line in the task file, and raising one is an edit reviewed in the pull
+  request that needs it.** Each task declares per-trial ceilings beside `requires` —
+  `inputTokens`, `outputTokens` and `modelCalls` — and `yarn eval` checks them against the
+  trial's spans beside the graders, never among them: a breach leaves `passed` and the pass
+  rate alone, fails the run on its own, and is not something `EVAL_GATE=update` can accept.
+  On replay a budget checks the committed cassettes, so it fails on one kind of pull
+  request: the re-record of a prompt change that costs more. The re-record runs the same
+  check on the live axis first, so the breach shows on the contributor's machine. Raise the
+  number in the task file, in that pull request, and say why in its description; never
+  widen headroom in a pull request that does not need it. The values follow P1-F's rule —
+  the recording × 1.5 for input and × 2 for output, rounded up to the next hundred, and
+  `2 + maxSteps` calls — until the nightly's samples calibrate them. Latency and dollars
+  are reported and never budgets: the loader refuses a `latencyMs` key with the reason.
 - **A retriever's `ORDER BY` needs a unique secondary key.** Both semantic readers produce
   ties by construction — `expandFromSeeds` scores on hop distance, and the eval harness
   seeds every fact in a task with one vector — and an untied order is decided by whatever

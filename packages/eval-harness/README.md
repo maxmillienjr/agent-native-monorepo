@@ -193,6 +193,7 @@ yarn eval:promote-live <cassette digest>               # commit a live reference
 Without `EVAL_GATE`, `yarn eval` exits non-zero when any trial failed, which is a local
 signal and nothing more. With it, the gate's verdict decides the exit code, and the runner
 writes `eval-gate.json` beside the reports and appends a section to `eval-summary.md`.
+Either way a budget breach also exits non-zero; see the next section.
 
 - **Replay is a snapshot, not a statistic.** Trial `i` replays cassette `i` in the baseline
   run and in this one, so a per-cell difference has zero variance. `src/gate/` compares
@@ -256,6 +257,48 @@ pooled candidates added one label and moved nothing. The reports are under
 accepted, took the graph out of retrieval. The ablation runs in no CI tier; P2-D owns
 whether it should.
 
+## Budgets, usage and cost
+
+A task file may declare per-trial ceilings beside `requires`:
+
+```json
+"budgets": { "inputTokens": 2200, "outputTokens": 8500, "modelCalls": 5 }
+```
+
+`inputTokens` and `outputTokens` are sums of `gen_ai.usage.input_tokens` and
+`gen_ai.usage.output_tokens` over the trial's `generate_content` spans, output counting
+thinking tokens; `modelCalls` counts those spans, errored ones included. `checkBudgets` reads
+nothing but the trial's own spans (P1-F).
+
+- **Beside the pass rate, not inside it.** A budget is not a grader. A trial that did the
+  task and spent too much has `passed: true` and `withinBudget: false`, `passRate` does not
+  move, and `SuiteReport.budgetBreaches` counts the breach. The run still exits non-zero,
+  with or without `EVAL_GATE`, and the summary says which of the two happened. P1-D compares
+  pass rates, and a rate that fell because a correct answer got longer would be a quality
+  number measuring cost.
+- **Absent is not zero.** A successful call whose span has no usage count, or a trial with
+  no inference span, is `unmeasurable`, which counts as a breach. A trial whose spans are
+  partly replayed is unmeasurable too. Nothing is checked on `model=stub`, which opens no
+  inference span, and the summary says so beside the skipped tasks.
+- **On replay a budget checks the cassette.** A replayed trial's usage is the recording's,
+  exactly, and a change that alters a request misses before it reaches a count. So the
+  replay tier fails on one kind of pull request: the one that re-records the set with a
+  more expensive prompt. On live a budget is one fresh sample against a loose ceiling.
+- **Latency is reported, never a budget.** The loader rejects `latencyMs` with the reason.
+  Identical requests in one recording took between 1.1 s and 23.1 s, so a ceiling loose
+  enough to hold catches only a hang, which the job timeout already catches, and on replay a
+  span's duration is how fast the cassette was read. The live summary prints each trial's
+  model latency as one sample; the replay summary prints none and says why.
+- **Cost is a list-price equivalent, never asserted.** The harness takes a `PriceTable` as
+  an option, since it knows no provider; `yarn eval` passes `GEMINI_PRICES`
+  (`apps/agent-service/src/eval/pricing.ts`), which records its source page and the dates.
+  A model the table does not list prints `unpriced`, never `$0`, and embedding calls are
+  counted and unpriced because the API reports no usage for them.
+
+The current values are each task's recording × 1.5 for input and × 2 for output, rounded
+up to the next hundred, and `2 + maxSteps` model calls. Raising one is an edit to the task
+file, reviewed in the pull request that needs it.
+
 ## What this package does not do
 
 - **Parsing a cassette.** This package resolves their paths, counts them and hashes their
@@ -265,6 +308,9 @@ whether it should.
   it and needs none.
 - **Applying the merge gate.** The gate decides the verdict; `.github/rulesets/main.json`
   is what makes `eval-replay` a required check, and applying it is the repository owner's.
+- **Asserting latency or dollars.** Both are reported. A latency gate needs many live
+  samples against a baseline, which is P1-D's machinery; a dollar ceiling means nothing
+  until two model ids with different prices are compared, which is P1-E's.
 - **Span collection.** `Transcript.spans` is filled by the adapter, not by this package.
   `apps/agent-service` keeps the evaluation process's spans in memory and hands each trial
   the spans of its own run's trace, which is how every trial in `eval-report.json` carries

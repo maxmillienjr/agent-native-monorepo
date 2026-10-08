@@ -90,8 +90,12 @@ they are not. The agent is measured, too — `yarn eval` runs trials and reports
 live model once a key secret exists. A regression gate reads those numbers: on the replay
 axis any difference from the committed baseline is red, and on the live axis a pooled
 comparison says `regressed`, `held` or — until enough nights exist — `insufficient-evidence`.
-Red blocks a merge once the owner applies `.github/rulesets/main.json`. See
-[`docs/STATUS.md`](docs/STATUS.md) before quoting this section back at the code.
+Beside the pass rate, each task file sets per-trial ceilings on input tokens, output tokens
+and model calls, and a breach fails the run without counting as a failed trial; the report
+also prints each trial's usage and a list-price cost, and on the live axis its latency,
+neither of them asserted. Red blocks a merge once the owner applies
+`.github/rulesets/main.json`. See [`docs/STATUS.md`](docs/STATUS.md) before quoting this
+section back at the code.
 
 The agent's domain logic is intentionally trivial (a single system prompt: _"You are a helpful research assistant."_). The value is in the chassis — how the pieces connect, how memory is structured, how observability is wired, and how the monorepo scales.
 
@@ -204,15 +208,19 @@ node is only safe to retry when it is a function of its input state, and a `refl
 extracted its own entities was not: a second attempt could word a fact differently, change
 its hash, and write an extra row rather than converging on the first attempt's.
 
-| Node       | Purpose                         | Key Input Fields               | Key Output Fields                        | Side Effects                                  |
-| ---------- | ------------------------------- | ------------------------------ | ---------------------------------------- | --------------------------------------------- |
-| `ingress`  | Validate request, seed state    | Raw HTTP body                  | Full `AgentState`                        | None                                          |
-| `retrieve` | Semantic recall, vector-only    | `messages`, `topK`             | `retrievedContext`                       | pgvector search                               |
-| `plan`     | LLM planning step               | `messages`, `retrievedContext` | `currentPlan`, `messages`, `tokenCounts` | LLM API call                                  |
-| `act`      | Tool execution loop             | `currentPlan`                  | `toolOutputs`, `stepCount`               | Tool invocations                              |
-| `distill`  | Extract entities and facts      | `messages`                     | `extraction`                             | LLM API call                                  |
-| `reflect`  | Memory consolidation            | `messages`, `extraction`       | _(none — side-effect node)_              | Episodic insert, Neo4j MERGE, pgvector upsert |
-| `egress`   | Validate output, build response | Full state                     | `outcome`                                | None                                          |
+`plan`, `act` and `distill` each add their model call's usage to `tokenCounts`, so
+`RunResponse.tokenCounts` is the run's total over every `generateContent` call, with
+`completion` counting thinking tokens. Embedding calls report no usage and are not in it.
+
+| Node       | Purpose                         | Key Input Fields               | Key Output Fields                         | Side Effects                                  |
+| ---------- | ------------------------------- | ------------------------------ | ----------------------------------------- | --------------------------------------------- |
+| `ingress`  | Validate request, seed state    | Raw HTTP body                  | Full `AgentState`                         | None                                          |
+| `retrieve` | Semantic recall, vector-only    | `messages`, `topK`             | `retrievedContext`                        | pgvector search                               |
+| `plan`     | LLM planning step               | `messages`, `retrievedContext` | `currentPlan`, `messages`, `tokenCounts`  | LLM API call                                  |
+| `act`      | Tool execution loop             | `currentPlan`                  | `toolOutputs`, `stepCount`, `tokenCounts` | LLM API call per step, tool invocations       |
+| `distill`  | Extract entities and facts      | `messages`                     | `extraction`, `tokenCounts`               | LLM API call                                  |
+| `reflect`  | Memory consolidation            | `messages`, `extraction`       | _(none — side-effect node)_               | Episodic insert, Neo4j MERGE, pgvector upsert |
+| `egress`   | Validate output, build response | Full state                     | `outcome`                                 | None                                          |
 
 ---
 
