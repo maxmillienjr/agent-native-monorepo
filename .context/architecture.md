@@ -179,7 +179,7 @@ written with the same role, under the same migrator.
 from the record — the model half and retrieval from a `DecisionQueue`, `reflect`'s writers
 capturing — and compares every checkpoint with the recorded history. It proves the record
 complete and consistent with the checkpoints, and derives what the run wrote; it cannot
-prove either was not edited, which is P3-C's ledger. A record that cannot be written fails
+prove either was not edited, which is the decision ledger's job, below. A record that cannot be written fails
 the prior-authorization request closed and leaves a chat run complete with a `partial`
 record.
 
@@ -188,6 +188,46 @@ POST /runs ─▶ RunRecorder.open ─▶ graph ──decision──▶ Persisti
                                     │                                   (as it resolves)
                                     └──super-step──▶ PostgresSaver ─▶ checkpoints
 audit:replay ◀── run_records + run_decisions + checkpoints  (read-only pool)
+```
+
+## The Decision Ledger
+
+A run record proves what a run did, and not that nobody edited it afterwards. With
+`LEDGER_DATABASE_URL` set, `packages/decision-ledger` keeps a hash chain that commits to
+each record (P3-C, ADR 0013):
+
+- **Five kinds of entry.** `run.recorded` holds a SHA-256 digest of the `run_records` row,
+  its decisions in order and every checkpoint, read back after the run. Every run on either graph
+  appends one after its record closes. `disposition.recommended` holds what the
+  prior-authorization graph recommended, citing its run's entry. `determination.attested`
+  holds a clinician's signed determination, citing that recommendation.
+  `reviewer-key.registered` and `reviewer-key.revoked` hold the keys those signatures are
+  checked against, registered from `REVIEWER_REGISTRY` at boot.
+- **Salted commitments.** Each entry commits to `SHA-256(salt ‖ payload)` with 16 random
+  bytes of salt, and `entry_hash` covers the row and the previous entry's hash. The chain
+  can leave the database without disclosing anything. A payload can be withheld under a
+  retention policy and the entry still verifies.
+- **A writer that cannot rewrite.** The service writes as `ledger_writer`, which holds
+  `SELECT` and `INSERT` only. A trigger stops the owner, and boot refuses a role that could
+  rewrite the ledger. A database administrator in replica mode is stopped by nothing in
+  the database, so `ledger:anchor` time-stamps the head with an RFC 3161 authority through
+  `openssl`, and the token is the commitment that leaves.
+- **Split failure policy.** The chat path fails open: it logs, and the verifier lists the
+  run as uncommitted. `$submit` and the determination route fail closed with a 503, because
+  they return a recommendation or a determination.
+- **Outside the graph.** A lint rule forbids `@repo/decision-ledger` under `src/agent/`.
+  The agent can neither write the ledger nor read it.
+
+`ledger:verify` checks the chain, the commitments, the signatures, the anchors and each
+digest against today's record and checkpoints. It exits 1 naming the first failure by seq
+and run. `--chain-only` needs only the package, over the database or a JSONL export.
+
+```
+run settles ─▶ RunLedger.commitRun ─▶ digest(run_records, run_decisions, checkpoints)
+                                       └─▶ Ledger.append ─▶ ledger_entries + ledger_payloads
+$submit ─▶ run.recorded ─▶ disposition.recommended ─▶ prior_auth_cases.recommendation_seq
+decide ──beforeCommit──▶ determination.attested (signature re-checked) ─▶ case decided
+ledger:anchor ─▶ head entry_hash ─▶ RFC 3161 TSA ─▶ ledger_anchors
 ```
 
 ## The Prior-Authorization Case Layer
@@ -209,7 +249,8 @@ than pausing a thread with `interrupt()`.
 - **A clinician decides; the service verifies.** A determination carries an Ed25519
   signature over P3-C's attestation payload, checked against the public keys in
   `REVIEWER_REGISTRY`. The service holds no private key. The case is decided once, under a
-  row lock.
+  row lock, and with a ledger configured the signed determination is appended to it before
+  the row commits.
 - **The run record closes before the case is written.** Both fail `$submit` closed with a 503. A failed record leaves no case, and a failed enqueue leaves a closed record with no
   case beside it, so the queue never holds a request whose answer was not sent.
 - **The sweep flags and never decides.** A case past its deadline gets

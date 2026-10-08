@@ -118,8 +118,8 @@ workflow for you; the steps below are the tool-agnostic version.
    emits CommonJS into a repository where every other workspace is ESM, and leaving the
    `lint` script out means `yarn turbo lint` runs no task for the package and still reports
    success. Add an `exports` map only for an entry point that must stay out of the barrel;
-   `@repo/determination` is the one package that has one, and why is in
-   `.context/conventions.md`.
+   `@repo/determination` and `@repo/decision-ledger` are the two packages that have one,
+   and why is in `.context/conventions.md`.
    ```json
    {
      "name": "@repo/<name>",

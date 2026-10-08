@@ -27,6 +27,10 @@
   may not. A lint rule in `apps/agent-service/eslint.config.js` forbids the subpath under
   `src/agent/**`, because an `exports` map cannot: the subpath is public on purpose, for
   the clinician review surface (P3-A).
+- The second exception is `@repo/decision-ledger/testing`, a time-stamping authority on
+  localhost whose CA key sits in a temporary directory, for tests that anchor with no
+  network. The same lint rule names it, and nothing outside a test file imports it: a
+  ledger anchored by that authority proves nothing (P3-C).
 - Internal imports within a package use relative paths.
 - Cross-package imports use the `@repo/<name>` workspace alias.
 
@@ -47,6 +51,11 @@
 - **Two pull requests that each add a migration collide on its number.** Drizzle reads the
   order from `meta/_journal.json`, so the second to merge renumbers its file and its
   journal entry, and moves its `when` past the first's.
+- **The ledger's migrations are numbered on their own.** `packages/decision-ledger` keeps
+  its history in `drizzle.__ledger_migrations`, not memory's table, so its `0000` never
+  collides with `memory-core`'s numbers. Its migrations run as the tables' owner through
+  `yarn ledger:migrate`, never at service boot: the service connects as `ledger_writer`,
+  which cannot create a table.
 
 ## Commits
 
@@ -99,8 +108,10 @@
   that `yarn eval` holds every span of every trial to, failing the run before it writes a
   report. Adding a key is an edit to that list, and the review question is whether the value
   is content. An extracted entity id is content: in the payer domain it can be a member's
-  name. Opt-in capture needs the external-store pattern the conventions recommend, and the
-  store is P3-C's ledger.
+  name. Opt-in capture needs the external-store pattern the conventions recommend. P3-C
+  closed that question without code: the access-controlled store is P3-B's run record,
+  every node span already carries `run_id` as the reference to it, and the ledger holds a
+  salted commitment to the record rather than the content. No span gains content.
 - **A replayed span is a recording, not a measurement.** On the replay axis the inference
   spans are opened from the cassette and marked `agent_native.replayed`. They carry the
   usage the recording measured, and only where the cassette has it. Their duration is
@@ -495,10 +506,38 @@ portfolio's, not counsel's.
   checkpoint, by decision (P3-B). A prune command, when one is built, must write a
   deletion event to P3-C's ledger, because deleting from an audit store is itself an
   integrity event.
-- **Integrity is P3-C's, and is not here yet.** Every table above can be rewritten by
-  whoever holds the service's credentials, and a consistent edit to a record and its
-  checkpoints passes `audit:replay`. Until P3-C's ledger commits each record to a hash
-  chain, nothing detects one.
+- **Integrity holds only as far as the anchors leave the building.** P3-C's ledger commits
+  every run record and its checkpoints to a hash chain, so an edit to either fails
+  `ledger:verify` naming the run, and the service's role cannot rewrite the chain. A
+  database administrator can, and detection then rests on RFC 3161 tokens held by someone
+  that administrator does not control (ADR 0013). The deployment runs `ledger:anchor` on a
+  schedule, archives every token outside the database, and has someone other than the
+  database administrator run `ledger:verify` against the archive. Entries after the last
+  anchor are the window a consistent rewrite goes unseen, so the schedule sets that window.
+- **Two time-stamping authorities, not one.** One authority is one party whose key
+  compromise or collusion defeats the anchor. The repository anchors to one, as decided at
+  review. A deployment anchors each head to two independent authorities and keeps both
+  tokens. That is two `LEDGER_TSA_URL` runs today, and the second token goes in the
+  archive, because `ledger_anchors` holds one per seq.
+- **The ledger's writer is `ledger_writer`, with its own credential.** `LEDGER_DATABASE_URL`
+  logs in as that role or as a login role granted it, with a secret the deployment issues,
+  never the memory role. The service refuses to start on a role that could rewrite the
+  ledger. Its migrations run as the owner, through `yarn ledger:migrate`, and the owner's
+  credential is not the service's.
+- **A span's fact digest becomes keyed, or leaves the span.** `fact.contentHash` on spans
+  is the idempotency key of `semantic_facts`. It must be equal across runs to correlate
+  traces, so it cannot be salted per use, and a hash of short content can be reversed by
+  enumerating candidates. Under ADR 0003 the facts are synthetic and it stays. For real
+  member data it becomes an HMAC-SHA256 under a deployment secret the telemetry pipeline
+  cannot read, or it comes off the span (P2-C's question, answered by P3-C). The ledger's
+  own commitments need neither, because each is salted with 16 random bytes.
+- **Reviewer keys are custody, not code.** A signature binds a determination to a key, not
+  to a person. That the key's holder is the licensed reviewer its ledger registration
+  names is § 164.312(d) person-or-entity authentication. That needs an identity provider
+  to bind the reviewer to the key, an HSM or platform authenticator that keeps the private
+  half on their device, and a revocation process fast enough that a stolen key signs
+  little. The ledger records registrations and revocations, and the verifier checks every
+  signature against them. It cannot know a key was stolen before someone revokes it.
 - **The case table holds the request and the model's rationale (P3-E).**
   `prior_auth_cases.request` is the bundle `$submit` received, with the member's identifiers,
   coverage, diagnoses and clinical notes, and `prior_auth_cases.disposition` holds the
@@ -511,7 +550,15 @@ portfolio's, not counsel's.
   other, on `prior_auth_cases`.
 - **A reviewer key is a person only by custody.** The registry maps a key to a reviewer id
   and a credential type. That the key's holder is that licensed reviewer, and that the key
-  has not left them, is outside what code can show; P3-C puts key custody on this list too.
+  has not left them, is outside what code can show; the reviewer-key item above says what
+  custody takes.
+- **The ledger's payloads are member data; its chain is not.** `ledger_payloads` holds each
+  recommendation's findings and rationale and each determination's specific reason, so it
+  takes the same encryption, read logging and retention floor as the run record. The
+  entries, the head and the anchors hold only salted hashes and can go to an auditor as
+  `yarn ledger:export --no-payloads`. A retention job withholds a payload by deleting its
+  row as the owner. The verifier reports that as withheld, not tampered, and the trigger
+  refuses it for a reviewer key, whose payload every later signature is checked against.
 
 ## Error Handling
 
@@ -529,6 +576,12 @@ portfolio's, not counsel's.
   retried by `IO_RETRY`, because the retried node would pay for a second answer it could
   not record either. A new path that returns a recommendation or a determination takes the
   fail-closed policy.
+- **The ledger follows the same split (P3-C).** With `LEDGER_DATABASE_URL` set, `$submit`
+  answers `503` when `run.recorded` or `disposition.recommended` cannot be appended, and
+  enqueues no case. The determination route answers `503` and leaves the case pended when
+  `determination.attested` cannot be appended, because the append runs in `decide`'s
+  `beforeCommit`. The chat path logs `ledger.append_failed` and answers, and
+  `ledger:verify` lists the run as uncommitted.
 - **Inject Nest dependencies by explicit token: `@Inject(Foo) private readonly foo: Foo`.**
   `yarn dev` runs through tsx, and esbuild does not implement `emitDecoratorMetadata`, so
   Nest has no `design:paramtypes` to resolve an implicit constructor parameter and injects
