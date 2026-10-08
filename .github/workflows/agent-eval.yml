@@ -2,6 +2,12 @@ name: Agent Eval
 
 # Two tiers of the same suite (P1-C, ADR 0005).
 #
+# The replay job also runs the memory-poisoning red team (P4-B) as a second
+# step: `EVAL_SUITE=red-team`, its own cassettes, its own baseline and its own
+# report, so its rate never shares a denominator with memory-recall's. It is
+# not in the live job, because a live trial of it is twelve generateContent
+# calls on top of the suite's eight, against a daily free tier of twenty.
+#
 #   replay  every pull request, every push to main, and nightly. The model's
 #           decisions come from the committed cassettes, so it makes no model
 #           call and needs no key; the memory axis is live, against the two
@@ -131,6 +137,14 @@ jobs:
 
       - run: yarn eval
 
+      # The red team, after memory-recall and whatever its verdict, into a
+      # directory of its own: the runner clears the report files it writes
+      # before it starts, so a shared directory would lose the first suite's.
+      # The same gate applies, against datasets/red-team/baselines/replay.json.
+      - name: Red team
+        if: ${{ !cancelled() }}
+        run: EVAL_SUITE=red-team EVAL_OUTPUT_DIR="$RUNNER_TEMP/eval-red-team" yarn eval
+
       # Three outcomes, told apart by the files rather than the exit code,
       # which Turbo reduces to 1: a report for a completed suite, pass or fail,
       # and an abort summary for a run that did not complete.
@@ -140,13 +154,15 @@ jobs:
           EVENT: ${{ github.event_name }}
           HAS_KEY: ${{ needs.gate.outputs.has_key }}
         run: |
-          if [ -f "$EVAL_OUTPUT_DIR/eval-summary.md" ]; then
-            cat "$EVAL_OUTPUT_DIR/eval-summary.md" >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo '## Eval — did not start' >> "$GITHUB_STEP_SUMMARY"
-            echo 'No summary was written. See the step that failed before `yarn eval`.' >> "$GITHUB_STEP_SUMMARY"
-          fi
-          echo >> "$GITHUB_STEP_SUMMARY"
+          for dir in "$EVAL_OUTPUT_DIR" "$RUNNER_TEMP/eval-red-team"; do
+            if [ -f "$dir/eval-summary.md" ]; then
+              cat "$dir/eval-summary.md" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "## Eval — did not start ($(basename "$dir"))" >> "$GITHUB_STEP_SUMMARY"
+              echo 'No summary was written. See the step that failed before `yarn eval`.' >> "$GITHUB_STEP_SUMMARY"
+            fi
+            echo >> "$GITHUB_STEP_SUMMARY"
+          done
           if [ "$EVENT" != schedule ] && [ "$EVENT" != workflow_dispatch ]; then
             echo "> **Live tier:** not run on \`$EVENT\`. It runs nightly and on dispatch." >> "$GITHUB_STEP_SUMMARY"
           elif [ "$HAS_KEY" = false ]; then
@@ -162,6 +178,13 @@ jobs:
         with:
           name: eval-replay
           path: ${{ env.EVAL_OUTPUT_DIR }}
+          if-no-files-found: warn
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: eval-red-team
+          path: ${{ runner.temp }}/eval-red-team
           if-no-files-found: warn
 
   live:
