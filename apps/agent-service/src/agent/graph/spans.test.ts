@@ -24,7 +24,7 @@ const SESSION_ID = '550e8400-e29b-41d4-a716-446655440000';
 const body = (maxSteps = 1) => ({
   sessionId: SESSION_ID,
   messages: [{ role: 'user', content: 'What is LangGraph?' }],
-  config: { topK: 3, hopDepth: 1, maxSteps },
+  config: { topK: 3, maxSteps },
 });
 
 /** A LangChain reply as `@langchain/google-genai` shapes one: thought tokens only in the total. */

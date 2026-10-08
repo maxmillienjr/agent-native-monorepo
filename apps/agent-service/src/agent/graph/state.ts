@@ -35,11 +35,11 @@ export type Extraction = z.infer<typeof ExtractionSchema>;
 export const AgentStateSchema = WorkingMemorySchema.extend({
   stepCount: z.number().int().nonnegative().default(0),
   maxSteps: z.number().int().positive().default(10),
-  // Retrieval knobs from RunRequestConfig. They were validated at the boundary
-  // and then dropped: `retrieve` hardcoded topK 10 and hopDepth 2, so a client
-  // could set them and nothing downstream read them.
+  // The retrieval knob from RunRequestConfig. It was validated at the boundary
+  // and then dropped: `retrieve` hardcoded topK 10, so a client could set it
+  // and nothing downstream read it. `hopDepth` was removed with ADR 0009,
+  // which made retrieval vector-only and left nothing to read it.
   topK: z.number().int().positive().default(10),
-  hopDepth: z.number().int().min(1).max(3).default(2),
   shouldContinue: z.boolean().default(true),
   currentPlan: z.string().optional(),
   toolOutputs: z.array(ToolOutputSchema).default([]),

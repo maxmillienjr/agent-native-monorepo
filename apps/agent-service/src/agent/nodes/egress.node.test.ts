@@ -19,7 +19,6 @@ const state = {
   stepCount: 1,
   maxSteps: 10,
   topK: 10,
-  hopDepth: 2,
   shouldContinue: false,
 } satisfies AgentState;
 

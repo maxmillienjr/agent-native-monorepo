@@ -33,7 +33,6 @@ const AgentStateAnnotation = Annotation.Root({
   stepCount: Annotation<number>,
   maxSteps: Annotation<number>,
   topK: Annotation<number>,
-  hopDepth: Annotation<number>,
   shouldContinue: Annotation<boolean>,
   // Must be here as well as in AgentStateSchema. A key absent from the
   // annotation is dropped between nodes, and the failure mode is a `reflect`

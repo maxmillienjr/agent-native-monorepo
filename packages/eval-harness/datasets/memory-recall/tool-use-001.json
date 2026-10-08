@@ -14,7 +14,6 @@
     ],
     "config": {
       "maxSteps": 3,
-      "hopDepth": 2,
       "topK": 10
     }
   },

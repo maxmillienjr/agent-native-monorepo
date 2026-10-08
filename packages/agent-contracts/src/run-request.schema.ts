@@ -1,9 +1,13 @@
 import { z } from 'zod';
 import { UuidSchema, MessageSchema } from '@repo/shared-types';
 
+/**
+ * There is no `hopDepth`. It bounded the graph traversal in retrieval, and
+ * ADR 0009 made retrieval vector-only, so nothing would read it. An old client
+ * that still sends one has it stripped, like any other unknown key.
+ */
 export const RunRequestConfigSchema = z.object({
   maxSteps: z.number().int().positive().default(10),
-  hopDepth: z.number().int().min(1).max(3).default(2),
   topK: z.number().int().positive().default(10),
 });
 export type RunRequestConfig = z.infer<typeof RunRequestConfigSchema>;

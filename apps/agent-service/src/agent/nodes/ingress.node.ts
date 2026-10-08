@@ -36,7 +36,6 @@ export async function ingressNode(
       ...workingMemory,
       maxSteps: config.maxSteps,
       topK: config.topK,
-      hopDepth: config.hopDepth,
       stepCount: 0,
       shouldContinue: true,
       toolOutputs: [],

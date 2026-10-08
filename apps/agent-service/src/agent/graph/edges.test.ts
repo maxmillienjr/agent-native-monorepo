@@ -14,7 +14,6 @@ function makeState(overrides: Partial<AgentState> = {}): AgentState {
     stepCount: 0,
     maxSteps: 10,
     topK: 10,
-    hopDepth: 2,
     shouldContinue: true,
     ...overrides,
   };

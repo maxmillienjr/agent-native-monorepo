@@ -15,7 +15,7 @@ describe('RunRequestSchema', () => {
   it('accepts a request with custom config', () => {
     const result = RunRequestSchema.safeParse({
       ...validRequest,
-      config: { maxSteps: 5, hopDepth: 3, topK: 20 },
+      config: { maxSteps: 5, topK: 20 },
     });
     expect(result.success).toBe(true);
     if (result.success) {
@@ -39,11 +39,14 @@ describe('RunRequestSchema', () => {
     expect(result.success).toBe(false);
   });
 
-  it('rejects a request with hopDepth out of range', () => {
+  it('strips hopDepth, which nothing reads since retrieval became vector-only', () => {
     const result = RunRequestSchema.safeParse({
       ...validRequest,
       config: { hopDepth: 5 },
     });
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.config).not.toHaveProperty('hopDepth');
+    }
   });
 });
