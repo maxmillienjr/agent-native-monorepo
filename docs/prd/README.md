@@ -85,7 +85,9 @@ assertion deleted) now names 11 `missing` cells, and a known failure can be comm
 `EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval` accepts a change with no key. The
 nightly pools live tallies on an orphan `eval-history` branch against a committed reference
 at δ = 0.20, and will read `insufficient-evidence` for weeks. It has not run, because there
-is no secret. **Nothing blocks a merge until the owner applies
+is no secret. A local live run on 2026-10-08 did exercise it: `EVAL_GATE=live` exited 0 on
+verdict `incomparable` and wrote a tally that validates against `LiveTallySchema`.
+**Nothing blocks a merge until the owner applies
 `.github/rulesets/main.json`**, which requires `eval-replay`; `yarn lint:docs` keeps its
 check names equal to real jobs.
 
