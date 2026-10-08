@@ -21,6 +21,7 @@ on:
       - 'apps/agent-service/src/review/**'
       - 'apps/agent-service/test/fhir.e2e-spec.ts'
       - 'apps/agent-service/test/review.e2e-spec.ts'
+      - 'apps/agent-service/test/appeal.e2e-spec.ts'
       - 'scripts/fhir-validate.mjs'
       - '.github/workflows/fhir-validate.yml'
   schedule:
@@ -73,7 +74,9 @@ jobs:
 
       # The responses to validate are the ones the service actually returns:
       # fhir.e2e-spec.ts posts every committed bundle and writes each response
-      # here, and review.e2e-spec.ts writes every $inquire response (P3-E).
+      # here, review.e2e-spec.ts writes every $inquire response (P3-E), and
+      # appeal.e2e-spec.ts the response a reversal on reconsideration puts in
+      # force and the $inquire that returns it (P3-F).
       - name: Capture the service's responses
         run: yarn workspace @repo/agent-service test:service
         env:
