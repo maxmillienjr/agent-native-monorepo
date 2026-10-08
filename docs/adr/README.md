@@ -7,6 +7,10 @@ if the decision changes, write a new record and mark the old one `superseded by 
 The bar for writing one: a reviewer would reasonably ask "why did you do it that way,"
 and the answer is not obvious from the code.
 
+A number is taken when the record is written, and an unmerged branch may already hold the
+next one, which is why the table below can skip a number. Before taking one, list what
+every branch has used: `git fetch origin && git log --all --format=%s -- 'docs/adr/[0-9]*'`.
+
 | ID                                                                   | Title                                                                | Status             |
 | -------------------------------------------------------------------- | -------------------------------------------------------------------- | ------------------ |
 | [0001](0001-langgraph-over-a-durable-execution-engine.md)            | LangGraph over a durable execution engine                            | accepted           |
