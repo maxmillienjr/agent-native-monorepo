@@ -40,6 +40,16 @@ export { LEDGER_NAMESPACE, attestationBytes, uuidV5, verifyEd25519 } from './sig
 export { LEDGER_MIGRATIONS_TABLE, assertWriterRole, runLedgerMigrations } from './migrate.js';
 export { ChainState, type RuleBreach } from './rules.js';
 export {
+  Ledger,
+  LedgerConflictError,
+  LedgerRefusedError,
+  type AppendInput,
+  type LedgerStore,
+  type LedgerTransaction,
+} from './ledger.js';
+export { InMemoryLedgerStore } from './memory-store.js';
+export { LEDGER_LOCK_KEY, PgLedgerStore } from './pg-store.js';
+export {
   verifyChain,
   type ChainCheck,
   type ChainFailure,
