@@ -38,3 +38,12 @@ export {
 } from './hash.js';
 export { LEDGER_NAMESPACE, attestationBytes, uuidV5, verifyEd25519 } from './signature.js';
 export { LEDGER_MIGRATIONS_TABLE, assertWriterRole, runLedgerMigrations } from './migrate.js';
+export { ChainState, type RuleBreach } from './rules.js';
+export {
+  verifyChain,
+  type ChainCheck,
+  type ChainFailure,
+  type ChainReport,
+  type VerifiedEntry,
+} from './verify.js';
+export { fromJsonl, toJsonl } from './export.js';
