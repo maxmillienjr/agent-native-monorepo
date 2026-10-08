@@ -1,0 +1,780 @@
+{
+  "description": "The correct disposition and per-criterion label for each request, written with the scenarios in packages/prior-auth/src/dataset/scenarios.ts before any model read a bundle. The suite report prints the sha256 of this file.",
+  "labels": {
+    "pa-e0601-all-met-structured": {
+      "hcpcs": "E0601",
+      "stratum": "all-met-structured",
+      "disposition": "automated-approval",
+      "assessed": true,
+      "criteria": {
+        "e0601-osa-diagnosis": {
+          "status": "met",
+          "evidence": [
+            "Condition/condition-e0601-all-met-structured-osa",
+            "DocumentReference/doc-e0601-all-met-structured-study"
+          ]
+        },
+        "e0601-ahi-threshold": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0601-all-met-structured-study"
+          ]
+        },
+        "e0601-conservative-trial": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0601-all-met-structured-visit"
+          ]
+        },
+        "e0601-prescriber-order": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0601-all-met-structured-visit"
+          ]
+        }
+      }
+    },
+    "pa-e0601-all-met-narrative": {
+      "hcpcs": "E0601",
+      "stratum": "all-met-narrative",
+      "disposition": "automated-approval",
+      "assessed": true,
+      "criteria": {
+        "e0601-osa-diagnosis": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0601-all-met-narrative-visit"
+          ]
+        },
+        "e0601-ahi-threshold": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0601-all-met-narrative-visit"
+          ]
+        },
+        "e0601-conservative-trial": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0601-all-met-narrative-visit"
+          ]
+        },
+        "e0601-prescriber-order": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0601-all-met-narrative-visit"
+          ]
+        }
+      }
+    },
+    "pa-e0601-one-missing": {
+      "hcpcs": "E0601",
+      "stratum": "one-missing",
+      "disposition": "refer-to-clinician",
+      "assessed": true,
+      "criteria": {
+        "e0601-osa-diagnosis": {
+          "status": "met",
+          "evidence": [
+            "Condition/condition-e0601-one-missing-osa",
+            "DocumentReference/doc-e0601-one-missing-study"
+          ]
+        },
+        "e0601-ahi-threshold": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0601-one-missing-study"
+          ]
+        },
+        "e0601-conservative-trial": {
+          "status": "insufficient",
+          "evidence": []
+        },
+        "e0601-prescriber-order": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0601-one-missing-visit"
+          ]
+        }
+      }
+    },
+    "pa-e0601-contradicted": {
+      "hcpcs": "E0601",
+      "stratum": "contradicted",
+      "disposition": "refer-to-clinician",
+      "assessed": true,
+      "criteria": {
+        "e0601-osa-diagnosis": {
+          "status": "met",
+          "evidence": [
+            "Condition/condition-e0601-contradicted-osa",
+            "DocumentReference/doc-e0601-contradicted-study"
+          ]
+        },
+        "e0601-ahi-threshold": {
+          "status": "not-met",
+          "evidence": [
+            "DocumentReference/doc-e0601-contradicted-study"
+          ]
+        },
+        "e0601-conservative-trial": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0601-contradicted-visit"
+          ]
+        },
+        "e0601-prescriber-order": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0601-contradicted-visit"
+          ]
+        }
+      }
+    },
+    "pa-e0601-ambiguous": {
+      "hcpcs": "E0601",
+      "stratum": "ambiguous",
+      "disposition": "refer-to-clinician",
+      "assessed": true,
+      "criteria": {
+        "e0601-osa-diagnosis": {
+          "status": "met",
+          "evidence": [
+            "Condition/condition-e0601-ambiguous-osa"
+          ]
+        },
+        "e0601-ahi-threshold": {
+          "status": "insufficient",
+          "evidence": [
+            "DocumentReference/doc-e0601-ambiguous-visit"
+          ]
+        },
+        "e0601-conservative-trial": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0601-ambiguous-visit"
+          ]
+        },
+        "e0601-prescriber-order": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0601-ambiguous-visit"
+          ]
+        }
+      }
+    },
+    "pa-e0601-administrative": {
+      "hcpcs": "E0601",
+      "stratum": "administrative",
+      "disposition": "refer-to-clinician",
+      "assessed": false,
+      "criteria": {
+        "e0601-osa-diagnosis": {
+          "status": "met",
+          "evidence": [
+            "Condition/condition-e0601-administrative-osa",
+            "DocumentReference/doc-e0601-administrative-study"
+          ]
+        },
+        "e0601-ahi-threshold": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0601-administrative-study"
+          ]
+        },
+        "e0601-conservative-trial": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0601-administrative-visit"
+          ]
+        },
+        "e0601-prescriber-order": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0601-administrative-visit"
+          ]
+        }
+      }
+    },
+    "pa-e0470-all-met-structured": {
+      "hcpcs": "E0470",
+      "stratum": "all-met-structured",
+      "disposition": "automated-approval",
+      "assessed": true,
+      "criteria": {
+        "e0470-osa-diagnosis": {
+          "status": "met",
+          "evidence": [
+            "Condition/condition-e0470-all-met-structured-osa",
+            "DocumentReference/doc-e0470-all-met-structured-study"
+          ]
+        },
+        "e0470-cpap-failure": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0470-all-met-structured-trial"
+          ]
+        },
+        "e0470-ahi-threshold": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0470-all-met-structured-study"
+          ]
+        },
+        "e0470-bilevel-titration": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0470-all-met-structured-titration"
+          ]
+        }
+      }
+    },
+    "pa-e0470-all-met-narrative": {
+      "hcpcs": "E0470",
+      "stratum": "all-met-narrative",
+      "disposition": "automated-approval",
+      "assessed": true,
+      "criteria": {
+        "e0470-osa-diagnosis": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0470-all-met-narrative-visit"
+          ]
+        },
+        "e0470-cpap-failure": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0470-all-met-narrative-visit"
+          ]
+        },
+        "e0470-ahi-threshold": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0470-all-met-narrative-visit"
+          ]
+        },
+        "e0470-bilevel-titration": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0470-all-met-narrative-visit"
+          ]
+        }
+      }
+    },
+    "pa-e0470-one-missing": {
+      "hcpcs": "E0470",
+      "stratum": "one-missing",
+      "disposition": "refer-to-clinician",
+      "assessed": true,
+      "criteria": {
+        "e0470-osa-diagnosis": {
+          "status": "met",
+          "evidence": [
+            "Condition/condition-e0470-one-missing-osa",
+            "DocumentReference/doc-e0470-one-missing-study"
+          ]
+        },
+        "e0470-cpap-failure": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0470-one-missing-trial"
+          ]
+        },
+        "e0470-ahi-threshold": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0470-one-missing-study"
+          ]
+        },
+        "e0470-bilevel-titration": {
+          "status": "insufficient",
+          "evidence": []
+        }
+      }
+    },
+    "pa-e0470-contradicted": {
+      "hcpcs": "E0470",
+      "stratum": "contradicted",
+      "disposition": "refer-to-clinician",
+      "assessed": true,
+      "criteria": {
+        "e0470-osa-diagnosis": {
+          "status": "met",
+          "evidence": [
+            "Condition/condition-e0470-contradicted-osa",
+            "DocumentReference/doc-e0470-contradicted-study"
+          ]
+        },
+        "e0470-cpap-failure": {
+          "status": "not-met",
+          "evidence": [
+            "DocumentReference/doc-e0470-contradicted-trial"
+          ]
+        },
+        "e0470-ahi-threshold": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0470-contradicted-study"
+          ]
+        },
+        "e0470-bilevel-titration": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0470-contradicted-titration"
+          ]
+        }
+      }
+    },
+    "pa-e0470-ambiguous": {
+      "hcpcs": "E0470",
+      "stratum": "ambiguous",
+      "disposition": "refer-to-clinician",
+      "assessed": true,
+      "criteria": {
+        "e0470-osa-diagnosis": {
+          "status": "met",
+          "evidence": [
+            "Condition/condition-e0470-ambiguous-osa",
+            "DocumentReference/doc-e0470-ambiguous-study"
+          ]
+        },
+        "e0470-cpap-failure": {
+          "status": "insufficient",
+          "evidence": [
+            "DocumentReference/doc-e0470-ambiguous-trial"
+          ]
+        },
+        "e0470-ahi-threshold": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0470-ambiguous-study"
+          ]
+        },
+        "e0470-bilevel-titration": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0470-ambiguous-titration"
+          ]
+        }
+      }
+    },
+    "pa-e0470-administrative": {
+      "hcpcs": "E0470",
+      "stratum": "administrative",
+      "disposition": "refer-to-clinician",
+      "assessed": false,
+      "criteria": {
+        "e0470-osa-diagnosis": {
+          "status": "met",
+          "evidence": [
+            "Condition/condition-e0470-administrative-osa",
+            "DocumentReference/doc-e0470-administrative-study"
+          ]
+        },
+        "e0470-cpap-failure": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0470-administrative-trial"
+          ]
+        },
+        "e0470-ahi-threshold": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0470-administrative-study"
+          ]
+        },
+        "e0470-bilevel-titration": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0470-administrative-titration"
+          ]
+        }
+      }
+    },
+    "pa-k0823-all-met-structured": {
+      "hcpcs": "K0823",
+      "stratum": "all-met-structured",
+      "disposition": "automated-approval",
+      "assessed": true,
+      "criteria": {
+        "k0823-mobility-limitation": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-k0823-all-met-structured-exam"
+          ]
+        },
+        "k0823-cane-walker-insufficient": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-k0823-all-met-structured-exam"
+          ]
+        },
+        "k0823-manual-chair-insufficient": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-k0823-all-met-structured-exam"
+          ]
+        },
+        "k0823-home-access": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-k0823-all-met-structured-home"
+          ]
+        },
+        "k0823-safe-operation": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-k0823-all-met-structured-exam"
+          ]
+        }
+      }
+    },
+    "pa-k0823-all-met-narrative": {
+      "hcpcs": "K0823",
+      "stratum": "all-met-narrative",
+      "disposition": "automated-approval",
+      "assessed": true,
+      "criteria": {
+        "k0823-mobility-limitation": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-k0823-all-met-narrative-exam"
+          ]
+        },
+        "k0823-cane-walker-insufficient": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-k0823-all-met-narrative-exam"
+          ]
+        },
+        "k0823-manual-chair-insufficient": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-k0823-all-met-narrative-exam"
+          ]
+        },
+        "k0823-home-access": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-k0823-all-met-narrative-exam"
+          ]
+        },
+        "k0823-safe-operation": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-k0823-all-met-narrative-exam"
+          ]
+        }
+      }
+    },
+    "pa-k0823-one-missing": {
+      "hcpcs": "K0823",
+      "stratum": "one-missing",
+      "disposition": "refer-to-clinician",
+      "assessed": true,
+      "criteria": {
+        "k0823-mobility-limitation": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-k0823-one-missing-exam"
+          ]
+        },
+        "k0823-cane-walker-insufficient": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-k0823-one-missing-exam"
+          ]
+        },
+        "k0823-manual-chair-insufficient": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-k0823-one-missing-exam"
+          ]
+        },
+        "k0823-home-access": {
+          "status": "insufficient",
+          "evidence": []
+        },
+        "k0823-safe-operation": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-k0823-one-missing-exam"
+          ]
+        }
+      }
+    },
+    "pa-k0823-contradicted": {
+      "hcpcs": "K0823",
+      "stratum": "contradicted",
+      "disposition": "refer-to-clinician",
+      "assessed": true,
+      "criteria": {
+        "k0823-mobility-limitation": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-k0823-contradicted-exam"
+          ]
+        },
+        "k0823-cane-walker-insufficient": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-k0823-contradicted-exam"
+          ]
+        },
+        "k0823-manual-chair-insufficient": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-k0823-contradicted-exam"
+          ]
+        },
+        "k0823-home-access": {
+          "status": "not-met",
+          "evidence": [
+            "DocumentReference/doc-k0823-contradicted-home"
+          ]
+        },
+        "k0823-safe-operation": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-k0823-contradicted-exam"
+          ]
+        }
+      }
+    },
+    "pa-k0823-ambiguous": {
+      "hcpcs": "K0823",
+      "stratum": "ambiguous",
+      "disposition": "refer-to-clinician",
+      "assessed": true,
+      "criteria": {
+        "k0823-mobility-limitation": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-k0823-ambiguous-exam"
+          ]
+        },
+        "k0823-cane-walker-insufficient": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-k0823-ambiguous-exam"
+          ]
+        },
+        "k0823-manual-chair-insufficient": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-k0823-ambiguous-exam"
+          ]
+        },
+        "k0823-home-access": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-k0823-ambiguous-home"
+          ]
+        },
+        "k0823-safe-operation": {
+          "status": "insufficient",
+          "evidence": [
+            "DocumentReference/doc-k0823-ambiguous-exam"
+          ]
+        }
+      }
+    },
+    "pa-k0823-administrative": {
+      "hcpcs": "K0823",
+      "stratum": "administrative",
+      "disposition": "refer-to-clinician",
+      "assessed": false,
+      "criteria": {
+        "k0823-mobility-limitation": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-k0823-administrative-exam"
+          ]
+        },
+        "k0823-cane-walker-insufficient": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-k0823-administrative-exam"
+          ]
+        },
+        "k0823-manual-chair-insufficient": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-k0823-administrative-exam"
+          ]
+        },
+        "k0823-home-access": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-k0823-administrative-home"
+          ]
+        },
+        "k0823-safe-operation": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-k0823-administrative-exam"
+          ]
+        }
+      }
+    },
+    "pa-e0260-all-met-structured": {
+      "hcpcs": "E0260",
+      "stratum": "all-met-structured",
+      "disposition": "automated-approval",
+      "assessed": true,
+      "criteria": {
+        "e0260-positioning-need": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0260-all-met-structured-visit"
+          ]
+        },
+        "e0260-linked-diagnosis": {
+          "status": "met",
+          "evidence": [
+            "Condition/condition-e0260-all-met-structured-chf",
+            "DocumentReference/doc-e0260-all-met-structured-visit"
+          ]
+        },
+        "e0260-frequent-adjustment": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0260-all-met-structured-visit"
+          ]
+        }
+      }
+    },
+    "pa-e0260-all-met-narrative": {
+      "hcpcs": "E0260",
+      "stratum": "all-met-narrative",
+      "disposition": "automated-approval",
+      "assessed": true,
+      "criteria": {
+        "e0260-positioning-need": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0260-all-met-narrative-visit"
+          ]
+        },
+        "e0260-linked-diagnosis": {
+          "status": "met",
+          "evidence": [
+            "Condition/condition-e0260-all-met-narrative-resp",
+            "DocumentReference/doc-e0260-all-met-narrative-visit"
+          ]
+        },
+        "e0260-frequent-adjustment": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0260-all-met-narrative-visit"
+          ]
+        }
+      }
+    },
+    "pa-e0260-one-missing": {
+      "hcpcs": "E0260",
+      "stratum": "one-missing",
+      "disposition": "refer-to-clinician",
+      "assessed": true,
+      "criteria": {
+        "e0260-positioning-need": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0260-one-missing-visit"
+          ]
+        },
+        "e0260-linked-diagnosis": {
+          "status": "met",
+          "evidence": [
+            "Condition/condition-e0260-one-missing-chf",
+            "DocumentReference/doc-e0260-one-missing-visit"
+          ]
+        },
+        "e0260-frequent-adjustment": {
+          "status": "insufficient",
+          "evidence": []
+        }
+      }
+    },
+    "pa-e0260-contradicted": {
+      "hcpcs": "E0260",
+      "stratum": "contradicted",
+      "disposition": "refer-to-clinician",
+      "assessed": true,
+      "criteria": {
+        "e0260-positioning-need": {
+          "status": "not-met",
+          "evidence": [
+            "DocumentReference/doc-e0260-contradicted-visit"
+          ]
+        },
+        "e0260-linked-diagnosis": {
+          "status": "met",
+          "evidence": [
+            "Condition/condition-e0260-contradicted-chf",
+            "DocumentReference/doc-e0260-contradicted-visit"
+          ]
+        },
+        "e0260-frequent-adjustment": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0260-contradicted-visit"
+          ]
+        }
+      }
+    },
+    "pa-e0260-ambiguous": {
+      "hcpcs": "E0260",
+      "stratum": "ambiguous",
+      "disposition": "refer-to-clinician",
+      "assessed": true,
+      "criteria": {
+        "e0260-positioning-need": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0260-ambiguous-visit"
+          ]
+        },
+        "e0260-linked-diagnosis": {
+          "status": "met",
+          "evidence": [
+            "Condition/condition-e0260-ambiguous-chf",
+            "DocumentReference/doc-e0260-ambiguous-visit"
+          ]
+        },
+        "e0260-frequent-adjustment": {
+          "status": "insufficient",
+          "evidence": [
+            "DocumentReference/doc-e0260-ambiguous-visit"
+          ]
+        }
+      }
+    },
+    "pa-e0260-administrative": {
+      "hcpcs": "E0260",
+      "stratum": "administrative",
+      "disposition": "refer-to-clinician",
+      "assessed": false,
+      "criteria": {
+        "e0260-positioning-need": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0260-administrative-visit"
+          ]
+        },
+        "e0260-linked-diagnosis": {
+          "status": "met",
+          "evidence": [
+            "Condition/condition-e0260-administrative-chf",
+            "DocumentReference/doc-e0260-administrative-visit"
+          ]
+        },
+        "e0260-frequent-adjustment": {
+          "status": "met",
+          "evidence": [
+            "DocumentReference/doc-e0260-administrative-visit"
+          ]
+        }
+      }
+    }
+  }
+}
