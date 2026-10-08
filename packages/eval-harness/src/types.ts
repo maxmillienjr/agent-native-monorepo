@@ -231,6 +231,9 @@ export interface Transcript {
   /**
    * The run's trace: every span under its `invoke_agent` root, and nothing the
    * harness did around the run. `apps/agent-service` fills it on every axis.
+   * A task with prior runs (P4-B) carries their traces after the graded run's,
+   * so a trial's budget counts every call the trial made and the first root is
+   * still the run the graders judged.
    * Optional because an `AgentHarness` that collects no spans is still a valid
    * one; its evaluation events are emitted unparented.
    */
@@ -332,6 +335,12 @@ export const TaskSeedsSchema = z.object({
         text: z.string(),
         episodeId: z.string().uuid(),
         entityIds: z.array(z.string()).min(1),
+        /**
+         * The session the `:Fact` is written under. Omitted, it is the graded
+         * input's. A cross-session red-team case names the attacker's (P4-B),
+         * because a graph read is scoped to the session a `:Fact` carries.
+         */
+        sessionId: z.string().uuid().optional(),
       }),
     )
     .default([]),
@@ -343,6 +352,16 @@ export interface Task<TOutcome = Outcome> {
   readonly description: string;
   /** The request body handed to the system under test. */
   readonly input: unknown;
+  /**
+   * Request bodies run before `input`, in order, in the same trial, and not
+   * graded (P4-B). As system-agnostic as `input`: the harness hands each to
+   * the system under test and grades only what `input` produced.
+   *
+   * It exists for an attack that needs a turn of its own before the victim's,
+   * such as a query-only memory injection, where one session's run writes what
+   * another session's run must not read.
+   */
+  readonly priorInputs?: readonly unknown[];
   readonly seeds: TaskSeeds;
   readonly graders: readonly Grader<TOutcome>[];
   /**
