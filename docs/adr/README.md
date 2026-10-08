@@ -23,6 +23,7 @@ every branch has used: `git fetch origin && git log --all --format=%s -- 'docs/a
 | [0008](0008-code-systems-the-repository-may-contain.md)                               | The code systems this repository may contain                                      | accepted           |
 | [0009](0009-the-second-store-after-the-retrieval-ablation.md)                         | The second store, after the retrieval ablation                                    | accepted           |
 | [0010](0010-the-prior-auth-case-lives-above-the-graph.md)                             | The prior-authorization case lives above the graph                                | accepted           |
+| [0011](0011-the-agent-does-not-promote-its-own-output.md)                             | The agent does not promote its own output to semantic memory                      | accepted           |
 | [0012](0012-the-graphs-explanation-role-stage-one.md)                                 | The graph's explanation role, after stage 1                                       | proposed           |
 | [0013](0013-the-ledger-is-written-by-a-role-that-cannot-rewrite-it.md)                | The decision ledger is written by a role that cannot rewrite it                   | accepted           |
 | [0014](0014-service-authentication-bearer-at-the-service-open-when-unconfigured.md)   | Service authentication: bearer credentials at the service, open when unconfigured | accepted           |
