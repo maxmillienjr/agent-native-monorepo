@@ -10,7 +10,9 @@ import type { SuiteReport } from '../types.js';
  *
  * Losing nothing includes the tasks that did not run: `skipped` names each one
  * and what it needed, so the denominator behind `passRate` is reconstructable
- * from the file rather than inferred from the length of `tasks`.
+ * from the file rather than inferred from the length of `tasks`. It also
+ * carries each trial's budget results and the usage section, which is what
+ * two replays are compared on when their usage has to be identical (P1-F).
  */
 export function renderJsonReport(report: SuiteReport<unknown>): string {
   return `${JSON.stringify(report, null, 2)}\n`;

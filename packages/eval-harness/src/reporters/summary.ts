@@ -1,4 +1,4 @@
-import type { SuiteReport } from '../types.js';
+import type { CostEstimate, SuiteReport, TrialUsage } from '../types.js';
 
 const tick = (value: boolean): string => (value ? '✅' : '❌');
 const percent = (value: number): string => `${(value * 100).toFixed(0)}%`;
@@ -82,6 +82,13 @@ export function renderMarkdownSummary(report: SuiteReport<unknown>): string {
     );
   }
 
+  // Where the exclusions are, because it is one: on the stub axis nothing a
+  // trial used can be read, and a run that checked no budget must not read as
+  // one that was within all of them.
+  if (!report.usage.checked && report.usage.reason !== undefined) {
+    lines.push('', `> **Budgets:** ${report.usage.reason}.`);
+  }
+
   lines.push(
     '',
     '| Task | pass@k | pass^k | Trials passed |',
@@ -114,6 +121,8 @@ export function renderMarkdownSummary(report: SuiteReport<unknown>): string {
     }
   }
 
+  if (report.usage.checked) lines.push(...budgetSection(report), ...usageSection(report));
+
   if (report.uncalibratedGraders.length > 0) {
     lines.push(
       '',
@@ -133,4 +142,100 @@ export function renderMarkdownSummary(report: SuiteReport<unknown>): string {
 
   lines.push('');
   return lines.join('\n');
+}
+
+const number = (value: number | null): string => (value === null ? 'unmeasurable' : `${value}`);
+
+function describeCost(cost: CostEstimate): string {
+  const parts: string[] = [];
+  if (cost.usd !== null) parts.push(`$${cost.usd.toFixed(4)}`);
+  if (cost.unpricedModels.length > 0) {
+    parts.push(`unpriced: ${cost.unpricedModels.map((model) => `\`${model}\``).join(', ')}`);
+  }
+  return parts.length === 0 ? 'unpriced' : parts.join(' + ');
+}
+
+/**
+ * Budgets beside the pass rate (P1-F): one row per budget per trial, and the
+ * count of breaches, which fails the run on its own.
+ */
+function budgetSection(report: SuiteReport<unknown>): string[] {
+  const rows = report.tasks.flatMap((task) =>
+    task.trials.flatMap((trial) =>
+      trial.budgets.map(
+        (budget) =>
+          `| \`${task.taskId}\` | ${trial.index + 1} | \`${budget.budget}\` | ${budget.limit} | ` +
+          `${number(budget.actual)} | ${budget.label === 'within' ? '✅ within' : `❌ ${budget.label}`} | ` +
+          `${budget.source ?? '—'} |`,
+      ),
+    ),
+  );
+
+  const lines = ['', '### Budgets', ''];
+  if (rows.length === 0) {
+    lines.push('No task that ran declares a budget.');
+    return lines;
+  }
+
+  lines.push(
+    report.budgetBreaches === 0
+      ? 'Every declared budget is within its ceiling.'
+      : `**${report.budgetBreaches} budget breach(es).** A breach fails the run whatever the pass ` +
+          'rate says: the trials above passed or failed on their graders alone, and budgets are ' +
+          'checked beside them.',
+    '',
+    '| Task | Trial | Budget | Limit | Actual | Result | Source |',
+    '| ---- | ----- | ------ | ----- | ------ | ------ | ------ |',
+    ...rows,
+  );
+  return lines;
+}
+
+/**
+ * What each trial used and what it would have cost, read from its spans.
+ *
+ * Latency is a column only on the live axis. On replay a span's duration is
+ * how fast a cassette was read, and printing it beside the recording's token
+ * counts would invite reading it as the model's.
+ */
+function usageSection(report: SuiteReport<unknown>): string[] {
+  const live = report.axes.model === 'live';
+  const usage = report.usage;
+  const header =
+    '| Task | Trial | Source | Model calls | Input tokens | Output tokens (thinking) | ' +
+    `Embedding calls | List-price equivalent |${live ? ' Model latency |' : ''}`;
+  const rule =
+    '| ---- | ----- | ------ | ----------- | ------------ | ------------------------ | ' +
+    `--------------- | --------------------- |${live ? ' ------------- |' : ''}`;
+
+  const row = (trial: TrialUsage): string =>
+    `| \`${trial.taskId}\` | ${trial.index + 1} | ${trial.source} | ${trial.modelCalls}` +
+    (trial.erroredModelCalls > 0 ? ` (${trial.erroredModelCalls} errored)` : '') +
+    ` | ${number(trial.inputTokens)} | ${number(trial.outputTokens)} (${trial.reasoningTokens}) | ` +
+    `${trial.embeddingCalls} (unpriced) | ${describeCost(trial.cost)} |` +
+    (live ? ` ${trial.modelLatencyMs === null ? '—' : `${trial.modelLatencyMs} ms`} |` : '');
+
+  const lines = ['', '### Usage', '', header, rule, ...usage.trials.map(row), ''];
+
+  lines.push(
+    usage.prices === undefined
+      ? 'No price table was given, so every model is unpriced.'
+      : `Costs are a list-price equivalent at ${usage.prices.tier} prices from ` +
+          `${usage.prices.source} (page last updated ${usage.prices.pageLastUpdated}, read ` +
+          `${usage.prices.readOn}); the free tier bills nothing. Nothing asserts them. ` +
+          'Embedding calls are counted and unpriced: the API reports no usage for them.',
+  );
+
+  lines.push(
+    '',
+    live
+      ? 'Model latency is the summed duration of the trial’s model and embedding calls: one ' +
+          'sample, reported and never asserted.'
+      : report.axes.model === 'replay'
+        ? 'These are the recording’s figures. No model latency is reported on replay: a ' +
+          'replayed span’s duration is how fast the cassette was read, not how fast the model ' +
+          'answered.'
+        : 'No model latency is reported off the live axis.',
+  );
+  return lines;
 }

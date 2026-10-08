@@ -17,6 +17,34 @@ function failureMessage(trial: Trial<unknown>): string {
 }
 
 /**
+ * A task's budgets as a suite of their own, one case per budget per trial.
+ *
+ * Their own suite rather than cases in the task's, which keeps the task's
+ * suite at exactly k cases: its failure count read against k is `pass^k`, and
+ * a budget breach is not a failed trial (P1-F).
+ */
+function budgetSuite(taskId: string, trials: readonly Trial<unknown>[]): string[] {
+  const cases = trials.flatMap((trial) => trial.budgets.map((budget) => ({ trial, budget })));
+  if (cases.length === 0) return [];
+
+  const failures = cases.filter(({ budget }) => budget.label !== 'within').length;
+  return [
+    `  <testsuite name="${escapeXml(`${taskId} budgets`)}" tests="${cases.length}" failures="${failures}">`,
+    ...cases.flatMap(({ trial, budget }) => {
+      const name = escapeXml(`${taskId} trial ${trial.index + 1} ${budget.budget}`);
+      return budget.label === 'within'
+        ? [`    <testcase name="${name}"/>`]
+        : [
+            `    <testcase name="${name}">`,
+            `      <failure message="${escapeXml(`${budget.label}: ${budget.explanation}`)}"/>`,
+            `    </testcase>`,
+          ];
+    }),
+    '  </testsuite>',
+  ];
+}
+
+/**
  * JUnit XML for CI test-report ingestion.
  *
  * One test case per trial rather than per grader, because the unit a reader
@@ -34,11 +62,14 @@ export function renderJUnitReport(report: SuiteReport<unknown>): string {
     (sum, task) => sum + task.trials.filter((trial) => !trial.passed).length,
     0,
   );
+  const budgetCases = report.tasks.flatMap((task) => task.trials.flatMap((trial) => trial.budgets));
+  const budgetFailures = budgetCases.filter((budget) => budget.label !== 'within').length;
 
   const lines: string[] = [
     '<?xml version="1.0" encoding="UTF-8"?>',
-    `<testsuites name="${escapeXml(report.suite)}" tests="${totalTrials + report.skipped.length}"` +
-      ` failures="${totalFailures}" skipped="${report.skipped.length}">`,
+    `<testsuites name="${escapeXml(report.suite)}"` +
+      ` tests="${totalTrials + budgetCases.length + report.skipped.length}"` +
+      ` failures="${totalFailures + budgetFailures}" skipped="${report.skipped.length}">`,
   ];
 
   for (const task of report.tasks) {
@@ -85,6 +116,7 @@ export function renderJUnitReport(report: SuiteReport<unknown>): string {
     }
 
     lines.push('  </testsuite>');
+    lines.push(...budgetSuite(task.taskId, task.trials));
   }
 
   for (const skipped of report.skipped) {

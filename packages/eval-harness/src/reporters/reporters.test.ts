@@ -274,6 +274,158 @@ describe('the model ids', () => {
   });
 });
 
+/** A replayed trial that breached its input budget and passed every grader (P1-F). */
+const breachedTrial: Trial = {
+  ...trial(0, true),
+  budgets: [
+    {
+      budget: 'inputTokens',
+      limit: 3000,
+      actual: 3412,
+      label: 'breached',
+      source: 'recorded',
+      explanation: '3412 input tokens against a ceiling of 3000: over by 412',
+    },
+    {
+      budget: 'modelCalls',
+      limit: 5,
+      actual: 5,
+      label: 'within',
+      source: 'recorded',
+      explanation: '5 generate_content calls against a ceiling of 5',
+    },
+  ],
+  withinBudget: false,
+};
+
+const usageRow = {
+  taskId: 'tool-use-001',
+  index: 0,
+  modelCalls: 5,
+  erroredModelCalls: 0,
+  inputTokens: 3412,
+  outputTokens: 2210,
+  reasoningTokens: 1900,
+  embeddingCalls: 7,
+  cost: {
+    usd: 0.0065,
+    unpricedModels: ['gemini-9-ultra'],
+    unpricedEmbeddingCalls: 7,
+  },
+};
+
+const prices = {
+  source: 'https://ai.google.dev/gemini-api/docs/pricing',
+  pageLastUpdated: '2026-10-07',
+  readOn: '2026-10-08',
+  tier: 'paid, standard',
+};
+
+const budgetedReport: SuiteReport = {
+  ...replayedReport,
+  tasks: [
+    {
+      ...replayedReport.tasks[0]!,
+      taskId: 'tool-use-001',
+      trials: [{ ...breachedTrial, taskId: 'tool-use-001' }],
+      trialsPerTask: 1,
+      passHatK: true,
+    },
+  ],
+  passRate: 1,
+  budgetBreaches: 1,
+  usage: {
+    checked: true,
+    prices,
+    trials: [{ ...usageRow, source: 'recorded', modelLatencyMs: null }],
+  },
+};
+
+describe('budgets and usage', () => {
+  it('prints a breach beside a 100% pass rate, with the limit and the actual value', () => {
+    const markdown = renderMarkdownSummary(budgetedReport);
+
+    expect(markdown).toContain('overall pass rate 100%');
+    expect(markdown).toContain('**1 budget breach(es).**');
+    expect(markdown).toContain(
+      '| `tool-use-001` | 1 | `inputTokens` | 3000 | 3412 | ❌ breached | recorded |',
+    );
+    expect(markdown).toContain(
+      '| `tool-use-001` | 1 | `modelCalls` | 5 | 5 | ✅ within | recorded |',
+    );
+  });
+
+  it('prints the cost as a list-price equivalent naming its source, and what is unpriced', () => {
+    const markdown = renderMarkdownSummary(budgetedReport);
+
+    expect(markdown).toContain('$0.0065 + unpriced: `gemini-9-ultra`');
+    expect(markdown).toContain('7 (unpriced)');
+    expect(markdown).toContain(
+      'list-price equivalent at paid, standard prices from https://ai.google.dev/gemini-api/docs/pricing (page last updated 2026-10-07',
+    );
+  });
+
+  it('prints no model latency on replay, and says why', () => {
+    const markdown = renderMarkdownSummary(budgetedReport);
+
+    expect(markdown).not.toContain('Model latency |');
+    expect(markdown).toContain('No model latency is reported on replay');
+  });
+
+  it('prints model latency on the live axis, as one sample', () => {
+    const markdown = renderMarkdownSummary({
+      ...budgetedReport,
+      axes: { model: 'live', memory: 'live' },
+      usage: {
+        checked: true,
+        prices,
+        trials: [{ ...usageRow, source: 'measured', modelLatencyMs: 40169 }],
+      },
+    });
+
+    expect(markdown).toContain('| Model latency |');
+    expect(markdown).toContain('| 40169 ms |');
+    expect(markdown).toContain('reported and never asserted');
+  });
+
+  it('says budgets were not checked on the stub axis, beside the skipped tasks', () => {
+    const markdown = renderMarkdownSummary({
+      ...reportWithSkip,
+      usage: {
+        checked: false,
+        reason: 'budgets not checked on model=stub: the canned model set opens no inference span',
+        trials: [],
+      },
+    });
+    const notice = markdown.indexOf('budgets not checked on model=stub');
+
+    // Beside the exclusions and above the table, where a reader looks for
+    // what the run left out.
+    expect(notice).toBeGreaterThan(markdown.indexOf('Not run on these axes'));
+    expect(notice).toBeLessThan(markdown.indexOf('| Task |'));
+    expect(markdown).not.toContain('### Budgets');
+  });
+
+  it('gives budgets a JUnit suite of their own, so the task’s suite stays at k cases', () => {
+    const xml = renderJUnitReport(budgetedReport);
+
+    expect(xml).toContain('<testsuites name="memory-recall" tests="3" failures="1" skipped="0">');
+    expect(xml).toContain('<testsuite name="tool-use-001" tests="1" failures="0">');
+    expect(xml).toContain('<testsuite name="tool-use-001 budgets" tests="2" failures="1">');
+    expect(xml).toContain(
+      '<failure message="breached: 3412 input tokens against a ceiling of 3000: over by 412"/>',
+    );
+    expect(xml).toContain('<testcase name="tool-use-001 trial 1 modelCalls"/>');
+  });
+
+  it('carries the budget results and the usage section in the JSON', () => {
+    const parsed = JSON.parse(renderJsonReport(budgetedReport)) as SuiteReport;
+    expect(parsed.budgetBreaches).toBe(1);
+    expect(parsed.tasks[0]!.trials[0]!.withinBudget).toBe(false);
+    expect(parsed.usage).toEqual(budgetedReport.usage);
+  });
+});
+
 describe('the abort reporters', () => {
   const abort: EvalAbort = {
     suite: 'memory-recall',
