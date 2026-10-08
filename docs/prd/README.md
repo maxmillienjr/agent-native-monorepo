@@ -232,9 +232,10 @@ step. CTL-MEM-02 is `implemented`. On the stub model `rt-001` passed before and 
 mitigations, as ADR 0009 predicted, and failed when the session scope was forced off.
 **`rt-002` and `rt-003` have not been measured.** M3 changed every extraction request, so
 the replay tier aborts at `distill` until the cassettes are re-recorded. The recording is
-29 `generateContent` calls over two days: the live baseline on the parent commit, then
-`memory-recall-001`, then the red team and `tool-use-001`. The PRD's "The recording" has the
-commands, and STATUS row 27 says what is measured.
+29 `generateContent` calls: the live baseline on the parent commit, the two positive
+controls, then the red team. At the 9 or so calls a day the scheduled jobs leave, that is
+four batches on four days, or two days if the owner pauses those jobs. The PRD's "The
+recording" has the commands, and STATUS row 27 says what is measured.
 
 **Where the detail lives.** Each PRD carries its own risks, its divergences from the design
 that was reviewed, and — where a shipped record turned out to be wrong — the correction that
