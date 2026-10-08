@@ -66,7 +66,6 @@ export {
   episodicRowWritten,
   entityMerged,
   factsPersistedToBothIndices,
-  retrievedFromSource,
 } from './graders/code.js';
 export {
   ModelGrader,

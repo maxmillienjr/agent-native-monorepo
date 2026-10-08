@@ -17,7 +17,6 @@ import {
   tokenCountsPositive,
   episodicRowWritten,
   entityMerged,
-  retrievedFromSource,
 } from './graders/code.js';
 import { trajectoryGraders } from './graders/trajectory.js';
 
@@ -99,12 +98,13 @@ export const TaskSpecSchema = z.object({
   id: z.string().min(1),
   description: z.string().min(1),
   /**
-   * Which retrieval path the seeded state actually exercises. Not decoration:
-   * `expandFromSeeds` returns `:Fact` nodes reached through `MENTIONS`, and a
-   * seed set of `:Concept` nodes and `RELATES_TO` edges has none, so the graph
-   * retriever returns nothing for such a task regardless of the query.
+   * Which retrieval path the task exercises. There is one: ADR 0009 made
+   * retrieval vector-only, so a task that declared `graph` or `hybrid` would
+   * be describing a path no run takes. The field stays so that a task says
+   * which path it measures, and a successor that brings a graph condition
+   * back widens the enum in the same change that measures it.
    */
-  retrievalPath: z.enum(['vector', 'graph', 'hybrid']),
+  retrievalPath: z.literal('vector'),
   input: z.object({
     sessionId: z.string().uuid(),
     messages: z.array(z.object({ role: z.string(), content: z.string() })).min(1),
@@ -130,8 +130,6 @@ export const TaskSpecSchema = z.object({
     episodicRowsMin: z.number().int().nonnegative().optional(),
     /** `reflect` MERGEd at least this many of the concepts `distill` produced. */
     mergedConceptsMin: z.number().int().nonnegative().optional(),
-    /** At least one retrieved candidate carries this `source`; see `retrievedFromSource`. */
-    retrievedFromSource: z.enum(['neo4j', 'pgvector']).optional(),
   }),
   /**
    * The reference the trajectory graders score against, and the threshold each
@@ -167,7 +165,6 @@ export function buildGraders(spec: TaskSpec): Grader<MemoryOutcome>[] {
   if (a.tokenCountsPositive === true) graders.push(tokenCountsPositive());
   if (a.episodicRowsMin !== undefined) graders.push(episodicRowWritten(a.episodicRowsMin));
   if (a.mergedConceptsMin !== undefined) graders.push(entityMerged(a.mergedConceptsMin));
-  if (a.retrievedFromSource !== undefined) graders.push(retrievedFromSource(a.retrievedFromSource));
 
   if (spec.expectedTrajectory) {
     graders.push(...trajectoryGraders<MemoryOutcome>(spec.expectedTrajectory));

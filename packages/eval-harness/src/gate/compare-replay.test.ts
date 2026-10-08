@@ -163,13 +163,13 @@ describe('compareReplay', () => {
       'tool-use-001': recorded.tasks[1]!.trials.map((t) =>
         t.results.map((r) => [r.grader, r.score.label, r.score.value] as const),
       ),
-      'graph-recall-001': [[['retrieved_from_source', 'pass', 1]]],
+      'new-task-001': [[['outcome_must_be', 'pass', 1]]],
     });
     const result = compareReplay(run, baseline, DIGEST);
     expect(result.differences).toEqual([
       {
         kind: 'unbaselined',
-        cell: { task: 'graph-recall-001', trial: 0, grader: 'retrieved_from_source' },
+        cell: { task: 'new-task-001', trial: 0, grader: 'outcome_must_be' },
         run: { label: 'pass', value: 1 },
       },
     ]);
