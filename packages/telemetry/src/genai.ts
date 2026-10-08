@@ -175,6 +175,17 @@ export const ALLOWED_SPAN_ATTRIBUTES: ReadonlySet<string> = new Set<string>([
   'review.overdue_count',
   'review.flagged_count',
   'review.outcome',
+  // Appeals (P3-F). An appeal id the server assigned, its status, priority
+  // and timeliness, the kind of action and why a case was forwarded, and
+  // counts. Never the filer, the statement, an explanation or a reviewer.
+  'prior_auth.appeal_id',
+  'prior_auth.appeal_status',
+  'prior_auth.timely',
+  'prior_auth.reconsideration',
+  'prior_auth.forward_reason',
+  'review.appeal_count',
+  'review.lapsed_count',
+  'review.forwarded_count',
   // The memory-core spans.
   'topK',
   'queryLength',
