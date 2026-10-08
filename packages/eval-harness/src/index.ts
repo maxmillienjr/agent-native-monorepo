@@ -232,6 +232,7 @@ export {
   gradeStage2Answer,
   renderStage2Json,
   renderStage2Markdown,
+  selectStage2Queries,
   stage2Status,
   type GraderSummary,
   type Stage2Answer,

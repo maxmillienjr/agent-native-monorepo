@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { buildRetrievalDataset, type Corpus, type LabelledQuery } from './dataset.js';
 import {
   STAGE2_CALLS,
   STAGE2_QUERY_COUNT,
@@ -7,6 +8,7 @@ import {
   buildStage2Report,
   gradeStage2Answer,
   renderStage2Markdown,
+  selectStage2Queries,
   stage2Status,
   type Stage2Answer,
   type Stage2QueryInput,
@@ -58,6 +60,57 @@ describe('the stage-2 budget', () => {
   it('is 38 queries and 76 calls, as P2-D fixed it', () => {
     expect(STAGE2_QUERY_COUNT).toBe(38);
     expect(STAGE2_CALLS).toBe(76);
+  });
+});
+
+describe('selectStage2Queries', () => {
+  const corpus: Corpus = {
+    sessionId: '00000000-0000-4000-8000-0000000000ff',
+    episodes: [
+      {
+        episodeId: '00000000-0000-4000-8000-000000000001',
+        entities: [
+          { id: 'plan_a', label: 'Alpha Plan', description: '' },
+          { id: 'vendor_b', label: 'Bravo Review', description: '' },
+        ],
+        relationships: [
+          { fromId: 'plan_a', toId: 'vendor_b', type: 'DELEGATES_TO', confidence: 1 },
+        ],
+        facts: [
+          { id: 'e1-f1', text: 'Alpha Plan costs 10 dollars.', mentions: ['plan_a'] },
+          { id: 'e1-f2', text: 'Bravo Review decides in two days.', mentions: ['vendor_b'] },
+        ],
+      },
+    ],
+  };
+  const queries: LabelledQuery[] = [
+    {
+      id: 'p1',
+      stratum: 'paraphrase',
+      text: 'What does Alpha Plan cost?',
+      relevant: ['e1-f1'],
+      goldSeeds: ['plan_a'],
+    },
+    {
+      id: 'r1',
+      stratum: 'relational',
+      text: 'How fast is the reviewer for Alpha Plan?',
+      relevant: ['e1-f2'],
+      goldSeeds: ['plan_a'],
+    },
+  ];
+  const dataset = buildRetrievalDataset(corpus, queries, 'f'.repeat(64));
+  const hash = (handle: string): string => dataset.facts.get(handle)!.contentHash;
+
+  it('takes the relational queries whose answer fact is in the top k, and nothing else', () => {
+    const inTop = new Map([
+      ['p1', [hash('e1-f1')]],
+      ['r1', [hash('e1-f1'), hash('e1-f2')]],
+    ]);
+    expect(selectStage2Queries(dataset, inTop, 10).map((q) => q.id)).toEqual(['r1']);
+    // Second is outside a top one.
+    expect(selectStage2Queries(dataset, inTop, 1)).toEqual([]);
+    expect(selectStage2Queries(dataset, new Map(), 10)).toEqual([]);
   });
 });
 

@@ -1,4 +1,5 @@
 import { pairedBootstrap, type PairedBootstrapResult } from '../stats/paired-bootstrap.js';
+import type { LabelledQuery, RetrievalDataset } from './dataset.js';
 import {
   answerKeyPresent,
   normalizeAnswerText,
@@ -35,6 +36,26 @@ export const STAGE2_QUERY_COUNT = 38;
 
 /** One `generateContent` call per query per condition. */
 export const STAGE2_CALLS = STAGE2_QUERY_COUNT * STAGE2_CONDITIONS.length;
+
+/**
+ * The queries stage 2 asks: the relational queries whose answer fact the
+ * vector path placed in its top `topK`, in dataset order. A path cannot help
+ * an answer whose fact was never retrieved, so the others are not asked.
+ *
+ * `retrieved` is each query's ranked content hashes, as the facade returned
+ * them.
+ */
+export function selectStage2Queries(
+  dataset: RetrievalDataset,
+  retrieved: ReadonlyMap<string, readonly string[]>,
+  topK: number,
+): LabelledQuery[] {
+  return dataset.queries.filter((query) => {
+    if (query.stratum !== 'relational') return false;
+    const top = new Set((retrieved.get(query.id) ?? []).slice(0, topK));
+    return query.relevant.some((handle) => top.has(dataset.facts.get(handle)!.contentHash));
+  });
+}
 
 // --- The graders ---------------------------------------------------------------------
 
@@ -345,7 +366,7 @@ export function renderStage2Markdown(report: Stage2Report): string {
   out.push('');
   out.push(
     `Pre-registered in P2-D: \`met\` if \`answer_key_present\` improves by at least +${report.config.margin.toFixed(2)} ` +
-      `with the paths and the bootstrap's lower bound is above 0; otherwise \`not met\`. ${report.reason}.`,
+      `with the paths and the bootstrap's lower bound is above 0; otherwise \`not met\`. Status: ${report.reason}.`,
   );
   out.push('');
   out.push(
