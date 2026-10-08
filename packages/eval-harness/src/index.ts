@@ -190,6 +190,37 @@ export {
   type GoldPath,
 } from './retrieval/explanation-labels.js';
 
+// P2-D's metrics, its pre-registered rule and its report.
+export {
+  PATHS_AT,
+  STAGE1_THRESHOLDS,
+  STAGE2_MARGIN,
+  applyAnswerRule,
+  applyExplanationRule,
+  buildExplanationReport,
+  constructionCheck,
+  decideStage1,
+  explanationOutcome,
+  pathsMatch,
+  renderExplanationJson,
+  renderExplanationMarkdown,
+  scorePair,
+  summarizeExplanationCondition,
+  summarizeMetric,
+  type ConditionReport as ExplanationConditionReport,
+  type ConstructionCheck,
+  type ExplanationGraphShape,
+  type ExplanationOutcome,
+  type ExplanationReport,
+  type PairScore,
+  type QuestionConceptSource,
+  type RawExplanationCondition,
+  type ReturnedPath,
+  type Stage1Decision,
+  type Stage1Outcome,
+  type Stage2Outcome,
+} from './retrieval/explanation.js';
+
 // The ablation's arithmetic and its report.
 export {
   DECISION_MARGIN,

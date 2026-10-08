@@ -1,9 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import { buildRetrievalDataset, type Corpus, type LabelledQuery } from './dataset.js';
+import {
+  buildRetrievalDataset,
+  loadRetrievalDataset,
+  type Corpus,
+  type LabelledQuery,
+} from './dataset.js';
 import {
   answerKeyPresent,
   deriveGoldPaths,
   explanationLabelProblems,
+  loadExplanationLabels,
   normalizeAnswerText,
   pathKey,
   type ExplanationLabels,
@@ -183,5 +189,27 @@ describe('explanationLabelProblems', () => {
       'answer key r1: "six days" is not in the relevant fact',
       'answer key r1: "decide" is in the query itself',
     ]);
+  });
+});
+
+describe('the committed explanation labels', () => {
+  // Pre-registered in their own commit, before any explainer or runner code.
+  // Loading them runs every check above against P2-B's dataset, and the gold
+  // must still be exactly what the derivation produces: a hand edit to a path
+  // is visible here, and so is a corpus change that would move one.
+  const real = loadRetrievalDataset();
+  const { labels } = loadExplanationLabels(real);
+
+  it('load, validate, and equal the derivation from the dataset', () => {
+    expect(labels.pairs).toEqual(deriveGoldPaths(real));
+    expect(labels.pairs).toHaveLength(201);
+  });
+
+  it('give every relational pair exactly one gold path, so the recall bound is 1', () => {
+    const strata = new Map(real.queries.map((q) => [q.id, q.stratum]));
+    const relational = labels.pairs.filter((p) => strata.get(p.queryId) === 'relational');
+    expect(relational).toHaveLength(50);
+    expect(relational.every((p) => p.gold.length === 1)).toBe(true);
+    expect(Object.keys(labels.answerKeys)).toHaveLength(50);
   });
 });
