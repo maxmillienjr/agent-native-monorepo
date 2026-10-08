@@ -153,6 +153,14 @@ export const ALLOWED_SPAN_ATTRIBUTES: ReadonlySet<string> = new Set<string>([
   'fact_count',
   'candidateCount',
   'outcome',
+  // The prior-authorization nodes (P3-D). Times, a priority and the kind of
+  // disposition: the request clock P1-F budgets and P3-E sorts by, and nothing
+  // from the member's record. No code, no criterion, no finding.
+  'prior_auth.received_at',
+  'prior_auth.priority',
+  'prior_auth.decision_due_by',
+  'prior_auth.disposition',
+  'prior_auth.elapsed_ms',
   // The memory-core spans.
   'topK',
   'queryLength',
