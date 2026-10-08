@@ -15,6 +15,8 @@ import {
   applyGate,
   assertGateAxes,
   assertGateModel,
+  budgetBreachesIn,
+  gatedEnd,
   readGateMode,
   readRunOutput,
   type GateMode,
@@ -115,6 +117,25 @@ describe('the runner gate', () => {
     );
     const written = JSON.parse(readFileSync(join(output, 'eval-gate.json'), 'utf8')) as GateResult;
     expect(written.verdict).toBe('match');
+  });
+
+  it('fails a run whose cells match when it breached a budget, and only then', () => {
+    // The gate judges grader cells and nothing else; a budget breach is not a
+    // cell and is not in the baseline, so it fails the run beside the verdict.
+    accept();
+    completed({ ...report('replay', RECORDED), budgetBreaches: 1 });
+    const result = gate('replay');
+
+    expect(result.verdict).toBe('match');
+    expect(budgetBreachesIn(output)).toBe(1);
+    expect(gatedEnd(result, budgetBreachesIn(output))).toBe('failed');
+
+    completed({ ...report('replay', RECORDED), budgetBreaches: 0 });
+    expect(gatedEnd(gate('replay'), budgetBreachesIn(output))).toBe('passed');
+
+    // A report written before P1-F has no field, and no breaches.
+    completed(report('replay', RECORDED));
+    expect(budgetBreachesIn(output)).toBe(0);
   });
 
   it('blocks on a skipped task, naming each of its cells as missing', () => {

@@ -35,9 +35,18 @@ import {
   watchForModelRequests,
   type TrialDecks,
 } from './cassette-deps.js';
-import { applyGate, assertGateAxes, assertGateModel, readGateMode, type GateMode } from './gate.js';
+import {
+  applyGate,
+  assertGateAxes,
+  assertGateModel,
+  budgetBreachesIn,
+  gatedEnd,
+  readGateMode,
+  type GateMode,
+} from './gate.js';
 import { CHAT_MODEL, PINNED_CHAT_MODEL } from '../runs/runs.service.js';
 import { committedCassetteDigest } from './history.js';
+import { GEMINI_PRICES } from './pricing.js';
 import { runAndReport, type RunEnd } from './run-suite.js';
 import { SpanCollector } from './span-records.js';
 
@@ -49,7 +58,8 @@ const logger = createLogger('eval');
  * The replay tier in `agent-eval.yml` runs it on every pull request and the
  * live tier nightly; locally it is the same command. With `EVAL_GATE` set it
  * also writes `eval-gate.json`, and the gate's verdict — not whether every
- * trial passed — decides the exit code (`gate.ts`).
+ * trial passed — decides the exit code (`gate.ts`). A budget breach fails the
+ * run either way: budgets sit beside the pass rate and beside the gate (P1-F).
  *
  * Two things have to be true before a number out of here means anything, and
  * both have failed silently in this repository before:
@@ -150,6 +160,7 @@ async function main(): Promise<RunEnd> {
           suite,
           ...(replay === undefined ? {} : { replay }),
           ...(models === undefined ? {} : { models }),
+          prices: GEMINI_PRICES,
           onTrial: (trial) => {
             onTrial(trial);
             logger.info({
@@ -160,7 +171,20 @@ async function main(): Promise<RunEnd> {
               failed: trial.results
                 .filter((result) => result.score.label === 'fail')
                 .map((result) => result.grader),
+              withinBudget: trial.withinBudget,
             });
+            for (const budget of trial.budgets) {
+              if (budget.label === 'within') continue;
+              logger.error({
+                msg: 'eval.budget.breached',
+                task: trial.taskId,
+                trial: trial.index + 1,
+                budget: budget.budget,
+                limit: budget.limit,
+                actual: budget.actual,
+                label: budget.label,
+              });
+            }
           },
         }).run();
 
@@ -211,6 +235,7 @@ async function main(): Promise<RunEnd> {
           msg: 'eval.done',
           axes: describeAxes(report.axes),
           passRate: report.passRate,
+          budgetBreaches: report.budgetBreaches,
           tasksRun: report.tasks.length,
           tasksSkipped: report.skipped.map((skipped) => skipped.taskId),
           outputDir,
@@ -258,17 +283,18 @@ function gateTheRun(end: RunEnd, outputDir: string): RunEnd {
   });
 
   const blocks = gateBlocks(result);
-  (blocks ? logger.error : logger.info).call(logger, {
+  const budgetBreaches = budgetBreachesIn(outputDir);
+  (blocks || budgetBreaches > 0 ? logger.error : logger.info).call(logger, {
     msg: 'eval.gate',
     axis: result.axis,
     verdict: result.verdict,
     blocks,
+    budgetBreaches,
     ...(result.verdict === 'aborted' ? { reason: result.reason } : {}),
     outputDir,
   });
 
-  if (result.verdict === 'aborted') return 'aborted';
-  return blocks ? 'failed' : 'passed';
+  return gatedEnd(result, budgetBreaches);
 }
 
 /**

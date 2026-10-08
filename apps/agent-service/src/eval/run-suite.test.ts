@@ -124,6 +124,54 @@ describe('runAndReport', () => {
     expect(existsSync(join(dir, 'eval-abort.json'))).toBe(false);
   });
 
+  it('ends failed on a budget breach although every trial passed', async () => {
+    // Two model calls against a ceiling of one, on an axis that has spans.
+    const base = fakeAgent([{ wrote: true }]);
+    const spent: AgentHarness<FakeOutcome> = {
+      ...base,
+      axes: () => ({ model: 'live', memory: 'live' }),
+      run: async (task) => ({
+        ...(await base.run(task)),
+        spans: [0, 1].map((n) => ({
+          name: 'generate_content gemini-2.5-flash',
+          kind: 'client' as const,
+          traceId: 't'.repeat(32),
+          spanId: `${n}`.padStart(16, '0'),
+          startTimeUnixMs: 0,
+          durationMs: 1,
+          status: 'unset' as const,
+          attributes: {
+            'gen_ai.operation.name': 'generate_content',
+            'gen_ai.usage.input_tokens': 10,
+            'gen_ai.usage.output_tokens': 10,
+          },
+        })),
+      }),
+    };
+    const budgeted: Suite<FakeOutcome> = {
+      ...suite,
+      trialsPerTask: 1,
+      tasks: [{ ...suite.tasks[0]!, budgets: { modelCalls: 1 } }],
+    };
+
+    const end = await runAndReport<FakeOutcome>({
+      outputDir: dir,
+      suite: budgeted.name,
+      body: (_progress, onTrial) =>
+        new EvalHarness({
+          agent: spent,
+          suite: budgeted,
+          models: { chat: 'gemini-2.5-flash', embedding: 'gemini-embedding-001' },
+          onTrial,
+        }).run(),
+    });
+
+    expect(end).toBe('failed');
+    const summary = readFileSync(join(dir, 'eval-summary.md'), 'utf8');
+    expect(summary).toContain('overall pass rate 100%');
+    expect(summary).toContain('| `task-001` | 1 | `modelCalls` | 1 | 2 | ❌ breached | measured |');
+  });
+
   it('writes an abort, not a report, when the second run throws, and lists the first', async () => {
     const miss = Object.assign(new Error('cassette miss at seam `plan.callLlm`'), {
       name: 'CassetteMissError',

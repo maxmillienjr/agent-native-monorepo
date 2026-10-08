@@ -124,8 +124,10 @@ export async function runAndReport<TOutcome>(
   writeFileSync(resolve(options.outputDir, 'eval-report.xml'), renderJUnitReport(report));
   writeFileSync(resolve(options.outputDir, 'eval-summary.md'), renderMarkdownSummary(report));
 
-  // A failing suite is a failing command. This is the local signal only: with
-  // `EVAL_GATE` set, `run-eval.ts` replaces it with the gate's verdict, which
-  // is what decides whether a pull request is blocked.
-  return report.passRate < 1 ? 'failed' : 'passed';
+  // A failing suite is a failing command, and so is one over budget: a breach
+  // sits beside the pass rate, not inside it, and fails the run on its own
+  // (P1-F). This is the local signal only: with `EVAL_GATE` set, `run-eval.ts`
+  // replaces the pass-rate half with the gate's verdict and keeps the budget
+  // half.
+  return report.passRate < 1 || report.budgetBreaches > 0 ? 'failed' : 'passed';
 }

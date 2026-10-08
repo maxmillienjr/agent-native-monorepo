@@ -32,6 +32,12 @@ export const GradedReportSchema = z
     replay: z.object({ recordedAt: z.string(), gitSha: z.string() }).optional(),
     /** P2-C: the GenAI semantic-conventions commit the run's spans and events follow. */
     genAiSemconvCommit: z.string().optional(),
+    /**
+     * P1-F: budget results that were not `within`. Read by the runner, never by
+     * a comparison — a breach fails the run beside the gate's verdict, not
+     * through it, so the baseline's cells stay about quality.
+     */
+    budgetBreaches: z.number().int().nonnegative().optional(),
     tasks: z
       .array(
         z.object({

@@ -6,6 +6,7 @@ import {
   cassetteSetDigest,
   compareLive,
   compareReplay,
+  gateBlocks,
   liveReferencePath,
   liveTally,
   loadLiveReference,
@@ -22,6 +23,7 @@ import {
   type ReplayBaseline,
 } from '@repo/eval-harness';
 import { readEpoch, writeTally } from './history.js';
+import type { RunEnd } from './run-suite.js';
 
 /**
  * `EVAL_GATE` — what decides the exit code of `yarn eval` (P1-D).
@@ -234,4 +236,24 @@ function decide(options: ApplyGateOptions): GateResult {
     pool,
     comparison,
   };
+}
+
+/**
+ * How a gated run ends: the gate's verdict for the grader cells, and the run's
+ * budget breaches beside it.
+ *
+ * The gate replaces "every trial passed" — a failure the baseline accepts is
+ * fine — and does not replace the budgets. A breach is not a grader result and
+ * is not in the baseline, so it fails the run whatever the verdict, on every
+ * axis (P1-F). An aborted run has no report and so no breaches to count.
+ */
+export function gatedEnd(result: GateResult, budgetBreaches: number): RunEnd {
+  if (result.verdict === 'aborted') return 'aborted';
+  return gateBlocks(result) || budgetBreaches > 0 ? 'failed' : 'passed';
+}
+
+/** The completed run's budget breaches, read from its report like everything else here. */
+export function budgetBreachesIn(outputDir: string): number {
+  const output = readRunOutput(outputDir);
+  return output.completed ? (output.report.budgetBreaches ?? 0) : 0;
 }
