@@ -190,6 +190,14 @@ It measures the fused retrieval ADR 0009 retired, so it is a historical measurem
   XML emits a `<skipped/>` case rather than a pass or an absence, and the Markdown summary
   prints it between the rate and the table. Never report a rate computed over fewer tasks
   without the list of what was left out.
+- **There are two suites, and `EVAL_SUITE` picks one.** Unset, `yarn eval` runs
+  memory-recall, the suite CI gates. `EVAL_SUITE=prior-auth` runs the 24 labelled
+  prior-authorization requests (P3-D), whose tasks require a `live` or `replay` model, so
+  the stub axis skips every one and says so. It is an environment variable and not a flag
+  because Turbo reads `yarn eval --suite …` as its own option, and it is in `turbo.json`'s
+  `env` for the strict-mode reason above. The prior-auth suite defaults to one trial a task
+  and makes one `generateContent` call a task, except the four administrative requests,
+  which are referred before the model is asked: 20 calls a trial set.
 - **`EVAL_TRIALS` is per task.** `EVAL_TRIALS=1 yarn eval` on the live axis runs one trial
   of every task that is not skipped: three `generateContent` calls for `memory-recall-001`
   and five for `tool-use-001`. To measure or record one task on
@@ -320,8 +328,8 @@ It measures the fused retrieval ADR 0009 retired, so it is a historical measurem
   a `shipped` PRD's unmet criteria each name the PRD that now owns them. It also resolves
   every evidence anchor in `docs/STATUS.md` and `governance/controls.yaml`, checks the
   control catalogue against the PRDs that own its `planned` rows, fails when
-  `governance/CONTROLS.md` is stale, and runs the fixture tests under `scripts/`. It runs on
-  every pull request.
+  `governance/CONTROLS.md` is stale, runs `scripts/lint-data.mjs` (below), and runs the
+  fixture tests under `scripts/`. It runs on every pull request.
 - **Evidence is cited by name, not by line.** In `docs/STATUS.md` a citation is
   `path#name`: a declaration (`Class.member` for a method), a test title, a workflow job, a
   heading or a JSON key. In `governance/controls.yaml` it is a `symbol`, `test`, `ci` or
@@ -341,6 +349,34 @@ It measures the fused retrieval ADR 0009 retired, so it is a historical measurem
   test or a CI job, `procedural` a written rule, `planned` an unshipped owning PRD, and
   `not-applicable` a rationale. A change that moves a control updates its row in the same
   pull request and regenerates `governance/CONTROLS.md` with `yarn controls:matrix`.
+
+## Payer Data
+
+- **The code systems payer data may name are listed in ADR 0008**, and nothing else is
+  permitted until a reviewer has read the licence and amended it. ICD-10-CM is used on
+  CDC's public-domain conditions, whose notice is in ADR 0008 and `data/payer.json`; HCPCS
+  Level II is permitted except its D range, which is the ADA's CDT.
+- **The prior-authorization bundles are generated, and `scenarios.ts` is the copy to edit.**
+  A FHIR attachment carries its note base64-encoded, so the readable text lives in
+  `packages/prior-auth/src/dataset/scenarios.ts` and
+  `yarn workspace @repo/prior-auth author-dataset` writes the bundles and task files from
+  it. `dataset.test.ts` fails if the two differ, and the files are in `.prettierignore` for
+  that reason. `bundles/labels.json` changes only when a label does, in a commit of its own,
+  before any recording that depends on it.
+- **`scripts/lint-data.mjs` checks payer data structurally and every other file anchored.**
+  An exception goes in `scripts/lint-data.allow.json` with a reason, and an entry whose token
+  has left its file fails, so the list cannot rot.
+- **No NPI in payer data, in either form.** An NPI that passes its check digit could be a real
+  provider's, and lint-data fails it; one that fails it breaks US Core 6.1.0's `us-core-17`,
+  and the validator job fails it. US Core requires an identifier, not an NPI, so use an
+  `https://example.org/` one.
+- **`fhir-validate.yml` gates base R4 and US Core 6.1.0 and reports PAS 2.2.1.** It needs
+  Java 17 and the 200 MB `validator_cli.jar`, which is why it is not in `ci.yml`. To run it
+  locally, run the service spec with `FHIR_CAPTURE_DIR` set and then
+  `node scripts/fhir-validate.mjs --jar <jar> --captured <dir>`; `FHIR_VALIDATOR_JAVA`
+  replaces `java` with a container command. Each resource's `meta.profile` names US Core
+  `|6.1.0`, because loading PAS brings US Core 7.0.0 and an unversioned canonical would
+  resolve to whichever loaded last.
 
 ## Error Handling
 
