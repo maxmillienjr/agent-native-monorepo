@@ -6,6 +6,14 @@ import { Test, type TestingModule } from '@nestjs/testing';
 import { HttpStatus } from '@nestjs/common';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import request from 'supertest';
+import { context, trace } from '@opentelemetry/api';
+import { AsyncLocalStorageContextManager } from '@opentelemetry/context-async-hooks';
+import {
+  BasicTracerProvider,
+  InMemorySpanExporter,
+  SimpleSpanProcessor,
+} from '@opentelemetry/sdk-trace-base';
+import { unlistedAttributeKeys } from '@repo/telemetry';
 import type { CaseRepository, NewCase } from '@repo/memory-core';
 import type { AgentDisposition } from '@repo/determination';
 import { canonicalJson } from '@repo/agent-cassette';
@@ -21,6 +29,7 @@ import { FHIR_JSON, configureApp } from '../src/configure-app.js';
 import { PRIOR_AUTH_CLOCK } from '../src/fhir/prior-auth.service.js';
 import { CASE_REPOSITORY } from '../src/memory/memory.tokens.js';
 import { RunsService } from '../src/runs/runs.service.js';
+import { ReviewSweep } from '../src/review/review.sweep.js';
 
 /**
  * The clinician review surface over HTTP (P3-E), on model `stub` and on both
@@ -96,6 +105,13 @@ function captureInquiry(name: string, body: { parameter?: { resource?: unknown }
     );
   }
 }
+
+/** Every span the spec's requests and sweeps open, for the sweep's events. */
+const exporter = new InMemorySpanExporter();
+context.setGlobalContextManager(new AsyncLocalStorageContextManager().enable());
+trace.setGlobalTracerProvider(
+  new BasicTracerProvider({ spanProcessors: [new SimpleSpanProcessor(exporter)] }),
+);
 
 const RECEIVED = new Date('2026-09-22T10:00:00Z');
 const DECIDED = new Date('2026-09-23T15:00:00Z');
@@ -211,9 +227,13 @@ describe.each(AXES)('clinician review surface (e2e), memory %s', (axis) => {
 
   beforeAll(async () => {
     const cleared = ['GOOGLE_API_KEY', ...(axis === 'unconfigured' ? LIVE_VARIABLES : [])];
-    for (const name of [...cleared, 'REVIEWER_REGISTRY']) saved[name] = process.env[name];
+    for (const name of [...cleared, 'REVIEWER_REGISTRY', 'REVIEW_SWEEP_MS']) {
+      saved[name] = process.env[name];
+    }
     for (const name of cleared) delete process.env[name];
     process.env['REVIEWER_REGISTRY'] = REGISTRY;
+    // The spec runs each sweep itself, at a clock it sets.
+    process.env['REVIEW_SWEEP_MS'] = '0';
 
     fixture = await Test.createTestingModule({ imports: [AppModule] })
       .overrideProvider(PRIOR_AUTH_CLOCK)
@@ -703,6 +723,61 @@ describe.each(AXES)('clinician review surface (e2e), memory %s', (axis) => {
       expect(decidedInquiry.body.parameter).toHaveLength(1);
       expect(decidedInquiry.text).not.toContain(SENTINEL);
       captureInquiry(`${axis}-denied`, decidedInquiry.body);
+    });
+  });
+
+  describe('the overdue sweep', () => {
+    it('flags an overdue case once, with one event, and leaves it pended and queued', async () => {
+      const member = `SYN-SWP-${randomUUID().slice(0, 8)}`;
+      const body = bundleForMember('pa-e0601-one-missing', member);
+      const submitted = await http()
+        .post('/fhir/Claim/$submit')
+        .set('Content-Type', FHIR_JSON)
+        .send(body);
+      const caseId = caseIdOf(submitted.body);
+      const due = new Date('2026-09-29T10:00:00Z');
+      expect((await cases.get(caseId))?.decisionDueBy.toISOString()).toBe(due.toISOString());
+
+      const sweep = fixture.get(ReviewSweep);
+      exporter.reset();
+      now = new Date(due.getTime() - 1000);
+      await sweep.sweep();
+      now = new Date(due.getTime() + 60_000);
+      await sweep.sweep();
+      now = new Date(due.getTime() + 2 * 60 * 60_000);
+      await sweep.sweep();
+
+      const sweeps = exporter
+        .getFinishedSpans()
+        .filter((span) => span.name === 'review.overdue_sweep');
+      expect(sweeps).toHaveLength(3);
+      expect(unlistedAttributeKeys(sweeps)).toEqual([]);
+      const events = sweeps
+        .flatMap((span) => span.events)
+        .filter((event) => event.attributes?.['prior_auth.case_id'] === caseId);
+      expect(events).toHaveLength(1);
+      expect(events[0]?.name).toBe('review.case.overdue');
+      expect(events[0]?.attributes).toEqual({
+        'prior_auth.case_id': caseId,
+        'prior_auth.priority': 'standard',
+        'prior_auth.minutes_past_due': 1,
+      });
+
+      const row = await cases.get(caseId);
+      expect(row?.status).toBe('pended');
+      expect(row?.overdueFlaggedAt?.toISOString()).toBe('2026-09-29T10:01:00.000Z');
+
+      const inquiry = await http()
+        .post('/fhir/Claim/$inquire')
+        .set('Content-Type', FHIR_JSON)
+        .send(body);
+      const returned = BundleSchema.parse(inquiry.body.parameter[0].resource);
+      expect(ClaimResponseSchema.parse(returned.entry?.[0]?.resource).outcome).toBe('queued');
+
+      const queue = await http().get('/review/cases?limit=1000');
+      expect(
+        (queue.body.cases as { caseId: string }[]).find((item) => item.caseId === caseId),
+      ).toMatchObject({ overdue: true, overdueFlaggedAt: '2026-09-29T10:01:00.000Z' });
     });
   });
 });
