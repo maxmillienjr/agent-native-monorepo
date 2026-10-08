@@ -18,6 +18,7 @@ const state = {
   maxSteps: 10,
   topK: 10,
   shouldContinue: true,
+  aborted: false,
 } satisfies AgentState;
 
 describe('buildPlanPrompt', () => {

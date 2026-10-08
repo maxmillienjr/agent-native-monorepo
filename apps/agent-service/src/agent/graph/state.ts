@@ -1,12 +1,27 @@
 import { z } from 'zod';
 import { WorkingMemorySchema } from '@repo/memory-core';
+import { REVERSIBILITY_TIERS } from '../tools/types.js';
 
+/**
+ * One step of the `act` loop, and the saga's log of it.
+ *
+ * `effect` is what compensation reads: `applied` is a compensable step that
+ * succeeded and has not been undone, `compensated` one that has, and `none`
+ * every step that changed nothing or failed. `tier` is absent only for a
+ * selection naming a tool the registry does not hold. `approver` is set on an
+ * irreversible call a person approved or rejected.
+ */
 export const ToolOutputSchema = z.object({
   toolName: z.string(),
   input: z.unknown(),
   output: z.unknown(),
   error: z.string().optional(),
+  tier: z.enum(REVERSIBILITY_TIERS).optional(),
+  idempotencyKey: z.string(),
+  effect: z.enum(['none', 'applied', 'compensated']),
+  approver: z.string().optional(),
 });
+export type ToolOutput = z.infer<typeof ToolOutputSchema>;
 
 /**
  * What `distill` extracts and `reflect` writes.
@@ -43,6 +58,11 @@ export const AgentStateSchema = WorkingMemorySchema.extend({
   shouldContinue: z.boolean().default(true),
   currentPlan: z.string().optional(),
   toolOutputs: z.array(ToolOutputSchema).default([]),
+  /**
+   * A step failed, so the loop stops. Any failure aborts — a throw, an invalid input, an unknown tool, a rejected
+   * approval — so a partial sequence of effects is never left standing.
+   */
+  aborted: z.boolean().default(false),
   extraction: ExtractionSchema.optional(),
 });
 

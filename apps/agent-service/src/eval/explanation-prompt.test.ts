@@ -88,6 +88,7 @@ describe('stage2Prompts', () => {
         maxSteps: 10,
         topK: 10,
         shouldContinue: true,
+        aborted: false,
       },
       {
         callLlm: async (system, user) => {

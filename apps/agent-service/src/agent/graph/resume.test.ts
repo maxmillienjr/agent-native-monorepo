@@ -3,6 +3,7 @@ import { MemorySaver } from '@langchain/langgraph';
 import { EMBEDDING_DIMENSIONS } from '@repo/memory-core';
 import { buildAgentGraph, type GraphDeps } from './graph.js';
 import { NO_USAGE } from '../model/usage.js';
+import { defineRegistry } from '../tools/registry.js';
 
 /**
  * The reason `distill` is a separate node.
@@ -26,7 +27,10 @@ function makeDeps(onDistill: () => void, reflect: { fail: boolean }): GraphDeps 
     plan: {
       callLlm: async () => ({ content: 'a plan', tokenCounts: { prompt: 0, completion: 0 } }),
     },
-    act: { tools: [], selectTool: async () => ({ selection: null, tokenCounts: NO_USAGE }) },
+    act: {
+      registry: defineRegistry([]),
+      selectTool: async () => ({ selection: null, tokenCounts: NO_USAGE }),
+    },
     distill: {
       extractEntities: async () => {
         onDistill();
