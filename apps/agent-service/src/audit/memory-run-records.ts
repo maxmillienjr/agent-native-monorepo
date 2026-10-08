@@ -66,6 +66,10 @@ export class InMemoryRunRecords implements RunRecordRepository {
     return this.runs.get(runId) ?? null;
   }
 
+  async runIds(): Promise<string[]> {
+    return [...this.runs.keys()];
+  }
+
   /** The only run held, for a test that made one. */
   only(): StoredRun {
     const [run, ...others] = [...this.runs.values()];

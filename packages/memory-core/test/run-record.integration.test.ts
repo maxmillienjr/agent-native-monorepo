@@ -138,6 +138,17 @@ describe.skipIf(SKIP)('PgRunRecordRepository (integration)', () => {
     ).rejects.toThrow();
   });
 
+  it('lists every recorded run id, oldest first', async () => {
+    const first = randomUUID();
+    const second = randomUUID();
+    await repo.open(header(first, { startedAt: new Date('2026-01-01T00:00:00.000Z') }));
+    await repo.open(header(second, { startedAt: new Date('2026-01-02T00:00:00.000Z') }));
+
+    const ids = await repo.runIds();
+    expect(ids).toContain(first);
+    expect(ids.indexOf(first)).toBeLessThan(ids.indexOf(second));
+  });
+
   it('reads through a read-only pool, which refuses any write', async () => {
     const runId = randomUUID();
     await repo.open(header(runId));

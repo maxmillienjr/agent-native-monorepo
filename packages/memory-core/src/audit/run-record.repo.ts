@@ -175,6 +175,15 @@ export class PgRunRecordRepository implements RunRecordRepository {
     };
   }
 
+  async runIds(): Promise<string[]> {
+    const result = await this.pool.query(
+      'SELECT run_id FROM run_records ORDER BY started_at, run_id',
+    );
+    return result.rows.map((row: unknown) =>
+      RunIdSchema.parse((row as { run_id: unknown }).run_id),
+    );
+  }
+
   /**
    * One span per write, carrying the run id and nothing else: a decision's
    * request and response are content, and content never goes on a span.

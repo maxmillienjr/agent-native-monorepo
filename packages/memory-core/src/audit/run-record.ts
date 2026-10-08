@@ -117,4 +117,9 @@ export interface RunRecordRepository {
   close(runId: string, outcome: RunOutcome): Promise<void>;
   /** The record and its decisions in ordinal order, or `null` when there is none. */
   read(runId: string): Promise<StoredRun | null>;
+  /**
+   * Every recorded run's id, oldest first. `ledger:verify` reads it to list
+   * the runs the ledger holds no commitment to (P3-C).
+   */
+  runIds(): Promise<string[]>;
 }
