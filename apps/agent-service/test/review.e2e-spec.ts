@@ -1,0 +1,290 @@
+import { randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+import { Test, type TestingModule } from '@nestjs/testing';
+import { HttpStatus } from '@nestjs/common';
+import type { NestExpressApplication } from '@nestjs/platform-express';
+import request from 'supertest';
+import type { CaseRepository, NewCase } from '@repo/memory-core';
+import type { AgentDisposition } from '@repo/determination';
+import { ClaimResponseSchema } from '@repo/prior-auth';
+import { AppModule } from '../src/app.module.js';
+import { FHIR_JSON, configureApp } from '../src/configure-app.js';
+import { PRIOR_AUTH_CLOCK } from '../src/fhir/prior-auth.service.js';
+import { CASE_REPOSITORY } from '../src/memory/memory.tokens.js';
+import { RunsService } from '../src/runs/runs.service.js';
+
+/**
+ * The clinician review surface over HTTP (P3-E), on model `stub` and on both
+ * memory axes.
+ *
+ * Memory unconfigured always runs, under `yarn turbo test:service`. Memory
+ * live runs when `DATABASE_URL` and `NEO4J_URI` are set, which is
+ * `yarn turbo test:integration`: the integration job in `e2e.yml` exports
+ * them and sets `REQUIRE_INTEGRATION_ENV`, under which a missing variable
+ * fails this file instead of skipping the axis. The live axis never empties
+ * the table; every assertion reads only the cases it created.
+ */
+const LIVE_VARIABLES = ['DATABASE_URL', 'NEO4J_URI'] as const;
+
+function liveAxisAvailable(): boolean {
+  const missing = LIVE_VARIABLES.filter((name) => (process.env[name] ?? '').trim() === '');
+  if (missing.length === 0) return true;
+  const required = (process.env['REQUIRE_INTEGRATION_ENV'] ?? '').trim().toLowerCase();
+  if (required !== '' && required !== '0' && required !== 'false') {
+    throw new Error(
+      `review.e2e-spec.ts runs memory live because REQUIRE_INTEGRATION_ENV is set, but ` +
+        `${missing.join(', ')} is missing or empty.`,
+    );
+  }
+  return false;
+}
+
+type Axis = 'unconfigured' | 'live';
+const AXES: Axis[] = liveAxisAvailable() ? ['unconfigured', 'live'] : ['unconfigured'];
+
+const BUNDLES = resolve(
+  process.cwd(),
+  '..',
+  '..',
+  'packages',
+  'eval-harness',
+  'datasets',
+  'prior-auth',
+  'bundles',
+);
+const readBundle = (task: string): Record<string, unknown> =>
+  JSON.parse(readFileSync(join(BUNDLES, `${task}.bundle.json`), 'utf8')) as Record<string, unknown>;
+
+const RECEIVED = new Date('2026-09-22T10:00:00Z');
+const SENTINEL = 'SENTINEL-REVIEW-RATIONALE-5b1d';
+
+describe.each(AXES)('clinician review surface (e2e), memory %s', (axis) => {
+  let app: NestExpressApplication;
+  let fixture: TestingModule;
+  let cases: CaseRepository;
+  let now = RECEIVED;
+  const saved: Record<string, string | undefined> = {};
+
+  beforeAll(async () => {
+    const cleared = ['GOOGLE_API_KEY', ...(axis === 'unconfigured' ? LIVE_VARIABLES : [])];
+    for (const name of cleared) {
+      saved[name] = process.env[name];
+      delete process.env[name];
+    }
+
+    fixture = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(PRIOR_AUTH_CLOCK)
+      .useValue({ now: () => now })
+      .compile();
+    app = fixture.createNestApplication<NestExpressApplication>();
+    configureApp(app);
+    await app.init();
+    cases = fixture.get<CaseRepository>(CASE_REPOSITORY);
+  });
+
+  afterAll(async () => {
+    await app.close();
+    for (const [name, value] of Object.entries(saved)) {
+      if (value !== undefined) process.env[name] = value;
+    }
+  });
+
+  beforeEach(() => {
+    now = RECEIVED;
+    fixture.get(RunsService).setModelDecorator((deps) => deps);
+  });
+
+  const http = () => request(app.getHttpServer());
+  const submit = (task: string) =>
+    http()
+      .post('/fhir/Claim/$submit')
+      .set('Content-Type', FHIR_JSON)
+      .send(JSON.stringify(readBundle(task)));
+  const caseIdOf = (body: { entry: { resource: unknown }[] }): string =>
+    String(ClaimResponseSchema.parse(body.entry[0]?.resource).identifier?.[0]?.value);
+
+  /** Every criterion met, citing the first evidence item: the request is approved. */
+  const approveEverything = () =>
+    fixture.get(RunsService).setModelDecorator((live) => ({
+      ...live,
+      assess: {
+        assessCriteria: async (criteria, evidence) =>
+          criteria.map((criterion) => ({
+            criterionId: criterion.id,
+            status: 'met' as const,
+            evidence: evidence.slice(0, 1).map((item) => item.reference),
+            rationale: `${SENTINEL}: ${criterion.title}`,
+          })),
+      },
+    }));
+
+  /** Every criterion insufficient, each rationale carrying the sentinel: the request pends. */
+  const referWithSentinel = () =>
+    fixture.get(RunsService).setModelDecorator((live) => ({
+      ...live,
+      assess: {
+        assessCriteria: async (criteria, evidence) =>
+          criteria.map((criterion) => ({
+            criterionId: criterion.id,
+            status: 'insufficient' as const,
+            evidence: evidence.slice(0, 1).map((item) => item.reference),
+            rationale: `${SENTINEL}: ${criterion.title}`,
+          })),
+      },
+    }));
+
+  describe('$submit enqueues', () => {
+    it('leaves a pended case for a queued response and an approved-automated one for a complete one', async () => {
+      const referred = await submit('pa-e0470-one-missing');
+      expect(referred.status).toBe(HttpStatus.OK);
+      const pendedId = caseIdOf(referred.body);
+
+      approveEverything();
+      const approved = await submit('pa-e0470-all-met-structured');
+      expect(approved.status).toBe(HttpStatus.OK);
+      expect(ClaimResponseSchema.parse(approved.body.entry[0].resource).outcome).toBe('complete');
+      const approvedId = caseIdOf(approved.body);
+
+      const pendedView = await http().get(`/review/cases/${pendedId}`);
+      expect(pendedView.status).toBe(HttpStatus.OK);
+      expect(pendedView.body.status).toBe('pended');
+      expect(pendedView.body.response).toEqual(referred.body);
+
+      const approvedView = await http().get(`/review/cases/${approvedId}`);
+      expect(approvedView.body.status).toBe('approved-automated');
+      expect(approvedView.body.response).toEqual(approved.body);
+
+      const queue = await http().get('/review/cases?limit=1000');
+      const queued = (queue.body.cases as { caseId: string }[]).map((item) => item.caseId);
+      expect(queued).toContain(pendedId);
+      expect(queued).not.toContain(approvedId);
+    });
+  });
+
+  describe('the queue', () => {
+    /**
+     * Pairs of cases with identical clocks, one all met and one all not met.
+     * In world 1 the first of each pair is the met one; in world 2 it is the
+     * not-met one. If the queue read findings, the two worlds would order
+     * differently. Clocks are in 2025, ahead of every other case here.
+     */
+    function world(prefix: string, firstMet: boolean): NewCase[] {
+      const clocks = [
+        ['2025-01-02T09:00:00Z', '2025-01-09T09:00:00Z', 'standard'],
+        ['2025-01-03T09:00:00Z', '2025-01-06T09:00:00Z', 'expedited'],
+        ['2025-01-01T09:00:00Z', '2025-01-08T09:00:00Z', 'standard'],
+        ['2025-01-01T09:00:00Z', '2025-01-08T09:00:00Z', 'standard'],
+      ] as const;
+      const findings = (status: 'met' | 'not-met'): AgentDisposition => ({
+        kind: 'refer-to-clinician',
+        findings: ['synthetic-c1', 'synthetic-c2'].map((criterionId) => ({
+          criterionId,
+          status,
+          evidence: ['Condition/synthetic'],
+          rationale: `Synthetic fixture: ${status}.`,
+        })),
+      });
+      return clocks.flatMap(([received, due, priority], index) =>
+        [0, 1].map((member) => ({
+          caseId: `${prefix}-0000-4000-8000-${String(index * 2 + member).padStart(12, '0')}`,
+          status: 'pended' as const,
+          priority,
+          receivedAt: new Date(received),
+          decisionDueBy: new Date(due),
+          memberId: `https://example.org/fhir/sid/member-id|SYN-QUEUE-${prefix}`,
+          insurerId: 'https://example.org/fhir/sid/payer-id|QHP-SYN-001',
+          providerId: 'https://example.org/fhir/sid/supplier-id|SUP-01',
+          hcpcs: 'E0601',
+          request: { resourceType: 'Bundle', type: 'collection' },
+          disposition: findings((member === 0) === firstMet ? 'met' : 'not-met'),
+          response: { resourceType: 'Bundle', id: 'synthetic' },
+          recommendationSeq: null,
+        })),
+      );
+    }
+
+    it('orders two worlds with identical clocks and opposite findings identically', async () => {
+      const run = randomUUID().slice(0, 4);
+      const one = world(`1${run}aaa`, true);
+      const two = world(`2${run}aaa`, false);
+      for (const row of [...one, ...two]) await cases.enqueue(row);
+
+      const response = await http().get('/review/cases?limit=1000');
+      expect(response.status).toBe(HttpStatus.OK);
+      const order = (response.body.cases as { caseId: string }[]).map((item) => item.caseId);
+      const positions = (rows: NewCase[]) =>
+        order.filter((id) => rows.some((row) => row.caseId === id)).map((id) => id.slice(-12));
+
+      expect(positions(one)).toEqual(positions(two));
+      // Deadline, then receipt, then case id: the expedited pair, then the two
+      // pairs due 2025-01-08 (tied, so by id), then the pair due 2025-01-09.
+      expect(positions(one)).toEqual([
+        '000000000002',
+        '000000000003',
+        '000000000004',
+        '000000000005',
+        '000000000006',
+        '000000000007',
+        '000000000000',
+        '000000000001',
+      ]);
+    });
+
+    it('shows a case as overdue from its deadline, before any sweep has run', async () => {
+      const referred = await submit('pa-e0601-ambiguous');
+      const caseId = caseIdOf(referred.body);
+      const item = async () =>
+        (
+          (await http().get('/review/cases?limit=1000')).body.cases as {
+            caseId: string;
+            overdue: boolean;
+            overdueFlaggedAt: string | null;
+          }[]
+        ).find((candidate) => candidate.caseId === caseId);
+
+      now = new Date('2026-09-25T09:59:59Z');
+      expect((await item())?.overdue).toBe(false);
+      now = new Date('2026-09-25T10:00:00Z');
+      expect(await item()).toMatchObject({ overdue: true, overdueFlaggedAt: null });
+    });
+
+    it('carries no finding and no rationale in a queue item', async () => {
+      referWithSentinel();
+      const referred = await submit('pa-k0823-ambiguous');
+      expect(referred.status).toBe(HttpStatus.OK);
+      const queue = await http().get('/review/cases?limit=1000');
+      expect(queue.text).not.toContain(SENTINEL);
+    });
+  });
+
+  describe('one case', () => {
+    it('serves the findings with their evidence and rationale, and what to sign', async () => {
+      referWithSentinel();
+      const referred = await submit('pa-k0823-ambiguous');
+      const caseId = caseIdOf(referred.body);
+
+      const view = await http().get(`/review/cases/${caseId}`);
+      expect(view.status).toBe(HttpStatus.OK);
+      expect(view.text).toContain(SENTINEL);
+      expect(view.body.findings.length).toBeGreaterThan(0);
+      expect(view.body.findings[0]).toMatchObject({ status: 'insufficient' });
+      expect(view.body.findings[0].evidence.length).toBe(1);
+      expect(view.body.policy.reviewerCredentials).toContain('synthetic-physician');
+      expect(view.body.signing).toEqual({
+        algorithm: 'Ed25519',
+        encoding: 'base64url',
+        payload: 'canonicalJson({ determination, recommendationSeq, runId })',
+        runId: caseId,
+        recommendationSeq: null,
+      });
+      expect(view.body.decision).toBeNull();
+      expect(view.body).not.toHaveProperty('recommendation');
+    });
+
+    it('answers 404 for an unknown case and for one that is not a case id', async () => {
+      expect((await http().get(`/review/cases/${randomUUID()}`)).status).toBe(HttpStatus.NOT_FOUND);
+      expect((await http().get('/review/cases/not-a-case')).status).toBe(HttpStatus.NOT_FOUND);
+    });
+  });
+});
