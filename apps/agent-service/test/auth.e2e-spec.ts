@@ -73,6 +73,23 @@ describe('Service authentication, enforced', () => {
     expect(response.status).toBe(401);
   });
 
+  // Amended at P3-E's review: the FHIR intake (P3-D) and the clinician review
+  // queue (P3-E) are covered too. Neither is named in the middleware.
+  it.each([
+    ['POST', '/fhir/Claim/$submit'],
+    ['POST', '/fhir/Claim/$inquire'],
+    ['GET', '/fhir/metadata'],
+    ['GET', '/review/cases'],
+    ['GET', '/review/cases/any'],
+    ['POST', '/review/cases/any/determination'],
+  ])('answers 401 to %s %s with no token', async (method, path) => {
+    const server = request(service.app.getHttpServer());
+    const response = await (method === 'GET' ? server.get(path) : server.post(path).send({}));
+
+    expect(response.status).toBe(401);
+    expect(response.headers['www-authenticate']).toBe('Bearer realm="agent-service"');
+  });
+
   it.each(['/health', '/.well-known/agent-card.json', '/.well-known/jwks.json'])(
     'serves GET %s with no token',
     async (path) => {
