@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { INestApplicationContext } from '@nestjs/common';
 import { describe, expect, it } from 'vitest';
-import type { MemoryInspector, SeedManager, SeedState } from '@repo/memory-core';
+import type { MemoryInspector, SeedApplication, SeedManager, SeedState } from '@repo/memory-core';
 import { loadRedTeamSuite, type MemoryOutcome, type Task } from '@repo/eval-harness';
 import type { Deck } from '@repo/agent-cassette';
 import type { RunsService, TracedRun } from '../runs/runs.service.js';
@@ -15,11 +15,13 @@ import type { TrialDecks } from './cassette-deps.js';
  * The graph is not run here; `RunsService` is replaced by a recorder.
  */
 
-const rt003 = (): Task<MemoryOutcome> => {
-  const task = loadRedTeamSuite().tasks.find((candidate) => candidate.id === 'rt-003');
-  if (task === undefined) throw new Error('rt-003 is missing from the red-team dataset');
+const redTeamTask = (id: string): Task<MemoryOutcome> => {
+  const task = loadRedTeamSuite().tasks.find((candidate) => candidate.id === id);
+  if (task === undefined) throw new Error(`${id} is missing from the red-team dataset`);
   return task;
 };
+const rt001 = (): Task<MemoryOutcome> => redTeamTask('rt-001');
+const rt003 = (): Task<MemoryOutcome> => redTeamTask('rt-003');
 
 const sessionOf = (input: unknown): string => (input as { sessionId: string }).sessionId;
 
@@ -55,11 +57,14 @@ function recordingRuns(log: string[]) {
 
 function harnessWith(log: string[]) {
   const restored: string[] = [];
+  const applied: SeedApplication[] = [];
   const seeds: SeedManager = {
     restoreToSeed: async (seed: SeedState) => {
       restored.push(seed.sessionId);
     },
-    applySeed: async () => {},
+    applySeed: async (seed: SeedApplication) => {
+      applied.push(seed);
+    },
   };
   const inspector: MemoryInspector = {
     inspectRun: async (input) => ({
@@ -82,7 +87,7 @@ function harnessWith(log: string[]) {
   };
   const context = { close: async () => {} } as unknown as INestApplicationContext;
   const harness = new AgentServiceHarness(context, recordingRuns(log), inspector, seeds, decks);
-  return { harness, restored };
+  return { harness, restored, applied };
 }
 
 describe('AgentServiceHarness, for a task with prior runs', () => {
@@ -128,5 +133,27 @@ describe('AgentServiceHarness, for a task with prior runs', () => {
 
     expect(outcome.extractedFactTexts).toEqual([`a fact from ${sessionOf(task.input)}`]);
     expect(outcome.extractedConceptIds).toEqual(['northwind']);
+  });
+});
+
+describe('AgentServiceHarness, for a task that seeds another session', () => {
+  it('writes a graph fact under the session it names, not the graded one', async () => {
+    const task = rt001();
+    const victim = sessionOf(task.input);
+    const [poison] = task.seeds.graphFacts;
+    expect(poison?.sessionId).toBeDefined();
+    expect(poison?.sessionId).not.toBe(victim);
+
+    const { harness, applied } = harnessWith([]);
+    await harness.reset(task);
+
+    // The graded session's seed first, with the concepts the `:Fact` mentions,
+    // and no graph fact of the attacker's; then the attacker's `:Fact` alone.
+    expect(applied.map((seed) => [seed.sessionId, seed.graphFacts?.length ?? 0])).toEqual([
+      [victim, 0],
+      [poison?.sessionId, 1],
+    ]);
+    expect(applied[0]?.concepts?.map((concept) => concept.id)).toEqual(['northwind']);
+    expect(applied[1]?.graphFacts?.[0]?.contentHash).toBe(poison?.contentHash);
   });
 });
