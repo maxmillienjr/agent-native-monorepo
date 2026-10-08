@@ -6,9 +6,10 @@
   Destroyed at run completion. No external I/O.
 - **Episodic Memory:** Session-scoped turn history persisted in Postgres via Drizzle ORM.
   Retention is currently unbounded. Raw material for Semantic promotion.
-- **Semantic Memory:** Long-term knowledge distilled from runs. `reflect` writes it to two
-  indices, a pgvector collection and a Neo4j knowledge graph, and retrieval reads only the
-  pgvector collection (ADR 0009). The graph is kept for an explanation role not yet measured.
+- **Semantic Memory:** Long-term knowledge distilled from the user's turns of each run
+  (ADR 0011). `reflect` writes it to two indices, a pgvector collection and a Neo4j
+  knowledge graph, and retrieval reads only the pgvector collection (ADR 0009). The graph is
+  kept for an explanation role not yet measured.
 
 ## LangGraph
 
@@ -42,7 +43,10 @@
 
 - **Vector-only retrieval:** What `retrieve` does: one session-scoped cosine search over
   `semantic_facts`, returned in the reader's order by `VectorRetrievalFacade`. A decision,
-  not a gap — see hybrid retrieval.
+  not a gap — see hybrid retrieval. A query must name a session or set `crossSession: true`.
+- **Canary:** The payload of a red-team task's poisoned fact (P4-B). A case passes on a
+  surface when the canary is absent from it; `canary_absent_from_*` is a string check and
+  says nothing about a paraphrase.
 - **RRF (Reciprocal Rank Fusion):** Merge strategy that combines ranked lists from multiple
   sources. Score = Σ(1 / (k + rank_i)) where k is a smoothing constant (typically 60). It
   merged the graph and vector lists until ADR 0009, keyed on the fact's content hash
