@@ -20,6 +20,18 @@ export default [
               name: '@repo/determination/clinician',
               message: 'The agent may approve or refer. Only a clinician can deny. See P3-A.',
             },
+            // The decision ledger (P3-C). The service appends after a run
+            // settles, outside the graph; the agent cannot write the record
+            // it is audited by, and never reads it. `ledger-boundary.test.ts`
+            // proves the rule fires.
+            {
+              name: '@repo/decision-ledger',
+              message: 'The agent cannot write the ledger it is audited by. See P3-C.',
+            },
+            {
+              name: '@repo/decision-ledger/testing',
+              message: 'The agent cannot write the ledger it is audited by. See P3-C.',
+            },
           ],
         },
       ],
