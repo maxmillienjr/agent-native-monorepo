@@ -13,7 +13,7 @@ const RUN_BODY = {
 /** Every covered route, with a body that would otherwise be served. */
 const COVERED = [
   { path: '/runs', body: RUN_BODY, served: 200 },
-  { path: '/runs/stream', body: RUN_BODY, served: 201 },
+  { path: '/runs/stream', body: RUN_BODY, served: 200 },
   {
     path: '/a2a/jsonrpc',
     body: {

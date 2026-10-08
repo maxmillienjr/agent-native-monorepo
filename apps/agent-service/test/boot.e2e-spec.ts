@@ -97,7 +97,7 @@ describe('agent-service as a process', () => {
         headers,
         body: RUN_BODY,
       });
-      expect(stream.status).toBe(201);
+      expect(stream.status).toBe(200);
       expect(await stream.text()).toContain('"node":"done"');
 
       const card = await fetch(`${base}/.well-known/agent-card.json`, {

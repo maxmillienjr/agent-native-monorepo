@@ -30,7 +30,10 @@ export class RunsController {
     return this.runsService.execute({ body, correlationId });
   }
 
+  // 200, not Nest's default 201 for a POST: a stream creates nothing the
+  // response could locate, and the README's quickstart curl is promised a 200.
   @Post('stream')
+  @HttpCode(200)
   async streamRun(
     @Body(runRequest) body: unknown,
     @Headers('x-correlation-id') correlationId: string,
