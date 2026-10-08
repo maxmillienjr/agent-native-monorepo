@@ -205,6 +205,8 @@ export {
 } from './retrieval/adjudication.js';
 export {
   buildAblationReport,
+  outcomeRow,
+  type OutcomeRow,
   renderAblationJson,
   renderAblationMarkdown,
   type AblationInput,

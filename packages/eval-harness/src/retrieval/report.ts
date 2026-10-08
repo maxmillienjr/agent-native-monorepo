@@ -84,6 +84,37 @@ export interface AblationReport {
   readonly limitCut: Readonly<Record<string, LimitCut>>;
   readonly labelSets: readonly LabelSetReport[];
   readonly adjudication: AdjudicationSummary | null;
+  /**
+   * The row of P2-B's outcome table the rule selects, per label set. Null
+   * until the rule may be applied. The pre-registered row is the decision;
+   * the adjudicated row is reported beside it, not instead of it.
+   */
+  readonly decision: Readonly<Partial<Record<LabelSetReport['name'], OutcomeRow>>> | null;
+}
+
+/** The rows of P2-B's "What each outcome does" table. */
+export type OutcomeRow =
+  | 'hybrid earns its keep'
+  | 'hybrid does not; hybrid·oracle does'
+  | 'neither does'
+  | 'inconclusive'
+  | 'hybrid below vector';
+
+/**
+ * Which row of the outcome table a pair of rule outcomes selects.
+ *
+ * `hybrid below vector` is checked first because the PRD states it as its own
+ * row — "as 'neither', stated as a loss rather than as no gain". It is about
+ * the deployed `hybrid` only: a loss on the diagnostic pair is reported on that
+ * comparison, and does not move the primary row.
+ */
+export function outcomeRow(primary: Comparison, diagnostic: Comparison | undefined): OutcomeRow {
+  if (primary.loss === true) return 'hybrid below vector';
+  if (primary.outcome === 'earns-its-keep') return 'hybrid earns its keep';
+  if (primary.outcome === 'inconclusive') return 'inconclusive';
+  return diagnostic?.outcome === 'earns-its-keep'
+    ? 'hybrid does not; hybrid·oracle does'
+    : 'neither does';
 }
 
 export interface AdjudicationSummary {
@@ -292,6 +323,17 @@ export function buildAblationReport(input: AblationInput): AblationReport {
     ),
     labelSets,
     adjudication: input.adjudication,
+    decision: input.applyRule
+      ? Object.fromEntries(
+          labelSets.flatMap((set) => {
+            const primary = set.comparisons.find((c) => c.name === 'primary');
+            const diagnostic = set.comparisons.find(
+              (c) => c.name === 'diagnostic: store without the linker',
+            );
+            return primary === undefined ? [] : [[set.name, outcomeRow(primary, diagnostic)]];
+          }),
+        )
+      : null,
   };
 }
 
@@ -512,6 +554,20 @@ export function renderAblationMarkdown(report: AblationReport): string {
   out.push('');
   out.push(comparisonsTable(pre.comparisons));
   out.push('');
+  if (report.decision !== null) {
+    const preRow = report.decision['pre-registered'];
+    const adjRow = report.decision['adjudicated'];
+    out.push(`**Outcome, pre-registered labels: ${preRow ?? '—'}.**`);
+    if (adjRow !== undefined) {
+      out.push(
+        `Under the adjudicated labels the same rule selects: ${adjRow}` +
+          (adjRow === preRow
+            ? ' — the same row.'
+            : ' — a different row; the decision stays on the pre-registered labels.'),
+      );
+    }
+    out.push('');
+  }
 
   out.push('## Diagnostic table — pre-registered labels');
   out.push('');

@@ -16,7 +16,13 @@ import {
   summarizeCondition,
   type RawCondition,
 } from './evaluate.js';
-import { buildAblationReport, renderAblationMarkdown } from './report.js';
+import {
+  buildAblationReport,
+  outcomeRow,
+  renderAblationMarkdown,
+  type Comparison,
+} from './report.js';
+import type { RuleOutcome } from './evaluate.js';
 import type { PairedBootstrapResult } from '../stats/paired-bootstrap.js';
 
 const EP1 = '00000000-0000-4000-8000-000000000001';
@@ -362,6 +368,9 @@ describe('buildAblationReport', () => {
     expect(['vector', 'graph·oracle']).toContain(comparison!.baseline);
   });
 
+  it('names no outcome row until the rule may be applied', () => {
+    expect(buildAblationReport(input).decision).toBeNull();
+  });
   it('prints the dataset sha256, both axes and the embedding provenance', () => {
     const markdown = renderAblationMarkdown(buildAblationReport(input));
     expect(markdown).toContain('f'.repeat(64));
@@ -375,5 +384,49 @@ describe('buildAblationReport', () => {
 
   it('hashes fact text the way the fixture expects', () => {
     expect(h('e1-f1')).toBe(sha256Hex('Alpha one.'));
+  });
+});
+
+describe('outcomeRow', () => {
+  const comparison = (outcome: RuleOutcome, loss = false): Comparison => ({
+    name: 'x',
+    preRegistered: true,
+    metric: 'recall@10',
+    system: 'hybrid',
+    baseline: 'vector',
+    baselines: ['vector', 'graph'],
+    interval: {
+      n: 200,
+      mean: 0,
+      sd: 0,
+      lower: 0,
+      upper: 0,
+      resamples: 1,
+      seed: 1,
+      confidence: 0.95,
+    },
+    pairsToResolve: { margin: null, zero: null },
+    outcome,
+    loss,
+  });
+
+  it('maps each pair of outcomes onto a row of the PRD table', () => {
+    expect(outcomeRow(comparison('earns-its-keep'), comparison('does-not'))).toBe(
+      'hybrid earns its keep',
+    );
+    expect(outcomeRow(comparison('does-not'), comparison('earns-its-keep'))).toBe(
+      'hybrid does not; hybrid·oracle does',
+    );
+    expect(outcomeRow(comparison('does-not'), comparison('does-not'))).toBe('neither does');
+    expect(outcomeRow(comparison('inconclusive'), comparison('earns-its-keep'))).toBe(
+      'inconclusive',
+    );
+  });
+
+  it('states a primary loss as its own row, and leaves a diagnostic loss on its comparison', () => {
+    expect(outcomeRow(comparison('does-not', true), comparison('does-not'))).toBe(
+      'hybrid below vector',
+    );
+    expect(outcomeRow(comparison('does-not'), comparison('does-not', true))).toBe('neither does');
   });
 });
