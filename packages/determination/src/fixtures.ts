@@ -15,3 +15,16 @@ export const SYNTHETIC_DENIAL_INPUT = {
   kind: 'denial',
   specificReason: 'Synthetic fixture: criterion synthetic-criterion-2 is not evidenced.',
 } as const;
+
+/** A second synthetic reviewer, who took no part in `SYNTHETIC_ATTESTATION`'s denial (P3-F). */
+export const SYNTHETIC_RECONSIDERING_ATTESTATION: ClinicianAttestation = {
+  reviewerId: 'synthetic-reviewer-002',
+  credential: { type: 'synthetic-physician', jurisdiction: 'synthetic-jurisdiction' },
+  attestedAt: '2026-10-02T09:00:00+00:00',
+};
+
+export const SYNTHETIC_REVERSAL_INPUT = {
+  kind: 'reversal',
+  explanation: 'Synthetic fixture: the appeal evidence documents synthetic-criterion-2.',
+  goodCauseFound: false,
+} as const;

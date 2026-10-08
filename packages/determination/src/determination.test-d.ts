@@ -5,14 +5,21 @@
  * false `expectTypeOf` assertion is a type error at the call.
  */
 import { expectTypeOf } from 'vitest';
-import { attestAdverseDetermination } from './clinician.js';
+import { attestAdverseDetermination, attestReconsideration } from './clinician.js';
 import type {
   AdverseDetermination,
   AgentDisposition,
   AutomatedApproval,
   Determination,
+  Reconsideration,
+  ReconsiderationRecord,
 } from './determination.js';
-import { SYNTHETIC_ATTESTATION, SYNTHETIC_DENIAL_INPUT } from './fixtures.js';
+import {
+  SYNTHETIC_ATTESTATION,
+  SYNTHETIC_DENIAL_INPUT,
+  SYNTHETIC_RECONSIDERING_ATTESTATION,
+  SYNTHETIC_REVERSAL_INPUT,
+} from './fixtures.js';
 
 // --- An adverse determination has one constructor ---------------------------
 
@@ -68,3 +75,33 @@ expectTypeOf<MintedBy<typeof import('./index.js')>>().toBeNever();
 
 // The check is not vacuous: the same mapping over `./clinician` finds its constructor.
 expectTypeOf<MintedBy<typeof import('./clinician.js')>>().toEqualTypeOf<AdverseDetermination>();
+
+// --- A reconsideration has one constructor too (P3-F) -----------------------
+
+// @ts-expect-error TS2741: a literal cannot carry the unexported brand, so it is not a Reconsideration.
+export const forgedReconsideration: Reconsideration = {
+  ...SYNTHETIC_REVERSAL_INPUT,
+  attestation: SYNTHETIC_RECONSIDERING_ATTESTATION,
+  initialReviewerId: SYNTHETIC_ATTESTATION.reviewerId,
+};
+
+export const byReviewerId = attestReconsideration(
+  // @ts-expect-error TS2345: the constructor takes the stored denial, not a bare reviewer id.
+  'synthetic-reviewer-001',
+  SYNTHETIC_REVERSAL_INPUT,
+  SYNTHETIC_RECONSIDERING_ATTESTATION,
+);
+
+export const reconsidered = attestReconsideration(
+  attestedDenial,
+  SYNTHETIC_REVERSAL_INPUT,
+  SYNTHETIC_RECONSIDERING_ATTESTATION,
+);
+expectTypeOf(reconsidered).toEqualTypeOf<Reconsideration>();
+expectTypeOf<ReconsiderationRecord>().not.toMatchTypeOf<Reconsideration>();
+
+/** The union, over every export of a module, of whatever it produces that is a Reconsideration. */
+type ReconsideredBy<M> = { [K in keyof M]: Extract<Produces<M[K]>, Reconsideration> }[keyof M];
+
+expectTypeOf<ReconsideredBy<typeof import('./index.js')>>().toBeNever();
+expectTypeOf<ReconsideredBy<typeof import('./clinician.js')>>().toEqualTypeOf<Reconsideration>();

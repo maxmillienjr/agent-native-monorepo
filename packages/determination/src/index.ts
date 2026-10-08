@@ -1,6 +1,8 @@
-// Everything the agent may use. `attestAdverseDetermination` is not here: it
-// is exported from `./clinician` alone, the one entry point in the repository
-// that is deliberately absent from a barrel. See `clinician.ts`.
+// Everything the agent may use. `attestAdverseDetermination` and
+// `attestReconsideration` are not here: they are exported from `./clinician`
+// alone, the one entry point in the repository that is deliberately absent
+// from a barrel. See `clinician.ts`. The types are here, because a type mints
+// nothing.
 export {
   ClinicianAttestationSchema,
   CriterionFindingSchema,
@@ -10,6 +12,7 @@ export {
   ClinicianApprovalSchema,
   AdverseDeterminationRecordSchema,
   DeterminationRecordSchema,
+  ReconsiderationRecordSchema,
   type ClinicianAttestation,
   type CriterionFinding,
   type AutomatedApproval,
@@ -20,4 +23,6 @@ export {
   type AdverseDetermination,
   type DeterminationRecord,
   type Determination,
+  type ReconsiderationRecord,
+  type Reconsideration,
 } from './determination.js';

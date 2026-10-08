@@ -127,3 +127,49 @@ export const DeterminationRecordSchema = z.discriminatedUnion('kind', [
 export type DeterminationRecord = z.infer<typeof DeterminationRecordSchema>;
 
 export type Determination = AutomatedApproval | ClinicianApproval | AdverseDetermination;
+
+/**
+ * The brand on a reconsidered determination (P3-F). Declared and never
+ * exported, as `adverse` is, so the one place that asserts it is
+ * `attestReconsideration` in `./clinician`.
+ */
+declare const reconsidered: unique symbol;
+
+/**
+ * A reconsideration of an adverse determination, unbranded (P3-F, 42 CFR
+ * § 422.590). Parsing through it checks a stored record without minting one.
+ *
+ * A reconsideration either reverses the denial or affirms it. There is no
+ * third kind: a dismissal is not a reconsidered determination, and is not
+ * typed here.
+ *
+ * The refinement is § 422.590(h)(1), "A person or persons who were not
+ * involved in making the organization determination must conduct the
+ * reconsideration", reduced to what the record can show: the reviewer who
+ * attests is not the reviewer who attested the determination under
+ * reconsideration. A stored record edited to break that fails its read.
+ */
+export const ReconsiderationRecordSchema = z
+  .object({
+    kind: z.enum(['reversal', 'affirmation']),
+    /** The written explanation § 422.590(a)(2) requires, and the reason a reversal gives. */
+    explanation: z.string().trim().min(1),
+    /**
+     * Whether the reconsidering physician found good cause for a request filed
+     * after the 60-day window (§ 422.582(c)). It is part of what was signed.
+     */
+    goodCauseFound: z.boolean(),
+    attestation: ClinicianAttestationSchema,
+    /** Who attested the determination under reconsideration. */
+    initialReviewerId: z.string().min(1),
+  })
+  .strict()
+  .refine((record) => record.attestation.reviewerId !== record.initialReviewerId, {
+    message: 'a reconsideration is made by someone not involved in the determination',
+    path: ['attestation', 'reviewerId'],
+  });
+export type ReconsiderationRecord = Readonly<z.infer<typeof ReconsiderationRecordSchema>>;
+
+export interface Reconsideration extends ReconsiderationRecord {
+  readonly [reconsidered]: true;
+}
