@@ -39,6 +39,22 @@ test.describe('Console smoke test', () => {
     await expect(page.locator('button[type="submit"]')).toContainText('Running...');
   });
 
+  test('a submitted run streams through to done on the authenticated stack', async ({ page }) => {
+    // The service enforces a credential on the compose stack (P5-A), and the
+    // console's nginx adds it. Without this, a token that never arrived would
+    // still pass every test above: each one stops before a response is read.
+    test.skip(
+      !process.env['E2E_BASE_URL'],
+      'needs the compose stack; the dev server has no backend',
+    );
+
+    await page.goto('/');
+    await page.fill('#query', 'What is LangGraph?');
+    await page.click('button[type="submit"]');
+
+    await expect(page.getByText('[done]')).toBeVisible({ timeout: 30_000 });
+  });
+
   test('displays stream viewer and run inspector panels', async ({ page }) => {
     await page.goto('/');
 

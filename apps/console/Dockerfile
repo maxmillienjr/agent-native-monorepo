@@ -27,5 +27,9 @@ RUN yarn turbo build --filter=@repo/console
 
 FROM nginx:alpine AS runner
 COPY --from=builder /app/apps/console/dist /usr/share/nginx/html
-COPY apps/console/nginx.conf /etc/nginx/conf.d/default.conf
+# A template, not a config: the image's entrypoint runs envsubst over
+# /etc/nginx/templates/*.template for the variables set in the environment,
+# which is how CONSOLE_SERVICE_TOKEN reaches the Authorization header without
+# ever being in the bundle the browser downloads (P5-A).
+COPY apps/console/nginx.conf.template /etc/nginx/templates/default.conf.template
 EXPOSE 80

@@ -77,7 +77,7 @@ jobs:
             exit 1
           fi
 
-      # console is not probed standalone: its nginx.conf proxies to the `gateway`
+      # console is not probed standalone: its nginx config proxies to the `gateway`
       # upstream, which only resolves on the compose network, so a bare `docker run`
       # exits on purpose. e2e.yml is what exercises it running.
       - name: The image starts and resolves its workspace imports

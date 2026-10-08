@@ -14,6 +14,11 @@ server {
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Correlation-Id $request_id;
+        # The console's service credential (P5-A). Substituted when the
+        # container starts, so the token is in this file inside the container
+        # and never in the bundle the browser downloads. Anyone who reaches
+        # this port uses it: the console has no user login.
+        proxy_set_header Authorization "Bearer ${CONSOLE_SERVICE_TOKEN}";
         proxy_http_version 1.1;
         proxy_set_header Connection '';
         chunked_transfer_encoding off;
