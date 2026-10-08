@@ -41,7 +41,8 @@ import { RE_RECORD_COMMAND, UPDATE_BASELINE_COMMAND } from './abort-cause.js';
  *
  * The player calls this from inside `resolve`, so the active span is the
  * inference or embeddings span `replayModelDeps` opened — or, at the
- * `act.tool` seam, the `execute_tool` span `act` opened. Each is marked
+ * `act.tool` and `act.compensate` seams, the `execute_tool` span `act` or
+ * `compensate` opened. Each is marked
  * `agent_native.replayed`, and a reader summing usage across tiers filters on
  * it: no call happened, and the span's duration is replay speed.
  *
