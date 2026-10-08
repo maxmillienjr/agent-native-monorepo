@@ -2,11 +2,11 @@
 id: P2-D
 title: Measure the graph's explanation role, or remove it (ADR 0009's fallback)
 tier: 2
-status: accepted
+status: in-progress
 size: M
 depends_on: [P1-A, P1-B, P2-B]
 blocks: [P2-E]
-issue: null
+issue: 100
 superseded_by: null
 ---
 
