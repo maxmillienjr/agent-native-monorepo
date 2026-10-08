@@ -1,0 +1,14 @@
+{
+  "id": "pa-e0601-one-missing",
+  "description": "E0601, one-missing: one criterion has no evidence in the bundle.",
+  "hcpcs": "E0601",
+  "stratum": "one-missing",
+  "bundle": "bundles/pa-e0601-one-missing.bundle.json",
+  "requires": {
+    "model": [
+      "live",
+      "replay"
+    ]
+  },
+  "findingAgreementMin": 0.75
+}

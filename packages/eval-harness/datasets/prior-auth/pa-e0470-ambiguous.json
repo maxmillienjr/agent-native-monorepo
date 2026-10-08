@@ -1,0 +1,14 @@
+{
+  "id": "pa-e0470-ambiguous",
+  "description": "E0470, ambiguous: the evidence for one criterion is hedged or undated.",
+  "hcpcs": "E0470",
+  "stratum": "ambiguous",
+  "bundle": "bundles/pa-e0470-ambiguous.bundle.json",
+  "requires": {
+    "model": [
+      "live",
+      "replay"
+    ]
+  },
+  "findingAgreementMin": 0.75
+}

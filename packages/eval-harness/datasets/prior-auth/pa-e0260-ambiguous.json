@@ -1,0 +1,14 @@
+{
+  "id": "pa-e0260-ambiguous",
+  "description": "E0260, ambiguous: the evidence for one criterion is hedged or undated.",
+  "hcpcs": "E0260",
+  "stratum": "ambiguous",
+  "bundle": "bundles/pa-e0260-ambiguous.bundle.json",
+  "requires": {
+    "model": [
+      "live",
+      "replay"
+    ]
+  },
+  "findingAgreementMin": 0.75
+}

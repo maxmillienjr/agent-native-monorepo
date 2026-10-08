@@ -23,3 +23,9 @@ packages/eval-harness/datasets/*/baselines/
 # Agent worktrees are whole checkouts; formatting from the root must not descend
 # into them.
 .claude/worktrees/
+
+# The prior-authorization dataset (P3-D). Written by `author-dataset` from
+# packages/prior-auth/src/dataset/scenarios.ts, which is the reviewable copy, and
+# compared byte for byte with it by dataset.test.ts; reformatting would fail that.
+packages/eval-harness/datasets/prior-auth/*.json
+packages/eval-harness/datasets/prior-auth/bundles/

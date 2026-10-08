@@ -1,0 +1,581 @@
+{
+  "resourceType": "Bundle",
+  "id": "bundle-e0470-one-missing",
+  "meta": {
+    "security": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+        "code": "HTEST",
+        "display": "test health data"
+      }
+    ]
+  },
+  "identifier": {
+    "system": "https://example.org/fhir/sid/submission",
+    "value": "SUB-e0470-one-missing"
+  },
+  "type": "collection",
+  "timestamp": "2026-09-16T15:45:00Z",
+  "entry": [
+    {
+      "fullUrl": "https://example.org/fhir/Claim/claim-e0470-one-missing",
+      "resource": {
+        "resourceType": "Claim",
+        "id": "claim-e0470-one-missing",
+        "meta": {
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "identifier": [
+          {
+            "system": "https://example.org/fhir/sid/submission",
+            "value": "SUB-e0470-one-missing"
+          }
+        ],
+        "status": "active",
+        "type": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/claim-type",
+              "code": "professional"
+            }
+          ]
+        },
+        "use": "preauthorization",
+        "patient": {
+          "reference": "Patient/patient-e0470-one-missing"
+        },
+        "created": "2026-09-16T15:45:00Z",
+        "insurer": {
+          "reference": "Organization/insurer-e0470-one-missing"
+        },
+        "provider": {
+          "reference": "Organization/supplier-e0470-one-missing"
+        },
+        "priority": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/processpriority",
+              "code": "stat"
+            }
+          ]
+        },
+        "careTeam": [
+          {
+            "sequence": 1,
+            "provider": {
+              "reference": "Practitioner/practitioner-e0470-one-missing"
+            }
+          }
+        ],
+        "supportingInfo": [
+          {
+            "sequence": 1,
+            "category": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/claiminformationcategory",
+                  "code": "attachment"
+                }
+              ]
+            },
+            "valueReference": {
+              "reference": "DocumentReference/doc-e0470-one-missing-study"
+            }
+          },
+          {
+            "sequence": 2,
+            "category": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/claiminformationcategory",
+                  "code": "attachment"
+                }
+              ]
+            },
+            "valueReference": {
+              "reference": "DocumentReference/doc-e0470-one-missing-trial"
+            }
+          }
+        ],
+        "diagnosis": [
+          {
+            "sequence": 1,
+            "diagnosisCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://hl7.org/fhir/sid/icd-10-cm",
+                  "code": "G47.33",
+                  "display": "Obstructive sleep apnea (adult) (pediatric)"
+                }
+              ]
+            }
+          }
+        ],
+        "insurance": [
+          {
+            "sequence": 1,
+            "focal": true,
+            "coverage": {
+              "reference": "Coverage/coverage-e0470-one-missing"
+            }
+          }
+        ],
+        "item": [
+          {
+            "sequence": 1,
+            "careTeamSequence": [
+              1
+            ],
+            "diagnosisSequence": [
+              1
+            ],
+            "informationSequence": [
+              1,
+              2
+            ],
+            "productOrService": {
+              "coding": [
+                {
+                  "system": "http://www.cms.gov/Medicare/Coding/HCPCSReleaseCodeSets",
+                  "code": "E0470",
+                  "display": "Rad w/o backup non-inv intfc"
+                }
+              ]
+            },
+            "servicedDate": "2026-09-21",
+            "quantity": {
+              "value": 1
+            },
+            "locationCodeableConcept": {
+              "coding": [
+                {
+                  "system": "https://www.cms.gov/Medicare/Coding/place-of-service-codes/Place_of_Service_Code_Set",
+                  "code": "12",
+                  "display": "Home"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "https://example.org/fhir/Patient/patient-e0470-one-missing",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "patient-e0470-one-missing",
+        "meta": {
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ],
+          "profile": [
+            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient"
+          ]
+        },
+        "identifier": [
+          {
+            "type": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+                  "code": "MB"
+                }
+              ]
+            },
+            "system": "https://example.org/fhir/sid/member-id",
+            "value": "CBK-M-1009"
+          }
+        ],
+        "active": true,
+        "name": [
+          {
+            "use": "official",
+            "family": "Grunewald846",
+            "given": [
+              "Philippa19"
+            ]
+          }
+        ],
+        "telecom": [
+          {
+            "system": "phone",
+            "value": "217-555-0124",
+            "use": "home"
+          }
+        ],
+        "gender": "female",
+        "birthDate": "1952-05-05",
+        "address": [
+          {
+            "use": "home",
+            "city": "Toledo",
+            "state": "OH",
+            "country": "US"
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "https://example.org/fhir/Coverage/coverage-e0470-one-missing",
+      "resource": {
+        "resourceType": "Coverage",
+        "id": "coverage-e0470-one-missing",
+        "meta": {
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ],
+          "profile": [
+            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-coverage"
+          ]
+        },
+        "identifier": [
+          {
+            "type": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+                  "code": "MB"
+                }
+              ]
+            },
+            "system": "https://example.org/fhir/sid/member-id",
+            "value": "CBK-M-1009"
+          }
+        ],
+        "status": "active",
+        "subscriberId": "CBK-M-1009",
+        "beneficiary": {
+          "reference": "Patient/patient-e0470-one-missing"
+        },
+        "relationship": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/subscriber-relationship",
+              "code": "self"
+            }
+          ]
+        },
+        "period": {
+          "start": "2026-01-01",
+          "end": "2026-12-31"
+        },
+        "payor": [
+          {
+            "reference": "Organization/insurer-e0470-one-missing"
+          }
+        ],
+        "class": [
+          {
+            "type": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/coverage-class",
+                  "code": "plan"
+                }
+              ]
+            },
+            "value": "cbk-ma-plus",
+            "name": "Cedarbrook Medicare Advantage Plus (synthetic)"
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "https://example.org/fhir/Practitioner/practitioner-e0470-one-missing",
+      "resource": {
+        "resourceType": "Practitioner",
+        "id": "practitioner-e0470-one-missing",
+        "meta": {
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ],
+          "profile": [
+            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitioner"
+          ]
+        },
+        "identifier": [
+          {
+            "system": "http://hl7.org/fhir/sid/us-npi",
+            "value": "1909009503"
+          }
+        ],
+        "active": true,
+        "name": [
+          {
+            "family": "Sorensen312",
+            "given": [
+              "Oren44"
+            ],
+            "prefix": [
+              "Dr"
+            ]
+          }
+        ],
+        "telecom": [
+          {
+            "system": "phone",
+            "value": "217-555-0125",
+            "use": "work"
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "https://example.org/fhir/Organization/supplier-e0470-one-missing",
+      "resource": {
+        "resourceType": "Organization",
+        "id": "supplier-e0470-one-missing",
+        "meta": {
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ],
+          "profile": [
+            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization"
+          ]
+        },
+        "identifier": [
+          {
+            "system": "http://hl7.org/fhir/sid/us-npi",
+            "value": "1709309905"
+          },
+          {
+            "system": "https://example.org/fhir/sid/supplier-id",
+            "value": "SUP-09"
+          }
+        ],
+        "active": true,
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/organization-type",
+                "code": "prov"
+              }
+            ]
+          }
+        ],
+        "name": "Synthetic Home Medical Supply 09",
+        "telecom": [
+          {
+            "system": "phone",
+            "value": "217-555-0126",
+            "use": "work"
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "city": "Toledo",
+            "state": "OH",
+            "country": "US"
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "https://example.org/fhir/Organization/insurer-e0470-one-missing",
+      "resource": {
+        "resourceType": "Organization",
+        "id": "insurer-e0470-one-missing",
+        "meta": {
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ],
+          "profile": [
+            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization"
+          ]
+        },
+        "identifier": [
+          {
+            "system": "https://example.org/fhir/sid/payer-id",
+            "value": "CBK-SYN-001"
+          }
+        ],
+        "active": true,
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/organization-type",
+                "code": "pay"
+              }
+            ]
+          }
+        ],
+        "name": "Cedarbrook Synthetic Health Plan"
+      }
+    },
+    {
+      "fullUrl": "https://example.org/fhir/Condition/condition-e0470-one-missing-osa",
+      "resource": {
+        "resourceType": "Condition",
+        "id": "condition-e0470-one-missing-osa",
+        "meta": {
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ],
+          "profile": [
+            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-problems-health-concerns"
+          ]
+        },
+        "clinicalStatus": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+              "code": "active"
+            }
+          ]
+        },
+        "verificationStatus": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status",
+              "code": "confirmed"
+            }
+          ]
+        },
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/condition-category",
+                "code": "problem-list-item"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://hl7.org/fhir/sid/icd-10-cm",
+              "code": "G47.33",
+              "display": "Obstructive sleep apnea (adult) (pediatric)"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "Patient/patient-e0470-one-missing"
+        },
+        "onsetDateTime": "2026-04-15"
+      }
+    },
+    {
+      "fullUrl": "https://example.org/fhir/DocumentReference/doc-e0470-one-missing-study",
+      "resource": {
+        "resourceType": "DocumentReference",
+        "id": "doc-e0470-one-missing-study",
+        "meta": {
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "status": "current",
+        "type": {
+          "coding": [
+            {
+              "system": "https://example.org/fhir/CodeSystem/document-type",
+              "code": "clinical-note"
+            }
+          ],
+          "text": "Sleep study report"
+        },
+        "subject": {
+          "reference": "Patient/patient-e0470-one-missing"
+        },
+        "date": "2026-04-15T12:00:00Z",
+        "author": [
+          {
+            "reference": "Practitioner/practitioner-e0470-one-missing"
+          }
+        ],
+        "description": "Sleep study report",
+        "content": [
+          {
+            "attachment": {
+              "contentType": "text/plain; charset=utf-8",
+              "data": "U3BsaXQtbmlnaHQgcG9seXNvbW5vZ3JhcGh5LCAyMDI2LTA0LTE1LgpEaWFnbm9zdGljIHBvcnRpb246IGFwbmVhLWh5cG9wbmVhIGluZGV4IChBSEkpIDQyIGV2ZW50cyBwZXIgaG91ci4KSW1wcmVzc2lvbjogc2V2ZXJlIG9ic3RydWN0aXZlIHNsZWVwIGFwbmVhLg=="
+            }
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "https://example.org/fhir/DocumentReference/doc-e0470-one-missing-trial",
+      "resource": {
+        "resourceType": "DocumentReference",
+        "id": "doc-e0470-one-missing-trial",
+        "meta": {
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "status": "current",
+        "type": {
+          "coding": [
+            {
+              "system": "https://example.org/fhir/CodeSystem/document-type",
+              "code": "clinical-note"
+            }
+          ],
+          "text": "Prescriber note on the CPAP trial"
+        },
+        "subject": {
+          "reference": "Patient/patient-e0470-one-missing"
+        },
+        "date": "2026-08-20T12:00:00Z",
+        "author": [
+          {
+            "reference": "Practitioner/practitioner-e0470-one-missing"
+          }
+        ],
+        "description": "Prescriber note on the CPAP trial",
+        "content": [
+          {
+            "attachment": {
+              "contentType": "text/plain; charset=utf-8",
+              "data": "Q1BBUCBhdCAxNCBjbSBIMk8gdXNlZCBmcm9tIDIwMjYtMDUtMDEgdG8gMjAyNi0wOC0xNSwgMTA3IGRheXMuCkRvd25sb2FkIHNob3dzIHJlc2lkdWFsIEFISSAyMSBldmVudHMgcGVyIGhvdXIgYW5kIG1hc2sgbGVhazsgc2hlIGNhbm5vdCBleGhhbGUgYWdhaW5zdCB0aGUKcHJlc3N1cmUgYW5kIHdha2VzIHJlcGVhdGVkbHkuIEluIG15IGp1ZGdlbWVudCBDUEFQIGhhcyBub3QgYmVlbiB0b2xlcmF0ZWQu"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

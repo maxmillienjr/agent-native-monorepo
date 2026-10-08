@@ -1,0 +1,652 @@
+{
+  "resourceType": "Bundle",
+  "id": "bundle-k0823-contradicted",
+  "meta": {
+    "security": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+        "code": "HTEST",
+        "display": "test health data"
+      }
+    ]
+  },
+  "identifier": {
+    "system": "https://example.org/fhir/sid/submission",
+    "value": "SUB-k0823-contradicted"
+  },
+  "type": "collection",
+  "timestamp": "2026-09-17T11:35:00Z",
+  "entry": [
+    {
+      "fullUrl": "https://example.org/fhir/Claim/claim-k0823-contradicted",
+      "resource": {
+        "resourceType": "Claim",
+        "id": "claim-k0823-contradicted",
+        "meta": {
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "identifier": [
+          {
+            "system": "https://example.org/fhir/sid/submission",
+            "value": "SUB-k0823-contradicted"
+          }
+        ],
+        "status": "active",
+        "type": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/claim-type",
+              "code": "professional"
+            }
+          ]
+        },
+        "use": "preauthorization",
+        "patient": {
+          "reference": "Patient/patient-k0823-contradicted"
+        },
+        "created": "2026-09-17T11:35:00Z",
+        "insurer": {
+          "reference": "Organization/insurer-k0823-contradicted"
+        },
+        "provider": {
+          "reference": "Organization/supplier-k0823-contradicted"
+        },
+        "priority": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/processpriority",
+              "code": "normal"
+            }
+          ]
+        },
+        "careTeam": [
+          {
+            "sequence": 1,
+            "provider": {
+              "reference": "Practitioner/practitioner-k0823-contradicted"
+            }
+          }
+        ],
+        "supportingInfo": [
+          {
+            "sequence": 1,
+            "category": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/claiminformationcategory",
+                  "code": "attachment"
+                }
+              ]
+            },
+            "valueReference": {
+              "reference": "DocumentReference/doc-k0823-contradicted-exam"
+            }
+          },
+          {
+            "sequence": 2,
+            "category": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/claiminformationcategory",
+                  "code": "attachment"
+                }
+              ]
+            },
+            "valueReference": {
+              "reference": "DocumentReference/doc-k0823-contradicted-home"
+            }
+          }
+        ],
+        "diagnosis": [
+          {
+            "sequence": 1,
+            "diagnosisCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://hl7.org/fhir/sid/icd-10-cm",
+                  "code": "G35.D",
+                  "display": "Multiple sclerosis, unspecified"
+                }
+              ]
+            }
+          },
+          {
+            "sequence": 2,
+            "diagnosisCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://hl7.org/fhir/sid/icd-10-cm",
+                  "code": "M62.81",
+                  "display": "Muscle weakness (generalized)"
+                }
+              ]
+            }
+          }
+        ],
+        "insurance": [
+          {
+            "sequence": 1,
+            "focal": true,
+            "coverage": {
+              "reference": "Coverage/coverage-k0823-contradicted"
+            }
+          }
+        ],
+        "item": [
+          {
+            "sequence": 1,
+            "careTeamSequence": [
+              1
+            ],
+            "diagnosisSequence": [
+              1,
+              2
+            ],
+            "informationSequence": [
+              1,
+              2
+            ],
+            "productOrService": {
+              "coding": [
+                {
+                  "system": "http://www.cms.gov/Medicare/Coding/HCPCSReleaseCodeSets",
+                  "code": "K0823",
+                  "display": "Pwc gp 2 std cap chair"
+                }
+              ]
+            },
+            "servicedDate": "2026-09-28",
+            "quantity": {
+              "value": 1
+            },
+            "locationCodeableConcept": {
+              "coding": [
+                {
+                  "system": "https://www.cms.gov/Medicare/Coding/place-of-service-codes/Place_of_Service_Code_Set",
+                  "code": "12",
+                  "display": "Home"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "https://example.org/fhir/Patient/patient-k0823-contradicted",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "patient-k0823-contradicted",
+        "meta": {
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ],
+          "profile": [
+            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-patient"
+          ]
+        },
+        "identifier": [
+          {
+            "type": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+                  "code": "MB"
+                }
+              ]
+            },
+            "system": "https://example.org/fhir/sid/member-id",
+            "value": "CBK-M-1016"
+          }
+        ],
+        "active": true,
+        "name": [
+          {
+            "use": "official",
+            "family": "Takahashi186",
+            "given": [
+              "Evander55"
+            ]
+          }
+        ],
+        "telecom": [
+          {
+            "system": "phone",
+            "value": "217-555-0145",
+            "use": "home"
+          }
+        ],
+        "gender": "male",
+        "birthDate": "1950-03-09",
+        "address": [
+          {
+            "use": "home",
+            "city": "Muncie",
+            "state": "IN",
+            "country": "US"
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "https://example.org/fhir/Coverage/coverage-k0823-contradicted",
+      "resource": {
+        "resourceType": "Coverage",
+        "id": "coverage-k0823-contradicted",
+        "meta": {
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ],
+          "profile": [
+            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-coverage"
+          ]
+        },
+        "identifier": [
+          {
+            "type": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+                  "code": "MB"
+                }
+              ]
+            },
+            "system": "https://example.org/fhir/sid/member-id",
+            "value": "CBK-M-1016"
+          }
+        ],
+        "status": "active",
+        "subscriberId": "CBK-M-1016",
+        "beneficiary": {
+          "reference": "Patient/patient-k0823-contradicted"
+        },
+        "relationship": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/subscriber-relationship",
+              "code": "self"
+            }
+          ]
+        },
+        "period": {
+          "start": "2026-01-01",
+          "end": "2026-12-31"
+        },
+        "payor": [
+          {
+            "reference": "Organization/insurer-k0823-contradicted"
+          }
+        ],
+        "class": [
+          {
+            "type": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/coverage-class",
+                  "code": "plan"
+                }
+              ]
+            },
+            "value": "cbk-ma-plus",
+            "name": "Cedarbrook Medicare Advantage Plus (synthetic)"
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "https://example.org/fhir/Practitioner/practitioner-k0823-contradicted",
+      "resource": {
+        "resourceType": "Practitioner",
+        "id": "practitioner-k0823-contradicted",
+        "meta": {
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ],
+          "profile": [
+            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-practitioner"
+          ]
+        },
+        "identifier": [
+          {
+            "system": "http://hl7.org/fhir/sid/us-npi",
+            "value": "1916016517"
+          }
+        ],
+        "active": true,
+        "name": [
+          {
+            "family": "Ferreira455",
+            "given": [
+              "Anselm31"
+            ],
+            "prefix": [
+              "Dr"
+            ]
+          }
+        ],
+        "telecom": [
+          {
+            "system": "phone",
+            "value": "217-555-0146",
+            "use": "work"
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "https://example.org/fhir/Organization/supplier-k0823-contradicted",
+      "resource": {
+        "resourceType": "Organization",
+        "id": "supplier-k0823-contradicted",
+        "meta": {
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ],
+          "profile": [
+            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization"
+          ]
+        },
+        "identifier": [
+          {
+            "system": "http://hl7.org/fhir/sid/us-npi",
+            "value": "1716316919"
+          },
+          {
+            "system": "https://example.org/fhir/sid/supplier-id",
+            "value": "SUP-16"
+          }
+        ],
+        "active": true,
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/organization-type",
+                "code": "prov"
+              }
+            ]
+          }
+        ],
+        "name": "Synthetic Home Medical Supply 16",
+        "telecom": [
+          {
+            "system": "phone",
+            "value": "217-555-0147",
+            "use": "work"
+          }
+        ],
+        "address": [
+          {
+            "use": "work",
+            "city": "Muncie",
+            "state": "IN",
+            "country": "US"
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "https://example.org/fhir/Organization/insurer-k0823-contradicted",
+      "resource": {
+        "resourceType": "Organization",
+        "id": "insurer-k0823-contradicted",
+        "meta": {
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ],
+          "profile": [
+            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-organization"
+          ]
+        },
+        "identifier": [
+          {
+            "system": "https://example.org/fhir/sid/payer-id",
+            "value": "CBK-SYN-001"
+          }
+        ],
+        "active": true,
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/organization-type",
+                "code": "pay"
+              }
+            ]
+          }
+        ],
+        "name": "Cedarbrook Synthetic Health Plan"
+      }
+    },
+    {
+      "fullUrl": "https://example.org/fhir/Condition/condition-k0823-contradicted-ms",
+      "resource": {
+        "resourceType": "Condition",
+        "id": "condition-k0823-contradicted-ms",
+        "meta": {
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ],
+          "profile": [
+            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-problems-health-concerns"
+          ]
+        },
+        "clinicalStatus": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+              "code": "active"
+            }
+          ]
+        },
+        "verificationStatus": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status",
+              "code": "confirmed"
+            }
+          ]
+        },
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/condition-category",
+                "code": "problem-list-item"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://hl7.org/fhir/sid/icd-10-cm",
+              "code": "G35.D",
+              "display": "Multiple sclerosis, unspecified"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "Patient/patient-k0823-contradicted"
+        },
+        "onsetDateTime": "2009-02-14"
+      }
+    },
+    {
+      "fullUrl": "https://example.org/fhir/Condition/condition-k0823-contradicted-weakness",
+      "resource": {
+        "resourceType": "Condition",
+        "id": "condition-k0823-contradicted-weakness",
+        "meta": {
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ],
+          "profile": [
+            "http://hl7.org/fhir/us/core/StructureDefinition/us-core-condition-problems-health-concerns"
+          ]
+        },
+        "clinicalStatus": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+              "code": "active"
+            }
+          ]
+        },
+        "verificationStatus": {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status",
+              "code": "confirmed"
+            }
+          ]
+        },
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/condition-category",
+                "code": "problem-list-item"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://hl7.org/fhir/sid/icd-10-cm",
+              "code": "M62.81",
+              "display": "Muscle weakness (generalized)"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "Patient/patient-k0823-contradicted"
+        },
+        "onsetDateTime": "2025-11-03"
+      }
+    },
+    {
+      "fullUrl": "https://example.org/fhir/DocumentReference/doc-k0823-contradicted-exam",
+      "resource": {
+        "resourceType": "DocumentReference",
+        "id": "doc-k0823-contradicted-exam",
+        "meta": {
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "status": "current",
+        "type": {
+          "coding": [
+            {
+              "system": "https://example.org/fhir/CodeSystem/document-type",
+              "code": "clinical-note"
+            }
+          ],
+          "text": "Mobility examination"
+        },
+        "subject": {
+          "reference": "Patient/patient-k0823-contradicted"
+        },
+        "date": "2026-09-02T12:00:00Z",
+        "author": [
+          {
+            "reference": "Practitioner/practitioner-k0823-contradicted"
+          }
+        ],
+        "description": "Mobility examination",
+        "content": [
+          {
+            "attachment": {
+              "contentType": "text/plain; charset=utf-8",
+              "data": "RmFjZS10by1mYWNlIG1vYmlsaXR5IGV4YW1pbmF0aW9uLCAyMDI2LTA5LTAyLgpTaGUgY2Fubm90IHdhbGsgZnJvbSB0aGUgYmVkcm9vbSB0byB0aGUgYmF0aHJvb20gd2l0aG91dCByZXN0aW5nIGFuZCBoYXMgZmFsbGVuIHR3aWNlIHRoaXMgeWVhcjsKc2hlIGNhbiBubyBsb25nZXIgdG9pbGV0IG9yIHByZXBhcmUgYSBtZWFsIHdpdGhvdXQgaGVscC4KV2l0aCBhIHJvbGxpbmcgd2Fsa2VyIHNoZSBtYW5hZ2VzIDE1IGZlZXQgYmVmb3JlIHN0b3BwaW5nOyBhIHdhbGtlciBkb2VzIG5vdCByZXNvbHZlIHRoZSBsaW1pdGF0aW9uLgpHcmlwIHN0cmVuZ3RoIDkga2cgcmlnaHQgYW5kIDcga2cgbGVmdDsgc2hlIGNhbm5vdCBzZWxmLXByb3BlbCBhIG1hbnVhbCB3aGVlbGNoYWlyIG1vcmUgdGhhbiAyMCBmZWV0LgpWaXNpb24gY29ycmVjdGVkIHRvIDIwLzMwLCBqdWRnZW1lbnQgaW50YWN0LCBhbmQgc2hlIG9wZXJhdGVkIGEgZGVtb25zdHJhdGlvbiBqb3lzdGljayBzYWZlbHku"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "https://example.org/fhir/DocumentReference/doc-k0823-contradicted-home",
+      "resource": {
+        "resourceType": "DocumentReference",
+        "id": "doc-k0823-contradicted-home",
+        "meta": {
+          "security": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+              "code": "HTEST",
+              "display": "test health data"
+            }
+          ]
+        },
+        "status": "current",
+        "type": {
+          "coding": [
+            {
+              "system": "https://example.org/fhir/CodeSystem/document-type",
+              "code": "clinical-note"
+            }
+          ],
+          "text": "Home assessment"
+        },
+        "subject": {
+          "reference": "Patient/patient-k0823-contradicted"
+        },
+        "date": "2026-04-10T12:00:00Z",
+        "author": [
+          {
+            "reference": "Practitioner/practitioner-k0823-contradicted"
+          }
+        ],
+        "description": "Home assessment",
+        "content": [
+          {
+            "attachment": {
+              "contentType": "text/plain; charset=utf-8",
+              "data": "SG9tZSBhc3Nlc3NtZW50IGJ5IHRoZSBzdXBwbGllciwgMjAyNi0wNC0xMC4KRG9vcndheXMgMzQgaW5jaGVzIG9yIHdpZGVyLCA1LWZvb3QgdHVybmluZyBzcGFjZSBpbiB0aGUga2l0Y2hlbiBhbmQgYmF0aHJvb20sIGxldmVsIGZsb29ycy4KVGhlIGhvbWUgYWNjb21tb2RhdGVzIGEgcG93ZXIgd2hlZWxjaGFpci4="
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

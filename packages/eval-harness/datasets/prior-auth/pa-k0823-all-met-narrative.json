@@ -1,0 +1,14 @@
+{
+  "id": "pa-k0823-all-met-narrative",
+  "description": "K0823, all-met-narrative: every criterion is evidenced, at least one only in the note's prose.",
+  "hcpcs": "K0823",
+  "stratum": "all-met-narrative",
+  "bundle": "bundles/pa-k0823-all-met-narrative.bundle.json",
+  "requires": {
+    "model": [
+      "live",
+      "replay"
+    ]
+  },
+  "findingAgreementMin": 0.75
+}

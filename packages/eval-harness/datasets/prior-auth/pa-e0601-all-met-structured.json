@@ -1,0 +1,14 @@
+{
+  "id": "pa-e0601-all-met-structured",
+  "description": "E0601, all-met-structured: every criterion is evidenced by a coded condition or a stated measurement.",
+  "hcpcs": "E0601",
+  "stratum": "all-met-structured",
+  "bundle": "bundles/pa-e0601-all-met-structured.bundle.json",
+  "requires": {
+    "model": [
+      "live",
+      "replay"
+    ]
+  },
+  "findingAgreementMin": 0.75
+}

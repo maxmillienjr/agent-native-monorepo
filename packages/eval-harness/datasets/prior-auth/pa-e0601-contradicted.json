@@ -1,0 +1,14 @@
+{
+  "id": "pa-e0601-contradicted",
+  "description": "E0601, contradicted: the record states a value that fails a threshold.",
+  "hcpcs": "E0601",
+  "stratum": "contradicted",
+  "bundle": "bundles/pa-e0601-contradicted.bundle.json",
+  "requires": {
+    "model": [
+      "live",
+      "replay"
+    ]
+  },
+  "findingAgreementMin": 0.75
+}

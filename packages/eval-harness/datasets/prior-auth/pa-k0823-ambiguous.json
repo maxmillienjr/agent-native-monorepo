@@ -1,0 +1,14 @@
+{
+  "id": "pa-k0823-ambiguous",
+  "description": "K0823, ambiguous: the evidence for one criterion is hedged or undated.",
+  "hcpcs": "K0823",
+  "stratum": "ambiguous",
+  "bundle": "bundles/pa-k0823-ambiguous.bundle.json",
+  "requires": {
+    "model": [
+      "live",
+      "replay"
+    ]
+  },
+  "findingAgreementMin": 0.75
+}

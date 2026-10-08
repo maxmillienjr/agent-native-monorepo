@@ -1,0 +1,14 @@
+{
+  "id": "pa-k0823-contradicted",
+  "description": "K0823, contradicted: the record states a value that fails a threshold.",
+  "hcpcs": "K0823",
+  "stratum": "contradicted",
+  "bundle": "bundles/pa-k0823-contradicted.bundle.json",
+  "requires": {
+    "model": [
+      "live",
+      "replay"
+    ]
+  },
+  "findingAgreementMin": 0.75
+}

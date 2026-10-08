@@ -1,0 +1,14 @@
+{
+  "id": "pa-k0823-administrative",
+  "description": "K0823, administrative: the coverage is not active on the date of service.",
+  "hcpcs": "K0823",
+  "stratum": "administrative",
+  "bundle": "bundles/pa-k0823-administrative.bundle.json",
+  "requires": {
+    "model": [
+      "live",
+      "replay"
+    ]
+  },
+  "findingAgreementMin": 0.75
+}

@@ -1,0 +1,14 @@
+{
+  "id": "pa-e0601-all-met-narrative",
+  "description": "E0601, all-met-narrative: every criterion is evidenced, at least one only in the note's prose.",
+  "hcpcs": "E0601",
+  "stratum": "all-met-narrative",
+  "bundle": "bundles/pa-e0601-all-met-narrative.bundle.json",
+  "requires": {
+    "model": [
+      "live",
+      "replay"
+    ]
+  },
+  "findingAgreementMin": 0.75
+}

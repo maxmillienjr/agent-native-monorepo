@@ -1,0 +1,14 @@
+{
+  "id": "pa-e0260-administrative",
+  "description": "E0260, administrative: the coverage is not active on the date of service.",
+  "hcpcs": "E0260",
+  "stratum": "administrative",
+  "bundle": "bundles/pa-e0260-administrative.bundle.json",
+  "requires": {
+    "model": [
+      "live",
+      "replay"
+    ]
+  },
+  "findingAgreementMin": 0.75
+}

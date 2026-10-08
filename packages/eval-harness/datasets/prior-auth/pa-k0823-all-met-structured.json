@@ -1,0 +1,14 @@
+{
+  "id": "pa-k0823-all-met-structured",
+  "description": "K0823, all-met-structured: every criterion is evidenced by a coded condition or a stated measurement.",
+  "hcpcs": "K0823",
+  "stratum": "all-met-structured",
+  "bundle": "bundles/pa-k0823-all-met-structured.bundle.json",
+  "requires": {
+    "model": [
+      "live",
+      "replay"
+    ]
+  },
+  "findingAgreementMin": 0.75
+}
