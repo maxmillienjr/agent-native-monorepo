@@ -3,11 +3,13 @@ import {
   AdverseDeterminationRecordSchema,
   AgentDispositionSchema,
   ClinicianApprovalSchema,
+  ClinicianAttestationSchema,
+  ReconsiderationRecordSchema,
 } from '@repo/determination';
 
 /**
- * The ledger's vocabulary (P3-C): five kinds of entry, and the rows that hold
- * them.
+ * The ledger's vocabulary (P3-C): five kinds of entry, four more for appeals
+ * (P3-F), and the rows that hold them.
  *
  * Every payload is strict, so a field nobody declared cannot ride into a
  * commitment, and every payload is validated on append and again by the
@@ -115,12 +117,92 @@ export const ReviewerKeyRevokedPayloadSchema = z
   })
   .strict();
 
+// --- Appeals (P3-F) ------------------------------------------------------------
+//
+// A request for reconsideration of a denial, and what became of it. Each cites
+// the case's `determination.attested` entry by seq, and every entry after the
+// filing cites the filing by seq too, so a withheld payload still leaves a
+// reference whose kind can be checked, as a recommendation's does.
+
+/** A request for reconsideration of the adverse determination at `determinationSeq`. */
+export const AppealFiledPayloadSchema = z
+  .object({
+    kind: z.literal('appeal.filed'),
+    appealId: z.string().uuid(),
+    caseId: z.string().uuid(),
+    determinationSeq: SeqSchema,
+    priority: z.enum(['expedited', 'standard']),
+    timely: z.boolean(),
+    filerRole: z.enum(['enrollee', 'representative', 'physician']),
+  })
+  .strict();
+
+/**
+ * A physician's signed reconsideration. The record's shape is P3-A's, without
+ * the refinement that refuses two equal reviewer ids: whether the signer took
+ * part in the determination is the chain's question, asked of the keys the
+ * chain registered, so the verifier names it as such rather than as a payload
+ * that does not parse.
+ */
+export const ReconsiderationAttestedPayloadSchema = z
+  .object({
+    kind: z.literal('reconsideration.attested'),
+    appealId: z.string().uuid(),
+    caseId: z.string().uuid(),
+    appealSeq: SeqSchema,
+    determinationSeq: SeqSchema,
+    reconsideration: ReconsiderationRecordSchema.innerType(),
+    reviewerKeyId: z.string().min(1),
+    signature: Ed25519SignatureSchema,
+  })
+  .strict();
+
+/** A signed dismissal (42 CFR § 422.582(f)): the dismissal as signed, so its signature can be checked. */
+export const AppealDismissedPayloadSchema = z
+  .object({
+    kind: z.literal('appeal.dismissed'),
+    appealId: z.string().uuid(),
+    caseId: z.string().uuid(),
+    appealSeq: SeqSchema,
+    determinationSeq: SeqSchema,
+    dismissal: z
+      .object({
+        reason: z.enum(['not-a-proper-party', 'invalid-request', 'untimely', 'withdrawn']),
+        explanation: z.string().min(1),
+        attestation: ClinicianAttestationSchema,
+      })
+      .strict(),
+    reviewerKeyId: z.string().min(1),
+    signature: Ed25519SignatureSchema,
+  })
+  .strict();
+
+/**
+ * The case file forwarded to the independent entity: on an affirmation, or
+ * because the reconsideration deadline passed (§ 422.590(d), (g)). A record,
+ * not a delivery; the digest is what the plan says it sent.
+ */
+export const AppealForwardedPayloadSchema = z
+  .object({
+    kind: z.literal('appeal.forwarded'),
+    appealId: z.string().uuid(),
+    caseId: z.string().uuid(),
+    appealSeq: SeqSchema,
+    reason: z.enum(['affirmed', 'deadline-lapsed']),
+    caseFileDigest: Sha256HexSchema,
+  })
+  .strict();
+
 export const LedgerPayloadSchema = z.discriminatedUnion('kind', [
   RunRecordedPayloadSchema,
   DispositionRecommendedPayloadSchema,
   DeterminationAttestedPayloadSchema,
   ReviewerKeyRegisteredPayloadSchema,
   ReviewerKeyRevokedPayloadSchema,
+  AppealFiledPayloadSchema,
+  ReconsiderationAttestedPayloadSchema,
+  AppealDismissedPayloadSchema,
+  AppealForwardedPayloadSchema,
 ]);
 
 export type LedgerPayload = z.infer<typeof LedgerPayloadSchema>;
@@ -131,6 +213,10 @@ export type DeterminationAttestedPayload = z.infer<typeof DeterminationAttestedP
 export type ReviewerKeyRegisteredPayload = z.infer<typeof ReviewerKeyRegisteredPayloadSchema>;
 export type ReviewerKeyRevokedPayload = z.infer<typeof ReviewerKeyRevokedPayloadSchema>;
 export type AttestedDetermination = z.infer<typeof AttestedDeterminationSchema>;
+export type AppealFiledPayload = z.infer<typeof AppealFiledPayloadSchema>;
+export type ReconsiderationAttestedPayload = z.infer<typeof ReconsiderationAttestedPayloadSchema>;
+export type AppealDismissedPayload = z.infer<typeof AppealDismissedPayloadSchema>;
+export type AppealForwardedPayload = z.infer<typeof AppealForwardedPayloadSchema>;
 
 export const LEDGER_KINDS = [
   'run.recorded',
@@ -138,6 +224,18 @@ export const LEDGER_KINDS = [
   'determination.attested',
   'reviewer-key.registered',
   'reviewer-key.revoked',
+  'appeal.filed',
+  'reconsideration.attested',
+  'appeal.dismissed',
+  'appeal.forwarded',
+] as const satisfies readonly LedgerKind[];
+
+/** The kinds about an appeal (P3-F), each of which carries its case id. */
+export const APPEAL_KINDS = [
+  'appeal.filed',
+  'reconsideration.attested',
+  'appeal.dismissed',
+  'appeal.forwarded',
 ] as const satisfies readonly LedgerKind[];
 
 /**

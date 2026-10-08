@@ -9,7 +9,7 @@ import type {
   ReviewerKeyRegisteredPayload,
 } from './entry.js';
 import { GENESIS_PREV_HASH, commitmentOf, entryHashOf, newSalt, payloadText } from './hash.js';
-import { attestationBytes } from './signature.js';
+import { appealActionBytes, attestationBytes } from './signature.js';
 
 /**
  * Test fixtures. Every reviewer, key and run here is synthetic: the reviewer
@@ -88,6 +88,105 @@ export function attestation(input: {
 }
 
 export const SYNTHETIC_RUN = '00000000-0000-4000-8000-00000000c0de';
+export const SYNTHETIC_APPEAL = '00000000-0000-4000-8000-0000000a99ea';
+
+/** A request for reconsideration of the denial at `determinationSeq` on `SYNTHETIC_RUN` (P3-F). */
+export function appealFiled(determinationSeq: number, appealId = SYNTHETIC_APPEAL): LedgerPayload {
+  return {
+    kind: 'appeal.filed',
+    appealId,
+    caseId: SYNTHETIC_RUN,
+    determinationSeq,
+    priority: 'standard',
+    timely: true,
+    filerRole: 'enrollee',
+  };
+}
+
+/** A reconsideration signed by `signer` over the appeal's bytes, naming `initial` as the denier. */
+export function reconsideration(input: {
+  readonly signer: SyntheticReviewer;
+  readonly initial: SyntheticReviewer;
+  readonly appealSeq: number;
+  readonly determinationSeq: number;
+  readonly kind?: 'reversal' | 'affirmation';
+  /** Sign as if for this appeal id instead. */
+  readonly signFor?: string;
+}): LedgerPayload {
+  const signed = {
+    kind: input.kind ?? 'affirmation',
+    explanation: 'Synthetic fixture: the appeal evidence does not change the reading.',
+    goodCauseFound: false,
+    attestation: {
+      reviewerId: input.signer.reviewerId,
+      credential: { ...input.signer.credential },
+      attestedAt: '2026-10-09T12:00:00.000Z',
+    },
+  };
+  const bytes = appealActionBytes({
+    action: 'reconsideration',
+    appealId: input.signFor ?? SYNTHETIC_APPEAL,
+    caseId: SYNTHETIC_RUN,
+    body: signed,
+  });
+  return {
+    kind: 'reconsideration.attested',
+    appealId: SYNTHETIC_APPEAL,
+    caseId: SYNTHETIC_RUN,
+    appealSeq: input.appealSeq,
+    determinationSeq: input.determinationSeq,
+    reconsideration: { ...signed, initialReviewerId: input.initial.reviewerId },
+    reviewerKeyId: input.signer.reviewerKeyId,
+    signature: sign(null, bytes, input.signer.privateKey).toString('base64url'),
+  };
+}
+
+/** A dismissal signed by `signer` over the appeal's bytes. */
+export function dismissed(input: {
+  readonly signer: SyntheticReviewer;
+  readonly appealSeq: number;
+  readonly determinationSeq: number;
+}): LedgerPayload {
+  const dismissal = {
+    reason: 'withdrawn' as const,
+    explanation: 'Synthetic fixture: the enrollee withdrew the request.',
+    attestation: {
+      reviewerId: input.signer.reviewerId,
+      credential: { ...input.signer.credential },
+      attestedAt: '2026-10-09T12:00:00.000Z',
+    },
+  };
+  const bytes = appealActionBytes({
+    action: 'dismissal',
+    appealId: SYNTHETIC_APPEAL,
+    caseId: SYNTHETIC_RUN,
+    body: dismissal,
+  });
+  return {
+    kind: 'appeal.dismissed',
+    appealId: SYNTHETIC_APPEAL,
+    caseId: SYNTHETIC_RUN,
+    appealSeq: input.appealSeq,
+    determinationSeq: input.determinationSeq,
+    dismissal,
+    reviewerKeyId: input.signer.reviewerKeyId,
+    signature: sign(null, bytes, input.signer.privateKey).toString('base64url'),
+  };
+}
+
+export function forwarded(
+  appealSeq: number,
+  reason: 'affirmed' | 'deadline-lapsed' = 'affirmed',
+): LedgerPayload {
+  return {
+    kind: 'appeal.forwarded',
+    appealId: SYNTHETIC_APPEAL,
+    caseId: SYNTHETIC_RUN,
+    appealSeq,
+    reason,
+    caseFileDigest: 'cd'.repeat(32),
+  };
+}
 
 export function runRecorded(runId: string = SYNTHETIC_RUN): LedgerPayload {
   return {

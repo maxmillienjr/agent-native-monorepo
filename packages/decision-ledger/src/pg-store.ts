@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import pg from 'pg';
 import {
+  APPEAL_KINDS,
   LedgerAnchorSchema,
   LedgerEntrySchema,
   LedgerPayloadRowSchema,
@@ -10,7 +11,13 @@ import {
   type LedgerPayloadRow,
   type LedgerRows,
 } from './entry.js';
-import { referencedSeqs, runOf, type LedgerStore, type LedgerTransaction } from './ledger.js';
+import {
+  caseOf,
+  referencedSeqs,
+  runOf,
+  type LedgerStore,
+  type LedgerTransaction,
+} from './ledger.js';
 import { ChainState } from './rules.js';
 
 /**
@@ -157,16 +164,19 @@ function transaction(client: pg.PoolClient): LedgerTransaction {
 
     async stateFor(payload) {
       // Narrower than the whole chain, and enough: the rules ask about keys,
-      // about this payload's run, and about the seqs it cites.
+      // about this payload's run, about the appeals on its case (P3-F), and
+      // about the seqs it cites.
       const result = await client.query(
         `SELECT e.seq, e.kind, p.payload
            FROM ledger_entries e LEFT JOIN ledger_payloads p USING (entry_id)
           WHERE e.kind LIKE 'reviewer-key.%'
              OR (e.kind IN ('run.recorded', 'disposition.recommended')
                  AND p.payload IS NOT NULL AND (p.payload::jsonb ->> 'runId') = $1)
+             OR (e.kind = ANY($3::text[])
+                 AND p.payload IS NOT NULL AND (p.payload::jsonb ->> 'caseId') = $4)
              OR e.seq = ANY($2::bigint[])
           ORDER BY e.seq`,
-        [runOf(payload), referencedSeqs(payload)],
+        [runOf(payload), referencedSeqs(payload), [...APPEAL_KINDS], caseOf(payload)],
       );
       const state = new ChainState();
       for (const raw of result.rows) {

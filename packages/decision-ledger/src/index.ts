@@ -1,4 +1,8 @@
 export {
+  APPEAL_KINDS,
+  AppealDismissedPayloadSchema,
+  AppealFiledPayloadSchema,
+  AppealForwardedPayloadSchema,
   AttestedDeterminationSchema,
   DeterminationAttestedPayloadSchema,
   DispositionRecommendedPayloadSchema,
@@ -9,10 +13,14 @@ export {
   LedgerEntrySchema,
   LedgerPayloadRowSchema,
   LedgerPayloadSchema,
+  ReconsiderationAttestedPayloadSchema,
   ReviewerKeyRegisteredPayloadSchema,
   ReviewerKeyRevokedPayloadSchema,
   RunRecordedPayloadSchema,
   Sha256HexSchema,
+  type AppealDismissedPayload,
+  type AppealFiledPayload,
+  type AppealForwardedPayload,
   type AttestedDetermination,
   type DeterminationAttestedPayload,
   type DispositionRecommendedPayload,
@@ -22,6 +30,7 @@ export {
   type LedgerPayload,
   type LedgerPayloadRow,
   type LedgerRows,
+  type ReconsiderationAttestedPayload,
   type ReviewerKeyRegisteredPayload,
   type ReviewerKeyRevokedPayload,
   type RunRecordedPayload,
@@ -36,7 +45,13 @@ export {
   entryHashOf,
   payloadText,
 } from './hash.js';
-export { LEDGER_NAMESPACE, attestationBytes, uuidV5, verifyEd25519 } from './signature.js';
+export {
+  LEDGER_NAMESPACE,
+  appealActionBytes,
+  attestationBytes,
+  uuidV5,
+  verifyEd25519,
+} from './signature.js';
 export { LEDGER_MIGRATIONS_TABLE, assertWriterRole, runLedgerMigrations } from './migrate.js';
 export { ChainState, type RuleBreach } from './rules.js';
 export {

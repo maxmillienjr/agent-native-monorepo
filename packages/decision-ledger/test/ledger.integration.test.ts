@@ -9,6 +9,9 @@ import { uuidV5 } from '../src/signature.js';
 import { startTestTsa, type TestTsa } from '../src/testing/test-tsa.js';
 import {
   SYNTHETIC_RUN,
+  appealFiled,
+  forwarded,
+  reconsideration,
   attestation,
   recommended,
   registration,
@@ -233,6 +236,70 @@ describe.skipIf(SKIP)('decision ledger (integration)', () => {
         }),
       });
       expect(verifyChain(await ledger.readRows()).ok).toBe(true);
+    });
+  });
+
+  describe('appeals (P3-F)', () => {
+    it('applies the appeal rules through the store’s narrower fold', async () => {
+      const own = await createLedgerDatabase('ledger_appeal');
+      try {
+        const appeals = new Ledger(new PgLedgerStore(own.writer));
+        const denier = syntheticReviewer(1);
+        const other = syntheticReviewer(2);
+        const denierSecondKey = { ...syntheticReviewer(9), reviewerId: denier.reviewerId };
+        const payloads = [
+          registration(denier),
+          registration(other),
+          registration(denierSecondKey),
+          runRecorded(),
+          recommended(3),
+          attestation({ signer: denier, runId: SYNTHETIC_RUN, recommendationSeq: 4 }),
+          appealFiled(5),
+        ];
+        for (const [index, payload] of payloads.entries()) {
+          await appeals.append({ entryId: uuidV5(`appeal-${index}`), payload });
+        }
+        // Unrelated entries between the filing and the action, so the fold
+        // has to find the appeal by its case, not by being near the head.
+        await appeals.append({ entryId: uuidV5('between'), payload: runRecorded(run(7000)) });
+
+        await expect(
+          appeals.append({
+            entryId: uuidV5('own'),
+            payload: reconsideration({
+              signer: denierSecondKey,
+              initial: denier,
+              appealSeq: 6,
+              determinationSeq: 5,
+            }),
+          }),
+        ).rejects.toMatchObject({ check: 'involvement' });
+        await appeals.append({
+          entryId: uuidV5('affirmed'),
+          payload: reconsideration({
+            signer: other,
+            initial: denier,
+            appealSeq: 6,
+            determinationSeq: 5,
+          }),
+        });
+        await expect(
+          appeals.append({
+            entryId: uuidV5('again'),
+            payload: reconsideration({
+              signer: other,
+              initial: denier,
+              appealSeq: 6,
+              determinationSeq: 5,
+              kind: 'reversal',
+            }),
+          }),
+        ).rejects.toThrow(/already reconsidered/);
+        await appeals.append({ entryId: uuidV5('forwarded'), payload: forwarded(6) });
+        expect(verifyChain(await appeals.readRows())).toMatchObject({ ok: true, entries: 10 });
+      } finally {
+        await own.drop();
+      }
     });
   });
 

@@ -148,6 +148,28 @@ export class Ledger {
     return this.append(input);
   }
 
+  /**
+   * The entry an id names, with its payload, or `null`. How a caller finds
+   * the seq of an entry it appended earlier under a derived id: P3-F cites a
+   * case's determination and an appeal's filing this way.
+   */
+  async find(entryId: string): Promise<StoredEntry | null> {
+    return this.store.transaction(async (tx) => {
+      const found = await tx.byEntryId(entryId);
+      if (found === null) return null;
+      if (found.payload === null) {
+        throw new LedgerConflictError(
+          entryId,
+          'and its payload is withheld, so it cannot be cited',
+        );
+      }
+      return {
+        entry: found.entry,
+        payload: LedgerPayloadSchema.parse(JSON.parse(found.payload.payload)),
+      };
+    });
+  }
+
   readRows(): Promise<LedgerRows> {
     return this.store.readRows();
   }
@@ -160,8 +182,28 @@ export function referencedSeqs(payload: LedgerPayload): number[] {
       return [payload.runEntrySeq];
     case 'determination.attested':
       return payload.recommendationSeq === null ? [] : [payload.recommendationSeq];
+    case 'appeal.filed':
+      return [payload.determinationSeq];
+    case 'reconsideration.attested':
+    case 'appeal.dismissed':
+      return [payload.appealSeq, payload.determinationSeq];
+    case 'appeal.forwarded':
+      return [payload.appealSeq];
     default:
       return [];
+  }
+}
+
+/** The case an appeal entry is about (P3-F), whose other appeal entries a store must fold. */
+export function caseOf(payload: LedgerPayload): string | null {
+  switch (payload.kind) {
+    case 'appeal.filed':
+    case 'reconsideration.attested':
+    case 'appeal.dismissed':
+    case 'appeal.forwarded':
+      return payload.caseId;
+    default:
+      return null;
   }
 }
 

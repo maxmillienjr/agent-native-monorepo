@@ -27,6 +27,7 @@ export type ChainCheck =
   | 'payload'
   | 'signature'
   | 'reference'
+  | 'involvement'
   | 'anchor';
 
 export interface ChainFailure {

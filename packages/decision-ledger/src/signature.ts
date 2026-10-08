@@ -27,6 +27,31 @@ export function attestationBytes(input: {
 }
 
 /**
+ * What a reviewer signs to reconsider or dismiss an appeal (P3-F):
+ * `canonicalJson({ action, appealId, body, runId })`, with the case id as
+ * `runId`. P3-F's routes verify the same bytes. The keys are not an
+ * attestation's, so a determination's signature never verifies as an appeal
+ * action, and the action and appeal id inside them stop a signature moving to
+ * another action or another appeal on the same case.
+ */
+export function appealActionBytes(input: {
+  readonly action: 'reconsideration' | 'dismissal';
+  readonly appealId: string;
+  readonly caseId: string;
+  readonly body: unknown;
+}): Buffer {
+  return Buffer.from(
+    canonicalJson({
+      action: input.action,
+      appealId: input.appealId,
+      body: input.body,
+      runId: input.caseId,
+    }),
+    'utf8',
+  );
+}
+
+/**
  * Whether `signature` (64 bytes, base64url) is an Ed25519 signature of
  * `bytes` under `publicKey` (the raw 32 bytes, base64url). Never throws on
  * malformed input: a key or signature that does not decode is not valid.
