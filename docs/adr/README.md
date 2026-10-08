@@ -15,3 +15,4 @@ and the answer is not obvious from the code.
 | [0004](0004-one-candidate-universe-for-fusion.md)                   | One candidate universe for rank fusion                               | accepted |
 | [0005](0005-decision-seam-rather-than-transport-for-replay.md)      | Record at the decision seam rather than at the transport             | accepted |
 | [0006](0006-deterministic-retrieval-order-over-the-vector-index.md) | A deterministic retrieval order over the vector index                | accepted |
+| [0009](0009-the-second-store-after-the-retrieval-ablation.md)       | The second store, after the retrieval ablation                       | proposed |
