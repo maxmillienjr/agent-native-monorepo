@@ -29,6 +29,15 @@ export {
   type QueueKey,
 } from './clock.js';
 export {
+  reconsiderationDueBy,
+  isLapsed,
+  filingDeadline,
+  STANDARD_RECONSIDERATION_HOURS,
+  EXPEDITED_RECONSIDERATION_HOURS,
+  FILING_DAYS,
+  PRESUMED_NOTICE_DELAY_DAYS,
+} from './appeal-clock.js';
+export {
   readSubmission,
   readClaimBundle,
   resolveReference,
