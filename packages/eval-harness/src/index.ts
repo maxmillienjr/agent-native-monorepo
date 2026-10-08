@@ -25,6 +25,7 @@ export {
   type Message,
   type ModelAxis,
   type Outcome,
+  type ModelIds,
   type ReplayProvenance,
   type Score,
   type SkippedTask,

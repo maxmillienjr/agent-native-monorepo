@@ -7,6 +7,7 @@ import type {
   Axes,
   Grader,
   GraderResult,
+  ModelIds,
   ReplayProvenance,
   Suite,
   SuiteReport,
@@ -29,6 +30,12 @@ export interface EvalHarnessOptions<TOutcome> {
    * through is a change every implementor pays for.
    */
   readonly replay?: ReplayProvenance;
+  /**
+   * The chat and embedding ids the run used, on the `live` and `replay` axes.
+   * Data for the same reason as `replay`: the caller resolved them to build
+   * the clients or to read the cassette headers.
+   */
+  readonly models?: ModelIds;
 }
 
 async function runGraders<TOutcome>(
@@ -102,6 +109,7 @@ export class EvalHarness<TOutcome> {
     const { agent, suite } = this.options;
     const axes = agent.axes();
     assertReplayProvenance(axes, this.options.replay);
+    assertModelIds(axes, this.options.models);
     const startedAt = new Date().toISOString();
 
     // Which tasks this run cannot measure anything with. Unlike the grader
@@ -167,6 +175,7 @@ export class EvalHarness<TOutcome> {
       axes,
       trialsPerTask: suite.trialsPerTask,
       ...(this.options.replay === undefined ? {} : { replay: this.options.replay }),
+      ...(this.options.models === undefined ? {} : { models: this.options.models }),
       tasks: taskReports,
       passRate:
         allTrials.length === 0
@@ -199,6 +208,28 @@ function assertReplayProvenance(axes: Axes, replay: ReplayProvenance | undefined
     throw new Error(
       `cassette provenance was given on model axis \`${axes.model}\`: a number this run ` +
         'earned would be attributed to a recording that did not produce it',
+    );
+  }
+}
+
+/**
+ * The two halves of "a number names the model that produced it".
+ *
+ * A live or replayed run without ids cannot be told from a run on another
+ * model, which is the misreading `EVAL_CHAT_MODEL` would otherwise invite. A
+ * stub run with ids would name a model that never answered.
+ */
+function assertModelIds(axes: Axes, models: ModelIds | undefined): void {
+  if (axes.model !== 'stub' && models === undefined) {
+    throw new Error(
+      `the model axis is \`${axes.model}\` and no model ids were given: a number from a ` +
+        'model has to name it, or a run on another id cannot be told from this one',
+    );
+  }
+  if (axes.model === 'stub' && models !== undefined) {
+    throw new Error(
+      'model ids were given on model axis `stub`: the canned set calls no model, and naming ' +
+        'one would attribute its strings to it',
     );
   }
 }

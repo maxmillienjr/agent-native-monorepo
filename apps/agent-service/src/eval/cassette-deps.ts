@@ -3,7 +3,7 @@ import { subscribe } from 'node:diagnostics_channel';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { EMBEDDING_DIMENSIONS, EMBEDDING_MODEL } from '@repo/memory-core';
-import { cassettePath, type Axes, type ReplayProvenance } from '@repo/eval-harness';
+import { cassettePath, type Axes, type ModelIds, type ReplayProvenance } from '@repo/eval-harness';
 import {
   CassettePlayer,
   CassetteRecorder,
@@ -291,6 +291,12 @@ export function recordingDecks(options: {
 /** Replay decks, with the provenance of the set they were loaded from. */
 export interface ReplayDecks extends TrialDecks {
   provenance(): ReplayProvenance;
+  /**
+   * The model ids the headers recorded. Read from the set rather than from the
+   * running configuration, so the report says what produced the decisions; the
+   * player has already refused any header that differs from the configuration.
+   */
+  models(): ModelIds;
 }
 
 /**
@@ -368,6 +374,15 @@ export function replayDecks(
         recordedAt: headers.map((header) => header.recordedAt).sort()[0] ?? '',
         gitSha: shas.join(', '),
         cassettes: players.size,
+      };
+    },
+    models(): ModelIds {
+      const headers = [...players.values()].map((player) => player.header);
+      const ids = (pick: (header: (typeof headers)[number]) => string): string =>
+        [...new Set(headers.map(pick))].sort().join(', ');
+      return {
+        chat: ids((header) => header.chatModel),
+        embedding: ids((header) => header.embeddingModel),
       };
     },
   };

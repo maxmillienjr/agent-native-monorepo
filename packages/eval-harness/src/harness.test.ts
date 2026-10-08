@@ -83,12 +83,14 @@ function task(
 }
 
 const liveAxes: Axes = { model: 'live', memory: 'live' };
+const MODELS = { chat: 'gemini-2.5-flash', embedding: 'gemini-embedding-001' } as const;
 
 describe('EvalHarness', () => {
   it('resets before every trial, then runs, captures and grades', async () => {
     const log: string[] = [];
     const report = await new EvalHarness<FakeOutcome>({
       agent: fakeAgent(liveAxes, [{ wrote: true }, { wrote: true }], log),
+      models: MODELS,
       suite: { name: 's', tasks: [task([wroteSomething])], trialsPerTask: 2 },
     }).run();
 
@@ -101,6 +103,7 @@ describe('EvalHarness', () => {
   it('reports pass@k as capability and pass^k as reliability', async () => {
     const report = await new EvalHarness<FakeOutcome>({
       agent: fakeAgent(liveAxes, [{ wrote: true }, { wrote: false }, { wrote: true }], []),
+      models: MODELS,
       suite: { name: 's', tasks: [task([wroteSomething])], trialsPerTask: 3 },
     }).run();
 
@@ -114,6 +117,7 @@ describe('EvalHarness', () => {
   it('reports pass^k true only when every trial passed', async () => {
     const report = await new EvalHarness<FakeOutcome>({
       agent: fakeAgent(liveAxes, [{ wrote: true }, { wrote: true }], []),
+      models: MODELS,
       suite: { name: 's', tasks: [task([wroteSomething])], trialsPerTask: 2 },
     }).run();
 
@@ -186,6 +190,7 @@ describe('EvalHarness', () => {
   it('runs every task when the axes meet what each declared', async () => {
     const report = await new EvalHarness<FakeOutcome>({
       agent: fakeAgent(liveAxes, [{ wrote: true }, { wrote: true }], []),
+      models: MODELS,
       suite: {
         name: 's',
         tasks: [
@@ -203,6 +208,7 @@ describe('EvalHarness', () => {
   it('reports no skips when nothing declared a requirement', async () => {
     const report = await new EvalHarness<FakeOutcome>({
       agent: fakeAgent(liveAxes, [{ wrote: true }], []),
+      models: MODELS,
       suite: { name: 's', tasks: [task([wroteSomething])], trialsPerTask: 1 },
     }).run();
 
@@ -223,6 +229,7 @@ describe('EvalHarness', () => {
 
     const report = await new EvalHarness<FakeOutcome>({
       agent: fakeAgent(liveAxes, [{ wrote: true }], []),
+      models: MODELS,
       suite: { name: 's', tasks: [task([judged])], trialsPerTask: 1 },
     }).run();
 
@@ -238,6 +245,7 @@ describe('EvalHarness', () => {
 
     const harness = new EvalHarness<FakeOutcome>({
       agent: fakeAgent(liveAxes, [{ wrote: true }], []),
+      models: MODELS,
       suite: { name: 's', tasks: [task([silent])], trialsPerTask: 1 },
     });
 
@@ -257,6 +265,7 @@ describe('the per-task trial cap', () => {
     const log: string[] = [];
     const report = await new EvalHarness<FakeOutcome>({
       agent: fakeAgent(replayAxes, [{ wrote: true }], log),
+      models: MODELS,
       suite: {
         name: 's',
         tasks: [task([alwaysPasses], { trialsPerTask: 1 })],
@@ -272,6 +281,7 @@ describe('the per-task trial cap', () => {
   it('reports the count it used, not the suite’s', async () => {
     const report = await new EvalHarness<FakeOutcome>({
       agent: fakeAgent(replayAxes, [{ wrote: true }], []),
+      models: MODELS,
       suite: {
         name: 's',
         tasks: [task([alwaysPasses], { trialsPerTask: 1 })],
@@ -289,6 +299,7 @@ describe('the per-task trial cap', () => {
   it('cannot raise the suite’s figure, only lower it', async () => {
     const report = await new EvalHarness<FakeOutcome>({
       agent: fakeAgent(liveAxes, [{ wrote: true }], []),
+      models: MODELS,
       suite: {
         name: 's',
         tasks: [task([alwaysPasses], { trialsPerTask: 9 })],
@@ -303,6 +314,7 @@ describe('the per-task trial cap', () => {
   it('leaves a task that capped nothing on the suite’s figure', async () => {
     const report = await new EvalHarness<FakeOutcome>({
       agent: fakeAgent(liveAxes, [{ wrote: true }, { wrote: true }], []),
+      models: MODELS,
       suite: { name: 's', tasks: [task([alwaysPasses])], trialsPerTask: 2 },
     }).run();
 
@@ -321,6 +333,7 @@ describe('replay provenance', () => {
   it('travels into the report, so a replayed rate names the set behind it', async () => {
     const report = await new EvalHarness<FakeOutcome>({
       agent: fakeAgent(replayAxes, [{ wrote: true }], []),
+      models: MODELS,
       suite: { name: 's', tasks: [task([alwaysPasses])], trialsPerTask: 1 },
       replay: provenance,
     }).run();
@@ -332,6 +345,7 @@ describe('replay provenance', () => {
     const log: string[] = [];
     const harness = new EvalHarness<FakeOutcome>({
       agent: fakeAgent(replayAxes, [{ wrote: true }], log),
+      models: MODELS,
       suite: { name: 's', tasks: [task([alwaysPasses])], trialsPerTask: 1 },
     });
 
@@ -342,6 +356,7 @@ describe('replay provenance', () => {
   it('refuses to attribute a live run to a cassette set', async () => {
     const harness = new EvalHarness<FakeOutcome>({
       agent: fakeAgent(liveAxes, [{ wrote: true }], []),
+      models: MODELS,
       suite: { name: 's', tasks: [task([alwaysPasses])], trialsPerTask: 1 },
       replay: provenance,
     });
@@ -349,9 +364,36 @@ describe('replay provenance', () => {
     await expect(harness.run()).rejects.toThrow(/model axis `live`/);
   });
 
+  it('names the model ids on the live and replay axes, and refuses them on stub', async () => {
+    const live = await new EvalHarness<FakeOutcome>({
+      agent: fakeAgent(liveAxes, [{ wrote: true }], []),
+      models: MODELS,
+      suite: { name: 's', tasks: [task([alwaysPasses])], trialsPerTask: 1 },
+    }).run();
+    expect(live.models).toEqual(MODELS);
+
+    const log: string[] = [];
+    await expect(
+      new EvalHarness<FakeOutcome>({
+        agent: fakeAgent(liveAxes, [{ wrote: true }], log),
+        suite: { name: 's', tasks: [task([alwaysPasses])], trialsPerTask: 1 },
+      }).run(),
+    ).rejects.toThrow(/no model ids were given/);
+    await expect(
+      new EvalHarness<FakeOutcome>({
+        agent: fakeAgent({ model: 'stub', memory: 'live' }, [{ wrote: true }], log),
+        models: MODELS,
+        suite: { name: 's', tasks: [task([alwaysPasses])], trialsPerTask: 1 },
+      }).run(),
+    ).rejects.toThrow(/model axis `stub`/);
+    // Both refusals come before the first trial.
+    expect(log).toEqual([]);
+  });
+
   it('leaves the block off a report that did not replay', async () => {
     const report = await new EvalHarness<FakeOutcome>({
       agent: fakeAgent(liveAxes, [{ wrote: true }], []),
+      models: MODELS,
       suite: { name: 's', tasks: [task([alwaysPasses])], trialsPerTask: 1 },
     }).run();
 
@@ -414,6 +456,7 @@ describe('evaluation events', () => {
     const agent = fakeAgent(liveAxes, [{ wrote: true }, { wrote: true }], []);
     const report = await new EvalHarness<FakeOutcome>({
       agent: { ...agent, run: async (t) => withSpans(await agent.run(t)) },
+      models: MODELS,
       suite: { name: 's', tasks: [task([alwaysPasses, explained])], trialsPerTask: 2 },
     }).run();
 
@@ -447,6 +490,7 @@ describe('evaluation events', () => {
   it('emits unparented events, and no error, for a transcript with no spans', async () => {
     await new EvalHarness<FakeOutcome>({
       agent: fakeAgent(liveAxes, [{ wrote: true }], []),
+      models: MODELS,
       suite: { name: 's', tasks: [task([alwaysPasses])], trialsPerTask: 1 },
     }).run();
 
@@ -458,6 +502,7 @@ describe('evaluation events', () => {
   it('names the conventions commit the events and spans follow in the report', async () => {
     const report = await new EvalHarness<FakeOutcome>({
       agent: fakeAgent(liveAxes, [{ wrote: true }], []),
+      models: MODELS,
       suite: { name: 's', tasks: [task([alwaysPasses])], trialsPerTask: 1 },
     }).run();
 

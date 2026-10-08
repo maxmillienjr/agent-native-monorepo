@@ -17,9 +17,11 @@ import {
   trialsFor,
   type Axes,
   type MemoryOutcome,
+  type ModelIds,
   type ReplayProvenance,
   type Suite,
 } from '@repo/eval-harness';
+import { EMBEDDING_MODEL } from '@repo/memory-core';
 import { InMemoryLogRecordExporter, SimpleLogRecordProcessor } from '@opentelemetry/sdk-logs';
 import { createLogger, initTelemetry, shutdownTelemetry } from '@repo/telemetry';
 import { loadEnvFile } from '../load-env.js';
@@ -33,7 +35,13 @@ import {
   watchForModelRequests,
   type TrialDecks,
 } from './cassette-deps.js';
-import { applyGate, assertGateAxes, readGateMode, type GateMode } from './gate.js';
+import {
+  applyGate,
+  assertGateAxes,
+  readGateMode,
+  type GateMode,
+} from './gate.js';
+import { CHAT_MODEL } from '../runs/runs.service.js';
 import { committedCassetteDigest } from './history.js';
 import { runAndReport, type RunEnd } from './run-suite.js';
 import { SpanCollector } from './span-records.js';
@@ -102,7 +110,7 @@ async function main(): Promise<RunEnd> {
               logger.error({ msg: 'eval.replay.live-call', target }),
             )
           : () => [];
-      const { suite, decks, replay } = prepare(mode, trials, axes);
+      const { suite, decks, replay, models } = prepare(mode, trials, axes);
       if (replay !== undefined) progress.replay = replay;
 
       // Before the Nest context, so every span the run opens reaches a
@@ -145,6 +153,7 @@ async function main(): Promise<RunEnd> {
           agent,
           suite,
           ...(replay === undefined ? {} : { replay }),
+          ...(models === undefined ? {} : { models }),
           onTrial: (trial) => {
             onTrial(trial);
             logger.info({
@@ -282,10 +291,15 @@ function prepare(
   suite: Suite<MemoryOutcome>;
   decks: TrialDecks | undefined;
   replay: ReplayProvenance | undefined;
+  models: ModelIds | undefined;
 } {
   const suite = selectTasks(loadMemoryRecallSuite(trials), readTaskFilter());
+  // The running configuration's ids, on the one axis that calls a model with
+  // them. A replay names the ids its cassette headers recorded instead.
+  const configured: ModelIds | undefined =
+    axes.model === 'live' ? { chat: CHAT_MODEL, embedding: EMBEDDING_MODEL } : undefined;
 
-  if (mode === 'off') return { suite, decks: undefined, replay: undefined };
+  if (mode === 'off') return { suite, decks: undefined, replay: undefined, models: configured };
 
   if (mode === 'record') {
     const head = gitHead();
@@ -304,6 +318,7 @@ function prepare(
       suite,
       decks: recordingDecks({ datasetDir: MEMORY_RECALL_DATASET_DIR, axes, gitSha: head.sha }),
       replay: undefined,
+      models: configured,
     };
   }
 
@@ -318,7 +333,7 @@ function prepare(
       .map((task) => ({ taskId: task.id, trials: trialsFor(task, capped) })),
   );
 
-  return { suite: capped, decks, replay: decks.provenance() };
+  return { suite: capped, decks, replay: decks.provenance(), models: decks.models() };
 }
 
 main().then(

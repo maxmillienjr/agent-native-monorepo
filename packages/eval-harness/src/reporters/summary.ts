@@ -62,6 +62,16 @@ export function renderMarkdownSummary(report: SuiteReport<unknown>): string {
     );
   }
 
+  // Under the axes and the recording: the axis says a model answered, and
+  // this says which. A run on the floating alias reads like one on the pinned id
+  // otherwise, and the rate means something different for each (P1-E).
+  if (report.models !== undefined) {
+    lines.push(
+      '',
+      `**Models:** chat \`${report.models.chat}\`, embedding \`${report.models.embedding}\``,
+    );
+  }
+
   if (report.skipped.length > 0) {
     lines.push(
       '',

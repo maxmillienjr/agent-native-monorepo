@@ -17,11 +17,16 @@ import {
   type Deck,
 } from '@repo/agent-cassette';
 import { channel } from 'node:diagnostics_channel';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
+import { cassettePath } from '@repo/eval-harness';
 import { CHAT_MODEL, RunsService, type ModelDeps } from '../runs/runs.service.js';
 import {
   MODEL_HOST,
   recordServedDecision,
   recordingModelDeps,
+  replayDecks,
   replayModelDeps,
   tokenCountsFor,
   watchForModelRequests,
@@ -357,6 +362,31 @@ describe('the decorator seam on RunsService', () => {
     // Two: prose, and the `json: true` instance that stops Gemini fencing a
     // JSON answer.
     expect(geminiConstructions).toEqual([CHAT_MODEL, CHAT_MODEL]);
+  });
+});
+
+/**
+ * What a replay names as its models (P1-E):
+ * the ids come from the headers rather than from the configuration.
+ */
+describe('replay decks and the model ids', () => {
+  let dataset: string;
+
+  beforeEach(async () => {
+    dataset = mkdtempSync(join(tmpdir(), 'replay-decks-'));
+    const { cassette } = await record(fakeLive([]));
+    const path = cassettePath(dataset, 'memory-recall-001', 0);
+    mkdirSync(dirname(path), { recursive: true });
+    writeFileSync(path, JSON.stringify(cassette));
+  });
+
+  afterEach(() => {
+    rmSync(dataset, { recursive: true, force: true });
+  });
+
+  it('names the chat and embedding ids the headers recorded', () => {
+    const decks = replayDecks(dataset, [{ taskId: 'memory-recall-001', trials: 1 }]);
+    expect(decks.models()).toEqual({ chat: CHAT_MODEL, embedding: EMBEDDING_MODEL });
   });
 });
 

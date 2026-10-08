@@ -361,6 +361,20 @@ export interface ReplayProvenance {
   readonly cassettes: number;
 }
 
+/**
+ * The model ids a run's numbers came from.
+ *
+ * The axis says whether a model was called; this says which one. Without it a
+ * run on the floating alias (`EVAL_CHAT_MODEL`, P1-E) reads exactly like a
+ * run on the pinned id. On the `live` axis it is the running configuration;
+ * on `replay` it is what the cassette headers recorded, which the player has
+ * already checked equal to the running configuration.
+ */
+export interface ModelIds {
+  readonly chat: string;
+  readonly embedding: string;
+}
+
 export interface SuiteReport<TOutcome = Outcome> {
   readonly suite: string;
   readonly startedAt: string;
@@ -369,6 +383,11 @@ export interface SuiteReport<TOutcome = Outcome> {
   readonly trialsPerTask: number;
   /** Present exactly when `axes.model` is `replay`. The runner enforces both halves. */
   readonly replay?: ReplayProvenance;
+  /**
+   * Present exactly when `axes.model` is `live` or `replay`. The stub axis
+   * calls no model, so naming one there would attribute canned strings to it.
+   */
+  readonly models?: ModelIds;
   readonly tasks: readonly TaskReport<TOutcome>[];
   /** Trials passed / trials run — over the tasks that ran, not over `tasks`. */
   readonly passRate: number;

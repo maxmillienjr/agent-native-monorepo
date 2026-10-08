@@ -39,6 +39,7 @@ const report: SuiteReport = {
   startedAt: '2026-08-29T00:00:00.000Z',
   finishedAt: '2026-08-29T00:01:00.000Z',
   axes: { model: 'live', memory: 'live' },
+  models: { chat: 'gemini-2.5-flash', embedding: 'gemini-embedding-001' },
   trialsPerTask: 2,
   tasks: [
     {
@@ -58,8 +59,9 @@ const report: SuiteReport = {
 };
 
 /** The stub-axis shape: one task ran, one was not measurable here. */
+const { models: _models, ...stubReport } = report;
 const reportWithSkip: SuiteReport = {
-  ...report,
+  ...stubReport,
   axes: { model: 'stub', memory: 'live' },
   tasks: [{ ...report.tasks[0]!, trials: [trial(0, true), trial(1, true)], passHatK: true }],
   passRate: 1,
@@ -226,6 +228,45 @@ describe('a replayed report', () => {
       '<property name="cassettes_git_sha" value="3b696d5c0ffee1234567890abcdef1234567890a"/>',
     );
     expect(xml).toContain('<property name="trials_per_task" value="2"/>');
+  });
+});
+
+/**
+ * P1-E: the axis says a model answered, and only the ids say which. A run on
+ * the floating alias must not read as a run on the pinned id in any of the
+ * three files.
+ */
+describe('the model ids', () => {
+  const floating: SuiteReport = {
+    ...report,
+    models: { chat: 'gemini-flash-latest', embedding: 'gemini-embedding-001' },
+  };
+
+  it('are in all three reports on the live axis', () => {
+    expect((JSON.parse(renderJsonReport(floating)) as SuiteReport).models).toEqual(floating.models);
+    expect(renderJUnitReport(floating)).toContain(
+      '<property name="chat_model" value="gemini-flash-latest"/>',
+    );
+    expect(renderJUnitReport(floating)).toContain(
+      '<property name="embedding_model" value="gemini-embedding-001"/>',
+    );
+    expect(renderMarkdownSummary(floating)).toContain(
+      '**Models:** chat `gemini-flash-latest`, embedding `gemini-embedding-001`',
+    );
+  });
+
+  it('are in all three reports on the replay axis', () => {
+    const replayed = { ...replayedReport, models: report.models! };
+    expect(renderJsonReport(replayed)).toContain('"chat": "gemini-2.5-flash"');
+    expect(renderJUnitReport(replayed)).toContain(
+      '<property name="chat_model" value="gemini-2.5-flash"/>',
+    );
+    expect(renderMarkdownSummary(replayed)).toContain('**Models:** chat `gemini-2.5-flash`');
+  });
+
+  it('are absent on the stub axis, where no model answered', () => {
+    expect(renderMarkdownSummary(reportWithSkip)).not.toContain('**Models:**');
+    expect(renderJUnitReport(reportWithSkip)).not.toContain('chat_model');
   });
 });
 
