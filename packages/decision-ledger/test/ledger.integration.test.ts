@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import pg from 'pg';
 import { Ledger, LedgerConflictError, LedgerRefusedError } from '../src/ledger.js';
 import { PgLedgerStore } from '../src/pg-store.js';
-import { assertWriterRole } from '../src/migrate.js';
+import { assertWriterRole, runLedgerMigrations } from '../src/migrate.js';
 import { verifyChain } from '../src/verify.js';
 import { anchorHead, verifyAnchors } from '../src/anchor.js';
 import { uuidV5 } from '../src/signature.js';
@@ -133,6 +133,28 @@ describe.skipIf(SKIP)('decision ledger (integration)', () => {
       await expect(assertWriterRole(db.owner)).rejects.toThrow(
         /holds UPDATE, DELETE, TRUNCATE, ownership on ledger_entries/,
       );
+    });
+
+    it('migrates idempotently, and refuses a migration whose statements changed after it ran', async () => {
+      await expect(runLedgerMigrations(db.owner)).resolves.toBeUndefined();
+      const recorded = await db.owner.query<{ tag: string; hash: string }>(
+        'SELECT tag, hash FROM __ledger_migrations',
+      );
+      expect(recorded.rows.map((row) => row.tag)).toEqual(['0000_ledger']);
+
+      await db.owner.query(
+        "UPDATE __ledger_migrations SET hash = 'edited' WHERE tag = '0000_ledger'",
+      );
+      try {
+        await expect(runLedgerMigrations(db.owner)).rejects.toThrow(
+          /ledger migration 0000_ledger has changed since it was applied/,
+        );
+      } finally {
+        await db.owner.query('UPDATE __ledger_migrations SET hash = $1 WHERE tag = $2', [
+          recorded.rows[0]!.hash,
+          '0000_ledger',
+        ]);
+      }
     });
   });
 

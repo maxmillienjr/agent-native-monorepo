@@ -2964,7 +2964,6 @@ __metadata:
     "@repo/tsconfig": "workspace:*"
     "@types/node": "npm:^22.20.4"
     "@types/pg": "npm:^8.23.1"
-    drizzle-orm: "npm:^0.45.3"
     eslint: "npm:^9.39.5"
     pg: "npm:^8.23.1"
     typescript: "npm:^5.7.0"

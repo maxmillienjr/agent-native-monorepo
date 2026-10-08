@@ -2,7 +2,7 @@
 -- they commit to, and the RFC 3161 tokens that anchor the chain outside the
 -- database.
 --
--- Hand-written. Its history is recorded in drizzle.__ledger_migrations, not in
+-- Hand-written. Its history is recorded in __ledger_migrations, not in
 -- memory-core's table, so the ledger's schema can be migrated, audited and
 -- lifted on its own. Applied by the table owner (`yarn ledger:migrate`); the
 -- service writes as `ledger_writer`, which `roles.sql` grants SELECT and INSERT

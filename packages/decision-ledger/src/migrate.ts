@@ -1,8 +1,9 @@
+import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type pg from 'pg';
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { migrate } from 'drizzle-orm/node-postgres/migrator';
+import { z } from 'zod';
 
 /** `migrations/` and `roles.sql` resolve the same from `src/` and from `dist/`. */
 const MIGRATIONS_FOLDER = fileURLToPath(new URL('../migrations', import.meta.url));
@@ -14,8 +15,24 @@ const ROLES_FILE = fileURLToPath(new URL('../roles.sql', import.meta.url));
  */
 export const LEDGER_MIGRATIONS_TABLE = '__ledger_migrations';
 
+/** Serialises two migrators racing on one database. Any constant would do. */
+const MIGRATE_LOCK_KEY = 0x6c6d6967; // "lmig"
+
+/** The drizzle-kit journal format, so the files stay ones drizzle-kit can read. */
+const JournalSchema = z.object({
+  entries: z.array(z.object({ idx: z.number().int(), tag: z.string().min(1) })),
+});
+
 /**
  * Applies the ledger's migrations and then `roles.sql`, as the tables' owner.
+ *
+ * Its own small runner rather than Drizzle's migrator, so the package's
+ * runtime dependencies stay `pg`, `zod` and `@repo/determination`, which is
+ * what an auditor who lifts it out needs to install. It reads the same
+ * journal format, applies each pending file's statements in order in one
+ * transaction under an advisory lock, and records a SHA-256 of each file.
+ * Unlike Drizzle's, it refuses a migration whose file changed after it was
+ * applied, the silent divergence `.context/conventions.md` warns about.
  *
  * Not called by the service: the service connects as `ledger_writer`, which
  * cannot create a table, and must not be able to. `yarn ledger:migrate` and
@@ -29,11 +46,63 @@ export async function runLedgerMigrations(
   pool: pg.Pool,
   options: { readonly writerPassword?: string } = {},
 ): Promise<void> {
-  await migrate(drizzle(pool), {
-    migrationsFolder: MIGRATIONS_FOLDER,
-    migrationsTable: LEDGER_MIGRATIONS_TABLE,
-  });
-  await pool.query(await readFile(ROLES_FILE, 'utf8'));
+  const journal = JournalSchema.parse(
+    JSON.parse(await readFile(join(MIGRATIONS_FOLDER, 'meta', '_journal.json'), 'utf8')),
+  );
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('SELECT pg_advisory_xact_lock($1)', [MIGRATE_LOCK_KEY]);
+    await client.query(
+      `CREATE TABLE IF NOT EXISTS ${LEDGER_MIGRATIONS_TABLE} (
+         tag text PRIMARY KEY,
+         hash text NOT NULL,
+         applied_at timestamptz NOT NULL DEFAULT now()
+       )`,
+    );
+    const applied = new Map(
+      (await client.query(`SELECT tag, hash FROM ${LEDGER_MIGRATIONS_TABLE}`)).rows.map(
+        (row: unknown) => {
+          const { tag, hash } = z.object({ tag: z.string(), hash: z.string() }).parse(row);
+          return [tag, hash] as const;
+        },
+      ),
+    );
+
+    for (const { tag } of [...journal.entries].sort((a, b) => a.idx - b.idx)) {
+      const sql = await readFile(join(MIGRATIONS_FOLDER, `${tag}.sql`), 'utf8');
+      // Over the statements, not the comments: the conventions allow a comment
+      // to be corrected in place, and never a statement.
+      const statements = sql
+        .split('\n')
+        .filter((line) => !line.trimStart().startsWith('--'))
+        .join('\n');
+      const hash = createHash('sha256').update(statements, 'utf8').digest('hex');
+      const recorded = applied.get(tag);
+      if (recorded !== undefined) {
+        if (recorded !== hash) {
+          throw new Error(
+            `ledger migration ${tag} has changed since it was applied; a schema change is a new migration`,
+          );
+        }
+        continue;
+      }
+      for (const statement of sql.split('--> statement-breakpoint')) {
+        if (statement.trim() !== '') await client.query(statement);
+      }
+      await client.query(`INSERT INTO ${LEDGER_MIGRATIONS_TABLE} (tag, hash) VALUES ($1, $2)`, [
+        tag,
+        hash,
+      ]);
+    }
+    await client.query(await readFile(ROLES_FILE, 'utf8'));
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK').catch(() => undefined);
+    throw error;
+  } finally {
+    client.release();
+  }
 
   if (options.writerPassword !== undefined) {
     const client = await pool.connect();
