@@ -196,13 +196,17 @@ A run record proves what a run did, and not that nobody edited it afterwards. Wi
 `LEDGER_DATABASE_URL` set, `packages/decision-ledger` keeps a hash chain that commits to
 each record (P3-C, ADR 0013):
 
-- **Five kinds of entry.** `run.recorded` holds a SHA-256 digest of the `run_records` row,
+- **Nine kinds of entry.** `run.recorded` holds a SHA-256 digest of the `run_records` row,
   its decisions in order and every checkpoint, read back after the run. Every run on either graph
   appends one after its record closes. `disposition.recommended` holds what the
   prior-authorization graph recommended, citing its run's entry. `determination.attested`
   holds a clinician's signed determination, citing that recommendation.
   `reviewer-key.registered` and `reviewer-key.revoked` hold the keys those signatures are
-  checked against, registered from `REVIEWER_REGISTRY` at boot.
+  checked against, registered from `REVIEWER_REGISTRY` at boot. Four are appeals (P3-F):
+  `appeal.filed` cites the determination, and `reconsideration.attested`,
+  `appeal.dismissed` and `appeal.forwarded` cite the filing. A reconsideration or dismissal
+  signed by a key registered to the reviewer who made the cited determination is refused
+  on the `involvement` check.
 - **Salted commitments.** Each entry commits to `SHA-256(salt ‖ payload)` with 16 random
   bytes of salt, and `entry_hash` covers the row and the previous entry's hash. The chain
   can leave the database without disclosing anything. A payload can be withheld under a
@@ -227,6 +231,8 @@ run settles ─▶ RunLedger.commitRun ─▶ digest(run_records, run_decisions,
                                        └─▶ Ledger.append ─▶ ledger_entries + ledger_payloads
 $submit ─▶ run.recorded ─▶ disposition.recommended ─▶ prior_auth_cases.recommendation_seq
 decide ──beforeCommit──▶ determination.attested (signature re-checked) ─▶ case decided
+appeal write ──beforeCommit──▶ appeal.filed | reconsideration.attested | appeal.dismissed
+                               | appeal.forwarded ─▶ appeal row written
 ledger:anchor ─▶ head entry_hash ─▶ RFC 3161 TSA ─▶ ledger_anchors
 ```
 
@@ -255,6 +261,27 @@ than pausing a thread with `interrupt()`.
   case beside it, so the queue never holds a request whose answer was not sent.
 - **The sweep flags and never decides.** A case past its deadline gets
   `overdue_flagged_at` and a `review.case.overdue` span event, and stays pended.
+- **An appeal is a second row beside its case (P3-F).** `prior_auth_appeals` holds a
+  request for reconsideration of a denied case under Medicare Advantage's Part 422,
+  Subpart M: the filer, the filing deadline and whether it was met, the reconsideration
+  clock (30 days, or 72 hours expedited, from receipt), and what became of it. It is
+  `reversed`, with the case's response in force replaced by an approval that `$inquire`
+  then returns; `forwarded` to the independent entity, on a physician's affirmation or
+  because the deadline passed; or `dismissed`. The case's denial, reviewer and signature
+  are never changed. In the in-process store an appeal shares its case's lock.
+- **Whoever made the denial cannot reconsider it.** The rule of § 422.590(h)(1) is held three
+  times in the service: the branded `Reconsideration`, whose one constructor
+  `attestReconsideration` refuses the initial reviewer; the route's check before anything is
+  written; and a foreign key and a CHECK on `prior_auth_appeals` that hold whatever writes
+  the row. With a ledger configured, the verifier checks it a fourth time from the chain
+  alone. The comparison is by reviewer id, so a second key held by the same reviewer is
+  refused too.
+- **The sweep forwards lapsed appeals.** After flagging, it forwards each filed appeal at
+  or past its deadline as deemed affirmed (§ 422.590(d), (g)), and any write that finds one
+  lapsed does the same before it answers 409. That is a timer that acts, and ADR 0015
+  records why it stays here: its action is one local transaction. A forward is a record,
+  not a delivery: no independent-entity system is contacted, and the case file's digest is
+  what is kept.
 
 ## NestJS 11 Microservice
 
@@ -268,6 +295,11 @@ The LangGraph graph is hosted inside a NestJS 11 microservice (`apps/agent-servi
   a case before it answers.
 - **GET /review/cases**, **GET /review/cases/:caseId**,
   **POST /review/cases/:caseId/determination** — the clinician review surface (P3-E).
+- **POST /review/appeals**, **GET /review/appeals**, **GET /review/appeals/:appealId**,
+  **POST /review/appeals/:appealId/reconsideration**,
+  **POST /review/appeals/:appealId/dismissal**,
+  **GET /review/appeals/:appealId/case-file** — appeals of a denial (P3-F). Not FHIR: PAS
+  defines no appeal transaction, so the CapabilityStatement does not change.
 - **POST /a2a/jsonrpc**, **GET /.well-known/agent-card.json**, **GET /.well-known/jwks.json**
   — the A2A v1.0 server and its discovery documents (P5-A). Below.
 - **Global concerns:** bearer authentication, then the JSON body parser, then W3C trace

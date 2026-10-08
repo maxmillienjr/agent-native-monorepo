@@ -267,7 +267,11 @@ replays the committed answer file and makes no request.
   after the Vitest suite with the stores exported. It is Jest because it shares the service
   specs' Nest setup. Its live axis never empties `prior_auth_cases` and reads only the cases
   it made, but `memory-core`'s `cases.integration.test.ts` empties that table before each
-  test, which is one more reason the task runs after `memory-core`'s.
+  test, which is one more reason the task runs after `memory-core`'s. `appeal.e2e-spec.ts`
+  (P3-F) is the same kind of file and runs in the same command. **The command names each
+  Jest file**, so a new spec that should run on memory live is added to `test:integration`
+  in `apps/agent-service/package.json` by name, or CI never runs its live axis. Emptying
+  `prior_auth_cases` now means emptying `prior_auth_appeals` first, whose rows reference it.
 - **Every run on the configured memory axis leaves a run record, and `audit:replay` reads
   it.** `yarn audit:replay <runId>` (or `node dist/audit/replay.js <runId>` in the image)
   re-executes the run from its record and compares every checkpoint; `--read-only` prints
@@ -514,9 +518,12 @@ from a separate project doubles the pool and is the owner's decision.
   `node scripts/fhir-validate.mjs --jar <jar> --captured <dir>`; `FHIR_VALIDATOR_JAVA`
   replaces `java` with a container command. Each resource's `meta.profile` names US Core
   `|6.1.0`, because loading PAS brings US Core 7.0.0 and an unversioned canonical would
-  resolve to whichever loaded last. Both specs capture: `fhir.e2e-spec.ts` the `$submit`
-  responses, and `review.e2e-spec.ts` every `$inquire` response and each bundle it returned,
-  which the PAS report holds to the inquiry response bundle.
+  resolve to whichever loaded last. Three specs capture: `fhir.e2e-spec.ts` the `$submit`
+  responses, `review.e2e-spec.ts` every `$inquire` response and each bundle it returned,
+  which the PAS report holds to the inquiry response bundle, and `appeal.e2e-spec.ts` the
+  response a reversal on reconsideration puts in force and the `$inquire` that returns it.
+  A spec that captures is also listed in `fhir-validate.yml`'s `paths`, or a change to it
+  alone never runs the validator.
 - **Reviewer keys are generated, never committed.** Tests make Ed25519 keypairs in the test,
   and `yarn workspace @repo/agent-service review:sign keygen` writes a demo key under a
   gitignored `.review-keys/`. Only public keys go in the file `REVIEWER_REGISTRY` names, and
@@ -610,6 +617,17 @@ portfolio's, not counsel's.
   `yarn ledger:export --no-payloads`. A retention job withholds a payload by deleting its
   row as the owner. The verifier reports that as withheld, not tampered, and the trigger
   refuses it for a reviewer key, whose payload every later signature is checked against.
+- **The appeal table holds what the filer said, and the case file holds everything (P3-F).**
+  `prior_auth_appeals.filer` names the enrollee, their representative or their physician;
+  `prior_auth_appeals.request` holds the filer's statement and any evidence bundle, which
+  in a real deployment is clinical record; and `GET /review/appeals/:appealId/case-file`
+  rebuilds the case file, which holds the request, the model's findings and rationale, the
+  denial, the filing and the reconsideration in one document. Each takes the run record's
+  encryption at rest, read logging and ten-year retention floor; nothing here deletes an
+  appeal. Who may read an appeal or its case file is the deployment's to restrict, as for a
+  case, until P5-A authenticates `/review/*`. Delivering the case file to the independent
+  entity, and the agreement that governs that disclosure, are the deployment's too: a
+  forward here is a record, not a delivery.
 
 ## Error Handling
 
