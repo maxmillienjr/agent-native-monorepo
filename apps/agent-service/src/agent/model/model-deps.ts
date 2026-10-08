@@ -47,26 +47,3 @@ export interface ModelDeps {
   embed: (text: string) => Promise<number[]>;
   assess: AssessDeps;
 }
-
-/**
- * The tool registry, which is the one thing in `ModelDeps` that costs no model
- * call.
- *
- * It is built here rather than twice inside the two axis branches because a
- * replayed dependency set needs the same registry the recorded run had: the
- * `act.selectTool` request carries the tool names, so a replay whose tool list
- * differs from the recording's misses on the hash before it gets anywhere near
- * a tool.
- *
- * The one registered tool is a pure function. A registry that holds tools which
- * change the world needs reversibility tiers before a cassette of one is safe,
- * and that is P4-C's.
- */
-export function defaultTools(): ActNodeDeps['tools'] {
-  return [
-    {
-      name: 'web-search',
-      execute: async (input) => ({ results: [`Result for: ${JSON.stringify(input)}`] }),
-    },
-  ];
-}
