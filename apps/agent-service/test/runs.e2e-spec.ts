@@ -2,8 +2,9 @@ import { Test, type TestingModule } from '@nestjs/testing';
 import { type INestApplication, HttpStatus } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../src/app.module.js';
-import { ZodValidationPipe } from '../src/common/pipes/zod-validation.pipe.js';
-import { RunRequestSchema, RunResponseSchema, StreamEventSchema } from '@repo/agent-contracts';
+import type { NestExpressApplication } from '@nestjs/platform-express';
+import { RunResponseSchema, StreamEventSchema } from '@repo/agent-contracts';
+import { configureApp } from '../src/configure-app.js';
 import { RunsService } from '../src/runs/runs.service.js';
 
 describe('RunsController (e2e)', () => {
@@ -35,8 +36,8 @@ describe('RunsController (e2e)', () => {
       imports: [AppModule],
     }).compile();
 
-    app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(new ZodValidationPipe(RunRequestSchema));
+    app = moduleFixture.createNestApplication<NestExpressApplication>();
+    configureApp(app as NestExpressApplication);
     await app.init();
   });
 
@@ -128,8 +129,8 @@ describe('POST /runs/stream when a node fails', () => {
       imports: [AppModule],
     }).compile();
 
-    app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(new ZodValidationPipe(RunRequestSchema));
+    app = moduleFixture.createNestApplication<NestExpressApplication>();
+    configureApp(app as NestExpressApplication);
     await app.init();
 
     // A dependency set whose `plan` always throws, so the failure lands after

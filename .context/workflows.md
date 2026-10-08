@@ -183,18 +183,20 @@ workflow for you; the steps below are the tool-agnostic version.
 
 ## Add an HTTP Route to agent-service
 
-Two things apply to every controller today. Neither is visible from the controller you are
-writing.
+Two things about request bodies are decided outside the controller you are writing.
 
-1. **The request-body pipe is global.** `main.ts` calls
-   `app.useGlobalPipes(new ZodValidationPipe(RunRequestSchema))`, so a new route's
-   `@Body()` is parsed as a `RunRequest` and anything else gets `400` naming `sessionId`.
-   `test/runs.e2e-spec.ts` installs the same pipe again. A route with a different body has
-   to move the pipe onto `RunsController`'s parameters and delete it from both places. P3-D
-   plans that move.
-2. **Only `application/json` bodies are parsed.** A body sent with another JSON media type,
-   such as `application/fhir+json`, reaches the handler as `undefined`. Register a parser
-   for the type in `main.ts`.
+1. **There is no global pipe.** A controller validates its own body. `RunsController`
+   puts `ZodValidationPipe(RunRequestSchema)` on its two `@Body()` parameters; a new
+   route puts its own schema on its own parameter, or parses at the boundary as the FHIR
+   controller does. Installing a pipe with `app.useGlobalPipes` would parse every body in
+   every controller with one schema, which is how a FHIR `Bundle` used to get `400` naming
+   `sessionId`.
+2. **JSON is parsed for `application/json` and `application/fhir+json` only.**
+   `configureApp` in `src/configure-app.ts` registers one parser for both, and `main.ts`
+   and the service spec both call it, so the two cannot drift. A body with another media
+   type reaches the handler as `undefined`; add the type to that one parser rather than
+   registering a second `express.json`, because Nest skips its default `jsonParser`
+   whenever a middleware of that name is already applied.
 
 Write a service test in `test/` that posts a real body with the real `Content-Type`.
 Calling the handler directly bypasses both of the problems above.

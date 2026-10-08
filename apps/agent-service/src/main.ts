@@ -2,9 +2,9 @@ import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { loadEnvFile } from './load-env.js';
 import { initTelemetry, createLogger } from '@repo/telemetry';
-import { RunRequestSchema } from '@repo/agent-contracts';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module.js';
-import { ZodValidationPipe } from './common/pipes/zod-validation.pipe.js';
+import { configureApp } from './configure-app.js';
 
 const logger = createLogger('main');
 
@@ -20,14 +20,14 @@ async function bootstrap(): Promise<void> {
   // when a provider factory throws during initialization. A misconfigured
   // memory axis is a configuration mistake, and the operator needs to read
   // which variable was wrong — not a native stack trace.
-  const app = await NestFactory.create(AppModule, { abortOnError: false });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { abortOnError: false });
 
-  app.useGlobalPipes(new ZodValidationPipe(RunRequestSchema));
+  configureApp(app);
   app.enableCors();
 
   const httpAdapter = app.getHttpAdapter();
-  httpAdapter.get('/health', (_req: unknown, res: { json: (body: unknown) => void }) => {
-    res.json({ status: 'ok' });
+  httpAdapter.get('/health', (_req, res) => {
+    httpAdapter.reply(res, { status: 'ok' }, 200);
   });
 
   const port = process.env['PORT'] ?? 3000;

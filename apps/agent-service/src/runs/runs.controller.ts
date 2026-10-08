@@ -1,7 +1,16 @@
 import { Controller, Post, Body, Headers, Res, HttpCode, Inject } from '@nestjs/common';
 import type { Response } from 'express';
-import type { RunResponse } from '@repo/agent-contracts';
+import { RunRequestSchema, type RunResponse } from '@repo/agent-contracts';
 import { RunsService } from './runs.service.js';
+import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe.js';
+
+/**
+ * The request-body pipe, on the two parameters that take a `RunRequest`.
+ *
+ * It used to be global, which parsed every `@Body()` in every controller as a
+ * `RunRequest`; the FHIR controller's `Bundle` got `400` naming `sessionId`.
+ */
+const runRequest = new ZodValidationPipe(RunRequestSchema);
 
 @Controller('runs')
 export class RunsController {
@@ -15,7 +24,7 @@ export class RunsController {
   @Post()
   @HttpCode(200)
   async createRun(
-    @Body() body: unknown,
+    @Body(runRequest) body: unknown,
     @Headers('x-correlation-id') correlationId: string,
   ): Promise<RunResponse> {
     return this.runsService.execute({ body, correlationId });
@@ -23,7 +32,7 @@ export class RunsController {
 
   @Post('stream')
   async streamRun(
-    @Body() body: unknown,
+    @Body(runRequest) body: unknown,
     @Headers('x-correlation-id') correlationId: string,
     @Res() res: Response,
   ): Promise<void> {
