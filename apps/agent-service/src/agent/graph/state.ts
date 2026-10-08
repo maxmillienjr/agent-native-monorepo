@@ -24,6 +24,31 @@ export const ToolOutputSchema = z.object({
 export type ToolOutput = z.infer<typeof ToolOutputSchema>;
 
 /**
+ * An irreversible call waiting on a person: what `approve` passes to
+ * `interrupt()` and what a resume is asked to decide. The input has already
+ * passed the tool's schema; `approve` parses it again on resume, because a
+ * checkpoint is deserialized JSON no schema has seen.
+ */
+export const PendingApprovalSchema = z.object({
+  toolName: z.string(),
+  input: z.unknown(),
+  tier: z.literal('irreversible'),
+  idempotencyKey: z.string(),
+});
+export type PendingApproval = z.infer<typeof PendingApprovalSchema>;
+
+/**
+ * The resume value `approve` accepts. Strict, and passed to `interrupt()` as
+ * its `responseSchema`, so on LangGraph 1.4 a resume with any other shape
+ * throws a `ZodError` and leaves the thread paused: a malformed decision is
+ * refused rather than read as one.
+ */
+export const ApprovalDecisionSchema = z
+  .object({ approved: z.boolean(), approver: z.string().min(1) })
+  .strict();
+export type ApprovalDecision = z.infer<typeof ApprovalDecisionSchema>;
+
+/**
  * What `distill` extracts and `reflect` writes.
  *
  * It lives in state rather than inside one node because the two halves are
@@ -59,10 +84,13 @@ export const AgentStateSchema = WorkingMemorySchema.extend({
   currentPlan: z.string().optional(),
   toolOutputs: z.array(ToolOutputSchema).default([]),
   /**
-   * A step failed, so the loop stops. Any failure aborts — a throw, an invalid input, an unknown tool, a rejected
+   * A step failed, so the loop stops and the applied effects are undone. Any
+   * failure aborts — a throw, an invalid input, an unknown tool, a rejected
    * approval — so a partial sequence of effects is never left standing.
    */
   aborted: z.boolean().default(false),
+  /** Set by `act` on an irreversible selection, and cleared by `approve` once decided. */
+  pendingApproval: PendingApprovalSchema.nullable().default(null),
   extraction: ExtractionSchema.optional(),
 });
 

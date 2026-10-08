@@ -21,6 +21,7 @@ const state = {
   topK: 10,
   shouldContinue: false,
   aborted: false,
+  pendingApproval: null,
 } satisfies AgentState;
 
 /**
