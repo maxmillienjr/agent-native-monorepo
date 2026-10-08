@@ -15,6 +15,7 @@ import {
   type FhirOrganization,
   type PasClaim,
 } from './fhir/resources.js';
+import { memberKeyOf, partyKeyOf } from './case-keys.js';
 import { SYSTEMS } from './systems.js';
 
 /**
@@ -37,6 +38,14 @@ export interface PriorAuthRequest {
   readonly insurer: FhirOrganization;
   /** Every `ResourceType/id` in the bundle: what a citation may resolve to. */
   readonly resourceIds: readonly string[];
+  /**
+   * The case's keys, as `system|value` tokens: the patient's member
+   * identifier, the payer's identifier and the requesting provider's. They
+   * are what `$inquire` matches a later inquiry on (P3-E).
+   */
+  readonly memberId: string;
+  readonly insurerId: string;
+  readonly providerId: string;
 }
 
 export interface SubmissionIssue {
@@ -94,13 +103,19 @@ function issuesFrom(error: z.ZodError, prefix: string): SubmissionIssue[] {
 }
 
 /**
- * Reads a `$submit` body, or says why it cannot.
+ * A `Bundle` whose first entry is a `Claim`, or why the body is not one.
  *
- * PAS's invariant `ClaimFirst` puts the `Claim` first in the request bundle,
- * and this surface takes the first entry as the claim rather than searching
- * for one, so a bundle that breaks the invariant is answered as malformed.
+ * PAS's invariant `ClaimFirst` puts the `Claim` first in both the request and
+ * the inquiry bundle, and this surface takes the first entry as the claim
+ * rather than searching for one, so a bundle that breaks the invariant is
+ * answered as malformed.
  */
-export function readSubmission(body: unknown, payer: Payer): Submission {
+export function readClaimBundle(
+  body: unknown,
+  operation: '$submit' | '$inquire',
+):
+  | { readonly kind: 'ok'; readonly bundle: FhirBundle; readonly claim: PasClaim }
+  | { readonly kind: 'invalid'; readonly issues: readonly SubmissionIssue[] } {
   const bundle = BundleSchema.safeParse(body);
   if (!bundle.success) {
     return { kind: 'invalid', issues: issuesFrom(bundle.error, 'Bundle') };
@@ -113,7 +128,7 @@ export function readSubmission(body: unknown, payer: Payer): Submission {
       issues: [
         {
           code: 'structure',
-          diagnostics: 'the first entry of a $submit bundle must be a Claim',
+          diagnostics: `the first entry of a ${operation} bundle must be a Claim`,
           expression: 'Bundle.entry[0].resource',
         },
       ],
@@ -124,8 +139,14 @@ export function readSubmission(body: unknown, payer: Payer): Submission {
   if (!claim.success) {
     return { kind: 'invalid', issues: issuesFrom(claim.error, 'Claim') };
   }
+  return { kind: 'ok', bundle: bundle.data, claim: claim.data };
+}
 
-  return readClaim(bundle.data, claim.data, payer);
+/** Reads a `$submit` body, or says why it cannot. */
+export function readSubmission(body: unknown, payer: Payer): Submission {
+  const read = readClaimBundle(body, '$submit');
+  if (read.kind === 'invalid') return read;
+  return readClaim(read.bundle, read.claim, payer);
 }
 
 function readClaim(bundle: FhirBundle, claim: PasClaim, payer: Payer): Submission {
@@ -174,6 +195,24 @@ function readClaim(bundle: FhirBundle, claim: PasClaim, payer: Payer): Submissio
     });
   }
 
+  const memberId = memberKeyOf(bundle, claim.patient);
+  if (memberId === undefined) {
+    unprocessable({
+      code: 'required',
+      diagnostics:
+        'Claim.patient carries no member identifier typed MB, which is what a case is found by',
+      expression: 'Claim.patient',
+    });
+  }
+  const providerId = partyKeyOf(bundle, claim.provider);
+  if (providerId === undefined) {
+    unprocessable({
+      code: 'required',
+      diagnostics: 'Claim.provider carries no identifier with a system and a value',
+      expression: 'Claim.provider',
+    });
+  }
+
   const focal = claim.insurance.find((insurance) => insurance.focal) ?? claim.insurance[0];
   const coverage = resolveAs(CoverageSchema, bundle, focal?.coverage.reference);
   if (coverage === undefined) {
@@ -190,7 +229,9 @@ function readClaim(bundle: FhirBundle, claim: PasClaim, payer: Payer): Submissio
     item === undefined ||
     hcpcs === undefined ||
     insurer === undefined ||
-    coverage === undefined
+    coverage === undefined ||
+    memberId === undefined ||
+    providerId === undefined
   ) {
     return { kind: 'unprocessable', issues };
   }
@@ -221,6 +262,9 @@ function readClaim(bundle: FhirBundle, claim: PasClaim, payer: Payer): Submissio
       resourceIds: (bundle.entry ?? []).flatMap((entry) =>
         entry.resource?.id === undefined ? [] : [referenceOf(entry.resource)],
       ),
+      memberId,
+      insurerId: `${payer.payer.identifier.system}|${payer.payer.identifier.value}`,
+      providerId,
     },
   };
 }

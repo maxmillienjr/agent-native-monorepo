@@ -15,6 +15,7 @@ import type {
   FhirResource,
   OperationOutcome,
   Organization,
+  Parameters,
   Patient,
   Practitioner,
 } from 'fhir/r4.js';
@@ -323,6 +324,28 @@ export const AnyResourceSchema: z.ZodType<FhirResource> = z.custom<FhirResource>
   { message: 'expected a FHIR resource with a string resourceType' },
 );
 
+/**
+ * `Claim/$inquire`'s output (P3-E): one `return` parameter per matching case,
+ * each a response bundle.
+ */
+export const ParametersSchema: z.ZodType<Parameters> = z
+  .object({
+    resourceType: z.literal('Parameters'),
+    ...resourceBase,
+    parameter: z
+      .array(
+        z
+          .object({
+            name: z.string(),
+            resource: AnyResourceSchema.optional(),
+          })
+          .passthrough(),
+      )
+      .min(1)
+      .optional(),
+  })
+  .passthrough();
+
 export const BundleSchema: z.ZodType<Bundle<FhirResource>> = z
   .object({
     resourceType: z.literal('Bundle'),
@@ -364,3 +387,4 @@ export type PasClaimResponse = z.infer<typeof ClaimResponseSchema>;
 export type FhirOperationOutcome = z.infer<typeof OperationOutcomeSchema>;
 export type FhirCapabilityStatement = z.infer<typeof CapabilityStatementSchema>;
 export type FhirBundle = z.infer<typeof BundleSchema>;
+export type FhirParameters = z.infer<typeof ParametersSchema>;

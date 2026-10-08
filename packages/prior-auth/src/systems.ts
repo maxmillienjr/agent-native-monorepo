@@ -10,6 +10,8 @@ export const SYSTEMS = {
   ACT_REASON: 'http://terminology.hl7.org/CodeSystem/v3-ActReason',
   PROCESS_PRIORITY: 'http://terminology.hl7.org/CodeSystem/processpriority',
   CLAIM_TYPE: 'http://terminology.hl7.org/CodeSystem/claim-type',
+  /** THO's identifier types; `MB` is the member number `$inquire` matches on. */
+  IDENTIFIER_TYPE: 'http://terminology.hl7.org/CodeSystem/v2-0203',
   NPI: 'http://hl7.org/fhir/sid/us-npi',
   /** The fictional payer's own case identifiers. RFC 2606 reserves the domain. */
   CASE_ID: 'https://example.org/fhir/sid/prior-auth-case',

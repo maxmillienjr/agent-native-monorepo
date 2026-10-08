@@ -30,6 +30,7 @@ export {
 } from './clock.js';
 export {
   readSubmission,
+  readClaimBundle,
   resolveReference,
   coverageActiveOn,
   evidenceFor,
@@ -46,4 +47,14 @@ export {
   type ResponseContext,
 } from './claim-response.js';
 export { operationOutcome, capabilityStatement, CLAIM_SUBMIT_DEFINITION } from './outcomes.js';
+export { identifierKey, memberKeyOf, partyKeyOf } from './case-keys.js';
+export {
+  readInquiry,
+  inquiryMatches,
+  inquiryResult,
+  AUTHORIZATION_NUMBER_EXTENSION,
+  type Inquiry,
+  type InquiryItem,
+  type InquiryReading,
+} from './inquiry.js';
 export { SYSTEMS, HTEST } from './systems.js';
