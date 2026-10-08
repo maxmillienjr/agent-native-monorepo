@@ -29,6 +29,13 @@
       "when": 1791484256098,
       "tag": "0003_prior_auth_cases",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791580000000,
+      "tag": "0004_prior_auth_appeals",
+      "breakpoints": true
     }
   ]
 }
