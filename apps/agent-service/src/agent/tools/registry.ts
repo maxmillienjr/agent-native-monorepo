@@ -1,5 +1,8 @@
 import { toJsonSchema } from '@langchain/core/utils/json_schema';
+import type { CaseBoard } from './case-board.js';
+import { requestRecordsTool } from './request-records.tool.js';
 import { REVERSIBILITY_TIERS, type ReversibilityTier, type ToolDefinition } from './types.js';
+import { webSearchTool } from './web-search.tool.js';
 
 const NAME = /^[a-z][a-z0-9-]{2,40}$/;
 const MIN_DESCRIPTION = 40;
@@ -99,4 +102,18 @@ export function defineRegistry(tools: readonly ToolDefinition[]): ToolRegistry {
 function inputSchema(tool: ToolDefinition): Record<string, unknown> {
   const { $schema: _draft, ...schema } = toJsonSchema(tool.input) as Record<string, unknown>;
   return schema;
+}
+
+/**
+ * The registry every dependency set builds from — live, stub, recording and
+ * replay.
+ *
+ * One function because the `act.selectTool` request carries every tool's
+ * description, tier and schema, so a replay built from any other list misses on
+ * its first request hash. The board is an argument: the service passes the one
+ * Nest provides, and replay passes one it never reaches, since both tool seams
+ * are served from the cassette there.
+ */
+export function defaultRegistry(board: CaseBoard): ToolRegistry {
+  return defineRegistry([webSearchTool, requestRecordsTool(board)]);
 }
