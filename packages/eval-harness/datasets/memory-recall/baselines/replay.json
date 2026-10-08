@@ -1,11 +1,15 @@
 {
   "kind": "replay",
   "suite": "memory-recall",
-  "cassetteDigest": "3150d589a5c0550c6580bf59f8355c6512cca6360baa22b758c0d286102e5f3e",
+  "cassetteDigest": "85852c690160fc11bd9da9b3cc762731b57c137c128717949c802cd3ebe24532",
   "recordedAt": "2026-09-11T01:48:09.269Z",
-  "gitSha": "021c6f2ebaa2dd67be605dee45f6ece08bc733c5",
+  "gitSha": "021c6f2ebaa2dd67be605dee45f6ece08bc733c5, 5aca9f9a8f1b988b20f0a968a65be2a575841dcd",
   "semconvCommit": "e57c543b4889619eb2a05702471937db5119165d",
   "cells": [
+    {"task":"graph-recall-001","trial":0,"grader":"episodic_row_written","label":"pass","value":1},
+    {"task":"graph-recall-001","trial":0,"grader":"outcome_must_be","label":"pass","value":1},
+    {"task":"graph-recall-001","trial":0,"grader":"retrieved_context_min_length","label":"pass","value":1},
+    {"task":"graph-recall-001","trial":0,"grader":"retrieved_from_source","label":"pass","value":1},
     {"task":"memory-recall-001","trial":0,"grader":"entity_merged","label":"pass","value":1},
     {"task":"memory-recall-001","trial":0,"grader":"episodic_row_written","label":"pass","value":1},
     {"task":"memory-recall-001","trial":0,"grader":"outcome_must_be","label":"pass","value":1},
