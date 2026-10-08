@@ -99,6 +99,9 @@ production run did, from its checkpoints, is P3-B: a different artifact (the che
 rows, written by a run nobody planned to replay) answering a different question (what did
 this run do) with different fidelity requirements. A cassette is recorded deliberately,
 holds only the decisions, and answers "does the graph still behave this way".
+_Pointer, added 2026-10-08:_ the checkpointer's rows proved not to be replayable alone, and
+[ADR 0007](0007-a-run-record-beside-the-checkpoints-for-audit-replay.md) records the run
+record P3-B keeps beside them. This decision is unchanged.
 
 **Determinism became a prerequisite.** Both semantic readers produced ties by construction
 and an untied order reaches `plan`'s prompt through `rrfMerge`, so a cassette keyed on that
