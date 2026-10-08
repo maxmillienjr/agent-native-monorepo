@@ -36,6 +36,10 @@ services:
     build:
       context: .
       dockerfile: apps/agent-service/Dockerfile
+      # Names the image's commit in every run record (P3-B). Set it with
+      # `GIT_SHA=$(git rev-parse HEAD) docker compose --profile full up --build`.
+      args:
+        GIT_SHA: ${GIT_SHA:-}
     ports:
       - '3000:3000'
     environment:

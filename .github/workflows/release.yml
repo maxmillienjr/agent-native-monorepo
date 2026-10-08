@@ -48,5 +48,8 @@ jobs:
           file: apps/${{ matrix.app }}/Dockerfile
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/${{ matrix.app }}:${{ github.sha }}
+          # The tag and the commit inside agent-service agree, so a run record's
+          # git_sha names the image audit:replay must run in (P3-B).
+          build-args: GIT_SHA=${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

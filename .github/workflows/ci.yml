@@ -51,8 +51,31 @@ jobs:
           push: false
           load: true
           tags: ${{ matrix.app }}:ci
+          # Only agent-service reads it; the others ignore an unused argument.
+          build-args: GIT_SHA=${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      # P3-B: the image names its commit, and the replay command is in it. With
+      # no DATABASE_URL the command must refuse with exit 2 after starting, which
+      # proves it resolves its imports inside the image without a database.
+      - name: The image carries its commit and the replay command
+        if: matrix.app == 'agent-service'
+        run: |
+          sha="$(docker run --rm agent-service:ci node -e 'process.stdout.write(process.env.GIT_SHA ?? "")')"
+          if [ "$sha" != "${{ github.sha }}" ]; then
+            echo "::error::GIT_SHA in the image is '$sha', expected ${{ github.sha }}"
+            exit 1
+          fi
+          set +e
+          out="$(docker run --rm agent-service:ci node dist/audit/replay.js 00000000-0000-4000-8000-000000000000 2>&1)"
+          code=$?
+          set -e
+          echo "$out"
+          if [ "$code" != "2" ] || ! echo "$out" | grep -q 'needs DATABASE_URL'; then
+            echo "::error::dist/audit/replay.js did not run inside the image (exit $code)"
+            exit 1
+          fi
 
       # console is not probed standalone: its nginx.conf proxies to the `gateway`
       # upstream, which only resolves on the compose network, so a bare `docker run`

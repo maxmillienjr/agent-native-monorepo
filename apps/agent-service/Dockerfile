@@ -33,6 +33,13 @@ COPY --from=builder --chown=nestjs:nodejs /app/apps/agent-service/dist ./dist
 # "Cannot find package '@repo/telemetry' imported from /app/dist/main.js".
 COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nestjs:nodejs /app/packages ./packages
+# The commit this image was built from. The image has no .git, so this is the
+# only thing that names its code, and every run record states it (P3-B):
+# `audit:replay` refuses a record made at any other commit. Declared after the
+# copies, so a new sha rebuilds no layer above this one. Empty when the build
+# was not given one, and then a record's git_sha is null.
+ARG GIT_SHA=
+ENV GIT_SHA=$GIT_SHA
 USER nestjs
 EXPOSE 3000
 CMD ["node", "dist/main.js"]

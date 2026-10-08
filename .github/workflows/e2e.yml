@@ -66,6 +66,9 @@ jobs:
       # reader actually exercises.
       - name: Start the full stack
         run: docker compose --profile full up -d --build --wait --wait-timeout 300
+        # Names the agent-service image's commit in its run records (P3-B).
+        env:
+          GIT_SHA: ${{ github.sha }}
 
       - run: yarn playwright install --with-deps chromium
         working-directory: apps/console
