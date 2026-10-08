@@ -562,10 +562,12 @@ case store), the **ledger** axis (P3-C's `LEDGER_DATABASE_URL`) and the **auth**
 - [x] The sentinel test: a rationale sentinel from a stub `assess` appears in
       `GET /review/cases/:id` and in neither the determination response nor any `$inquire`
       response.
-- [ ] Ledger configured (checkable once P3-C has shipped; until then this box stays open
+- [x] Ledger configured (checkable once P3-C has shipped; until then this box stays open
       with owner P3-C): a denial appends one `determination.attested` entry whose
       `entry_id` is the derived one, and `ledger:verify` exits 0. With the ledger's database
-      stopped, the route returns `503` and the case stays `pended`. Memory live.
+      stopped, the route returns `503` and the case stays `pended`. Memory live. _Closed by
+      P3-C (#108):_ `apps/agent-service/test/ledger.integration.test.ts`, the decision-path
+      tests, with the database refusing connections and every open one cut.
 - [ ] Auth enforced (checkable once P5-A has shipped; until then open with owner P5-A): a
       valid signature from a registry entry naming principal `a`, sent with principal `b`'s
       token, returns `403`.
@@ -589,9 +591,10 @@ case store), the **ledger** axis (P3-C's `LEDGER_DATABASE_URL`) and the **auth**
 
 - [x] `docs/STATUS.md` has a row for the review queue and determination route, citing
       `review.e2e-spec.ts` and stating that on-time means decided, not notified.
-- [ ] P3-C's "determinations and attestations in the ledger" row names P3-E, not P3-D. The
+- [x] P3-C's "determinations and attestations in the ledger" row names P3-E, not P3-D. The
       row is P3-C's to add and does not exist yet; P3-C's criterion now names P3-E as the
-      producer, so the row will. Owner **P3-C**.
+      producer, so the row will. Owner **P3-C**. _Closed by P3-C (#108):_ `docs/STATUS.md`
+      row 30 names P3-E's routes as the producers.
 - [x] `.context/conventions.md`'s "Before real data" lists the case table's request and
       rationale columns, with retention, encryption and access as owned items.
 - [x] Every fixture reviewer, key and registry entry is labelled synthetic, and
@@ -723,6 +726,11 @@ open, as review decided, and so does P3-C's row naming P3-E. P3-C adds the
 `$submit`, since P3-E landed first. P5-A adds `/fhir/*` and `/review/*` to its middleware and
 passes the bearer's principal to `ReviewService.determine`, which already compares it with a
 registry entry's `principal` when both are present.
+
+_Updated 2026-10-08, by P3-C (#108):_ the ledger half is closed. `$submit` appends
+`run.recorded` and `disposition.recommended` before the case row and stores the
+recommendation's seq; `decide`'s `beforeCommit` appends `determination.attested`; and the
+registry's keys are registered in the ledger at boot. The auth half (P5-A) stays open.
 
 **Hand-off to P3-F.** Appeals stay out, as Non-goals says. What P3-F inherits: a decided case
 row carries `reviewer_id`, so the non-involvement rule of § 422.590 is one comparison, and

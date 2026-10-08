@@ -34,10 +34,10 @@ cannot be all three.
 else.**
 
 - The package boundary follows the role boundary, because a reviewer can check a package
-  boundary. `@repo/decision-ledger` owns its migrations, recorded in
-  `drizzle.__ledger_migrations` rather than memory's table, and a `roles.sql` that creates
-  the role. Its runtime dependencies are `pg`, `zod`, `drizzle-orm` and
-  `@repo/determination`, so an auditor can lift it out with the rows it verifies.
+  boundary. `@repo/decision-ledger` owns its migrations, recorded in `__ledger_migrations`
+  by a small runner of its own rather than in memory's table, and a `roles.sql` that
+  creates the role. Its runtime dependencies are `pg`, `zod` and `@repo/determination`, so
+  an auditor can lift it out with the rows it verifies.
 - The service reads `LEDGER_DATABASE_URL` and never falls back to `DATABASE_URL`. A ledger
   written with the memory role is one its writer can rewrite. At boot the service refuses a
   role that holds `UPDATE`, `DELETE`, `TRUNCATE` or ownership of `ledger_entries`. The

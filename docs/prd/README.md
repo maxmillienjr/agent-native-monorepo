@@ -5,7 +5,7 @@
 _Last updated 2026-10-08. If this section is more than a few weeks stale, trust the code
 over it and update it._
 
-**Fifteen PRDs are shipped and the system they describe is running.** The service answers
+**Sixteen PRDs are shipped and the system they describe is running.** The service answers
 `POST /runs` and `POST /runs/stream`; `memory-core` is constructed by the app rather than
 sitting beside it; the graph compiles with a checkpointer and a retry policy on every node
 that performs I/O; and `packages/eval-harness` measures the result. Verified against live
@@ -13,7 +13,7 @@ stores from an empty database: one run leaves episodic rows, `:Concept` and `:Fa
 `semantic_facts` rows and checkpoints under the runId its own response returned.
 
 **`docs/STATUS.md` is the authority on any capability sentence, including the ones above.**
-Twenty-eight rows, each with a status and evidence cited by name — twenty-three `implemented`,
+Thirty rows, each with a status and evidence cited by name — twenty-five `implemented`,
 one `planned`, three `stubbed`, one `removed`, none `broken`. The rule that keeps it true is in
 `.context/conventions.md`: a change that moves a row moves it there in the same pull
 request. `yarn lint:docs` fails CI when a PRD's status disagrees with its row below.
@@ -248,8 +248,9 @@ on a stub run and on a trial served from the committed cassettes. An edited deci
 deleted one, an added one or an edited checkpoint each exit 1, another commit exits 2, and
 a replay writes nothing. The prior-authorization path fails closed with a 503 when its
 record cannot be written. ADR 0007 records the design. A match proves the record complete,
-not unaltered: P3-C, now unblocked, owns tamper evidence, and "Before real data" lists what
-a real deployment owes.
+not unaltered. P3-C has since added tamper evidence, and "Before real data" lists what a
+real deployment owes.
+
 **[P3-E](P3-E-clinician-review-queue.md) has shipped**, tracked in
 [#98](https://github.com/maxmillienjr/agent-native-monorepo/issues/98). A pended request now
 has somewhere to go. ADR 0010 keeps the case in a `prior_auth_cases` table above the graph
@@ -260,8 +261,26 @@ rationale on one case. The service accepts a determination only over an Ed25519 
 that it verifies against `REVIEWER_REGISTRY` and cannot produce, from a credential the policy
 lists, and only once per case. `POST /fhir/Claim/$inquire` returns each case's current
 response, and an overdue sweep flags cases and never decides them. STATUS row 28 says that on
-time means decided, not notified. P3-C still has to add the ledger append, and P5-A the
-authentication of `/review/*`. Appeals belong to P3-F.
+time means decided, not notified. P3-C has since added the ledger appends. P5-A still has to
+add the authentication of `/review/*`. Appeals belong to P3-F.
+
+**[P3-C](P3-C-decision-ledger.md) has shipped**, tracked in
+[#108](https://github.com/maxmillienjr/agent-native-monorepo/issues/108). What the service
+records can now be shown unchanged, up to the last anchor. `packages/decision-ledger` keeps a
+hash chain of salted commitments. It holds every run on either graph, every recommendation
+`$submit` returns and every clinician's signed determination. It is written as
+`ledger_writer`, a role that can only select and insert, and ADR 0013 records why that made
+it a package of its own. `ledger:verify` re-derives each run's digest from today's record and
+checkpoints, so an edit to a checkpoint blob or a decision exits 1 naming the run. It also
+checks every signature against reviewer keys that are themselves entries. A superuser in
+replica mode can still rewrite the database, so `ledger:anchor` time-stamps the head with an
+RFC 3161 authority through `openssl`. CI uses a local test authority. One real anchor against
+FreeTSA verified, and a consistent rewrite under it failed on `message imprint mismatch`. A
+rewrite after the last anchor goes unseen, which is the stated limit. The chat path fails
+open and lists the run as uncommitted. `$submit` and the determination route fail closed,
+which closes P3-E's ledger criterion. Anchoring on a schedule, a second authority and key
+custody are a deployment's, and are listed in "Before real data". CTL-AUD-01 is
+`implemented`, and STATUS rows 29 and 30 are new.
 
 **Where the detail lives.** Each PRD carries its own risks, its divergences from the design
 that was reviewed, and — where a shipped record turned out to be wrong — the correction that
@@ -342,7 +361,7 @@ provider actually operates under. Uses synthetic data only.
 | --------------------------------------------- | ------------------------------------------------------------- | ---- | ----------- |
 | [P3-A](P3-A-clinician-gate.md)                | Clinician-gate invariant enforced in the type system          | S    | shipped     |
 | [P3-B](P3-B-audit-replay.md)                  | Deterministic replay for audit reconstruction                 | L    | shipped     |
-| [P3-C](P3-C-decision-ledger.md)               | Hash-chained, tamper-evident decision ledger                  | L    | in-progress |
+| [P3-C](P3-C-decision-ledger.md)               | Hash-chained, tamper-evident decision ledger                  | L    | shipped     |
 | [P3-D](P3-D-payer-dataset-fhir-prior-auth.md) | Synthetic payer dataset and FHIR prior-authorization surface  | L    | in-progress |
 | [P3-E](P3-E-clinician-review-queue.md)        | Clinician review queue, `$inquire` and the decision clock     | M    | shipped     |
 | [P3-F](P3-F-appeals-reconsideration.md)       | Appeals: reconsideration lifecycle for adverse determinations | M    | accepted    |

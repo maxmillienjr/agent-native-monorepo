@@ -2,7 +2,7 @@
 id: P3-C
 title: Hash-chained, tamper-evident decision ledger
 tier: 3
-status: in-progress
+status: shipped
 size: L
 depends_on: [P3-A, P3-B]
 blocks: []
@@ -350,46 +350,151 @@ determinations noted as P3-E's.
 
 ## Acceptance criteria
 
-- [ ] `yarn workspaces list` includes `@repo/decision-ledger`; its runtime dependencies are
+- [x] `yarn workspaces list` includes `@repo/decision-ledger`; its runtime dependencies are
       `pg`, `zod` and `@repo/determination`, and nothing else in the repository.
-- [ ] Integration tests on live Postgres: as `ledger_writer`, `UPDATE`, `DELETE` and
+- [x] Integration tests on live Postgres: as `ledger_writer`, `UPDATE`, `DELETE` and
       `TRUNCATE` on `ledger_entries` fail with `permission denied`; as the owner, `UPDATE`
       fails with the trigger's exception; an insert reusing a `prev_hash` fails on the
-      unique constraint.
-- [ ] Fifty concurrent appends from five pools produce `seq` 0-49 with no gap, and
+      unique constraint. (`packages/decision-ledger/test/ledger.integration.test.ts`)
+- [x] Fifty concurrent appends from five pools produce `seq` 0-49 with no gap, and
       `verifyChain` passes.
-- [ ] A retried append with the same `entry_id` and payload returns the original entry; with
+- [x] A retried append with the same `entry_id` and payload returns the original entry; with
       a different payload it throws.
-- [ ] `ledger:verify` exits 1, naming the `seq`, for each of: an edited payload, an edited
+- [x] `ledger:verify` exits 1, naming the `seq`, for each of: an edited payload, an edited
       row, a deleted middle entry, two swapped entries, an attestation signed by an
       unregistered key, and one signed by a revoked key. A deleted payload is reported as
-      withheld and exits 0.
-- [ ] A superuser rewrite of every hash from an anchored entry onward exits 1 on the
+      withheld and exits 0. (`apps/agent-service/test/ledger.integration.test.ts`, the
+      compiled command, each edit made as a superuser in replica mode)
+- [x] A superuser rewrite of every hash from an anchored entry onward exits 1 on the
       anchor; the same rewrite of entries only after the last anchor exits 0, and the test
       says that this is the documented limit.
-- [ ] `ledger:anchor` against the local test TSA stores a token that `ledger:verify` checks,
+- [x] `ledger:anchor` against the local test TSA stores a token that `ledger:verify` checks,
       in CI with no network. One anchor against a public TSA is recorded in the pull
-      request.
-- [ ] One `POST /runs` with the ledger configured leaves one `run.recorded` entry whose
+      request. (FreeTSA, below and in the pull request.)
+- [x] One `POST /runs` with the ledger configured leaves one `run.recorded` entry whose
       digest `ledger:verify` re-derives; editing one of that run's checkpoint blobs, or one
       of its `run_decisions`, makes it exit 1 naming the run. Model `stub` / memory `live`,
       and again on model `replay` / memory `live`.
-- [ ] A run with the ledger configured and its database stopped mid-run still answers
-      `POST /runs`, and `ledger:verify` lists it as uncommitted.
-- [ ] Unit tests: `appendAttestation` refuses an unsigned determination, a signature by a
+- [x] A run with the ledger configured and its database stopped mid-run still answers
+      `POST /runs`, and `ledger:verify` lists it as uncommitted. In CI the database refuses
+      connections and has every open one cut; by hand, a separate ledger container was
+      stopped under a running service (below).
+- [x] Unit tests: `appendAttestation` refuses an unsigned determination, a signature by a
       key not in the chain, and a determination on a run with a recommendation that does
       not cite it. Every fixture reviewer and key is labelled synthetic.
-- [ ] A Vitest test lints an import of `@repo/decision-ledger` under `src/agent/` and gets one
+- [x] A Vitest test lints an import of `@repo/decision-ledger` under `src/agent/` and gets one
       `no-restricted-imports` error, and under `src/runs/` gets none.
-- [ ] `.agents/reviewer.md` rule 4 and `CLAUDE.md` name the three owners of database writes;
+- [x] `.agents/reviewer.md` rule 4 and `CLAUDE.md` name the three owners of database writes;
       `.context/conventions.md`'s "Before real data" includes the keyed span digest and key
       custody.
-- [ ] `docs/STATUS.md` has two rows: run records committed to the ledger, `implemented`;
+- [x] `docs/STATUS.md` has two rows: run records committed to the ledger, `implemented`;
       determinations and attestations in the ledger, appended from P3-E's review route, with
       the evidence of that append. _Amended 2026-10-08:_ this row was `stubbed` with owner
-      P3-D; P3-E shipped the producer first, so this PRD wires the append into it.
-- [ ] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
+      P3-D; P3-E shipped the producer first, so this PRD wires the append into it. (Rows 29
+      and 30.)
+- [x] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
       pass.
+
+## What shipped, and where it diverged
+
+_Recorded 2026-10-08, on the branch for #108._ Every ticked criterion was verified on model
+`stub`, and the replay-axis one on the committed cassettes, with no `generateContent` call,
+against throwaway Postgres and Neo4j containers. `yarn turbo test:integration` with
+`REQUIRE_INTEGRATION_ENV=1` ran the package suite (13 tests), the service's ledger suite
+(20) and every existing suite green. The replay gate read `match`.
+
+**Built as designed.** `packages/decision-ledger` holds the five payload kinds, salted
+commitments, the versioned entry hash, the serialised append, the pure `verifyChain`, its
+own migration and a `roles.sql`. `RunsService` appends `run.recorded` after every chat run
+on the ledger axis and fails open. `ledger:verify`, `ledger:anchor`, the lint rule, the
+rule amendments, the "Before real data" items and two STATUS rows are in place. ADR 0013
+records why the ledger is its own package with its own role.
+
+**The decision path, since P3-E landed first.** `$submit` appends `run.recorded` and then
+`disposition.recommended`, after the run record closes and before the case row. The case
+stores the recommendation's seq, which `CaseView` serves for the reviewer to sign. Either
+append failing answers 503 and enqueues nothing. The determination route appends
+`determination.attested` in `decide`'s `beforeCommit`, under P3-E's derived id. A refusal or
+a stopped ledger leaves the case pended and answers 503. At boot, every key in
+`REVIEWER_REGISTRY` is registered in the ledger if absent, and a `revokedAt` is appended as
+a revocation. This closes P3-E's two open ledger criteria.
+
+**Divergences.**
+
+- **The ledger migrates with a runner of its own, not Drizzle's.** The Tables section asks
+  for Drizzle's migrator with `migrationsTable: '__ledger_migrations'`. The first criterion
+  and the design's dependency paragraph allow only `pg`, `zod` and `@repo/determination`,
+  so the two contradicted each other. The criterion won. `runLedgerMigrations` is about
+  forty lines. It reads the same drizzle-kit journal, applies pending files in one
+  transaction under an advisory lock, and records each in `__ledger_migrations`. Unlike
+  Drizzle's migrator, it refuses a migration whose statements changed after it ran. The
+  first implementation used Drizzle, and the history shows the switch.
+- **The service does not migrate the ledger.** `ledger_writer` cannot create a table, by
+  design, so the migrations and `roles.sql` run as the owner through `yarn ledger:migrate`
+  (`LEDGER_OWNER_URL`, with `LEDGER_WRITER_PASSWORD` for a local login). Boot checks that the
+  tables exist, and refuses a role that holds `UPDATE`, `DELETE`, `TRUNCATE` or ownership of
+  `ledger_entries`. A ledger configured without the memory axis also exits 1, because there
+  is no run record to commit to.
+- **More than the PRD's rules on append.** The chain also refuses a second `run.recorded` or
+  `disposition.recommended` for one run, a duplicate key registration, a revocation of an
+  unknown key, and an attestation whose reviewer or credential is not the key's. These are
+  the checks P3-E's route makes, made again by the ledger, so a forged entry fails the
+  verifier as well. `determination.attested` takes a clinician approval or an adverse
+  determination, not P3-A's automated approval, which no reviewer signs.
+- **The trigger does slightly more.** It also refuses `TRUNCATE` on all three tables. It
+  refuses withholding a reviewer key's payload, because every later signature is checked
+  against it and a withheld key would make honest attestations fail.
+- **An anchor stores the whole response.** `token` is the DER `TimeStampResp`, which
+  `openssl ts -verify` reads as it is, and `anchored_at` is the authority's `genTime`.
+  `ledger:anchor` refuses a response that is not granted, and one that fails verification
+  when `LEDGER_TSA_CA` is set. `ledger:verify` exits 2 when the ledger holds anchors and no
+  CA is configured.
+- **Two more commands.** `ledger:export` writes the JSONL that `--chain-only --export` reads,
+  with payloads optional. `ledger:migrate` is above.
+- **The test authority is a second `exports` entry**, `@repo/decision-ledger/testing`, kept
+  out of the barrel and named by the lint rule, for the reason the clinician subpath is.
+- **The digest reads history through replay's code.** `recordedHistory`, exported from
+  `audit/replay-run.ts`, compiles the run's graph only to deserialise its checkpoints.
+  `RunRecordRepository` gained `runIds()` for check 7.
+- **A failed run's commitment fails open on both paths.** A prior-authorization run that
+  throws returns no decision, so its `run.recorded` is attempted and logged like a chat
+  run's.
+- **"Stopped mid-run", in CI.** The service suite refuses connections to the ledger's
+  database and terminates every open one, which is what the service sees of a crashed
+  server. A separate container was also stopped by hand under a running service: the
+  second `POST /runs` answered 200 in 38 ms, the service logged `ledger.append_failed` with
+  `connect ECONNREFUSED`, stayed up, and after a restart `ledger:verify` exited 0 listing
+  that run as uncommitted.
+- **Each test database logs in as a role of its own**, granted `ledger_writer`. The two
+  suites ran at once under turbo and reset one shared password under each other.
+
+**The public anchor and the tamper demonstration, 2026-10-08.** A built service with the
+ledger configured answered two `POST /runs`. `ledger:anchor` against `https://freetsa.org/tsr`
+stored a 4,642-byte token for seq 1 and verified it against FreeTSA's published CA
+(SHA-256 fingerprint `A6:37:9E:7C:…:18:AA:BC`). `ledger:verify` then exited 0: two
+`run.recorded` digests re-derived, one anchor verified. Editing one checkpoint blob of the
+first run made it exit 1, `FAILED at seq 0, run b02d34ed-… (run-digest)`. As `ledger_writer`,
+an edit to a payload answered `permission denied`; as the owner, the trigger refused it. As
+a superuser in replica mode, the edit landed and the verifier failed on the commitment at
+seq 0. Recomputing every hash from seq 0 so the chain linked again failed instead on the
+anchor: `FAILED at seq 1 (anchor) … message imprint mismatch`. That was one request to
+FreeTSA, and the PR records the outputs.
+
+**What the docs should have said.** Four things had to be worked out here.
+
+- The PRD's dependency list and its migrator contradict each other. Recorded above.
+- `getStateHistory` needs a compiled graph, so a digest "of every checkpoint in
+  `getStateHistory`" needs replay's compile step. It is now exported, and the conventions
+  name `recordedHistory` as the one way to read a recorded run's history.
+- **A `pg` pool with no `error` listener takes the service down when its database goes
+  away.** An idle client whose server terminates it emits `error`, and unheard that is an
+  uncaught exception. The ledger's pool has a listener, and the conventions now say every
+  pool needs one. `memory-core`'s pools have none, so a Postgres restart under a running
+  service is that crash today. This PR does not change `memory-core`, and it is reported
+  as a finding.
+- **supertest listens when a request is built.** A request built before an awaited second
+  request can find its listener closed. The service spec signs before it builds the
+  determination request, and the conventions now say so.
 
 ## Risks and open questions
 

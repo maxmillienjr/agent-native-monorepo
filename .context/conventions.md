@@ -52,10 +52,11 @@
   order from `meta/_journal.json`, so the second to merge renumbers its file and its
   journal entry, and moves its `when` past the first's.
 - **The ledger's migrations are numbered on their own.** `packages/decision-ledger` keeps
-  its history in `drizzle.__ledger_migrations`, not memory's table, so its `0000` never
-  collides with `memory-core`'s numbers. Its migrations run as the tables' owner through
-  `yarn ledger:migrate`, never at service boot: the service connects as `ledger_writer`,
-  which cannot create a table.
+  its history in `__ledger_migrations`, not memory's table, so its `0000` never collides
+  with `memory-core`'s numbers. Its runner is its own, not Drizzle's, and refuses a
+  migration whose statements changed after it ran. Its migrations run as the tables' owner
+  through `yarn ledger:migrate`, never at service boot: the service connects as
+  `ledger_writer`, which cannot create a table.
 
 ## Commits
 
@@ -385,6 +386,15 @@ replays the committed answer file and makes no request.
   `E2E_BASE_URL=http://localhost:8080`. Without that variable Playwright boots the Vite dev
   server instead, which serves the UI with no backend behind it — assertions pass without
   proving anything.
+- **supertest listens when the request is built, not when it is sent.** In
+  `request(server).post(…).send(await something())`, a second supertest request inside
+  `something` can close the first one's ephemeral listener, and the first fails with
+  `ECONNREFUSED`. Compute the body first, then build the request. The ledger spec's
+  determination request is the example.
+- **A recorded run's checkpoint history is read with `recordedHistory`.** `getStateHistory`
+  is a method of a compiled graph, not of the saver, so reading a run's checkpoints means
+  compiling its graph. `audit/replay-run.ts#recordedHistory` does that with nothing that
+  can run a node. `audit:replay` and the ledger's run digest both read through it.
 
 ### Live model quota
 
@@ -576,6 +586,12 @@ portfolio's, not counsel's.
   retried by `IO_RETRY`, because the retried node would pay for a second answer it could
   not record either. A new path that returns a recommendation or a determination takes the
   fail-closed policy.
+- **Every `pg` pool has an `error` listener.** An idle client whose server terminates it
+  emits `error` on the pool, and with no listener that is an uncaught exception that ends
+  the process: a database restart becomes a service crash. The ledger's pool, from
+  `createLedgerPool`, has one. `memory-core`'s pools do not yet, so a Postgres restart
+  under a running service is that crash today. The fix is a one-line listener, and it is
+  open.
 - **The ledger follows the same split (P3-C).** With `LEDGER_DATABASE_URL` set, `$submit`
   answers `503` when `run.recorded` or `disposition.recommended` cannot be appended, and
   enqueues no case. The determination route answers `503` and leaves the case pended when
