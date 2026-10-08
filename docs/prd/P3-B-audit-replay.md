@@ -2,11 +2,11 @@
 id: P3-B
 title: Deterministic replay for audit reconstruction
 tier: 3
-status: accepted
+status: in-progress
 size: L
 depends_on: [P2-A, P1-B]
 blocks: [P3-C]
-issue: null
+issue: 97
 superseded_by: null
 ---
 
