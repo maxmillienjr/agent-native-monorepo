@@ -12,6 +12,9 @@ import {
 import { HttpException } from '@nestjs/common';
 import { unlistedAttributeKeys } from '@repo/telemetry';
 import { InMemoryCaseRepository } from '@repo/memory-core';
+import { MemorySaver } from '@langchain/langgraph';
+import { InMemoryLedgerStore, Ledger, verifyChain } from '@repo/decision-ledger';
+import { RunLedger } from '../ledger/run-ledger.js';
 import { RunsService } from '../runs/runs.service.js';
 import { InMemoryRunRecords } from '../audit/memory-run-records.js';
 import { OperationOutcomeException, PriorAuthService } from './prior-auth.service.js';
@@ -268,5 +271,65 @@ describe('the run record on the prior-authorization path, which fails closed (P3
     await expect(
       recorded(records).submit(bundle('pa-e0601-all-met-structured'), 'corr-r4'),
     ).rejects.toMatchObject({ status: 503 });
+  });
+});
+
+describe('the ledger on the prior-authorization path, which fails closed (P3-C)', () => {
+  function ledgered(store: InMemoryLedgerStore, cases = new InMemoryCaseRepository()) {
+    const records = new InMemoryRunRecords();
+    const checkpointer = new MemorySaver();
+    const runs = new RunsService(null, null, null, null, null, records);
+    const runLedger = new RunLedger(new Ledger(store), records, checkpointer);
+    return {
+      records,
+      service: new PriorAuthService(
+        runs,
+        checkpointer,
+        { now: () => FIXED },
+        records,
+        cases,
+        runLedger,
+      ),
+    };
+  }
+
+  it('commits the run and its recommendation, and the case carries the recommendation’s seq', async () => {
+    const store = new InMemoryLedgerStore();
+    const cases = new InMemoryCaseRepository();
+
+    const run = await ledgered(store, cases).service.submit(
+      bundle('pa-e0601-ambiguous'),
+      'corr-l1',
+    );
+
+    const rows = await store.readRows();
+    expect(rows.entries.map((entry) => entry.kind)).toEqual([
+      'run.recorded',
+      'disposition.recommended',
+    ]);
+    const recommendation = JSON.parse(rows.payloads[1]!.payload) as Record<string, unknown>;
+    expect(recommendation).toMatchObject({ runId: run.caseId, runEntrySeq: 0 });
+    expect((await cases.get(run.caseId))?.recommendationSeq).toBe(1);
+    expect(verifyChain(rows).ok).toBe(true);
+  });
+
+  it('answers 503 and enqueues no case when the ledger cannot be written', async () => {
+    const store = new InMemoryLedgerStore();
+    store.transaction = () => Promise.reject(new Error('the ledger database is stopped'));
+    const cases = new InMemoryCaseRepository();
+    const { records, service: subject } = ledgered(store, cases);
+
+    const failure = await subject.submit(bundle('pa-e0601-ambiguous'), 'corr-l2').then(
+      () => undefined,
+      (error: unknown) => error,
+    );
+
+    expect((failure as HttpException).getStatus()).toBe(503);
+    expect((failure as HttpException).getResponse()).toMatchObject({
+      resourceType: 'OperationOutcome',
+      issue: [{ diagnostics: expect.stringContaining('decision ledger') }],
+    });
+    expect(await cases.queue(10)).toEqual([]);
+    expect(records.only().record.outcome).toBe('success');
   });
 });

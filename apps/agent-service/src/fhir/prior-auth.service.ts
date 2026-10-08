@@ -22,6 +22,8 @@ import type { PriorAuthState } from '../agent/prior-auth/state.js';
 import { recordingAssess } from '../agent/model/decision-seam.js';
 import { RunRecorder } from '../audit/run-recorder.js';
 import { RunRecordWriteError } from '../audit/persisting-deck.js';
+import { RUN_LEDGER } from '../ledger/ledger.tokens.js';
+import type { RunLedger } from '../ledger/run-ledger.js';
 
 const logger = createLogger('prior-auth');
 
@@ -61,17 +63,22 @@ export interface PriorAuthRun {
  * row is the payer's queue, not the tool's: the graph has finished before it
  * is written, and its order is the clock's alone (P3-E).
  *
- * Two writes fail closed on this path, in this order, and either failing
+ * Three writes fail closed on this path, in this order, and any failing
  * answers 503 with an `OperationOutcome` and no `ClaimResponse`:
  *
  * 1. The run record (P3-B): opened before the graph runs, appended to at each
  *    decision, closed when it ends. A decision that cannot be recorded is not
  *    returned.
- * 2. The case row (P3-E): written only after the record has closed. A pended
- *    response for a case no queue holds would be a request nobody reviews.
+ * 2. With a ledger configured, the ledger (P3-C): `run.recorded` committing
+ *    to the closed record, then `disposition.recommended` citing it. This
+ *    path returns a recommendation, so it fails closed, as decided at review;
+ *    the chat path fails open.
+ * 3. The case row (P3-E): written last, holding the recommendation's seq, so
+ *    the clinician's signature can cite it. A pended response for a case no
+ *    queue holds would be a request nobody reviews.
  *
  * The order is chosen for what each failure leaves behind. If the record
- * fails, no case exists, so the queue never holds a request the provider was
+ * or the ledger fails, no case exists, so the queue never holds a request the provider was
  * told nothing about. If the case write fails, the record of a finished run
  * stays with no case beside it: an audit of agent work whose answer was never
  * returned, which a resubmission does not duplicate in the queue. The other
@@ -93,6 +100,7 @@ export class PriorAuthService {
     @Inject(PRIOR_AUTH_CLOCK) private readonly clock: Clock,
     @Inject(RUN_RECORDS) runRecords: RunRecordRepository | null,
     @Inject(CASE_REPOSITORY) private readonly cases: CaseRepository,
+    @Inject(RUN_LEDGER) private readonly runLedger: RunLedger | null = null,
   ) {
     this.recorder = new RunRecorder(runRecords);
   }
@@ -156,7 +164,12 @@ export class PriorAuthService {
           ),
       );
     } catch (error) {
-      if (!(error instanceof RunRecordWriteError)) throw error;
+      if (!(error instanceof RunRecordWriteError)) {
+        // A run that failed returns no decision, so its commitment fails
+        // open, like the chat path's: logged, and listed by ledger:verify.
+        await this.runLedger?.commitRunOrLog(caseId, correlationId);
+        throw error;
+      }
       logger.error({ msg: 'prior-auth.unrecorded', correlationId, caseId, error: error.message });
       throw new OperationOutcomeException(
         HttpStatus.SERVICE_UNAVAILABLE,
@@ -172,12 +185,59 @@ export class PriorAuthService {
     }
 
     // After the record has closed: see the class comment for why this order.
-    await this.enqueue(run, body, correlationId);
+    const recommendationSeq = await this.commit(run, correlationId);
+    await this.enqueue(run, body, correlationId, recommendationSeq);
     return run;
   }
 
+  /**
+   * Commits the run and its recommendation to the ledger, and returns the
+   * recommendation's seq for the case row, or `null` with no ledger. Fails
+   * closed: a recommendation the ledger cannot hold is not returned.
+   */
+  private async commit(run: PriorAuthRun, correlationId: string): Promise<number | null> {
+    if (this.runLedger === null) return null;
+    const { caseId, state } = run;
+    try {
+      const recorded = await this.runLedger.commitRun(caseId);
+      if (recorded === null) throw new Error(`run ${caseId} has no record to commit to`);
+      if (state.disposition === undefined) {
+        throw new Error('a disposition is committed only after dispose');
+      }
+      const recommended = await this.runLedger.recommend(
+        caseId,
+        recorded.entry.seq,
+        state.disposition,
+      );
+      return recommended.entry.seq;
+    } catch (error) {
+      logger.error({
+        msg: 'prior-auth.uncommitted',
+        correlationId,
+        caseId,
+        errorType: errorType(error),
+      });
+      throw new OperationOutcomeException(
+        HttpStatus.SERVICE_UNAVAILABLE,
+        operationOutcome([
+          {
+            code: 'exception',
+            diagnostics:
+              'The request was received, but the decision ledger could not be written, so no ' +
+              'decision is returned. Submit it again.',
+          },
+        ]),
+      );
+    }
+  }
+
   /** Writes the case row, or answers 503 and returns nothing. */
-  private async enqueue(run: PriorAuthRun, body: unknown, correlationId: string): Promise<void> {
+  private async enqueue(
+    run: PriorAuthRun,
+    body: unknown,
+    correlationId: string,
+    recommendationSeq: number | null,
+  ): Promise<void> {
     const { caseId, state, response } = run;
     const { request, disposition } = state;
     if (request === undefined || disposition === undefined) {
@@ -203,8 +263,8 @@ export class PriorAuthService {
         request: body as Record<string, unknown>,
         disposition,
         response: response as unknown as Record<string, unknown>,
-        // P3-C's `disposition.recommended` seq, once a ledger is configured.
-        recommendationSeq: null,
+        // P3-C's `disposition.recommended` seq; null with no ledger.
+        recommendationSeq,
       });
     } catch (error) {
       logger.error({
