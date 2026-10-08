@@ -613,70 +613,74 @@ ones it is checked on.
 
 **Decision record**
 
-- [ ] The new ADR exists, is indexed in `docs/adr/README.md`, cites ADR 0010's revisit
+- [x] The new ADR exists, is indexed in `docs/adr/README.md`, cites ADR 0010's revisit
       clause, and states the refined trigger.
-- [ ] `git grep -nE 'interrupt\(|new Command\(' apps/agent-service/src` still matches
+- [x] `git grep -nE 'interrupt\(|new Command\(' apps/agent-service/src` still matches
       nothing.
 
 **Store and invariant**
 
-- [ ] `appeal.repo.contract.ts` passes against the Drizzle store (memory live) and the
+- [x] `appeal.repo.contract.ts` passes against the Drizzle store (memory live) and the
       in-memory store (memory unconfigured), covering: file on a denial; `not-appealable` on
       an automated approval, a clinician approval and a pended case; `already-open` for a
       second open appeal; a new filing accepted after a dismissal; queue order; reverse;
       affirm; dismiss; a byte-identical retry `unchanged`; a different action `conflict`.
-- [ ] On memory live, an `INSERT` naming an `initial_reviewer_id` other than the case's fails
+- [x] On memory live, an `INSERT` naming an `initial_reviewer_id` other than the case's fails
       `prior_auth_appeals_initial`; an `UPDATE` setting `reviewer_id` to the initial reviewer
       fails `prior_auth_appeals_not_involved`; and an `UPDATE` of the case's `reviewer_id`
       under an appeal fails the foreign key. Each by raw SQL, not through the repository.
-- [ ] `determination.test-d.ts` fails `yarn turbo typecheck` if an object literal satisfies
-      `Reconsideration`, or if `AppealRepository['reconsider']` accepts a
-      `ReconsiderationRecord`.
-- [ ] `attestReconsideration` throws `InvolvedReviewerError` when the attestation's
+- [x] `determination.test-d.ts` fails `yarn turbo typecheck` if an object literal satisfies
+      `Reconsideration`.
+- [x] `appeal.repo.test-d.ts` in `memory-core` fails `yarn turbo typecheck` if
+      `AppealRepository['reconsider']` accepts a `ReconsiderationRecord`. Split from the
+      criterion above at implementation: `determination.test-d.ts` cannot import
+      `memory-core`, which depends on it.
+- [x] `attestReconsideration` throws `InvolvedReviewerError` when the attestation's
       `reviewerId` is the initial denial's, and `ReconsiderationRecordSchema` rejects a stored
       record whose two reviewer ids are equal. Unit, no axis.
-- [ ] Twenty concurrent reconsiderations with distinct signatures on one filed appeal yield
+- [x] Twenty concurrent reconsiderations with distinct signatures on one filed appeal yield
       one success and nineteen conflicts. Memory live and memory unconfigured.
 
 **Clocks**
 
-- [ ] With the clock fixed, a standard appeal received `2026-03-01T10:00:00Z` is not lapsed at
+- [x] With the clock fixed, a standard appeal received `2026-03-01T10:00:00Z` is not lapsed at
       `2026-03-31T09:59:59Z` and is lapsed at `2026-03-31T10:00:00Z`; an expedited one is
       lapsed at `2026-03-04T10:00:00Z`.
-- [ ] A denial decided `2026-03-01T15:00:00Z` has a filing deadline of `2026-05-05T23:59:59.999Z`
+- [x] A denial decided `2026-03-01T15:00:00Z` has a filing deadline of `2026-05-05T23:59:59.999Z`
       (65 days, end of the UTC day); with `noticeReceivedAt` `2026-03-20`, `2026-05-19T23:59:59.999Z`;
       with a `noticeReceivedAt` earlier than the presumption, the presumed deadline.
-- [ ] `appeal-clock.test-d.ts` fails typecheck if `reconsiderationDueBy` gains a parameter.
-- [ ] Two appeal sets with identical clocks and opposite findings come back from
+- [x] `appeal-clock.test-d.ts` fails typecheck if `reconsiderationDueBy` gains a parameter.
+- [x] Two appeal sets with identical clocks and opposite findings come back from
       `GET /review/appeals` in the same order. Memory unconfigured.
 
 **Routes** (memory live and memory unconfigured, ledger unconfigured, auth open)
 
-- [ ] A filing on a denied case returns `201`, and the appeal is `filed` with the computed
+- [x] A filing on a denied case returns `201`, and the appeal is `filed` with the computed
       deadlines. A filing past the window returns `201` with `timely: false`.
-- [ ] A physician's standard filing without `enrolleeNotified: true` returns `400`. A filing
+- [x] A physician's standard filing without `enrolleeNotified: true` returns `400`. A filing
       with `expedite.requested: true` is `expedited`.
-- [ ] A reversal signed by a physician key other than the initial reviewer's returns `200`; the
+- [x] A reversal signed by a physician key other than the initial reviewer's returns `200`; the
       case's `response` is the reversal's; `$inquire` then returns `outcome: complete` with a
       `preAuthRef` for that case; and the case's `determination`, `reviewer_id` and
       `signature` are unchanged.
-- [ ] An affirmation returns `200` with the denial still in force, and the appeal is
+- [x] An affirmation returns `200` with the denial still in force, and the appeal is
       `forwarded` with `forward_reason = 'affirmed'`, `forwarded_at` equal to `decided_at`,
       and a `case_file_digest` equal to the digest `GET …/case-file` recomputes.
-- [ ] Each gets the stated status and leaves the appeal `filed`: the initial reviewer's own
+- [x] Each gets the stated status and leaves the appeal `filed`: the initial reviewer's own
       valid signature `403`; a non-physician credential type `403`; P3-E's signature over the
       initial determination presented as a reconsideration `401`; a signature over another
       appeal id `401`; an untimely appeal reconsidered without `goodCauseFound` `400`; an
       `untimely` dismissal of a timely appeal `400`.
-- [ ] With the clock past an appeal's deadline and no sweep run, a reconsideration returns
+- [x] With the clock past an appeal's deadline and no sweep run, a reconsideration returns
       `409` and the appeal is `forwarded` with `deadline-lapsed`.
-- [ ] Two sweeps over one lapsed appeal forward it once and emit one `review.appeal.forwarded`
+- [x] Two sweeps over one lapsed appeal forward it once and emit one `review.appeal.forwarded`
       event. Memory live.
-- [ ] The rationale sentinel from a stub `assess` appears in `GET /review/appeals/:id` and in
+- [x] The rationale sentinel from a stub `assess` appears in `GET /review/appeals/:id` and in
       the case file, and in no FHIR response, the reversal's included.
-- [ ] `GET /fhir/metadata` is unchanged, and P3-D's `fhir-validate.yml` validates the captured
-      reversal response against base R4 with zero errors.
-- [ ] Ledger configured (checkable once P3-C has shipped; until then open with owner P3-C):
+- [x] `GET /fhir/metadata` is unchanged.
+- [ ] P3-D's `fhir-validate.yml` validates the captured reversal response against base R4
+      with zero errors.
+- [x] Ledger configured (checkable once P3-C has shipped; until then open with owner P3-C):
       each action appends its entry; `ledger:verify` exits 0, and exits non-zero on a chain
       whose `reconsideration.attested` key resolves to the cited determination's reviewer.
       With the ledger's database stopped, a reconsideration returns `503` and the appeal
@@ -687,16 +691,141 @@ ones it is checked on.
 
 **Bookkeeping**
 
-- [ ] `docs/STATUS.md` has a row for reconsideration, citing `appeal.e2e-spec.ts` by test
+- [x] `docs/STATUS.md` has a row for reconsideration, citing `appeal.e2e-spec.ts` by test
       title and stating that `forwarded` is a record, not a delivery.
-- [ ] `CTL-HUM-03` moves from `planned` to `implemented` with a test anchor, and
+- [x] `CTL-HUM-03` moves from `planned` to `implemented` with a test anchor, and
       `governance/CONTROLS.md` is regenerated.
-- [ ] `.context/architecture.md` lists the appeal routes, and "Before real data" lists the
+- [x] `.context/architecture.md` lists the appeal routes, and "Before real data" lists the
       appeal table's filer, statement and evidence columns and the case file, with retention,
       encryption and access as owned items.
-- [ ] Every fixture filer and reviewer is labelled synthetic, and `lint-data.mjs` passes.
-- [ ] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
+- [x] Every fixture filer and reviewer is labelled synthetic, and `lint-data.mjs` passes.
+- [x] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
       pass.
+
+## What shipped, and where it diverged
+
+_Recorded 2026-10-08, on the branch for #112._ Every ticked criterion was verified on model
+`stub` with no `generateContent` call. The memory-live and ledger criteria ran against
+throwaway `pgvector/pgvector:pg16` and `neo4j:5-community` containers, removed afterwards.
+`apps/agent-service/test/appeal.e2e-spec.ts` passed 27 of 27 across both memory axes:
+unconfigured under `yarn turbo test:service`, and live too under
+`yarn turbo test:integration`. On the same run `memory-core`'s integration suite passed 82 of
+82, with both stores held to the appeal contract. The ledger package's suite passed 14 of 14,
+the service's Vitest integration suites 38 of 38, and the service's Jest specs 61 of 61 live.
+
+**Built as designed.** ADR 0015 narrows ADR 0010's revisit trigger and leaves ADR 0010
+unedited. `prior_auth_appeals` is migration `0004`, the next free number on `main`. P3-C's
+ledger migrates its own tables with its own runner, so nothing collided. `AppealRepository`
+has a Drizzle store and an in-memory one over the in-memory case store's lock, held to one
+contract. The branded `Reconsideration` and `attestReconsideration` sit beside P3-A's
+constructor behind `./clinician`. The clocks are in `appeal-clock.ts`, policies gained
+`reconsiderationCredentials` and `requestType`, and plans gained `lineOfBusiness`. The six
+routes are in `src/review/appeal.*`, `toReconsideredResponse` builds the reversal, and the
+sweep forwards lapsed appeals. No graph node was added, and
+`git grep -nE 'interrupt\(|new Command\(' apps/agent-service/src` matches nothing.
+
+**The non-involved reviewer, four times.** Shown on 2026-10-08, each refusing the reviewer
+who signed the denial:
+
+1. **The type.** `attestReconsideration` throws `InvolvedReviewerError`
+   (`reconsideration.test.ts`). An object literal is not a `Reconsideration`, and
+   `AppealRepository.reconsider` does not accept the reader schema's record. Both fail
+   typecheck, and removing the brand from `reconsider` was shown to produce 4 errors.
+2. **The route.** The initial reviewer's own valid signature is `403`, and so is the same
+   reviewer under a second registered key and credential, because the comparison is by
+   reviewer id (`appeal.e2e-spec.ts`, both axes).
+3. **Postgres.** By raw SQL, an appeal naming another reviewer fails
+   `prior_auth_appeals_initial`. A complete reversal written as the initial reviewer fails
+   `prior_auth_appeals_not_involved`, and the same write as another reviewer succeeds.
+   Rewriting the case's `reviewer_id` under an appeal fails the foreign key
+   (`cases.integration.test.ts`).
+4. **The ledger, from the chain alone.** A reconsideration signed by a second key registered
+   to the denier is refused on append with check `involvement`. Planted by the table's
+   owner, it makes `ledger:verify --chain-only` exit 1 `FAILED at seq N (involvement)`
+   (`agent-service/test/ledger.integration.test.ts`).
+
+**P3-C landed first, so this PRD wired the ledger.** The four kinds are in
+`@repo/decision-ledger`, judged by `ChainState` on append and in `verifyChain`. Every appeal
+write appends in the store's `beforeCommit`, so a failed append leaves the appeal as it was
+and the route answers 503. Where the payloads differ from Design:
+
+- **`appealSeq`.** `reconsideration.attested`, `appeal.dismissed` and `appeal.forwarded` cite
+  the filing by seq as well as by `appealId`. A withheld filing still leaves a reference
+  whose kind can be checked, as a withheld recommendation does in P3-C.
+- **`appeal.dismissed` carries the signed dismissal**, not only its reason, so the ledger can
+  check its signature. It carries `caseId` and `determinationSeq` too, because the
+  non-involvement check applies to a dismissal as well.
+- **`appeal.forwarded` carries `caseId` and `appealSeq`**, so the Postgres fold can find the
+  appeal's earlier entries by case.
+- **The record's shape without its refinement.** The payload parses the reconsideration with
+  P3-A's schema minus the rule that two reviewer ids differ. Otherwise a planted entry would
+  fail as an unparseable payload, and the verifier would never name the involvement it is
+  there to catch.
+- **`Ledger.find(entryId)`** is new. It is how the service learns the seqs to cite, through
+  the derived ids of the case's determination and the appeal's filing. An appeal on a case
+  decided before the ledger was configured has no entry to cite, and is refused closed.
+
+**Other divergences.**
+
+- **`goodCauseFound` is in the `ReconsiderationRecord`**, because it is in what the physician
+  signs, and a stored record should reproduce the signed body.
+- **`prior_auth_appeals` has a `dismissal` `jsonb` column** beside `dismissal_reason`, which
+  holds the signed dismissal. A sixth CHECK, `prior_auth_appeals_signed_record`, makes the
+  reviewer in each signed record agree with `reviewer_id` and the initial reviewer agree
+  with `initial_reviewer_id`.
+- **The store takes the initial reviewer from the case.** `NewAppeal` has no
+  `initialReviewerId`, so a caller cannot name the wrong one. Filing accepts any adverse
+  determination, a partial approval included, though the route never issues one.
+- **The case file is built in `memory-core` from the two rows**, `caseFileOf`, rather than
+  passed to `forwardLapsed` as a callback. **It holds no instant the forward sets.** The
+  ledger made that necessary. A forward appends before it commits, and a retry after a
+  crash between the two must append byte-identical bytes under the same derived id. A
+  digest that covered `forwarded_at` would differ on every retry, and the appeal would never
+  be forwarded.
+- **`forwardLapsed` takes each appeal in its own transaction under a row lock.** Design had
+  one conditional update for all of them. The ledger append has to see the row the update
+  changes, and a refused append has to leave that one appeal filed. With `onError`, a
+  refused forward is reported and the sweep goes on, so one appeal the ledger cannot cite
+  does not hold back every later one.
+- **`beforeCommit` receives the row about to be written**, so an affirmation's append can
+  carry its forward's digest.
+- **The bodies are `{ reconsideration, reviewerKeyId, signature }` and
+  `{ dismissal, reviewerKeyId, signature }`**, and the signed `body` is the inner object
+  exactly. A dismissal carries an attestation, checked against the key like a
+  reconsideration's.
+- **`noticeReceivedAt` takes a date or a date-time**, as the criterion's `2026-03-20` needs.
+- **`AppealView.case` is P3-E's whole `CaseView`**, its determination `signing` block
+  included, beside the appeal's own `signing`.
+- **Nine span attributes were added to the allowlist.** They are the appeal id, its status
+  and timeliness, the reconsideration's kind, the forward's reason, and the queue, lapsed,
+  forwarded and failed-forward counts. None is the filer, a statement or an explanation.
+
+**Checks the design did not state.**
+
+- `priority` must agree with `expedite.requested`, and `timely` with the receipt and the
+  deadline, or the store refuses the filing.
+- The store refuses a reconsideration whose initial reviewer is not the appeal's, or whose
+  signer is not the attestation's reviewer. A dismissal by the initial reviewer throws in
+  the store too, under the route's 403.
+- A `409` on an appeal already forwarded by a lapse says so, distinct from one decided
+  otherwise.
+
+**What the docs should have said.** Four things had to be worked out here, and each is now
+written down.
+
+- `test:integration` names each Jest spec, so a new spec runs live in CI only if it is added
+  there by name (`.context/conventions.md`, Testing). The drafter flagged this.
+- A spec that captures FHIR also has to be in `fhir-validate.yml`'s `paths`, or a change to it
+  alone never runs the validator (`.context/conventions.md`, Payer Data).
+- A ledger append made before a commit needs a payload with no per-attempt instant, or a
+  retry conflicts with its first attempt. That is now in ADR 0015 and in `caseFileOf`'s
+  comment.
+- After a rebase that adds a workspace, `yarn install` has to run again. In a nested
+  worktree the missing link otherwise resolves to the outer checkout's older copy
+  (`.context/conventions.md`, Dependencies).
+
+**Left open.** The auth criterion is P5-A's. The validator criterion is ticked when
+`fhir-validate.yml` passes on this PR.
 
 ## Risks and open questions
 

@@ -496,6 +496,14 @@ FreeTSA, and the PR records the outputs.
   request can find its listener closed. The service spec signs before it builds the
   determination request, and the conventions now say so.
 
+**Amended by P3-F, 2026-10-08.** P3-C landed before P3-F, so P3-F added the four appeal kinds
+its PRD names: `appeal.filed`, `reconsideration.attested`, `appeal.dismissed` and
+`appeal.forwarded`. The union is nine kinds. `ChainState` gained a fourth check,
+`involvement`: a reconsideration or dismissal signed by a key registered to the reviewer who
+made the cited determination is refused on append and fails the verifier. `Ledger.find`
+returns an entry by its derived id. The Postgres fold also reads the appeal entries on a
+payload's case. P3-F's "What shipped" records where the payloads differ from its design.
+
 ## Risks and open questions
 
 - **Sized `L`, not the index's `M`.** A package with its own migrations and role, a
