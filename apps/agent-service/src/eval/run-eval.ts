@@ -40,6 +40,7 @@ import {
   gitHead,
   recordingDecks,
   replayDecks,
+  watchForCaseBoardCalls,
   watchForModelRequests,
   type TrialDecks,
 } from './cassette-deps.js';
@@ -196,6 +197,12 @@ async function runSuite<TOutcome>(
               logger.error({ msg: 'eval.replay.live-call', target }),
             )
           : () => [];
+      const boardCalls =
+        mode === 'replay'
+          ? watchForCaseBoardCalls((operation) =>
+              logger.error({ msg: 'eval.replay.case-board', operation }),
+            )
+          : () => [];
       const { suite, decks, replay, models } = prepare(definition, mode, trials, axes);
       if (replay !== undefined) progress.replay = replay;
 
@@ -288,6 +295,15 @@ async function runSuite<TOutcome>(
         if (reached.length > 0) {
           throw new Error(
             `replay made ${reached.length} request(s) to ${MODEL_HOST}: ${reached.join(', ')}`,
+          );
+        }
+
+        // And for effects: a replayed run that reached the case board ran a
+        // records request the recording had already made.
+        const effects = boardCalls();
+        if (effects.length > 0) {
+          throw new Error(
+            `replay reached the case board ${effects.length} time(s): ${effects.join(', ')}`,
           );
         }
 

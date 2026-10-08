@@ -1,0 +1,58 @@
+{
+  "id": "tool-use-002",
+  "description": "A request that needs the compensable tool: ask for missing records on a synthetic case",
+  "retrievalPath": "vector",
+  "requires": { "model": ["live", "replay"] },
+  "budgets": { "inputTokens": 2200, "outputTokens": 8500, "modelCalls": 5 },
+  "notes": "P4-C's task. It is the first one whose tool has an effect: request-records opens a records request on SyntheticCaseBoard, an in-process board seeded with three invented case ids, and is compensable because the request can be withdrawn. PA-100002 is one of the three, so a schema-valid call succeeds and the run ends with the effect applied and nothing compensated. Graded on tool_trajectory_recall, which needs the call to have been made and to have succeeded; an input the schema refuses is recorded as an error and aborts the loop, so the trial fails rather than scoring a bad call as a good one. The case and document names are generic, inside ADR 0003. requires names live and replay for the reason tool-use-001's does: the stub model's selectTool returns null for every input. Its token budgets are provisional: P1-F's rule derives them from a recording, and until P4-C's re-record makes one they are tool-use-001's, the nearest task in shape. modelCalls is 2 + maxSteps by the rule. No axis checks them before the recording, because the stub axis skips the task and replay needs its cassette. On replay the board is never reached, because act.tool is served from the cassette.",
+  "input": {
+    "sessionId": "550e8400-e29b-41d4-a716-4466554400d0",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Case PA-100002 is missing the clinical notes and the imaging report. Ask the provider to send both within 7 days."
+      }
+    ],
+    "config": {
+      "maxSteps": 3,
+      "topK": 10
+    }
+  },
+  "expectedSeeds": {
+    "neo4j": [
+      {
+        "id": "concept-records",
+        "label": "Concept Records",
+        "description": "A generic test concept for the records-request task."
+      }
+    ],
+    "pgvector": [
+      {
+        "contentHash": "sha256-eval-fact-003",
+        "text": "A reviewer may ask the provider for missing documents before deciding a case.",
+        "episodeId": "550e8400-e29b-41d4-a716-4466554400d1",
+        "sessionId": "550e8400-e29b-41d4-a716-4466554400d0"
+      }
+    ],
+    "relationships": []
+  },
+  "expectedOutcome": "success",
+  "assertions": {
+    "retrievedContextMinLength": 1,
+    "outcomeMustBe": "success",
+    "tokenCountsPositive": true,
+    "episodicRowsMin": 1,
+    "mergedConceptsMin": 1
+  },
+  "expectedTrajectory": {
+    "nodes": ["ingress", "retrieve", "plan", "act", "distill", "reflect", "egress"],
+    "toolCalls": ["request-records"],
+    "thresholds": {
+      "trajectory_in_order_match": 1,
+      "trajectory_recall": 1,
+      "trajectory_precision": 0,
+      "tool_trajectory_recall": 1,
+      "tool_trajectory_precision": 0
+    }
+  }
+}

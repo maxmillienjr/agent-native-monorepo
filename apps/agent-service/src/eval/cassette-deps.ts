@@ -23,7 +23,7 @@ import {
 } from '@repo/telemetry';
 import type { EvidenceItem, PolicyCriterion } from '@repo/prior-auth';
 import { CHAT_MODEL, type ModelDeps } from '../runs/runs.service.js';
-import type { CaseBoard } from '../agent/tools/case-board.js';
+import { CASE_BOARD_CHANNEL, type CaseBoard } from '../agent/tools/case-board.js';
 import { defaultRegistry, defineRegistry, type ToolRegistry } from '../agent/tools/registry.js';
 import type { ToolSelectionRequest } from '../agent/tools/selection.js';
 import type { CompensableTool, ToolDefinition } from '../agent/tools/types.js';
@@ -519,6 +519,26 @@ export function watchForModelRequests(onViolation: (target: string) => void): ()
     const target = `${origin}${String(request?.path ?? '')}`;
     violations.push(target);
     onViolation(target);
+  });
+
+  return () => violations;
+}
+
+/**
+ * Every operation any case board in the process performed, collected.
+ *
+ * The same claim as `watchForModelRequests`, for effects: a replayed run serves
+ * `act.tool` and `act.compensate` from its cassette, so it never opens or
+ * withdraws a request. The board publishes each operation, so this sees the
+ * Nest-provided board and any other, not only the one replay was wired with.
+ */
+export function watchForCaseBoardCalls(onViolation: (operation: string) => void): () => string[] {
+  const violations: string[] = [];
+
+  subscribe(CASE_BOARD_CHANNEL, (message) => {
+    const operation = String((message as { operation?: unknown }).operation ?? 'unknown');
+    violations.push(operation);
+    onViolation(operation);
   });
 
   return () => violations;

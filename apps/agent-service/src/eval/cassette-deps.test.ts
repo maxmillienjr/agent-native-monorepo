@@ -34,6 +34,7 @@ import {
   replayDecks,
   replayModelDeps,
   tokenCountsFor,
+  watchForCaseBoardCalls,
   watchForModelRequests,
 } from './cassette-deps.js';
 
@@ -585,6 +586,21 @@ describe('the no-live-call watcher', () => {
     });
 
     expect(violations()).toEqual([`https://${MODEL_HOST}/v1beta/models/x:generateContent`]);
+    expect(seen).toEqual(violations());
+  });
+
+  it('collects every case-board operation, from any board in the process', async () => {
+    const seen: string[] = [];
+    const violations = watchForCaseBoardCalls((operation) => seen.push(operation));
+
+    const board = new SyntheticCaseBoard();
+    const { requestId } = await board.openRequest(
+      { caseId: 'PA-100001', documents: ['lab-results'], dueInDays: 5 },
+      'run-1:0',
+    );
+    await board.withdrawRequest(requestId, 'run-1:0');
+
+    expect(violations()).toEqual(['openRequest', 'withdrawRequest']);
     expect(seen).toEqual(violations());
   });
 

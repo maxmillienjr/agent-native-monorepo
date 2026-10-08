@@ -235,7 +235,7 @@ describe('the shipped dataset', () => {
     expect(narrowed.tasks.map((t) => t.id)).toEqual(['memory-recall-001', 'tool-use-001']);
     expect(narrowed.name).toBe('memory-recall [memory-recall-001, tool-use-001]');
     expect(readTaskFilter({})).toBeUndefined();
-    expect(selectTasks(loadMemoryRecallSuite(), undefined).tasks).toHaveLength(2);
+    expect(selectTasks(loadMemoryRecallSuite(), undefined).tasks).toHaveLength(3);
   });
 
   it('refuses an EVAL_TASKS id the suite does not hold', () => {
@@ -318,13 +318,15 @@ describe('the cassette directory', () => {
     }
   });
 
-  it('leaves the shipped suite at exactly two tasks', () => {
+  it('leaves the shipped suite at exactly its three tasks', () => {
     // The regression the subdirectory exists to prevent, asserted against the
     // real dataset rather than a fixture of it. P2-B's graph-recall-001 was
-    // the third until ADR 0009 took the graph out of retrieval.
+    // the third until ADR 0009 took the graph out of retrieval; P4-C's
+    // tool-use-002 is the third now.
     expect(loadMemoryRecallSuite().tasks.map((task) => task.id)).toEqual([
       'memory-recall-001',
       'tool-use-001',
+      'tool-use-002',
     ]);
     expect(cassettesDir(MEMORY_RECALL_DATASET_DIR)).toBe(
       join(MEMORY_RECALL_DATASET_DIR, 'cassettes'),
