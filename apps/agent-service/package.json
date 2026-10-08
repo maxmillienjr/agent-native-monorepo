@@ -15,6 +15,7 @@
     "test:unit": "vitest run",
     "eval": "node dist/eval/run-eval.js",
     "eval:retrieval": "node dist/eval/run-retrieval-ablation.js",
+    "eval:explanation": "node dist/eval/run-explanation.js",
     "eval:history": "node dist/eval/eval-history.js",
     "eval:promote-live": "node dist/eval/promote-live.js",
     "canary": "node dist/eval/canary/run-canary.js",
