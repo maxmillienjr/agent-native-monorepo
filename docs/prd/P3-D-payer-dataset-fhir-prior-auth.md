@@ -2,11 +2,11 @@
 id: P3-D
 title: Synthetic payer dataset and FHIR prior-authorization surface
 tier: 3
-status: accepted
+status: in-progress
 size: L
 depends_on: [P1-A, P1-B, P3-A]
 blocks: [P3-E]
-issue: null
+issue: 84
 superseded_by: null
 controls: [CTL-DATA-01]
 ---
