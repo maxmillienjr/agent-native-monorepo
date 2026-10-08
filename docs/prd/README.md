@@ -342,7 +342,7 @@ provider actually operates under. Uses synthetic data only.
 | --------------------------------------------- | ------------------------------------------------------------- | ---- | ----------- |
 | [P3-A](P3-A-clinician-gate.md)                | Clinician-gate invariant enforced in the type system          | S    | shipped     |
 | [P3-B](P3-B-audit-replay.md)                  | Deterministic replay for audit reconstruction                 | L    | shipped     |
-| [P3-C](P3-C-decision-ledger.md)               | Hash-chained, tamper-evident decision ledger                  | L    | accepted    |
+| [P3-C](P3-C-decision-ledger.md)               | Hash-chained, tamper-evident decision ledger                  | L    | in-progress |
 | [P3-D](P3-D-payer-dataset-fhir-prior-auth.md) | Synthetic payer dataset and FHIR prior-authorization surface  | L    | in-progress |
 | [P3-E](P3-E-clinician-review-queue.md)        | Clinician review queue, `$inquire` and the decision clock     | M    | shipped     |
 | [P3-F](P3-F-appeals-reconsideration.md)       | Appeals: reconsideration lifecycle for adverse determinations | M    | accepted    |

@@ -2,11 +2,11 @@
 id: P3-C
 title: Hash-chained, tamper-evident decision ledger
 tier: 3
-status: accepted
+status: in-progress
 size: L
 depends_on: [P3-A, P3-B]
 blocks: []
-issue: null
+issue: 108
 superseded_by: null
 controls: [CTL-AUD-01]
 ---
