@@ -18,3 +18,4 @@ export const RETRIEVAL_FACADE = 'RETRIEVAL_FACADE';
 export const CHECKPOINTER = 'CHECKPOINTER';
 /** The run record (P3-B). Not a memory tier; provided here because it shares the pool. */
 export const RUN_RECORDS = 'RUN_RECORDS';
+export const CASE_REPOSITORY = 'CASE_REPOSITORY';

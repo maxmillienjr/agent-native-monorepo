@@ -9,6 +9,6 @@ import { PRIOR_AUTH_CLOCK, PriorAuthService } from './prior-auth.service.js';
   imports: [RunsModule, MemoryModule],
   controllers: [FhirController],
   providers: [PriorAuthService, { provide: PRIOR_AUTH_CLOCK, useValue: systemClock }],
-  exports: [PriorAuthService],
+  exports: [PriorAuthService, PRIOR_AUTH_CLOCK],
 })
 export class FhirModule {}

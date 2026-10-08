@@ -11,9 +11,10 @@ import {
 } from '@opentelemetry/sdk-trace-base';
 import { HttpException } from '@nestjs/common';
 import { unlistedAttributeKeys } from '@repo/telemetry';
+import { InMemoryCaseRepository } from '@repo/memory-core';
 import { RunsService } from '../runs/runs.service.js';
 import { InMemoryRunRecords } from '../audit/memory-run-records.js';
-import { PriorAuthService } from './prior-auth.service.js';
+import { OperationOutcomeException, PriorAuthService } from './prior-auth.service.js';
 
 /**
  * The prior-authorization graph's spans and clock, model `stub` / memory
@@ -42,9 +43,9 @@ const bundle = (
 
 const FIXED = new Date('2026-03-01T10:00:00Z');
 
-function service(): PriorAuthService {
+function service(cases = new InMemoryCaseRepository()): PriorAuthService {
   const runs = new RunsService(null, null, null, null, null, null);
-  return new PriorAuthService(runs, null, { now: () => FIXED }, null);
+  return new PriorAuthService(runs, null, { now: () => FIXED }, null, cases);
 }
 
 const attribute = (spans: readonly ReadableSpan[], node: string, key: string): unknown =>
@@ -125,6 +126,39 @@ describe('the prior-authorization graph', () => {
     );
   });
 
+  it('enqueues the case before it answers, under the keys an inquiry matches', async () => {
+    const cases = new InMemoryCaseRepository();
+    const run = await service(cases).submit(bundle('pa-e0601-ambiguous'), 'corr-pa-7');
+
+    const row = await cases.get(run.caseId);
+    expect(row?.status).toBe('pended');
+    expect(row?.priority).toBe('expedited');
+    expect(row?.receivedAt.toISOString()).toBe('2026-03-01T10:00:00.000Z');
+    expect(row?.decisionDueBy.toISOString()).toBe('2026-03-04T10:00:00.000Z');
+    expect(row?.memberId).toMatch(/^https:\/\/example\.org\/fhir\/sid\/member-id\|/);
+    expect(row?.hcpcs).toBe('E0601');
+    expect(row?.disposition).toEqual(run.state.disposition);
+    expect(row?.response).toEqual(run.response);
+  });
+
+  it('answers 503 with an OperationOutcome when the case cannot be enqueued', async () => {
+    const cases = new InMemoryCaseRepository();
+    cases.enqueue = async () => {
+      throw new Error('the store is down');
+    };
+    const failed = await service(cases)
+      .submit(bundle('pa-e0601-ambiguous'), 'corr-pa-8')
+      .then(
+        () => undefined,
+        (error: unknown) => error,
+      );
+    expect(failed).toBeInstanceOf(OperationOutcomeException);
+    const exception = failed as OperationOutcomeException;
+    expect(exception.getStatus()).toBe(503);
+    expect(exception.getResponse()).toMatchObject({ resourceType: 'OperationOutcome' });
+    expect(JSON.stringify(exception.getResponse())).not.toContain('ClaimResponse');
+  });
+
   it('records the time it held the request on the dispose span', async () => {
     await service().submit(bundle('pa-k0823-one-missing'), 'corr-pa-6');
     // The clock is fixed, so the request was held for no time at all.
@@ -133,10 +167,54 @@ describe('the prior-authorization graph', () => {
 });
 
 describe('the run record on the prior-authorization path, which fails closed (P3-B)', () => {
-  function recorded(records: InMemoryRunRecords): PriorAuthService {
+  function recorded(
+    records: InMemoryRunRecords,
+    cases = new InMemoryCaseRepository(),
+  ): PriorAuthService {
     const runs = new RunsService(null, null, null, null, null, records);
-    return new PriorAuthService(runs, null, { now: () => FIXED }, records);
+    return new PriorAuthService(runs, null, { now: () => FIXED }, records, cases);
   }
+
+  it('closes the record before it enqueues the case (P3-E)', async () => {
+    const records = new InMemoryRunRecords();
+    const cases = new InMemoryCaseRepository();
+    const enqueue = cases.enqueue.bind(cases);
+    const outcomesSeen: (string | null)[] = [];
+    cases.enqueue = async (row) => {
+      outcomesSeen.push(records.only().record.outcome);
+      return enqueue(row);
+    };
+
+    const run = await recorded(records, cases).submit(bundle('pa-e0601-ambiguous'), 'corr-r5');
+    expect(outcomesSeen).toEqual(['success']);
+    expect((await cases.get(run.caseId))?.status).toBe('pended');
+  });
+
+  it('enqueues no case when the record fails (P3-E)', async () => {
+    for (const failOn of ['open', 'append', 'close'] as const) {
+      const records = new InMemoryRunRecords();
+      records.failOn = failOn;
+      const cases = new InMemoryCaseRepository();
+
+      await expect(
+        recorded(records, cases).submit(bundle('pa-e0601-ambiguous'), `corr-r6-${failOn}`),
+      ).rejects.toMatchObject({ status: 503 });
+      expect(await cases.queue(10), failOn).toEqual([]);
+    }
+  });
+
+  it('keeps the closed record of a run whose case could not be enqueued (P3-E)', async () => {
+    const records = new InMemoryRunRecords();
+    const cases = new InMemoryCaseRepository();
+    cases.enqueue = async () => {
+      throw new Error('the case store is down');
+    };
+
+    await expect(
+      recorded(records, cases).submit(bundle('pa-e0601-ambiguous'), 'corr-r7'),
+    ).rejects.toMatchObject({ status: 503 });
+    expect(records.only().record.outcome).toBe('success');
+  });
 
   it('records the bundle, the receipt time and the assessment', async () => {
     const records = new InMemoryRunRecords();

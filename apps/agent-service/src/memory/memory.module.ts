@@ -17,6 +17,7 @@ import {
   PgRunRecordRepository,
 } from '@repo/memory-core';
 import { readMemoryConfig, type MemoryConfig } from './memory.config.js';
+import { selectCaseRepository } from './case-repository.js';
 import {
   MEMORY_CONFIG,
   PG_POOL,
@@ -27,6 +28,7 @@ import {
   RETRIEVAL_FACADE,
   CHECKPOINTER,
   RUN_RECORDS,
+  CASE_REPOSITORY,
 } from './memory.tokens.js';
 
 const logger = createLogger('memory-module');
@@ -128,6 +130,15 @@ const logger = createLogger('memory-module');
         return saver;
       },
     },
+    {
+      // The prior-authorization case layer (P3-E, ADR 0010). Unlike every
+      // provider above, it is never null: the unconfigured axis gets a
+      // volatile in-process store and a warning, not a missing queue.
+      provide: CASE_REPOSITORY,
+      inject: [PG_POOL],
+      useFactory: (pool: pg.Pool | null) =>
+        selectCaseRepository(pool, (entry) => logger.warn(entry)),
+    },
   ],
   exports: [
     MEMORY_CONFIG,
@@ -137,6 +148,7 @@ const logger = createLogger('memory-module');
     RETRIEVAL_FACADE,
     CHECKPOINTER,
     RUN_RECORDS,
+    CASE_REPOSITORY,
   ],
 })
 export class MemoryModule implements OnModuleDestroy {

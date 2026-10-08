@@ -1,9 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import type { BaseCheckpointSaver } from '@langchain/langgraph';
-import { createLogger, withAgentSpan } from '@repo/telemetry';
+import { createLogger, errorType, withAgentSpan } from '@repo/telemetry';
 import {
   PolicyCatalogue,
+  decisionDueBy,
   loadPayer,
   operationOutcome,
   readSubmission,
@@ -13,8 +14,8 @@ import {
   type FhirBundle,
   type Payer,
 } from '@repo/prior-auth';
-import type { RunRecordRepository } from '@repo/memory-core';
-import { CHECKPOINTER, RUN_RECORDS } from '../memory/memory.tokens.js';
+import type { CaseRepository, RunRecordRepository } from '@repo/memory-core';
+import { CASE_REPOSITORY, CHECKPOINTER, RUN_RECORDS } from '../memory/memory.tokens.js';
 import { RunsService } from '../runs/runs.service.js';
 import { buildPriorAuthGraph } from '../agent/prior-auth/graph.js';
 import type { PriorAuthState } from '../agent/prior-auth/state.js';
@@ -51,13 +52,31 @@ export interface PriorAuthRun {
 
 /**
  * Runs `$submit`: reads the bundle, starts the clock, runs the graph inline
- * and maps its disposition to a `ClaimResponse`.
+ * under its run record, maps its disposition to a `ClaimResponse`, and
+ * enqueues the case before it answers.
  *
  * Synchronous on purpose. The agent's work is one model call, and a referral
  * happens in the same exchange that received the request, so the tool holds
- * nothing: no queue, no retry loop, no wait (P3-D's second SB 1120
- * invariant). A pended response is a complete answer to `$submit`; what
- * happens to the case afterwards is P3-E's.
+ * nothing: no retry loop, no wait (P3-D's second SB 1120 invariant). The case
+ * row is the payer's queue, not the tool's: the graph has finished before it
+ * is written, and its order is the clock's alone (P3-E).
+ *
+ * Two writes fail closed on this path, in this order, and either failing
+ * answers 503 with an `OperationOutcome` and no `ClaimResponse`:
+ *
+ * 1. The run record (P3-B): opened before the graph runs, appended to at each
+ *    decision, closed when it ends. A decision that cannot be recorded is not
+ *    returned.
+ * 2. The case row (P3-E): written only after the record has closed. A pended
+ *    response for a case no queue holds would be a request nobody reviews.
+ *
+ * The order is chosen for what each failure leaves behind. If the record
+ * fails, no case exists, so the queue never holds a request the provider was
+ * told nothing about. If the case write fails, the record of a finished run
+ * stays with no case beside it: an audit of agent work whose answer was never
+ * returned, which a resubmission does not duplicate in the queue. The other
+ * order would leave a pended case for a response that was never sent, and the
+ * provider's resubmission would queue the request twice.
  */
 @Injectable()
 export class PriorAuthService {
@@ -73,6 +92,7 @@ export class PriorAuthService {
     @Inject(CHECKPOINTER) private readonly checkpointer: BaseCheckpointSaver | null,
     @Inject(PRIOR_AUTH_CLOCK) private readonly clock: Clock,
     @Inject(RUN_RECORDS) runRecords: RunRecordRepository | null,
+    @Inject(CASE_REPOSITORY) private readonly cases: CaseRepository,
   ) {
     this.recorder = new RunRecorder(runRecords);
   }
@@ -100,8 +120,9 @@ export class PriorAuthService {
 
     logger.info({ msg: 'prior-auth.start', correlationId, caseId });
 
+    let run: PriorAuthRun;
     try {
-      return await withAgentSpan(
+      run = await withAgentSpan(
         { agentName: PRIOR_AUTH_AGENT_NAME, runId: caseId },
         async (agent) =>
           // Fail-closed (P3-B, decided at review): this path returns a
@@ -145,6 +166,61 @@ export class PriorAuthService {
             diagnostics:
               'The request was received, but its audit record could not be written, so no ' +
               'decision is returned. Submit it again.',
+          },
+        ]),
+      );
+    }
+
+    // After the record has closed: see the class comment for why this order.
+    await this.enqueue(run, body, correlationId);
+    return run;
+  }
+
+  /** Writes the case row, or answers 503 and returns nothing. */
+  private async enqueue(run: PriorAuthRun, body: unknown, correlationId: string): Promise<void> {
+    const { caseId, state, response } = run;
+    const { request, disposition } = state;
+    if (request === undefined || disposition === undefined) {
+      throw new Error('a case is enqueued only after dispose');
+    }
+    const receivedAt = new Date(state.receivedAt);
+    try {
+      await this.cases.enqueue({
+        caseId,
+        status: disposition.kind === 'automated-approval' ? 'approved-automated' : 'pended',
+        priority: request.priority,
+        receivedAt,
+        decisionDueBy:
+          state.decisionDueBy === undefined
+            ? decisionDueBy(receivedAt, request.priority)
+            : new Date(state.decisionDueBy),
+        memberId: request.memberId,
+        insurerId: request.insurerId,
+        providerId: request.providerId,
+        hcpcs: request.hcpcs,
+        // `readSubmission` accepted it, so it is a Bundle object: stored as
+        // received, not as the passthrough parse re-ordered it.
+        request: body as Record<string, unknown>,
+        disposition,
+        response: response as unknown as Record<string, unknown>,
+        // P3-C's `disposition.recommended` seq, once a ledger is configured.
+        recommendationSeq: null,
+      });
+    } catch (error) {
+      logger.error({
+        msg: 'prior-auth.enqueue.failed',
+        correlationId,
+        caseId,
+        errorType: errorType(error),
+      });
+      throw new OperationOutcomeException(
+        HttpStatus.SERVICE_UNAVAILABLE,
+        operationOutcome([
+          {
+            code: 'exception',
+            diagnostics:
+              'The request could not be recorded for review, so no response is issued. ' +
+              'Resubmit it.',
           },
         ]),
       );

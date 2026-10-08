@@ -10,9 +10,11 @@ import {
   ClaimResponseSchema,
   OperationOutcomeSchema,
 } from '@repo/prior-auth';
+import { InMemoryCaseRepository, type CaseRepository } from '@repo/memory-core';
 import { AppModule } from '../src/app.module.js';
 import { FHIR_JSON, configureApp } from '../src/configure-app.js';
 import { PRIOR_AUTH_CLOCK } from '../src/fhir/prior-auth.service.js';
+import { CASE_REPOSITORY } from '../src/memory/memory.tokens.js';
 import { RunsService } from '../src/runs/runs.service.js';
 
 /**
@@ -110,6 +112,8 @@ describe('FHIR prior-authorization surface (e2e)', () => {
   });
 
   it('pends every committed bundle on the stub model, and approves none', async () => {
+    const cases = moduleFixture.get<CaseRepository>(CASE_REPOSITORY);
+    expect(bundleFiles).toHaveLength(24);
     for (const file of bundleFiles) {
       const response = await submit(readBundle(file));
       expect(response.status).toBe(HttpStatus.OK);
@@ -118,6 +122,12 @@ describe('FHIR prior-authorization surface (e2e)', () => {
       const claimResponse = ClaimResponseSchema.parse(response.body.entry[0].resource);
       expect(claimResponse.outcome).toBe('queued');
       expect(claimResponse.preAuthRef).toBeUndefined();
+
+      // Each one leaves one case row, pended, holding the response it was given (P3-E).
+      const caseId = String(claimResponse.identifier?.[0]?.value);
+      const row = await cases.get(caseId);
+      expect(row?.status).toBe('pended');
+      expect(row?.response).toEqual(response.body);
     }
   }, 30_000);
 
@@ -167,6 +177,40 @@ describe('FHIR prior-authorization surface (e2e)', () => {
     ]);
     expect(operations).toEqual(['Claim/$submit']);
     expect(statement.description).toContain('shaped after Da Vinci PAS 2.2.1');
+  });
+
+  describe('with a case store that cannot write', () => {
+    let failing: NestExpressApplication;
+
+    beforeAll(async () => {
+      const broken = new InMemoryCaseRepository();
+      broken.enqueue = async () => {
+        throw new Error('the case store is down');
+      };
+      const fixture = await Test.createTestingModule({ imports: [AppModule] })
+        .overrideProvider(CASE_REPOSITORY)
+        .useValue(broken)
+        .compile();
+      failing = fixture.createNestApplication<NestExpressApplication>();
+      configureApp(failing);
+      await failing.init();
+    });
+
+    afterAll(async () => {
+      await failing.close();
+    });
+
+    it('answers 503 with an OperationOutcome and no ClaimResponse (P3-E)', async () => {
+      const response = await request(failing.getHttpServer())
+        .post('/fhir/Claim/$submit')
+        .set('Content-Type', FHIR_JSON)
+        .send(JSON.stringify(readBundle('pa-e0601-all-met-structured.bundle.json')));
+
+      expect(response.status).toBe(HttpStatus.SERVICE_UNAVAILABLE);
+      expect(OperationOutcomeSchema.safeParse(response.body).success).toBe(true);
+      expect(response.text).not.toContain('ClaimResponse');
+      capture('enqueue-failed.outcome.json', response.body);
+    });
   });
 
   describe('with an assess that writes a sentinel into every rationale', () => {

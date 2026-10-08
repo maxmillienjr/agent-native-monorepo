@@ -1,6 +1,7 @@
 import type { INestApplicationContext } from '@nestjs/common';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { loadPriorAuthSuite } from '@repo/eval-harness';
+import { InMemoryCaseRepository } from '@repo/memory-core';
 import { PriorAuthService } from '../fhir/prior-auth.service.js';
 import { RunsService } from '../runs/runs.service.js';
 import { PriorAuthHarness } from './prior-auth-harness.js';
@@ -31,6 +32,7 @@ describe('PriorAuthHarness', () => {
         now: () => new Date('2026-09-22T10:00:00Z'),
       },
       null,
+      new InMemoryCaseRepository(),
     );
     const context = { close: async () => {} } as unknown as INestApplicationContext;
     harness = new PriorAuthHarness(context, service, runs);
