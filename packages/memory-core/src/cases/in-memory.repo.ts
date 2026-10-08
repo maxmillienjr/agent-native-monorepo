@@ -129,6 +129,28 @@ export class InMemoryCaseRepository implements CaseRepository {
     );
   }
 
+  /**
+   * Runs `fn` holding this case's mutex, with the row as it is now and a way
+   * to replace it. It is how `InMemoryAppealRepository` shares this store's
+   * lock (P3-F): an appeal and its case are written under one mutex, as a
+   * Postgres transaction holds both rows. `fn` reads and writes copies.
+   */
+  async transact<T>(
+    caseId: string,
+    fn: (row: CaseRow | undefined, write: (next: CaseRow) => void) => Promise<T>,
+  ): Promise<T> {
+    const key = caseId.toLowerCase();
+    return this.withLock(key, async () => {
+      const row = this.rows.get(key);
+      return fn(row === undefined ? undefined : copy(row), (next) => {
+        const parsed = CaseRowSchema.parse(structuredClone(next));
+        if (parsed.caseId !== key)
+          throw new Error(`a write under ${key}'s lock names another case`);
+        this.rows.set(key, parsed);
+      });
+    });
+  }
+
   /** Runs `fn` after every earlier holder of this case's lock has finished. */
   private async withLock<T>(caseId: string, fn: () => Promise<T>): Promise<T> {
     const previous = this.locks.get(caseId) ?? Promise.resolve();

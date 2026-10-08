@@ -45,6 +45,41 @@ export {
   type OverdueCase,
 } from './cases/index.js';
 
+// Appeals (P3-F): requests for reconsideration of a denied case, beside the
+// case they reference, with the same two stores.
+export {
+  priorAuthAppeals,
+  AppealStatusSchema,
+  ForwardReasonSchema,
+  DismissalReasonSchema,
+  FilerSchema,
+  AppealRequestSchema,
+  DismissalSchema,
+  SignedActionSchema,
+  NewAppealSchema,
+  AppealRowSchema,
+  LAPSE_EXPLANATION,
+  caseFileOf,
+  caseFileDigest,
+  DrizzleAppealRepository,
+  InMemoryAppealRepository,
+  type AppealStatus,
+  type ForwardReason,
+  type DismissalReason,
+  type Filer,
+  type Dismissal,
+  type SignedAction,
+  type NewAppeal,
+  type AppealRow,
+  type FileResult,
+  type ActionResult,
+  type ActionOptions,
+  type ReconsiderOptions,
+  type FileOptions,
+  type ForwardedAppeal,
+  type AppealRepository,
+} from './cases/index.js';
+
 // Semantic Memory — the embedding dimension every schema and DDL derives from
 export { EMBEDDING_DIMENSIONS, EMBEDDING_MODEL, l2Normalize } from './semantic/embedding.js';
 

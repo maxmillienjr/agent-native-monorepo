@@ -12,8 +12,8 @@ const MIGRATIONS_FOLDER = fileURLToPath(new URL('../migrations', import.meta.url
 
 /**
  * Applies every pending migration for `episodes`, `semantic_facts`, the run
- * record's `run_records` and `run_decisions` (P3-B), and `prior_auth_cases`
- * (P3-E).
+ * record's `run_records` and `run_decisions` (P3-B), `prior_auth_cases`
+ * (P3-E) and `prior_auth_appeals` (P3-F).
  *
  * This is the only DDL for those tables. Before it existed the schema was
  * hand-rolled in five places — two integration tests, the eval seed script and

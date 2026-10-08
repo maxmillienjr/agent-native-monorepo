@@ -24,7 +24,7 @@ export const CasePrioritySchema = z.enum(['expedited', 'standard']);
  * every one the service spec creates; the tag check does not. The output is a
  * fresh `Date` in this realm.
  */
-const InstantSchema = z
+export const InstantSchema = z
   .custom<Date>(
     (value) =>
       Object.prototype.toString.call(value) === '[object Date]' &&
@@ -34,7 +34,7 @@ const InstantSchema = z
   .transform((value) => new Date(value.getTime()));
 
 /** A FHIR document as received or issued. The service parses it; this layer stores it. */
-const DocumentSchema = z.record(z.unknown());
+export const DocumentSchema = z.record(z.unknown());
 
 /**
  * What `$submit` writes, before it answers.
@@ -45,7 +45,7 @@ const DocumentSchema = z.record(z.unknown());
  * referral cannot be enqueued as an approval or the reverse.
  */
 /** A case id in the canonical lower-case form Postgres returns, so both stores sort it alike. */
-const CaseIdSchema = z
+export const CaseIdSchema = z
   .string()
   .uuid()
   .refine((id) => id === id.toLowerCase(), { message: 'a case id is lower-case' });
@@ -222,7 +222,7 @@ export function classifyDecision(
 
 type CaseRecord = typeof priorAuthCases.$inferSelect;
 
-function toRow(record: CaseRecord): CaseRow {
+export function toRow(record: CaseRecord): CaseRow {
   return CaseRowSchema.parse({
     ...record,
     recommendationSeq: record.recommendationSeq ?? null,

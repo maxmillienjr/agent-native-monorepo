@@ -1,4 +1,4 @@
-export { priorAuthCases } from './schema.js';
+export { priorAuthCases, priorAuthAppeals } from './schema.js';
 export {
   CaseStatusSchema,
   NewCaseSchema,
@@ -17,3 +17,34 @@ export {
   type OverdueCase,
 } from './case.repo.js';
 export { InMemoryCaseRepository } from './in-memory.repo.js';
+export {
+  AppealStatusSchema,
+  ForwardReasonSchema,
+  DismissalReasonSchema,
+  FilerSchema,
+  AppealRequestSchema,
+  DismissalSchema,
+  SignedActionSchema,
+  NewAppealSchema,
+  AppealRowSchema,
+  LAPSE_EXPLANATION,
+  caseFileOf,
+  caseFileDigest,
+  DrizzleAppealRepository,
+  type AppealStatus,
+  type ForwardReason,
+  type DismissalReason,
+  type Filer,
+  type Dismissal,
+  type SignedAction,
+  type NewAppeal,
+  type AppealRow,
+  type FileResult,
+  type ActionResult,
+  type ActionOptions,
+  type ReconsiderOptions,
+  type FileOptions,
+  type ForwardedAppeal,
+  type AppealRepository,
+} from './appeal.repo.js';
+export { InMemoryAppealRepository } from './in-memory.appeal.repo.js';
