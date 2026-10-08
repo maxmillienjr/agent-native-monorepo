@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createPrivateKey, randomUUID } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { ReviewerRegistry, ReviewerRegistryEntrySchema } from './registry.js';
 import { signedBytes, verifySignature } from './signature.js';
@@ -12,7 +12,7 @@ describe('the demo signer', () => {
       credential: { type: 'synthetic-physician', jurisdiction: 'synthetic-jurisdiction' },
     });
     expect(ReviewerRegistryEntrySchema.parse(entry)).toEqual(entry);
-    expect(privateKeyPem).toContain('BEGIN PRIVATE KEY');
+    expect(createPrivateKey(privateKeyPem).asymmetricKeyType).toBe('ed25519');
 
     const caseId = randomUUID();
     const determination = {
