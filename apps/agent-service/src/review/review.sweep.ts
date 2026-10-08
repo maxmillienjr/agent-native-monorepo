@@ -1,9 +1,14 @@
 import { Inject, Injectable, type OnModuleDestroy, type OnModuleInit } from '@nestjs/common';
 import { z } from 'zod';
-import type { CaseRepository, OverdueCase } from '@repo/memory-core';
+import type {
+  AppealRepository,
+  CaseRepository,
+  ForwardedAppeal,
+  OverdueCase,
+} from '@repo/memory-core';
 import type { Clock } from '@repo/prior-auth';
 import { createLogger, errorType, withServiceSpan } from '@repo/telemetry';
-import { CASE_REPOSITORY } from '../memory/memory.tokens.js';
+import { APPEAL_REPOSITORY, CASE_REPOSITORY } from '../memory/memory.tokens.js';
 import { PRIOR_AUTH_CLOCK } from '../fhir/prior-auth.service.js';
 
 const logger = createLogger('review-sweep');
@@ -23,10 +28,19 @@ export function readSweepMs(env: NodeJS.ProcessEnv = process.env): number {
   return parsed.data;
 }
 
+/** What one sweep did. */
+export interface SweepResult {
+  /** Pended cases flagged overdue, and left pended. */
+  readonly flagged: OverdueCase[];
+  /** Filed appeals forwarded as deemed affirmed. */
+  readonly forwarded: ForwardedAppeal[];
+}
+
 /**
- * The overdue sweep (P3-E): flags, never decides.
+ * The overdue sweep (P3-E), which flags and never decides, and the lapse
+ * forward (P3-F), which is the one timer in the case layer that acts.
  *
- * Every period it sets `overdue_flagged_at` on each pended case whose
+ * Every period it first sets `overdue_flagged_at` on each pended case whose
  * deadline has passed and that has no flag, and emits one
  * `review.case.overdue` event per case on its span. The case stays pended and
  * its response stays `queued`. Auto-denial at the deadline is what P3-A
@@ -35,8 +49,18 @@ export function readSweepMs(env: NodeJS.ProcessEnv = process.env): number {
  * member may appeal, which is the member's remedy and not the software's
  * decision.
  *
- * Extensions are not modelled (P3-E's non-goals), so an extended case is
- * flagged on its original deadline. That is the conservative error.
+ * Then it forwards each filed appeal at or past its reconsideration deadline
+ * to the independent entity as deemed affirmed, and emits one
+ * `review.appeal.forwarded` event per appeal. That is not a decision: § 422.590(d)
+ * makes the missed deadline the affirmation and requires the forward, and
+ * § 422.590(g) allows 24 hours for an expedited one against this sweep's
+ * default minute. ADR 0015 records why a timer whose action is one local
+ * update stays here rather than in a workflow engine. A forward is a record,
+ * not a delivery: no independent-entity system is contacted.
+ *
+ * Extensions are not modelled (P3-E's and P3-F's non-goals), so an extended
+ * case is flagged, and an extended appeal forwarded, on its original deadline.
+ * That is the conservative error both times.
  */
 @Injectable()
 export class ReviewSweep implements OnModuleInit, OnModuleDestroy {
@@ -45,6 +69,7 @@ export class ReviewSweep implements OnModuleInit, OnModuleDestroy {
 
   constructor(
     @Inject(CASE_REPOSITORY) private readonly cases: CaseRepository,
+    @Inject(APPEAL_REPOSITORY) private readonly appeals: AppealRepository,
     @Inject(PRIOR_AUTH_CLOCK) private readonly clock: Clock,
   ) {}
 
@@ -56,7 +81,8 @@ export class ReviewSweep implements OnModuleInit, OnModuleDestroy {
     }
     this.timer = setInterval(() => {
       // One sweep at a time, and a failed one is logged, not thrown: the next
-      // period tries again, and the read routes compute overdue regardless.
+      // period tries again, and the read routes compute overdue and lapsed
+      // regardless.
       this.running = this.running.then(() =>
         this.sweep().catch((error: unknown) =>
           logger.error({ msg: 'review.sweep.failed', errorType: errorType(error) }),
@@ -71,17 +97,15 @@ export class ReviewSweep implements OnModuleInit, OnModuleDestroy {
     await this.running;
   }
 
-  /** One sweep at the clock's now. Returns the cases it flagged. */
-  sweep(now: Date = this.clock.now()): Promise<OverdueCase[]> {
+  /** One sweep at the clock's now. */
+  sweep(now: Date = this.clock.now()): Promise<SweepResult> {
     return withServiceSpan('review.overdue_sweep', async (span) => {
       const flagged = await this.cases.flagOverdue(now);
       for (const overdue of flagged) {
         span.addEvent('review.case.overdue', {
           'prior_auth.case_id': overdue.caseId,
           'prior_auth.priority': overdue.priority,
-          'prior_auth.minutes_past_due': Math.floor(
-            (now.getTime() - overdue.decisionDueBy.getTime()) / 60_000,
-          ),
+          'prior_auth.minutes_past_due': minutesPast(now, overdue.decisionDueBy),
         });
         logger.warn({
           msg: 'review.case.overdue',
@@ -91,7 +115,30 @@ export class ReviewSweep implements OnModuleInit, OnModuleDestroy {
         });
       }
       span.setAttribute('review.flagged_count', flagged.length);
-      return flagged;
+
+      const forwarded = await this.appeals.forwardLapsed(now);
+      for (const appeal of forwarded) {
+        span.addEvent('review.appeal.forwarded', {
+          'prior_auth.appeal_id': appeal.appealId,
+          'prior_auth.case_id': appeal.caseId,
+          'prior_auth.priority': appeal.priority,
+          'prior_auth.forward_reason': 'deadline-lapsed',
+          'prior_auth.minutes_past_due': minutesPast(now, appeal.reconsiderationDueBy),
+        });
+        logger.warn({
+          msg: 'review.appeal.forwarded',
+          appealId: appeal.appealId,
+          caseId: appeal.caseId,
+          priority: appeal.priority,
+          reconsiderationDueBy: appeal.reconsiderationDueBy.toISOString(),
+        });
+      }
+      span.setAttribute('review.forwarded_count', forwarded.length);
+      return { flagged, forwarded };
     });
   }
+}
+
+function minutesPast(now: Date, due: Date): number {
+  return Math.floor((now.getTime() - due.getTime()) / 60_000);
 }

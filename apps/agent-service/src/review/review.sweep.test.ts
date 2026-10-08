@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { InMemoryCaseRepository } from '@repo/memory-core';
+import { InMemoryAppealRepository, InMemoryCaseRepository } from '@repo/memory-core';
 import { ReviewSweep, readSweepMs } from './review.sweep.js';
 
 describe('readSweepMs', () => {
@@ -35,11 +35,14 @@ describe('ReviewSweep', () => {
       caseId: '00000000-0000-4000-8000-000000000002',
       decisionDueBy: new Date('2026-03-04T10:00:01Z'),
     });
-    const sweep = new ReviewSweep(cases, { now: () => new Date('2026-03-04T10:00:00Z') });
+    const sweep = new ReviewSweep(cases, new InMemoryAppealRepository(cases), {
+      now: () => new Date('2026-03-04T10:00:00Z'),
+    });
 
-    const flagged = await sweep.sweep();
+    const { flagged, forwarded } = await sweep.sweep();
+    expect(forwarded).toEqual([]);
     expect(flagged.map((c) => c.caseId)).toEqual(['00000000-0000-4000-8000-000000000001']);
     expect((await cases.queue(10)).map((c) => c.status)).toEqual(['pended', 'pended']);
-    expect(await sweep.sweep()).toEqual([]);
+    expect(await sweep.sweep()).toEqual({ flagged: [], forwarded: [] });
   });
 });
