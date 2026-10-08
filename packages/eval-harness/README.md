@@ -39,6 +39,7 @@ message cannot tell the difference.
 | Grader                         | Kind | Asserts                                            |
 | ------------------------------ | ---- | -------------------------------------------------- |
 | `retrieved_context_min_length` | code | retrieval returned at least _n_ candidates         |
+| `retrieved_from_source`        | code | a candidate came from the named retriever          |
 | `outcome_must_be`              | code | the run reported the expected outcome              |
 | `token_counts_positive`        | code | prompt and completion counts are both above zero   |
 | `episodic_row_written`         | code | `episodes` rows exist carrying **this run's** id   |
@@ -136,6 +137,12 @@ roughly forty `generateContent` calls against this key's free-tier quota of 20 f
 `gemini-2.5-flash`, and has not been run, so none of these numbers is the suite's live pass
 rate, and none is presented as one.
 
+`graph-recall-001` (P2-B) is the third task and the only one whose seed reaches the graph
+retriever. One live trial recorded on 2026-09-26 passed every grader, `retrieved_from_source`
+among them. Its replay and its two stub trials pass too. That is a fact reaching `plan`'s
+prompt through the graph, not evidence that the graph improves retrieval — the ablation
+below is.
+
 ## Recording and replaying a trial
 
 ```bash
@@ -212,6 +219,39 @@ writes `eval-gate.json` beside the reports and appends a section to `eval-summar
 `stats/` holds the resamplers and nothing that knows what a task is. `pairedBootstrap` is
 shared with P2-B's retrieval ablation.
 
+## The retrieval ablation
+
+`yarn eval:retrieval` measures the graph/vector/hybrid question ADR 0002 left open (P2-B).
+It is not a suite and does not use `Grader`. A retrieval benchmark has no trial, no
+transcript and no threshold; its unit is a ranked list per query. What this package holds
+for it is pure:
+
+- **Metrics** in `src/retrieval/metrics.ts`: `recallAtK`, `reciprocalRank` and binary
+  `ndcgAtK`.
+- **The seeded paired bootstrap** in `src/stats/paired-bootstrap.ts`, which P1-D's gate
+  shares.
+- **The dataset loader** in `src/retrieval/dataset.ts`. It holds each query to its
+  stratum's construction.
+- **The pooling and adjudication files** in `src/retrieval/adjudication.ts`.
+- **The report** in `src/retrieval/report.ts`. It names the outcome-table row the
+  pre-registered rule selects.
+
+The runner is `apps/agent-service/src/eval/run-retrieval-ablation.ts`. Its dataset is
+`datasets/retrieval-ablation/`: 335 facts and 200 labelled queries, frozen before the
+first run, with embeddings recorded so it runs with no key.
+
+**Result, Recall@10 over all 200 queries.** On the deployed path, `hybrid` and `vector`
+both score 0.940, and `graph` scores 0. The seed linker produced no id the graph holds on
+any of the 200 queries. With gold seeds in place of the linker, `hybrid·oracle` scores
+0.145 below `vector`, interval [−0.195, −0.095]. In the relational stratum it scores 0.180
+against 0.760.
+
+The pre-registered rule selects "neither does". A blind model adjudication of 3,029
+pooled candidates added one label and moved nothing. The reports are under
+`datasets/retrieval-ablation/reports/`, and
+[ADR 0009](../../docs/adr/0009-the-second-store-after-the-retrieval-ablation.md),
+proposed, sets out what to do about it.
+
 ## What this package does not do
 
 - **Parsing a cassette.** This package resolves their paths, counts them and hashes their
@@ -221,8 +261,6 @@ shared with P2-B's retrieval ablation.
   it and needs none.
 - **Applying the merge gate.** The gate decides the verdict; `.github/rulesets/main.json`
   is what makes `eval-replay` a required check, and applying it is the repository owner's.
-- **Retrieval-quality metrics** (`Recall@k`, `nDCG`, `MRR`). P2-B, built on the `Grader`
-  interface defined here.
 - **Span collection.** `Transcript.spans` is filled by the adapter, not by this package.
   `apps/agent-service` keeps the evaluation process's spans in memory and hands each trial
   the spans of its own run's trace, which is how every trial in `eval-report.json` carries

@@ -181,7 +181,7 @@ Retention is unbounded: there is no expiry column and no cleanup job. Writes ups
 
 ### Semantic Memory (Hybrid)
 
-> **This is the intended architectural differentiator.** Long-term memory is designed to span two complementary indices, both written by the `reflect` node.
+> **This was meant to be the architectural differentiator, and it has been measured: in retrieval, the graph adds nothing on the deployed path and lowers recall with a perfect linker.** Long-term memory spans two indices, both written by the `reflect` node and both read on every run. [ADR 0009](docs/adr/0009-the-second-store-after-the-retrieval-ablation.md), proposed, records the measurement and what to do about it.
 
 The `reflect` node writes Postgres, then Neo4j, then pgvector, in three sequential loops. Each write is replay-safe — the episodic natural key, Cypher `MERGE`, and pgvector upsert on a content hash — and `reflect` reads its extraction from state rather than deriving it, so a retried attempt writes exactly what the first attempt wrote. The three are still not atomic together: a crash between them leaves the indices disagreeing until the retry, not permanently. That guarantee is convergence under replay, not exactly-once; [ADR 0001](docs/adr/0001-langgraph-over-a-durable-execution-engine.md) explains why the stronger one was not bought, and an outbox would be a new PRD.
 
@@ -190,11 +190,11 @@ The `reflect` node writes Postgres, then Neo4j, then pgvector, in three sequenti
 | Knowledge Graph  | Neo4j 5    | Entities (`:Concept`, `:Fact`) and relationships | Bounded multi-hop Cypher traversal |
 | Dense Embeddings | pgvector   | Distilled fact embeddings (768-dim)              | Exact cosine similarity via `<=>`  |
 
-**Why both?** Dense search finds semantically similar facts (paraphrase, synonym variants) but cannot follow relational chains. Graph traversal follows explicit relationships (A→B→C) but misses paraphrase variants. Together, they provide complementary recall paths that reduce false negatives. The reasoning is recorded in [ADR 0002](docs/adr/0002-neo4j-and-pgvector-rather-than-one-store.md), which also notes that the premise is unmeasured until P2-B builds the ablation.
+**Why both, and did it work?** [ADR 0002](docs/adr/0002-neo4j-and-pgvector-rather-than-one-store.md) ran both on the theory that dense search and graph traversal fail on different questions, so their union recalls more than either. P2-B measured that on 200 labelled queries with `yarn eval:retrieval`, under a decision rule fixed before the run. It did not hold. On the deployed path `hybrid` and `vector` score the same Recall@10, 0.940, because the seed linker produced no id the graph holds on any of the 200 queries. With the linker replaced by perfect seeds, `hybrid` scores 0.145 _below_ `vector`. The graph ranks only by hop distance, and RRF gives its hash-ordered list the same weight as the vector list. That held in the relational queries built to favour the graph: 0.180 against 0.760. The rule selected "neither does", under both the pre-registered and the blind-adjudicated labels. The report is committed under `packages/eval-harness/datasets/retrieval-ablation/reports/`.
 
 Results merge via **Reciprocal Rank Fusion (RRF)**, keyed on the fact's content hash. This used to interleave rather than fuse, and the reason was not the key: the graph returned `:Concept` nodes while pgvector returned facts, and two lists drawn from disjoint universes cannot intersect under any key. The graph now stores facts too — `(:Fact)-[:MENTIONS]->(:Concept)`, keyed on the same hash — so traversal reaches the same objects vector search returns, and a fact found by both paths is scored at the sum of its two reciprocal ranks. [ADR 0004](docs/adr/0004-one-candidate-universe-for-fusion.md) records the decision.
 
-Retrieval is scoped to the requesting session by default, with an explicit `crossSession` opt-out.
+Vector retrieval is scoped to the requesting session by default, with an explicit `crossSession` opt-out. Graph retrieval is not scoped: [P4-B](docs/prd/P4-B-memory-poisoning-red-team.md) found it returns another session's facts and owns the filter.
 
 ---
 
