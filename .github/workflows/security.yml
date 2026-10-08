@@ -55,5 +55,12 @@ jobs:
       # mitigation, range >=4.0.0 <5.0.9, against a 5.x tree pinned to 5.0.8.
       # One patch short. ID-scoped ignores are why it surfaced rather than being
       # swallowed by a package-name exception. Keep future ignores ID-scoped.
+      #
+      # Ignores no longer go on this command line. They live in
+      # `npmAuditIgnoreAdvisories` in .yarnrc.yml, one numeric ID per entry
+      # with its reasoning and its removal condition beside it, so a local
+      # `yarn npm audit` gives the same verdict as this job. Two are there now,
+      # braces and http-cache-semantics, because neither has a release that
+      # fixes its advisory.
       - name: Audit for high/critical vulnerabilities
         run: yarn npm audit --all --recursive --severity high

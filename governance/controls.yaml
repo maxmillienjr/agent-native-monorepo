@@ -212,7 +212,7 @@ controls:
       - { framework: nist-ai-rmf-1.0, ref: MANAGE 3.1 }
     evidence:
       - { kind: ci, workflow: security.yml, job: dependency-audit, run: yarn npm audit }
-    note: The audit runs at --severity high, so a moderate advisory does not fail it.
+    note: The audit runs at --severity high, so a moderate advisory does not fail it. Neither does an advisory ID listed in npmAuditIgnoreAdvisories in .yarnrc.yml, which is kept for advisories with no fixed release, each with its reason and removal condition beside it.
 
   - id: CTL-RES-01
     title: A failing I/O node is retried under a bound; a client error is not; a run fails whole
