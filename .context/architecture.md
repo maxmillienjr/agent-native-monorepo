@@ -190,12 +190,43 @@ POST /runs ─▶ RunRecorder.open ─▶ graph ──decision──▶ Persisti
 audit:replay ◀── run_records + run_decisions + checkpoints  (read-only pool)
 ```
 
+## The Prior-Authorization Case Layer
+
+A prior authorization outlives the agent's run on it: it pends, waits days for a clinician
+and may be appealed. ADR 0010 puts that above the graph, as ADR 0001 anticipated, rather
+than pausing a thread with `interrupt()`.
+
+- **The graph finishes.** The prior-authorization graph ends at `dispose`, inside the
+  `$submit` exchange. Its checkpoints under `thread_id = caseId` record what the agent read
+  and found.
+- **The case is a row.** `prior_auth_cases`, in `packages/memory-core/src/cases/`, holds the
+  request, the disposition, the clock, the response in force and, once decided, the
+  determination and who signed it. Postgres on the configured memory axis; on the
+  unconfigured one, an in-process store that boot announces at `warn` as
+  `review.cases.volatile`.
+- **The queue is ordered by the clock alone**, deadline then receipt then case id, through
+  `compareCases`, whose only input holds no field a finding could reach.
+- **A clinician decides; the service verifies.** A determination carries an Ed25519
+  signature over P3-C's attestation payload, checked against the public keys in
+  `REVIEWER_REGISTRY`. The service holds no private key. The case is decided once, under a
+  row lock.
+- **The run record closes before the case is written.** Both fail `$submit` closed with a 503. A failed record leaves no case, and a failed enqueue leaves a closed record with no
+  case beside it, so the queue never holds a request whose answer was not sent.
+- **The sweep flags and never decides.** A case past its deadline gets
+  `overdue_flagged_at` and a `review.case.overdue` span event, and stays pended.
+
 ## NestJS 11 Microservice
 
 The LangGraph graph is hosted inside a NestJS 11 microservice (`apps/agent-service`):
 
 - **POST /runs** — Request/response mode. Waits for `egress`, returns `RunResponse`.
 - **POST /runs/stream** — Streaming mode. Emits SSE events per node completion.
+- **POST /fhir/Claim/$submit**, **POST /fhir/Claim/$inquire**, **GET /fhir/metadata** —
+  the prior-authorization surface (P3-D, P3-E), shaped after Da Vinci PAS 2.2.1. `$submit`
+  runs a second, four-node graph (`intake → lookup → assess → dispose`) inline, and enqueues
+  a case before it answers.
+- **GET /review/cases**, **GET /review/cases/:caseId**,
+  **POST /review/cases/:caseId/determination** — the clinician review surface (P3-E).
 - **Global concerns:** ZodValidationPipe, AuditInterceptor (structured logging),
   LoggingInterceptor (correlation ID via AsyncLocalStorage), HttpExceptionFilter.
 - **Observability:** One trace per run under an `invoke_agent` root, one span per graph

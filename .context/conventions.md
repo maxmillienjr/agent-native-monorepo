@@ -135,6 +135,12 @@ alone.
   fails with "Cannot use import statement outside a module". For the same reason the Jest
   config is `jest.config.mjs` and not `.ts` — a TypeScript config makes Jest require
   `ts-node`, which is not a dependency.
+- **A `Date` made in a service spec is not `instanceof Date` in a package.** Jest's ESM
+  support runs the spec and the code it imports in a VM context, so a `Date` the service
+  creates there fails `z.date()`, which checks `instanceof` against the package's realm.
+  The first `$submit` through the real module answered 503 for that reason (P3-E). A schema
+  that a service path feeds a `Date` checks the tag instead, as `InstantSchema` in
+  `memory-core`'s case repository does, and hands back a `Date` of its own realm.
 - **Service tests must not depend on ambient environment.** `RunsService` picks live Gemini
   dependencies over stubs whenever `GOOGLE_API_KEY` is set, so a spec that does not clear
   it passes or fails according to the developer's shell.
@@ -433,11 +439,18 @@ from a separate project doubles the pool and is the owner's decision.
   `https://example.org/` one.
 - **`fhir-validate.yml` gates base R4 and US Core 6.1.0 and reports PAS 2.2.1.** It needs
   Java 17 and the 200 MB `validator_cli.jar`, which is why it is not in `ci.yml`. To run it
-  locally, run the service spec with `FHIR_CAPTURE_DIR` set and then
+  locally, run the service specs with `FHIR_CAPTURE_DIR` set and then
   `node scripts/fhir-validate.mjs --jar <jar> --captured <dir>`; `FHIR_VALIDATOR_JAVA`
   replaces `java` with a container command. Each resource's `meta.profile` names US Core
   `|6.1.0`, because loading PAS brings US Core 7.0.0 and an unversioned canonical would
-  resolve to whichever loaded last.
+  resolve to whichever loaded last. Both specs capture: `fhir.e2e-spec.ts` the `$submit`
+  responses, and `review.e2e-spec.ts` every `$inquire` response and each bundle it returned,
+  which the PAS report holds to the inquiry response bundle.
+- **Reviewer keys are generated, never committed.** Tests make Ed25519 keypairs in the test,
+  and `yarn workspace @repo/agent-service review:sign keygen` writes a demo key under a
+  gitignored `.review-keys/`. Only public keys go in the file `REVIEWER_REGISTRY` names, and
+  every reviewer, key id and credential type in a fixture or a policy is prefixed
+  `synthetic-`, which the policy schema enforces for credential types.
 
 ## Before real data
 
@@ -473,6 +486,19 @@ portfolio's, not counsel's.
   whoever holds the service's credentials, and a consistent edit to a record and its
   checkpoints passes `audit:replay`. Until P3-C's ledger commits each record to a hash
   chain, nothing detects one.
+- **The case table holds the request and the model's rationale (P3-E).**
+  `prior_auth_cases.request` is the bundle `$submit` received, with the member's identifiers,
+  coverage, diagnoses and clinical notes, and `prior_auth_cases.disposition` holds the
+  model's per-criterion rationale about that record. Both are member data, under the same
+  encryption, read logging and retention floor as the run record. Nothing here deletes a
+  case either.
+- **Who reads a case is the deployment's to restrict.** `GET /review/cases/:caseId` serves
+  the rationale to any caller until P5-A's authentication covers `/review/*`. A deployment
+  restricts it to the reviewers it assigns, and grants the service's database role, and no
+  other, on `prior_auth_cases`.
+- **A reviewer key is a person only by custody.** The registry maps a key to a reviewer id
+  and a credential type. That the key's holder is that licensed reviewer, and that the key
+  has not left them, is outside what code can show; P3-C puts key custody on this list too.
 
 ## Error Handling
 
