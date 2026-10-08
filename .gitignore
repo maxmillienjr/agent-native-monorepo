@@ -50,5 +50,9 @@ drizzle/meta/
 *.log
 tmp/
 
+# Reviewer private keys the demo signer writes (P3-E). The service never holds
+# one; the public halves go in the file REVIEWER_REGISTRY names.
+.review-keys/
+
 # Agent worktrees: whole checkouts of this repository, not part of it.
 .claude/worktrees/

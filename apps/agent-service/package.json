@@ -21,7 +21,8 @@
     "eval:history": "node dist/eval/eval-history.js",
     "eval:promote-live": "node dist/eval/promote-live.js",
     "canary": "node dist/eval/canary/run-canary.js",
-    "canary:compare": "node dist/eval/canary/run-compare.js"
+    "canary:compare": "node dist/eval/canary/run-compare.js",
+    "review:sign": "node dist/review/sign-cli.js"
   },
   "dependencies": {
     "@langchain/core": "^1.2.14",
