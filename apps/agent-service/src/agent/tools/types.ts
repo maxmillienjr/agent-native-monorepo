@@ -35,6 +35,9 @@ export interface ToolContext {
  */
 export type ToolInput = z.AnyZodObject;
 
+/** A validated input, as any tool's `execute` takes one. */
+export type ToolArgs = z.infer<ToolInput>;
+
 interface ToolBase<I extends ToolInput, O> {
   /** `/^[a-z][a-z0-9-]{2,40}$/`, checked by `defineRegistry`. */
   readonly name: string;

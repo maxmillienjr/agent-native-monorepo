@@ -38,6 +38,7 @@ export async function ingressNode(
       topK: config.topK,
       stepCount: 0,
       shouldContinue: true,
+      aborted: false,
       toolOutputs: [],
     };
   });
