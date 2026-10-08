@@ -16,6 +16,7 @@ function makeState(overrides: Partial<AgentState> = {}): AgentState {
     topK: 10,
     shouldContinue: true,
     aborted: false,
+    pendingApproval: null,
     ...overrides,
   };
 }
@@ -73,6 +74,19 @@ describe('shouldContinueActing', () => {
     ).toBe('compensate');
   });
 
+  it('goes to approve while an irreversible call is pending, before anything else', () => {
+    const pendingApproval = {
+      toolName: 'notify-member',
+      input: {},
+      tier: 'irreversible' as const,
+      idempotencyKey: 'run:0',
+    };
+    expect(shouldContinueActing(makeState({ pendingApproval }))).toBe('approve');
+    expect(shouldContinueActing(makeState({ pendingApproval, stepCount: 10, maxSteps: 10 }))).toBe(
+      'approve',
+    );
+  });
+
   it('does not compensate a run that finished cleanly', () => {
     expect(shouldContinueActing(makeState({ shouldContinue: false, toolOutputs: [applied] }))).toBe(
       'distill',
@@ -82,7 +96,9 @@ describe('shouldContinueActing', () => {
 
 describe('shouldKeepCompensating', () => {
   it('loops while an effect is applied, and leaves once none is', () => {
-    expect(shouldKeepCompensating(makeState({ toolOutputs: [applied, failed] }))).toBe('compensate');
+    expect(shouldKeepCompensating(makeState({ toolOutputs: [applied, failed] }))).toBe(
+      'compensate',
+    );
     expect(
       shouldKeepCompensating(makeState({ toolOutputs: [{ ...applied, effect: 'compensated' }] })),
     ).toBe('distill');

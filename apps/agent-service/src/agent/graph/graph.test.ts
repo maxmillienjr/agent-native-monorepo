@@ -68,10 +68,11 @@ describe('buildAgentGraph', () => {
 
     // `extraction` is the channel `distill` writes and `distill` is the node —
     // the separation P0-A's rename established, and the collision this test
-    // exists to catch. `compensate` writes `toolOutputs`, never a channel of
-    // its own name.
+    // exists to catch. `approve` reads `pendingApproval` and `compensate`
+    // writes `toolOutputs`; neither has a channel of its own name.
     expect(nodes).toEqual([
       'act',
+      'approve',
       'compensate',
       'distill',
       'egress',
