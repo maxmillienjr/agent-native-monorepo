@@ -2,12 +2,12 @@
 id: P4-C
 title: Reversibility-tiered tool registry with saga compensation
 tier: 4
-status: accepted
+status: in-progress
 size: M
 depends_on: [P1-A, P1-B, P2-A]
 blocks: []
 controls: [CTL-AGY-01]
-issue: null
+issue: 102
 superseded_by: null
 ---
 
