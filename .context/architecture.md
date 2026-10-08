@@ -157,6 +157,39 @@ START → ingress → retrieve → plan → act ⟲ (loop) → distill → refle
   ADR 0001 records the choice of checkpointer and why it is not the same thing as durable
   execution: resume, not exactly-once.
 
+## The Run Record and Audit Replay
+
+The checkpoints are a run's trace, not its inputs: they hold no request body, no retried
+attempt, no commit and no retrieval query (ADR 0007). So every run on the configured memory
+axis, on both graphs, also writes a **run record** to Postgres beside them:
+
+- `run_records`: the body as received, the commit (`GIT_SHA` in the image, the working tree
+  otherwise), the chat and embedding models, which axis served the model half, when the
+  request arrived, and the outcome.
+- `run_decisions`: one row per decision, appended as it resolves, at the cassette's seams
+  plus `memory.retrieve`. A retried call is two rows, the error and then the value.
+
+The record is written by `RunRecorder`, which wraps the dependency set a graph is about to
+receive in a `PersistingDeck` — the cassette's `Deck`, writing rows instead of a file
+(`src/agent/model/decision-seam.ts` is where both record). It is not a memory tier:
+nothing a graph is given can read it, and it lives in `memory-core` only because it is
+written with the same role, under the same migrator.
+
+`audit:replay <runId>` re-executes a run at its recorded commit with every input served
+from the record — the model half and retrieval from a `DecisionQueue`, `reflect`'s writers
+capturing — and compares every checkpoint with the recorded history. It proves the record
+complete and consistent with the checkpoints, and derives what the run wrote; it cannot
+prove either was not edited, which is P3-C's ledger. A record that cannot be written fails
+the prior-authorization request closed and leaves a chat run complete with a `partial`
+record.
+
+```
+POST /runs ─▶ RunRecorder.open ─▶ graph ──decision──▶ PersistingDeck ─▶ run_decisions
+                                    │                                   (as it resolves)
+                                    └──super-step──▶ PostgresSaver ─▶ checkpoints
+audit:replay ◀── run_records + run_decisions + checkpoints  (read-only pool)
+```
+
 ## NestJS 11 Microservice
 
 The LangGraph graph is hosted inside a NestJS 11 microservice (`apps/agent-service`):

@@ -35,8 +35,10 @@ export const PRIOR_AUTH_NODES = ['intake', 'lookup', 'assess', 'dispose'] as con
  * wrapper that returned an adverse value, or a key the state does not have,
  * fails `yarn turbo typecheck` here as it does in the chat graph. It compiles
  * with the service's checkpointer, under the case id as `thread_id`; that
- * checkpoint is P3-B's audit record. On the unconfigured memory axis there is
- * no checkpointer, and the case lives only in the response.
+ * checkpoint is the trace `audit:replay` checks, and the run record under the
+ * same id holds the bundle, the receipt time and the assessment (P3-B). On the
+ * unconfigured memory axis there is no checkpointer and no record, and the
+ * case lives only in the response.
  */
 export function buildPriorAuthGraph(deps: PriorAuthGraphDeps, checkpointer?: BaseCheckpointSaver) {
   const intake: Node<PriorAuthState> = async (state) => intakeNode(state, deps);

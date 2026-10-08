@@ -45,8 +45,12 @@ This is the most critical constraint. All writes must be replay-safe:
   history on every run, so keying on `run_id` returns each turn once per run — which is not
   the full turn history the tier is specified to hold.
 - First write wins. The log records what was first seen; it is not a mirror of the client's
-  current history. Changing that is P3-B's, because an audit trail is the first consumer
-  that can tell the two apart.
+  current history. P3-B kept that and answered the audit question elsewhere: an edited,
+  re-sent turn is in the run record of the run that sent it (ADR 0007), so an audit never
+  reads `episodes`.
+- The run record (`src/audit/`) is the one write in this package that is not idempotent
+  memory: `run_decisions` is a bare `INSERT`, because a taken ordinal means two writers own
+  one run. Its migrations are additive-only (`.context/conventions.md`, Migrations).
 
 ## Testing Requirements
 

@@ -39,8 +39,8 @@ export class DrizzleEpisodicRepository implements EpisodicRepository {
    * the history gets its edit dropped rather than persisted. That is the
    * defensible behaviour for an append-only log — it records what was first
    * seen — but it means `episodes` is not a mirror of the client's current
-   * history. P3-B owns revisiting that, because an audit trail is the first
-   * consumer that cares about the difference.
+   * history. P3-B kept it: an edited, re-sent turn is in the run record of the
+   * run that sent it (ADR 0007), so an audit reads that and never this table.
    */
   async write(input: EpisodeWriteInput): Promise<{ id: string }> {
     const validated = EpisodeWriteInputSchema.parse(input);
