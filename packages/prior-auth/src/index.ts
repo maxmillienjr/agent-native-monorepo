@@ -24,3 +24,14 @@ export {
   type Policy,
   type PolicyCriterion,
 } from './policy.js';
+export {
+  readSubmission,
+  resolveReference,
+  coverageActiveOn,
+  evidenceFor,
+  type EvidenceItem,
+  type PriorAuthRequest,
+  type Submission,
+  type SubmissionIssue,
+} from './request.js';
+export { decideDisposition, normalizeFindings, type ReferralReason } from './disposition.js';
