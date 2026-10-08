@@ -52,6 +52,7 @@ export { decideDisposition, normalizeFindings, type ReferralReason } from './dis
 export {
   toClaimResponse,
   toDeterminationResponse,
+  toReconsideredResponse,
   toResponseBundle,
   type ResponseContext,
 } from './claim-response.js';

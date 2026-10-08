@@ -1,8 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import type { AdverseDetermination, AgentDisposition } from '@repo/determination';
-import { toClaimResponse, toDeterminationResponse, toResponseBundle } from './claim-response.js';
+import type { AdverseDetermination, AgentDisposition, Reconsideration } from '@repo/determination';
+import {
+  toClaimResponse,
+  toDeterminationResponse,
+  toReconsideredResponse,
+  toResponseBundle,
+} from './claim-response.js';
 import { PRIOR_AUTH_DATASET_DIR } from './dataset/location.js';
 import { PolicyCatalogue, loadPayer } from './policy.js';
 import { readSubmission, type PriorAuthRequest } from './request.js';
@@ -153,6 +158,42 @@ describe('toDeterminationResponse', () => {
     expect(() => toDeterminationResponse(structured.claim, partial, policy, decided)).toThrow();
     const automated = approval as unknown as AdverseDetermination;
     expect(() => toDeterminationResponse(structured.claim, automated, policy, decided)).toThrow();
+  });
+});
+
+describe('toReconsideredResponse (P3-F)', () => {
+  const decided = { decidedAt: new Date('2026-10-02T09:00:00Z'), caseId: 'case-synthetic-3' };
+  const EXPLANATION = 'Synthetic: the appeal evidence includes a current sleep study.';
+  // Built the way attestReconsideration builds one; the brand is a type, so the unit test casts.
+  const reversal = {
+    kind: 'reversal',
+    explanation: EXPLANATION,
+    goodCauseFound: false,
+    attestation: {
+      reviewerId: 'synthetic-reviewer-002',
+      credential: { type: 'synthetic-physician', jurisdiction: 'synthetic-jurisdiction' },
+      attestedAt: '2026-10-02T09:00:00+00:00',
+    },
+    initialReviewerId: 'synthetic-reviewer-001',
+  } as unknown as Reconsideration;
+
+  it('answers a reversal with complete, a preAuthRef, the period and a fixed disposition', () => {
+    const reversed = toReconsideredResponse(structured.claim, reversal, policy, decided);
+    expect(reversed.outcome).toBe('complete');
+    expect(reversed.disposition).toBe('Approved on reconsideration.');
+    expect(reversed.preAuthRef).toBe('case-synthetic-3');
+    expect(reversed.preAuthPeriod).toEqual({ start: '2026-09-21', end: '2026-12-19' });
+    expect(reversed.created).toBe('2026-10-02T09:00:00.000Z');
+    const text = JSON.stringify(reversed);
+    expect(text).not.toContain(EXPLANATION);
+    expect(text).not.toContain('synthetic-reviewer-00');
+  });
+
+  it('refuses an affirmation, which leaves the denial in force', () => {
+    const affirmation = { ...reversal, kind: 'affirmation' } as unknown as Reconsideration;
+    expect(() => toReconsideredResponse(structured.claim, affirmation, policy, decided)).toThrow(
+      /affirmation leaves the denial in force/,
+    );
   });
 });
 

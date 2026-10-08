@@ -3,9 +3,11 @@ import {
   AdverseDeterminationRecordSchema,
   AgentDispositionSchema,
   ClinicianApprovalSchema,
+  ReconsiderationRecordSchema,
   type AdverseDetermination,
   type AgentDisposition,
   type ClinicianApproval,
+  type Reconsideration,
 } from '@repo/determination';
 import type { FhirBundle, PasClaim, PasClaimResponse } from './fhir/resources.js';
 import type { ReferralReason } from './disposition.js';
@@ -226,6 +228,49 @@ export function toDeterminationResponse(
     outcome: 'complete',
     disposition: 'Denied after clinician review. The reason is stated in the note.',
     processNote: [{ number: 1, type: 'display', text: parsed.specificReason }],
+  };
+}
+
+/**
+ * The `ClaimResponse` for a reversal on reconsideration (P3-F): the approval
+ * that becomes the case's response in force, so `$inquire` returns it with no
+ * change to the inquiry path.
+ *
+ * It is the clinician approval's shape, `outcome: complete` with a
+ * `preAuthRef` and, under a policy, a `preAuthPeriod`, with a fixed
+ * `disposition` saying it was approved on reconsideration. The physician's
+ * explanation stays on the appeal, as the agent's rationale stays on the
+ * case: no free text reaches this response. An affirmation has no response
+ * of its own, because the denial stays in force until the independent entity
+ * rules, so anything but a reversal throws, a cast one included.
+ */
+export function toReconsideredResponse(
+  claim: PasClaim,
+  reconsideration: Reconsideration,
+  policy: Policy | undefined,
+  context: { readonly decidedAt: Date; readonly caseId: string },
+): PasClaimResponse {
+  const parsed = ReconsiderationRecordSchema.parse(reconsideration);
+  if (parsed.kind !== 'reversal') {
+    throw new Error('only a reversal issues a response; an affirmation leaves the denial in force');
+  }
+  return {
+    ...responseBase(claim, { caseId: context.caseId, createdAt: context.decidedAt }),
+    outcome: 'complete',
+    disposition: 'Approved on reconsideration.',
+    preAuthRef: context.caseId,
+    ...(policy === undefined ? {} : { preAuthPeriod: approvalPeriod(claim, policy) }),
+    processNote: [
+      {
+        number: 1,
+        type: 'display',
+        text:
+          policy === undefined
+            ? 'The denial was reversed on reconsideration by a physician who did not make it.'
+            : `The denial was reversed on reconsideration under ${policy.title} ` +
+              `(${policy.id} ${policy.version}) by a physician who did not make it.`,
+      },
+    ],
   };
 }
 
