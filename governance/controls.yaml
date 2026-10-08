@@ -413,7 +413,7 @@ controls:
         name: refuses a denial carried under a key it does not declare, rather than stripping it
         tier: unit
       - { kind: ci, workflow: ci.yml, job: ci, run: yarn turbo typecheck }
-    note: Delivered by P3-A, narrowed from "no adverse determination is issued without a licensed clinician" to what the types, the lint rule and the strict egress parse enforce. The typecheck step runs the type tests that make an unattested denial fail to compile. P3-D's graph produces the agent's dispositions, and P3-E's review route is the one caller of the constructor (CTL-HUM-02). Recording an attestation in a tamper-evident ledger is P3-C's.
+    note: Delivered by P3-A, narrowed from "no adverse determination is issued without a licensed clinician" to what the types, the lint rule and the strict egress parse enforce. The typecheck step runs the type tests that make an unattested denial fail to compile. P3-D's graph produces the agent's dispositions, and P3-E's review route is the one caller of the constructor (CTL-HUM-02). With a ledger configured, every attestation is recorded in P3-C's tamper-evident ledger (CTL-AUD-01).
 
   - id: CTL-HUM-02
     title: A clinician's determination is issued only over a signature the service verifies and cannot produce, by a credential the policy lists, once per case
@@ -443,7 +443,7 @@ controls:
         name: refuses the same signature over another case, another key, or garbage
         tier: unit
       - { kind: ci, workflow: ci.yml, job: ci, run: yarn turbo test:service }
-    note: Delivered by P3-E. The service holds public keys only, so a stolen service credential cannot mint a denial, and the case id inside the signed bytes stops a signature being replayed onto another case. A signature binds a determination to a key, not to a person; identity proofing and key custody are P3-C's, and the credential check is a type match against the policy's list, not a licence check. Authenticating the caller of /review/* is P5-A's.
+    note: Delivered by P3-E. The service holds public keys only, so a stolen service credential cannot mint a denial, and the case id inside the signed bytes stops a signature being replayed onto another case. A signature binds a determination to a key, not to a person; identity proofing and key custody are a deployment's (Before real data), the ledger re-checks every signature against keys it holds as entries, and the credential check is a type match against the policy's list, not a licence check. Authenticating the caller of /review/* is P5-A's.
 
   - id: CTL-HUM-03
     title: An adverse determination can be appealed, is reconsidered only by a physician who did not make it, and an affirmed or lapsed reconsideration is forwarded to independent review
@@ -456,15 +456,47 @@ controls:
 
   - id: CTL-AUD-01
     title: Each decision is recorded in a hash-chained, tamper-evident ledger
-    status: planned
-    owner: P3-C
+    status: implemented
     maps:
       - { framework: hipaa-164.312, ref: (b) }
       - { framework: hipaa-164.312, ref: (c)(1) }
       - { framework: hipaa-164.312, ref: (c)(2) }
       - { framework: nist-ai-600-1, ref: MS-2.8-003 }
       - { framework: iso-iec-42001-2023, ref: A.6.2.8 }
-    note: The repository holds no ePHI (ADR 0003), so the §164.312 mappings describe the safeguard's shape, not a compliance obligation.
+    evidence:
+      - { kind: symbol, file: packages/decision-ledger/src/ledger.ts, name: Ledger.append }
+      - { kind: symbol, file: packages/decision-ledger/src/verify.ts, name: verifyChain }
+      - { kind: symbol, file: apps/agent-service/src/ledger/verify-ledger.ts, name: verifyLedger }
+      - kind: test
+        file: packages/decision-ledger/test/ledger.integration.test.ts
+        name: denies ledger_writer UPDATE, DELETE and TRUNCATE on ledger_entries
+        tier: integration
+      - kind: test
+        file: packages/decision-ledger/test/ledger.integration.test.ts
+        name: keeps fifty concurrent appends from five pools contiguous
+        tier: integration
+      - kind: test
+        file: apps/agent-service/test/ledger.integration.test.ts
+        name: commits one entry per POST /runs, whose digest ledger:verify re-derives
+        tier: integration
+      - kind: test
+        file: apps/agent-service/test/ledger.integration.test.ts
+        name: exits 1 naming the run when one of its checkpoint blobs is edited
+        tier: integration
+      - kind: test
+        file: apps/agent-service/test/ledger.integration.test.ts
+        name: exits 1 on the anchor when the rewrite reaches an anchored entry
+        tier: integration
+      - kind: test
+        file: apps/agent-service/test/ledger.integration.test.ts
+        name: appends one determination.attested entry under the derived id for a denial, and ledger:verify exits 0
+        tier: integration
+      - kind: test
+        file: packages/decision-ledger/src/ledger.test.ts
+        name: refuses a determination on a run with a recommendation that does not cite it
+        tier: unit
+      - { kind: ci, workflow: e2e.yml, job: e2e, run: yarn turbo test:integration }
+    note: Delivered by P3-C (ADR 0013). Every run on either graph, every prior-authorization recommendation and every clinician's signed determination is appended to a hash chain of salted commitments, written by ledger_writer, a role with SELECT and INSERT only; ledger:verify re-derives each run's digest from its record and checkpoints and checks every signature against reviewer keys that are themselves entries. A superuser in replica mode can still rewrite the database, so RFC 3161 anchors are what detect a rewrite, and only at or before the last anchor; scheduling anchors, archiving tokens and reviewer-key custody are a deployment's. The repository holds no ePHI (ADR 0003), so the §164.312 mappings describe the safeguard's shape, not a compliance obligation.
 
   - id: CTL-AUD-02
     title: Every run's inputs and decisions are recorded, and a replay proves the record complete against its checkpoints
