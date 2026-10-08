@@ -24,15 +24,16 @@ export function skipUnlessIntegrationEnv(suiteName: string, ...required: string[
 
 /**
  * A database of its own for one suite, migrated by `DATABASE_URL`'s user —
- * the superuser, in compose and in CI — with `ledger_writer` given a login for
- * the run. Dropped afterwards. `DATABASE_URL`'s own database is never touched,
+ * the superuser, in compose and in CI — and written by a login role of the
+ * same name, granted `ledger_writer`. Both are dropped afterwards.
+ * `DATABASE_URL`'s own database is never touched,
  * so nothing here races memory-core's suites.
  */
 export interface LedgerDatabase {
   readonly name: string;
   /** The superuser, in the suite's database: the tables' owner. */
   readonly owner: pg.Pool;
-  /** `ledger_writer`: SELECT and INSERT, nothing else. */
+  /** A member of `ledger_writer`: SELECT and INSERT, nothing else. */
   readonly writer: pg.Pool;
   readonly ownerUrl: string;
   readonly writerUrl: string;
@@ -50,9 +51,12 @@ export async function createLedgerDatabase(prefix: string): Promise<LedgerDataba
 
   const ownerUrl = withDatabase(adminUrl, name);
   const owner = quiet(new pg.Pool({ connectionString: ownerUrl }));
-  await runLedgerMigrations(owner, { writerPassword: password });
+  await runLedgerMigrations(owner);
+  // A login of its own, granted ledger_writer, as a deployment would issue one:
+  // suites running at once never reset each other's password.
+  await admin.query(`CREATE ROLE ${name} LOGIN PASSWORD '${password}' IN ROLE ledger_writer`);
 
-  const writerUrl = withUser(ownerUrl, 'ledger_writer', password);
+  const writerUrl = withUser(ownerUrl, name, password);
   const pools: pg.Pool[] = [];
   const writerPool = () => {
     const pool = quiet(new pg.Pool({ connectionString: writerUrl }));
@@ -72,6 +76,7 @@ export async function createLedgerDatabase(prefix: string): Promise<LedgerDataba
       await Promise.all(pools.map((pool) => pool.end()));
       await owner.end();
       await admin.query(`DROP DATABASE IF EXISTS ${name} WITH (FORCE)`);
+      await admin.query(`DROP ROLE IF EXISTS ${name}`);
       await admin.end();
     },
   };
