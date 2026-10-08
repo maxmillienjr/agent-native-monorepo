@@ -138,26 +138,31 @@ describe.skipIf(SKIP)('decision ledger (integration)', () => {
 
   describe('appending', () => {
     it('keeps fifty concurrent appends from five pools contiguous', async () => {
-      const before = (await ledger.readRows()).entries.length;
-      const ledgers = Array.from(
-        { length: 5 },
-        () => new Ledger(new PgLedgerStore(db.writerPool())),
-      );
+      // An empty ledger of its own, so the fifty are seq 0-49 exactly.
+      const empty = await createLedgerDatabase('ledger_concurrent');
+      try {
+        const ledgers = Array.from(
+          { length: 5 },
+          () => new Ledger(new PgLedgerStore(empty.writerPool())),
+        );
 
-      await Promise.all(
-        Array.from({ length: 50 }, (_, n) =>
-          ledgers[n % 5]!.append({
-            entryId: uuidV5(`concurrent-${n}`),
-            payload: runRecorded(run(n)),
-          }),
-        ),
-      );
+        await Promise.all(
+          Array.from({ length: 50 }, (_, n) =>
+            ledgers[n % 5]!.append({
+              entryId: uuidV5(`concurrent-${n}`),
+              payload: runRecorded(run(n)),
+            }),
+          ),
+        );
 
-      const rows = await ledger.readRows();
-      expect(rows.entries.map((entry) => entry.seq)).toEqual(
-        Array.from({ length: before + 50 }, (_, seq) => seq),
-      );
-      expect(verifyChain(rows)).toMatchObject({ ok: true, entries: before + 50 });
+        const rows = await new Ledger(new PgLedgerStore(empty.writer)).readRows();
+        expect(rows.entries.map((entry) => entry.seq)).toEqual(
+          Array.from({ length: 50 }, (_, seq) => seq),
+        );
+        expect(verifyChain(rows)).toMatchObject({ ok: true, entries: 50 });
+      } finally {
+        await empty.drop();
+      }
     });
 
     it('returns the original entry for a retry, and throws on a different payload', async () => {
