@@ -197,7 +197,7 @@ The `reflect` node writes Postgres, then Neo4j, then pgvector, in three sequenti
 
 Until ADR 0009 the two lists were merged with **Reciprocal Rank Fusion (RRF)**, keyed on the fact's content hash. That only became fusion once the graph stored facts too — `(:Fact)-[:MENTIONS]->(:Concept)`, keyed on the same hash — so that both readers returned the same kind of object ([ADR 0004](docs/adr/0004-one-candidate-universe-for-fusion.md)). `reflect` still writes the `:Fact` copy. No request fuses anything now.
 
-Retrieval is scoped to the requesting session by default, with an explicit `crossSession` opt-out. The graph has no session scope, which [P4-B](docs/prd/P4-B-memory-poisoning-red-team.md) found let it return another session's facts. Taking the graph out of the read path closed that, and the graph filter now belongs to P2-D, before anything reads the graph again.
+Retrieval is scoped to the requesting session, with an explicit `crossSession` opt-out, and a query that names neither is refused rather than read across sessions. The graph has no session scope, which [P4-B](docs/prd/P4-B-memory-poisoning-red-team.md) found let it return another session's facts. Taking the graph out of the read path closed that, and the graph filter now belongs to P2-D, before anything reads the graph again. `distill` reads the user's turns only, so the agent never promotes its own answer — or a fact it retrieved and repeated — to semantic memory ([ADR 0011](docs/adr/0011-the-agent-does-not-promote-its-own-output.md)). `EVAL_SUITE=red-team yarn eval` is the regression suite for both: three memory-poisoning cases mapped to OWASP ASI06 and MITRE ATLAS, with what has been measured in [`docs/STATUS.md`](docs/STATUS.md) row 27.
 
 ---
 
@@ -218,7 +218,7 @@ its hash, and write an extra row rather than converging on the first attempt's.
 | `retrieve` | Semantic recall, vector-only    | `messages`, `topK`             | `retrievedContext`                        | pgvector search                               |
 | `plan`     | LLM planning step               | `messages`, `retrievedContext` | `currentPlan`, `messages`, `tokenCounts`  | LLM API call                                  |
 | `act`      | Tool execution loop             | `currentPlan`                  | `toolOutputs`, `stepCount`, `tokenCounts` | LLM API call per step, tool invocations       |
-| `distill`  | Extract entities and facts      | `messages`                     | `extraction`, `tokenCounts`               | LLM API call                                  |
+| `distill`  | Extract entities and facts      | the user's `messages`          | `extraction`, `tokenCounts`               | LLM API call                                  |
 | `reflect`  | Memory consolidation            | `messages`, `extraction`       | _(none — side-effect node)_               | Episodic insert, Neo4j MERGE, pgvector upsert |
 | `egress`   | Validate output, build response | Full state                     | `outcome`                                 | None                                          |
 

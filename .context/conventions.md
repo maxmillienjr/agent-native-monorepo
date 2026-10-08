@@ -190,14 +190,32 @@ It measures the fused retrieval ADR 0009 retired, so it is a historical measurem
   XML emits a `<skipped/>` case rather than a pass or an absence, and the Markdown summary
   prints it between the rate and the table. Never report a rate computed over fewer tasks
   without the list of what was left out.
-- **There are two suites, and `EVAL_SUITE` picks one.** Unset, `yarn eval` runs
-  memory-recall, the suite CI gates. `EVAL_SUITE=prior-auth` runs the 24 labelled
-  prior-authorization requests (P3-D), whose tasks require a `live` or `replay` model, so
-  the stub axis skips every one and says so. It is an environment variable and not a flag
-  because Turbo reads `yarn eval --suite …` as its own option, and it is in `turbo.json`'s
-  `env` for the strict-mode reason above. The prior-auth suite defaults to one trial a task
-  and makes one `generateContent` call a task, except the four administrative requests,
-  which are referred before the model is asked: 20 calls a trial set.
+- **There are three suites, and `EVAL_SUITE` picks one.** Unset, `yarn eval` runs
+  memory-recall. `EVAL_SUITE=red-team` runs the memory-poisoning red team (P4-B), and the
+  replay job runs it as a second step with its own output directory and its own baseline.
+  `EVAL_SUITE=prior-auth` runs the 24 labelled prior-authorization requests (P3-D), whose
+  tasks require a `live` or `replay` model, so the stub axis skips every one and says so. It
+  is an environment variable and not a flag because Turbo reads `yarn eval --suite …` as its
+  own option, and it is in `turbo.json`'s `env` for the strict-mode reason above. The
+  prior-auth suite defaults to one trial a task and makes one `generateContent` call a task,
+  except the four administrative requests, which are referred before the model is asked: 20
+  calls a trial set. **Each suite owns its dataset directory, its cassettes and its replay
+  baseline**, so recording, `EVAL_TASKS`, replay capping and `EVAL_GATE=update` all act on
+  the suite `EVAL_SUITE` names and on no other; run them once per suite.
+- **A security case never goes in a capability suite.** The memory-recall loader refuses a
+  task with a `redTeam` block and the red-team loader refuses a task without one, because a
+  capability rate that moved when a security case was added is the denominator fault P1-G
+  removed. A red-team task names a `canary`, the surfaces it must not reach (`context`,
+  `answer`, `extraction`, one `canary_absent_from_*` grader each) and the OWASP and ATLAS
+  ids it maps to; the ids are pinned enums in `dataset.ts`, so a new one is an edit there
+  with its source. The suite defaults to one trial a task: `rt-001` and `rt-002` make three
+  `generateContent` calls a trial and `rt-003` six, twelve in all, and `rt-001` is the only
+  one the stub axis runs.
+- **`priorRuns` are part of the trial, not graded.** A task's prior inputs run in order
+  before the graded one, in their own sessions, under the trial's one cassette, which closes
+  after the last run. A reset restores every session the task names. The transcript is the
+  graded run's; the prior runs' spans follow its own, so a budget counts every call the trial
+  made.
 - **`EVAL_TRIALS` is per task.** `EVAL_TRIALS=1 yarn eval` on the live axis runs one trial
   of every task that is not skipped: three `generateContent` calls for `memory-recall-001`
   and five for `tool-use-001`. To measure or record one task on
@@ -216,7 +234,7 @@ It measures the fused retrieval ADR 0009 retired, so it is a historical measurem
   mean something.
 - **A cassette is recorded against a commit, a prompt and a model, and replays nothing
   else.** `EVAL_CASSETTE_MODE=record` writes one cassette per trial to
-  `packages/eval-harness/datasets/memory-recall/cassettes/<taskId>.trial-<n>.json`, holding
+  `packages/eval-harness/datasets/<suite>/cassettes/<taskId>.trial-<n>.json`, holding
   the decisions the run made at the five `ModelDeps` seams and the tool call — not HTTP
   traffic. `EVAL_CASSETTE_MODE=replay` serves them back with no model client in the process
   at all, on a memory axis that stays live: the stores are still reset, re-seeded and read
@@ -236,9 +254,10 @@ It measures the fused retrieval ADR 0009 retired, so it is a historical measurem
   pass. Re-recording needs a live key and about eight `generateContent` calls against a
   20-request daily free tier, so it is a deliberate act rather than a step in a loop.
   ADR 0005 records the seam choice and what replay stops measuring. **After a re-record,
-  regenerate the replay baseline** with `EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval`
-  and commit both: the baseline is tied to the set by a digest, and a new set with the old
-  baseline fails the gate as `stale-digest`. A contributor without a key cannot re-record;
+  regenerate the replay baseline** with `EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval`,
+  with `EVAL_SUITE` set as it was for the recording, and commit both: the baseline is tied
+  to the set by a digest, and a new set with the old baseline fails the gate as
+  `stale-digest`. A contributor without a key cannot re-record;
   a maintainer with one pushes the new set and baseline to the pull request's branch. A
   cassette in an older format is refused before any store is reset, with the same two
   commands in the message: P1-F's format 2 changed what two seams return and not what they

@@ -7,9 +7,25 @@ export interface DistillNodeDeps {
   extractEntities: (context: string) => Promise<{ extraction: Extraction; tokenCounts: CallUsage }>;
 }
 
+const EMPTY_EXTRACTION: Extraction = { entities: [], relationships: [], facts: [] };
+
 /**
  * One model call, no I/O against a store. Produces the extraction that
  * `reflect` writes.
+ *
+ * **It reads the user's turns and nothing else** (ADR 0011, P4-B's M3). The
+ * assistant's turn is still written to `episodes` as history; it is not a
+ * source of facts. Before this, `distill` read every message, and the answer
+ * `plan` appends carries whatever retrieval put in its prompt — so a fact
+ * retrieved from anywhere, paraphrased in the answer, came back out as a new
+ * fact under a new hash, and `reflect` wrote it into the requesting session.
+ * That laundering path is closed by construction: a canary that reached only
+ * `plan`'s prompt cannot reach this one. It also stops semantic memory storing
+ * the model's own unsupported claims, which is what it mostly held. What is
+ * given up — facts the model contributed, and a tool's results restated in an
+ * answer — is in the ADR.
+ *
+ * With no user turn there is nothing a user said, and no model call is made.
  *
  * This node exists so that `reflect` can carry a retry policy. Retrying a node
  * is only replay-safe when the node is a function of its input state, and a
@@ -33,8 +49,13 @@ export async function distillNode(
     span.setAttribute('run_id', state.runId);
     span.setAttribute('session_id', state.sessionId);
 
-    const sessionContext = state.messages.map((m) => `${m.role}: ${m.content}`).join('\n');
-    const { extraction, tokenCounts } = await deps.extractEntities(sessionContext);
+    const userTurns = state.messages.filter((m) => m.role === 'user');
+    if (userTurns.length === 0) {
+      return { extraction: EMPTY_EXTRACTION };
+    }
+
+    const userContext = userTurns.map((m) => `${m.role}: ${m.content}`).join('\n');
+    const { extraction, tokenCounts } = await deps.extractEntities(userContext);
 
     span.setAttribute('entity_count', extraction.entities.length);
     span.setAttribute('relationship_count', extraction.relationships.length);

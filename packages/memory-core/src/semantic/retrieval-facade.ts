@@ -2,16 +2,35 @@ import { z } from 'zod';
 import { EMBEDDING_DIMENSIONS } from './embedding.js';
 import type { PgvectorReader } from './pgvector/pgvector.reader.js';
 
-export const RetrievalQuerySchema = z.object({
-  queryEmbedding: z.array(z.number()).length(EMBEDDING_DIMENSIONS),
-  topK: z.number().int().positive().default(10),
-  sessionId: z.string().uuid().optional(),
-  /**
-   * Opts out of session isolation. Retrieval is session-scoped by default;
-   * this is for the case where long-term recall across sessions is the point.
-   */
-  crossSession: z.boolean().default(false),
-});
+/**
+ * A retrieval query. It must say whose memory it reads: a `sessionId`, or
+ * `crossSession: true`, or both (P4-B's M2).
+ *
+ * Scoping used to fail open. `sessionId` was optional and the pgvector reader
+ * filters only when one is present, so a query that omitted it read every
+ * session's facts and nothing said so. `retrieve` always passes one, which made
+ * the open default unreachable from a request and one omitted argument away
+ * from reachable. A query with neither now throws a `ZodError`, which
+ * `IO_RETRY` does not retry: it is a caller's mistake, not a store's.
+ */
+export const RetrievalQuerySchema = z
+  .object({
+    queryEmbedding: z.array(z.number()).length(EMBEDDING_DIMENSIONS),
+    topK: z.number().int().positive().default(10),
+    sessionId: z.string().uuid().optional(),
+    /**
+     * Opts out of session isolation, explicitly. Retrieval is session-scoped;
+     * this is for the case where long-term recall across sessions is the
+     * point, and P2-B's ablation is the caller that needs it.
+     */
+    crossSession: z.boolean().default(false),
+  })
+  .refine((query) => query.sessionId !== undefined || query.crossSession, {
+    message:
+      'a retrieval query must name a sessionId, or set crossSession: true to read every ' +
+      'session on purpose; an unscoped query is refused rather than read as cross-session',
+    path: ['sessionId'],
+  });
 export type RetrievalQuery = z.infer<typeof RetrievalQuerySchema>;
 /**
  * What a caller passes. `topK` and `crossSession` carry defaults, so they are

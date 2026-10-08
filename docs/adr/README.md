@@ -17,3 +17,4 @@ and the answer is not obvious from the code.
 | [0006](0006-deterministic-retrieval-order-over-the-vector-index.md) | A deterministic retrieval order over the vector index                | accepted           |
 | [0008](0008-code-systems-the-repository-may-contain.md)             | The code systems this repository may contain                         | accepted           |
 | [0009](0009-the-second-store-after-the-retrieval-ablation.md)       | The second store, after the retrieval ablation                       | accepted           |
+| [0011](0011-the-agent-does-not-promote-its-own-output.md)           | The agent does not promote its own output to semantic memory         | accepted           |

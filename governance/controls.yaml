@@ -109,6 +109,21 @@ frameworks:
       ASI08: Cascading Failures
       ASI09: Human-Agent Trust Exploitation
 
+  mitre-atlas-2026.09:
+    title: MITRE ATLAS (Adversarial Threat Landscape for AI Systems), data release 2026.09
+    short: ATLAS
+    published: '2026-09'
+    url: https://github.com/mitre-atlas/atlas-data
+    size: 208
+    unit: techniques and sub-techniques
+    source:
+      kind: primary
+      note: Names and first sentences copied from dist/v6/ATLAS-2026.09.yaml in mitre-atlas/atlas-data (collection version 2026.09, modified 2026-09-15), read 2026-10-08. The 208 are the file's objects of type technique, 120 techniques and 88 sub-techniques. Its 40 mitigations are not counted here; AML.M0031 Memory Hardening is the one behind CTL-MEM-02.
+    clauses:
+      AML.T0070: RAG Poisoning — "Adversaries may inject malicious content into data indexed by a retrieval augmented generation (RAG) system to contaminate a future thread through RAG-based search results."
+      AML.T0071: False RAG Entry Injection — "Adversaries may introduce false entries into a victim's retrieval augmented generation (RAG) database."
+      AML.T0080.000: AI Agent Context Poisoning, Memory — "Adversaries may manipulate the memory of a large language model (LLM) in order to persist changes to the LLM across future chat sessions."
+
   hipaa-164.312:
     title: 45 CFR §164.312, Technical safeguards (HIPAA Security Rule)
     short: §164.312
@@ -357,13 +372,39 @@ controls:
 
   - id: CTL-MEM-02
     title: Memory poisoning is red-teamed against the live write path
-    status: planned
-    owner: P4-B
+    status: implemented
     maps:
       - { framework: owasp-asi-2026, ref: ASI06 }
       - { framework: owasp-llm-2025, ref: 'LLM04:2025' }
       - { framework: owasp-llm-2025, ref: 'LLM08:2025' }
       - { framework: nist-ai-600-1, ref: MS-2.7-007 }
+      - { framework: mitre-atlas-2026.09, ref: AML.T0070 }
+      - { framework: mitre-atlas-2026.09, ref: AML.T0071 }
+      - { framework: mitre-atlas-2026.09, ref: AML.T0080.000 }
+    evidence:
+      - kind: test
+        file: packages/memory-core/src/semantic/retrieval-facade.test.ts
+        name: 'rejects a query that has neither sessionId nor crossSession: true'
+        tier: unit
+      - kind: test
+        file: packages/memory-core/test/retrieval-facade.integration.test.ts
+        name: refuses a query that names no session and does not opt out
+        tier: integration
+      - kind: test
+        file: packages/memory-core/test/retrieval-facade.integration.test.ts
+        name: does not return a fact only the graph holds, though the graph reaches it
+        tier: integration
+      - kind: test
+        file: apps/agent-service/src/agent/nodes/distill.node.test.ts
+        name: passes extractEntities a context containing only the user turn
+        tier: unit
+      - { kind: ci, workflow: agent-eval.yml, job: replay, run: EVAL_SUITE=red-team }
+      - {
+          kind: doc,
+          file: docs/adr/0011-the-agent-does-not-promote-its-own-output.md,
+          heading: Decision,
+        }
+    note: Delivered by P4-B. Retrieval refuses a query that names no session (M2), and distill reads the user's turns only, so the agent does not promote its own output (M3, ADR 0011). The red team, EVAL_SUITE=red-team, runs three canary cases — rt-001 another session's fact, rt-002 laundering through the answer, rt-003 a query-only injection through reflect — and the replay job runs it on every pull request. rt-001 passes on the stub model; rt-002 and rt-003 need the model to write, and their cassettes were not yet recorded when this row moved, so until they are that step aborts naming the missing cassette. The graph's session filter (M1) is P2-D's, with any future graph read.
 
   - id: CTL-AGY-01
     title: Every tool declares a reversibility tier, and irreversible calls are compensable

@@ -78,8 +78,9 @@ path.
 
 - **pgvector Collection:** Dense embeddings, searched by exact cosine distance with the
   content hash as a tiebreaker. This is retrieval: `VectorRetrievalFacade` returns this
-  search, in the reader's order, to `plan`. Scoped to the requesting session unless the
-  query opts out. The column carries an HNSW index (`vector_cosine_ops`) that the tiebroken
+  search, in the reader's order, to `plan`. Scoped to the requesting session, and a query
+  that names no session is refused unless it sets `crossSession: true`, the explicit opt-out
+  P2-B's ablation uses (P4-B). The column carries an HNSW index (`vector_cosine_ops`) that the tiebroken
   query cannot use — ADR 0006 records that trade.
 - **Neo4j Knowledge Graph:** Typed nodes (`:Concept`, `:Fact`) joined by `:MENTIONS`, plus
   `:RELATES_TO` between concepts. Written on every run and read by no request. It is kept
@@ -87,8 +88,8 @@ path.
   to the question's — that has not been measured, so `docs/STATUS.md` row 15 is `stubbed`.
   P2-D measures that role or removes the graph (ADR 0009's fallback). `CypherNeo4jReader`
   is kept in `memory-core`, unwired, for that measurement and for the ablation. It has no
-  session scope, so anything that reads the graph again takes P4-B's handed-over filter
-  first. Uniqueness constraints on `:Concept(id)` and `:Fact(contentHash)` are installed at
+  session scope, so anything that reads the graph again takes the session filter P4-B
+  specified and handed to P2-D first. Uniqueness constraints on `:Concept(id)` and `:Fact(contentHash)` are installed at
   boot — `MERGE` is not an upsert without them.
 
 The dimension is one exported constant, `EMBEDDING_DIMENSIONS`, and every schema, DDL,
@@ -132,9 +133,12 @@ START → ingress → retrieve → plan → act ⟲ (loop) → distill → refle
   `toolOutputs`, and no prompt reads that channel: `plan` runs first, and its response is
   already the assistant's answer. `selectTool` sees the plan and the tool names, and not
   the previous call's output. P4-C owns both halves of that.
-- **distill** extracts from every message, including the assistant's own turn, so what
-  `reflect` promotes to semantic memory is mostly the model's plan restated. P4-B proposes
-  changing that.
+- **distill** extracts from the user's turns only (ADR 0011). The assistant's turn is
+  written to `episodes` as history and is not a source of facts, so nothing the model wrote
+  — a retrieved fact it repeated included — is promoted to semantic memory. Semantic memory
+  learns what a user said. P4-B's red team, `EVAL_SUITE=red-team`, is the regression suite
+  for this and for the session scope; `docs/STATUS.md` row 27 says which of its cases have
+  been measured.
 - **distill** makes the extraction model call and writes `extraction` into state. It exists
   so that **reflect** can be retried: a node is only safe to re-run when it is a function of
   its input state, and a `reflect` that extracted its own entities was not.
