@@ -55,7 +55,7 @@ vi.mock('@langchain/google-genai', () => ({
 }));
 
 const liveHeader = {
-  formatVersion: 1 as const,
+  formatVersion: 2 as const,
   taskId: 'memory-recall-001',
   trialIndex: 0,
   recordedAt: '2026-09-10T12:00:00.000Z',
@@ -498,5 +498,34 @@ describe('replayed spans', () => {
     expect(usageKeys(bySeam('distill.extractEntities'))).toEqual([]);
     expect(usageKeys(bySeam('embed'))).toEqual([]);
     expect(unlistedAttributeKeys(spans)).toEqual([]);
+  });
+});
+
+describe('loading a set for replay', () => {
+  let datasetDir: string;
+  beforeEach(() => {
+    datasetDir = mkdtempSync(join(tmpdir(), 'replay-decks-'));
+  });
+  afterEach(() => rmSync(datasetDir, { recursive: true, force: true }));
+
+  it('refuses a version-1 cassette by path, naming the re-record and the baseline commands', () => {
+    // `replayDecks` runs before the Nest context exists, so a refusal here is a
+    // refusal before any store is reset.
+    const path = cassettePath(datasetDir, 'memory-recall-001', 0);
+    mkdirSync(join(datasetDir, 'cassettes'), { recursive: true });
+    writeFileSync(path, JSON.stringify({ header: { ...liveHeader, formatVersion: 1 }, decisions: [] }));
+
+    const refusal = (() => {
+      try {
+        replayDecks(datasetDir, [{ taskId: 'memory-recall-001', trials: 1 }]);
+        return '';
+      } catch (error) {
+        return error instanceof Error ? error.message : String(error);
+      }
+    })();
+
+    expect(refusal).toContain(`${path}: formatVersion is 1, this player reads 2`);
+    expect(refusal).toContain('EVAL_CASSETTE_MODE=record EVAL_TRIALS=1 yarn eval');
+    expect(refusal).toContain('EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval');
   });
 });

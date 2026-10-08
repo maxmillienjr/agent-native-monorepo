@@ -53,6 +53,19 @@ export function explainAbort(error: unknown, progress: RunProgress): AbortCause 
     };
   }
 
+  if (error instanceof Error && error.name === 'CassetteIncompatibleError') {
+    return {
+      code: 'cassette-incompatible',
+      summary:
+        'the committed cassette set cannot be replayed by this player: it was recorded in an ' +
+        'older format, or against a model or embedding width the service no longer runs. The ' +
+        'run stopped before any store was reset.',
+      remedy:
+        `re-record with a key: \`${RE_RECORD_COMMAND}\`, on the live model axis, then ` +
+        `regenerate the replay baseline with \`${UPDATE_BASELINE_COMMAND}\` and push both.`,
+    };
+  }
+
   const rateLimit = classifyRateLimit(error);
   if (rateLimit === 'daily-quota') {
     const details = (error as { errorDetails?: unknown }).errorDetails;

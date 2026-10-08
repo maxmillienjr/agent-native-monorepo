@@ -5,11 +5,14 @@ import { dirname } from 'node:path';
 import { EMBEDDING_DIMENSIONS, EMBEDDING_MODEL } from '@repo/memory-core';
 import { cassettePath, type Axes, type ModelIds, type ReplayProvenance } from '@repo/eval-harness';
 import {
+  CASSETTE_FORMAT_VERSION,
+  CassetteIncompatibleError,
   CassettePlayer,
   CassetteRecorder,
   type Deck,
   type Decision,
   type DecisionCall,
+  type ReplayConfig,
   type TokenCounts,
 } from '@repo/agent-cassette';
 import {
@@ -19,6 +22,7 @@ import {
   type InferenceSeam,
 } from '@repo/telemetry';
 import { CHAT_MODEL, defaultTools, type ModelDeps } from '../runs/runs.service.js';
+import { RE_RECORD_COMMAND, UPDATE_BASELINE_COMMAND } from './abort-cause.js';
 
 /**
  * `ModelDeps` ⟷ `Deck`, in both directions.
@@ -259,7 +263,7 @@ export function recordingDecks(options: {
       const path = cassettePath(options.datasetDir, taskId, trialIndex);
       const recorder = new CassetteRecorder({
         header: {
-          formatVersion: 1,
+          formatVersion: CASSETTE_FORMAT_VERSION,
           taskId,
           trialIndex,
           recordedAt: now().toISOString(),
@@ -330,10 +334,7 @@ export function replayDecks(
     for (let index = 0; index < task.trials; index += 1) {
       const path = cassettePath(datasetDir, task.taskId, index);
       const raw: unknown = JSON.parse(readFileSync(path, 'utf8'));
-      players.set(
-        key(task.taskId, index),
-        new CassettePlayer(raw, config, { onServe: recordServedDecision }),
-      );
+      players.set(key(task.taskId, index), playerFor(path, raw, config));
     }
   }
 
@@ -386,6 +387,29 @@ export function replayDecks(
       };
     },
   };
+}
+
+/**
+ * A player for one cassette, or a refusal that names the file and the command.
+ *
+ * The package says what is wrong with a cassette and nothing about this
+ * repository's commands, which are the harness's. The fix for every refusal it
+ * makes — an old format, another model, another embedding width — is the same
+ * re-record, so the wiring is where the message learns it.
+ */
+function playerFor(path: string, raw: unknown, config: ReplayConfig): CassettePlayer {
+  try {
+    return new CassettePlayer(raw, config, { onServe: recordServedDecision });
+  } catch (error) {
+    if (!(error instanceof CassetteIncompatibleError)) throw error;
+    const refusal = new CassetteIncompatibleError(
+      error.reasons.map((reason) => `${path}: ${reason}`),
+    );
+    refusal.message +=
+      `\nRe-record the set with \`${RE_RECORD_COMMAND}\` on the live model axis, then ` +
+      `regenerate the replay baseline with \`${UPDATE_BASELINE_COMMAND}\`.`;
+    throw refusal;
+  }
 }
 
 function key(taskId: string, trialIndex: number): string {

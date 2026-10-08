@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CassetteMissError } from '@repo/agent-cassette';
+import { CassetteIncompatibleError, CassetteMissError } from '@repo/agent-cassette';
 import { RE_RECORD_COMMAND, UPDATE_BASELINE_COMMAND, explainAbort } from './abort-cause.js';
 
 const noTrials = { completed: [] };
@@ -12,6 +12,18 @@ describe('explainAbort', () => {
     );
 
     expect(cause?.code).toBe('cassette-miss');
+    expect(cause?.remedy).toContain(`\`${RE_RECORD_COMMAND}\``);
+    expect(cause?.remedy).toContain(`\`${UPDATE_BASELINE_COMMAND}\``);
+  });
+
+  it('names a set the player refuses, and gives the same two commands', () => {
+    const cause = explainAbort(
+      new CassetteIncompatibleError(['formatVersion is 1, this player reads 2']),
+      noTrials,
+    );
+
+    expect(cause?.code).toBe('cassette-incompatible');
+    expect(cause?.summary).toContain('before any store was reset');
     expect(cause?.remedy).toContain(`\`${RE_RECORD_COMMAND}\``);
     expect(cause?.remedy).toContain(`\`${UPDATE_BASELINE_COMMAND}\``);
   });
