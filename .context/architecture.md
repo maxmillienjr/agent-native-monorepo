@@ -155,7 +155,7 @@ compensate ──▶ compensate | distill                   (graph/edges.ts#shou
   HTTP route resumes a run yet.
 - **Tool output reaches the next selection, not the answer.** `plan` runs before `act`,
   and its response is already the assistant's turn, so the reply is written before any
-  tool runs (`docs/STATUS.md` row 28, unowned).
+  tool runs (`docs/STATUS.md` row 36, unowned).
 - **distill** extracts from every message, including the assistant's own turn, so what
   `reflect` promotes to semantic memory is mostly the model's plan restated. P4-B proposes
   changing that.
