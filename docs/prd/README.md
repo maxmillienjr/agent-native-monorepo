@@ -13,8 +13,8 @@ stores from an empty database: one run leaves episodic rows, `:Concept` and `:Fa
 `semantic_facts` rows and checkpoints under the runId its own response returned.
 
 **`docs/STATUS.md` is the authority on any capability sentence, including the ones above.**
-Twenty-six rows, each with a status and evidence cited by name — twenty-one `implemented`,
-one `planned`, three `stubbed`, one `removed`, none `broken`. The rule that keeps it true is in
+Twenty-seven rows, each with a status and evidence cited by name — twenty-two
+`implemented`, one `planned`, three `stubbed`, one `removed`, none `broken`. The rule that keeps it true is in
 `.context/conventions.md`: a change that moves a row moves it there in the same pull
 request. `yarn lint:docs` fails CI when a PRD's status disagrees with its row below.
 
@@ -219,6 +219,22 @@ those fixes, every bundle and every captured response validates against US Core 
 only distance from PAS left is X12. The recording needs 20 `generateContent` calls, a full
 free-tier day, so it is planned as two batches on two days. Until it is made, the agent's
 accuracy on the labelled set is unmeasured, and STATUS row 26 says so.
+
+**[P4-B](P4-B-memory-poisoning-red-team.md) is in progress**, tracked in
+[#96](https://github.com/maxmillienjr/agent-native-monorepo/issues/96), with one step left:
+the live recording. Both mitigations are in. Retrieval refuses a query that names no session
+unless it sets `crossSession: true` (M2). `distill` reads the user's turns only, so the agent
+never promotes its own answer, or a fact it retrieved and repeated, to semantic memory (M3,
+[ADR 0011](../adr/0011-the-agent-does-not-promote-its-own-output.md)). The red team is a
+suite of its own, `EVAL_SUITE=red-team`, with three canary cases mapped to OWASP ASI06 and
+MITRE ATLAS 2026.09, which joined the control registry. The replay job runs it as a second
+step. CTL-MEM-02 is `implemented`. On the stub model `rt-001` passed before and after the
+mitigations, as ADR 0009 predicted, and failed when the session scope was forced off.
+**`rt-002` and `rt-003` have not been measured.** M3 changed every extraction request, so
+the replay tier aborts at `distill` until the cassettes are re-recorded. The recording is
+29 `generateContent` calls over two days: the live baseline on the parent commit, then
+`memory-recall-001`, then the red team and `tool-use-001`. The PRD's "The recording" has the
+commands, and STATUS row 27 says what is measured.
 
 **Where the detail lives.** Each PRD carries its own risks, its divergences from the design
 that was reviewed, and — where a shipped record turned out to be wrong — the correction that
