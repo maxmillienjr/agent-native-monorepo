@@ -1,6 +1,6 @@
 # 0002 · Neo4j and pgvector rather than one store
 
-**Status:** accepted
+**Status:** superseded by [0009](0009-the-second-store-after-the-retrieval-ablation.md)
 **Date:** 2026-08-28
 
 ## Context

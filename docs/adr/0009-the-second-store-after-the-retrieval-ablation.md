@@ -1,8 +1,9 @@
 # 0009 · The second store, after the retrieval ablation
 
-**Status:** proposed
+**Status:** accepted
 **Date:** 2026-10-08
-**Supersedes:** [0002](0002-neo4j-and-pgvector-rather-than-one-store.md), on acceptance
+**Decided:** 2026-10-08, by the repository owner: option B, with C as its fallback
+**Supersedes:** [0002](0002-neo4j-and-pgvector-rather-than-one-store.md)
 
 ## Context
 
@@ -30,8 +31,9 @@ memory-core. The decision rule was accepted with the PRD, before any number exis
   replaced by the gold seeds a perfect linker would return.
 
 This record reports the outcome the rule selected, sets out what to do about it, and
-recommends one option. Which store to keep is this record's decision. The code change that
-follows from it waits for the decision to be accepted.
+recommends one option. Which store to keep is this record's decision. It was written as
+`proposed`, and the owner accepted the recommendation; the Decision section records that and
+the code change that followed.
 
 ## The measurement
 
@@ -194,8 +196,6 @@ graph ranker that is not distance-only was never measured. Keeping the writes ke
 question answerable without a re-ingest. It is only honest with the two conditions above:
 the graph is marked unmeasured, and if no PRD measures the explanation role, C follows.
 
-This record does not make the code change. It waits for acceptance.
-
 ## What a positive result would need
 
 A future PRD that wants the graph back in retrieval measures it as a new condition against
@@ -218,13 +218,75 @@ this baseline, with its own pre-registered rule. It does not edit this one. It w
 - **An answer-level ablation only after a retrieval-level gain.** P2-B kept it unowned for
   that reason.
 
+## Decision
+
+**Option B.** The repository owner accepted the recommendation on 2026-10-08. Retrieval is
+vector-only. `reflect` keeps writing concepts, relationships and `:Fact` nodes to Neo4j,
+unchanged, for an explanation role that has not been measured. `docs/STATUS.md` marks that
+role `stubbed`.
+
+**The fallback is option C, and this is its condition.** P2-D owns the explanation role. It
+either measures it, with a rule fixed before the run as P2-B's was, or it removes the graph.
+C follows if P2-D's measurement does not meet its own rule, or if P2-D is closed without
+one. In either case the second store's cost has stopped buying anything that was measured.
+A future PRD that wants the graph back in _retrieval_ is a different question. It measures
+a new condition against P2-B's baseline, as "What a positive result would need" sets out.
+
+**What the change deleted, moved and kept.**
+
+- **Deleted from the request path.** `HybridRetrievalFacade` is replaced by
+  `VectorRetrievalFacade`, which validates the query and returns the session-scoped pgvector
+  search in the reader's order, at `topK` rather than the `2 × topK` that fusion
+  over-fetched. `MemoryModule` no longer constructs a graph reader. `retrieve` no longer
+  derives seed ids. The retrieval query and `RunRequest.config` lose `hopDepth`, and the
+  query loses `seedEntityIds`, because nothing reads them. A knob that is validated and then
+  ignored is a defect this repository has already removed once.
+- **Moved to their one caller.** The seed linker moved into the ablation runner, as
+  `eval/seed-linker.ts`, frozen as it was deployed. `rrfMerge` moved into
+  `@repo/eval-harness`. The fused path is reproduced in the runner as `fusedRetrieve`. That
+  keeps `yarn eval:retrieval` runnable as a historical measurement of the design this record
+  retires. It is the reason the code was moved rather than deleted.
+- **Kept in `memory-core`.** `CypherNeo4jReader` stays, exported and integration-tested, and
+  is not wired into the service. The ablation needs it, and so will P2-D's explanation
+  measurement, which reads the graph. Deleting it now would mean writing it again for that
+  measurement. Option C deletes it.
+- **Kept unchanged.** Every graph write (`mergeEntity`, `mergeRelationship`, `mergeFact`),
+  the constraints, the driver, and the compose and CI services. P2-B's `graphFacts` seed
+  format stays, because the ablation seeds its corpus through it.
+
 ## Consequences
 
-When accepted, this record supersedes ADR 0002. The decision to run both stores is replaced
-by whichever option is accepted, and ADR 0002's index row becomes `superseded by 0009`.
-ADR 0004 is not superseded. One candidate universe remains what makes any fusion
-measurable, and the ablation could not have run without it.
+This record supersedes ADR 0002. The decision to run both stores _for retrieval_ is
+replaced by option B, and ADR 0002's status line and index row read `superseded by 0009`.
 
-Until acceptance, nothing changes in code. `docs/STATUS.md` row 15 states the measurement,
-and the new row records the ablation as a capability. `README.md` no longer claims that the
-union improves recall.
+**ADR 0004 is not superseded, but on the request path it is now moot.** It gave both
+readers one universe of facts so that fusion could happen, and no request fuses any more.
+The `:Fact` copy it introduced is still written by `reflect`. That duplication now pays for
+three things: the ablation's reproducibility, the explanation role P2-D measures, and the
+option of measuring a graph condition later without re-ingesting every run. If C follows,
+the `:Fact` copy goes, and a record that removes Neo4j supersedes 0004 as well.
+
+**`graph-recall-001` is deleted**, with its cassette and its four cells in P1-D's replay
+baseline. The task existed to prove that a fact only the graph held reached `plan`'s prompt,
+and under this decision no graph fact can. It was not converted into a negative task,
+asserting that the graph is absent, for two reasons. A converted task changes `plan`'s
+prompt, so it needs a live re-record, and the free-tier quota was exhausted on the day of
+the change. And the property is a fact about retrieval, not about the model, so it is held
+without a model call. `retrieval-facade.integration.test.ts` checks that a fact the graph
+reaches is not returned, and `retrieval-facade.test.ts` checks that the facade returns the
+vector reader's list unchanged. The other two tasks never had a graph fact in their
+context, so their cassettes replay unchanged without a re-record. The
+`retrieved_from_source` grader went with the task, because the task was its only user.
+
+**P4-B's cross-session leak is closed on the read side.** Its graph session filter (M1) is
+no longer needed by any request. It moves to P2-D, which owns any future graph read. M2,
+the refusal of an unscoped query, and M3, `distill` reading user turns only, stay with P4-B.
+
+**`yarn eval:retrieval` stays runnable and still runs in no pipeline.** Its `vector`
+condition is what a request gets today. Its `graph` and `hybrid` conditions measure the
+design this record retired. P2-D also owns the question of whether the ablation belongs in a
+CI tier.
+
+**The README's claim is now simpler and true.** The two-index design was presented as the
+repository's architectural differentiator. What the repository now shows is a premise that
+was measured, did not hold, and was acted on.
