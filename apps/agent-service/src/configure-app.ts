@@ -1,6 +1,7 @@
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { SERVICE_CREDENTIALS, type ServiceCredentials } from './auth/credentials.js';
 import { announceAuthMode, requireCredential } from './auth/require-credential.js';
+import { extractTraceContext } from './auth/trace-context.js';
 
 /** FHIR's JSON media type (R4 §2.6.1). */
 export const FHIR_JSON = 'application/fhir+json';
@@ -11,7 +12,8 @@ export const FHIR_JSON = 'application/fhir+json';
  *
  * Order matters, and it is the order of the calls below. Authentication comes
  * first, so an unauthenticated body is never parsed. Then the body parser,
- * then the routes this function owns. Nest's controllers are registered at
+ * then the caller's trace context, then the routes this function owns:
+ * `/health` here, the A2A routes later. Nest's controllers are registered at
  * `init()`, after all of it.
  *
  * One JSON parser for both media types, replacing Nest's default rather than
@@ -35,6 +37,7 @@ export function configureApp(app: NestExpressApplication): void {
   app.use(requireCredential(credentials));
 
   app.useBodyParser('json', { type: ['application/json', FHIR_JSON] });
+  app.use(extractTraceContext);
 
   const httpAdapter = app.getHttpAdapter();
   httpAdapter.get('/health', (_req, res) => {
