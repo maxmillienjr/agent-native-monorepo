@@ -37,6 +37,8 @@ coverage/
 test-results/
 playwright-report/
 eval-results/
+canary-results/
+compare-results/
 
 # Docker
 docker-compose.override.yml

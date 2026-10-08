@@ -16,7 +16,8 @@
     "eval": "node dist/eval/run-eval.js",
     "eval:retrieval": "node dist/eval/run-retrieval-ablation.js",
     "eval:history": "node dist/eval/eval-history.js",
-    "eval:promote-live": "node dist/eval/promote-live.js"
+    "eval:promote-live": "node dist/eval/promote-live.js",
+    "canary": "node dist/eval/canary/run-canary.js"
   },
   "dependencies": {
     "@langchain/core": "^1.2.13",
