@@ -128,7 +128,12 @@ curl -N -X POST http://localhost:3001/runs/stream \
 
 Both quickstart curls above work against a fresh clone with no `.env` at all: with no
 `GOOGLE_API_KEY` set, the service runs the graph against a deterministic stub dependency
-set, which is also what CI exercises.
+set, which is also what CI exercises. With no `SERVICE_CREDENTIALS` set either, the service
+runs **open**: it serves every caller without a credential and says so at boot, as
+`auth.open` at `warn`. Set it to `principal:sha256hex` pairs and every route except
+`/health` and the two `/.well-known` documents needs `Authorization: Bearer <token>`;
+[ADR 0014](docs/adr/0014-service-authentication-bearer-at-the-service-open-when-unconfigured.md)
+says why open is the unconfigured default and what a deployment must set.
 
 Memory is a second, independent axis. Set `DATABASE_URL` and `NEO4J_URI` — as
 `docker compose --profile full` does — and the service constructs the real adapters, runs
@@ -165,6 +170,41 @@ docker compose --profile full up --build
 | Neo4j Browser | http://localhost:7474 |
 
 `docker compose up` (without `--profile`) still starts only the infrastructure services for local `yarn dev` development.
+
+The full stack runs **authenticated**. The console adds its own credential, so the browser
+needs none. A request to the gateway or the service needs one of the demo tokens the compose
+file names:
+
+```bash
+curl -X POST http://localhost:3001/runs \
+  -H 'Authorization: Bearer tck-demo-token' \
+  -H 'Content-Type: application/json' \
+  -d '{"sessionId": "550e8400-e29b-41d4-a716-446655440000", "messages": [{"role": "user", "content": "What is LangGraph?"}]}'
+```
+
+### Calling it as another agent (A2A)
+
+The service is also an [Agent2Agent](https://github.com/a2aproject/A2A) v1.0 server, so an
+agent built on another framework can find and call it without a port. The Agent Card is at
+`/.well-known/agent-card.json`, signed in the full stack, and JSON-RPC is at `/a2a/jsonrpc`:
+
+```bash
+curl -s -H 'A2A-Version: 1.0' http://localhost:3001/.well-known/agent-card.json
+
+curl -X POST http://localhost:3001/a2a/jsonrpc \
+  -H 'A2A-Version: 1.0' \
+  -H 'Authorization: Bearer tck-demo-token' \
+  -H 'Content-Type: application/json' \
+  -d '{"jsonrpc": "2.0", "id": 1, "method": "SendMessage", "params": {"message": {"messageId": "m-1", "role": "ROLE_USER", "parts": [{"text": "What is LangGraph?"}]}}}'
+```
+
+Each message is a task, and the task's `run` artifact carries the run id and `messageCount`,
+the messages the run was given. Send a second message with the first one's `contextId` and
+it is given three: the conversation is rebuilt from episodic memory. **On the stub memory
+axis there is no memory to rebuild from, so every message is given one.** A request with no
+`A2A-Version` header is treated as v0.3, which is what ADK for TypeScript 2.1.0 speaks.
+Conformance is the A2A TCK's MUST-level JSON-RPC tests at a pinned commit, run in CI with
+the exceptions listed in `scripts/tck-expected.txt`; there is no A2A certification.
 
 ---
 
