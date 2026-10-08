@@ -36,8 +36,8 @@ export function capabilityStatement(date: string): FhirCapabilityStatement {
   return {
     resourceType: 'CapabilityStatement',
     meta: { security: [{ ...HTEST }] },
-    name: 'CedarbrookPriorAuthorizationIntake',
-    title: 'Cedarbrook Synthetic Health Plan prior-authorization intake',
+    name: 'QuillmarkPriorAuthorizationIntake',
+    title: 'Quillmark Health Partners prior-authorization intake',
     status: 'active',
     experimental: true,
     date,

@@ -1,12 +1,12 @@
 {
-  "id": "cbk-dme-e0470",
+  "id": "qhp-dme-e0470",
   "hcpcs": "E0470",
   "service": "Respiratory assist device, bi-level pressure capability, without backup rate feature, used with noninvasive interface, e.g., nasal or facial mask (intermittent assist device with continuous positive airway pressure device)",
   "title": "Bi-level respiratory assist device without backup rate, initial request",
   "version": "2026.1",
   "effective": "2026-01-01",
   "approvalPeriodDays": 90,
-  "disclaimer": "Synthetic. Invented for the fictional Cedarbrook Synthetic Health Plan. These criteria and their thresholds are not any payer's or CMS's coverage criteria, are not paraphrased from any, and are not clinical guidance.",
+  "disclaimer": "Synthetic. Invented for the fictional Quillmark Health Partners. These criteria and their thresholds are not any payer's or CMS's coverage criteria, are not paraphrased from any, and are not clinical guidance.",
   "criteria": [
     {
       "id": "e0470-osa-diagnosis",

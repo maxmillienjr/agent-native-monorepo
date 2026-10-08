@@ -1,12 +1,12 @@
 {
-  "id": "cbk-dme-e0601",
+  "id": "qhp-dme-e0601",
   "hcpcs": "E0601",
   "service": "Continuous positive airway pressure (cpap) device",
   "title": "Continuous positive airway pressure device, initial request",
   "version": "2026.1",
   "effective": "2026-01-01",
   "approvalPeriodDays": 90,
-  "disclaimer": "Synthetic. Invented for the fictional Cedarbrook Synthetic Health Plan. These criteria and their thresholds are not any payer's or CMS's coverage criteria, are not paraphrased from any, and are not clinical guidance.",
+  "disclaimer": "Synthetic. Invented for the fictional Quillmark Health Partners. These criteria and their thresholds are not any payer's or CMS's coverage criteria, are not paraphrased from any, and are not clinical guidance.",
   "criteria": [
     {
       "id": "e0601-osa-diagnosis",

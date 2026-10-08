@@ -135,7 +135,7 @@ function authorBundle(
       : `DocumentReference/${ids.document(key)}`;
 
   const patientRef = { reference: `Patient/${ids.patient}` };
-  const memberId = `CBK-M-${String(1000 + index + 1)}`;
+  const memberId = `QHP-M-${String(1000 + index + 1)}`;
 
   const claim: FhirResource = {
     resourceType: 'Claim',

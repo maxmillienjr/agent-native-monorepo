@@ -1,12 +1,12 @@
 {
-  "id": "cbk-dme-e0260",
+  "id": "qhp-dme-e0260",
   "hcpcs": "E0260",
   "service": "Hospital bed, semi-electric (head and foot adjustment), with any type side rails, with mattress",
   "title": "Semi-electric hospital bed, initial request",
   "version": "2026.1",
   "effective": "2026-01-01",
   "approvalPeriodDays": 180,
-  "disclaimer": "Synthetic. Invented for the fictional Cedarbrook Synthetic Health Plan. These criteria and their thresholds are not any payer's or CMS's coverage criteria, are not paraphrased from any, and are not clinical guidance.",
+  "disclaimer": "Synthetic. Invented for the fictional Quillmark Health Partners. These criteria and their thresholds are not any payer's or CMS's coverage criteria, are not paraphrased from any, and are not clinical guidance.",
   "criteria": [
     {
       "id": "e0260-positioning-need",

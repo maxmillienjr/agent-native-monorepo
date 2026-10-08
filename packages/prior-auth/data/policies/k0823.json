@@ -1,12 +1,12 @@
 {
-  "id": "cbk-dme-k0823",
+  "id": "qhp-dme-k0823",
   "hcpcs": "K0823",
   "service": "Power wheelchair, group 2 standard, captains chair, patient weight capacity up to and including 300 pounds",
   "title": "Group 2 power wheelchair, initial request",
   "version": "2026.1",
   "effective": "2026-01-01",
   "approvalPeriodDays": 180,
-  "disclaimer": "Synthetic. Invented for the fictional Cedarbrook Synthetic Health Plan. These criteria and their thresholds are not any payer's or CMS's coverage criteria, are not paraphrased from any, and are not clinical guidance.",
+  "disclaimer": "Synthetic. Invented for the fictional Quillmark Health Partners. These criteria and their thresholds are not any payer's or CMS's coverage criteria, are not paraphrased from any, and are not clinical guidance.",
   "criteria": [
     {
       "id": "k0823-mobility-limitation",

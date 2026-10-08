@@ -212,7 +212,7 @@
               ]
             },
             "system": "https://example.org/fhir/sid/member-id",
-            "value": "CBK-M-1018"
+            "value": "QHP-M-1018"
           }
         ],
         "active": true,
@@ -272,11 +272,11 @@
               ]
             },
             "system": "https://example.org/fhir/sid/member-id",
-            "value": "CBK-M-1018"
+            "value": "QHP-M-1018"
           }
         ],
         "status": "active",
-        "subscriberId": "CBK-M-1018",
+        "subscriberId": "QHP-M-1018",
         "subscriber": {
           "reference": "Patient/patient-k0823-administrative"
         },
@@ -310,8 +310,8 @@
                 }
               ]
             },
-            "value": "cbk-ma-plus",
-            "name": "Cedarbrook Medicare Advantage Plus (synthetic)"
+            "value": "quillmark-senior-advantage-plus",
+            "name": "Quillmark Senior Advantage Plus (synthetic)"
           }
         ]
       }
@@ -459,7 +459,7 @@
         "identifier": [
           {
             "system": "https://example.org/fhir/sid/payer-id",
-            "value": "CBK-SYN-001"
+            "value": "QHP-SYN-001"
           }
         ],
         "active": true,
@@ -473,7 +473,7 @@
             ]
           }
         ],
-        "name": "Cedarbrook Synthetic Health Plan"
+        "name": "Quillmark Health Partners"
       }
     },
     {
