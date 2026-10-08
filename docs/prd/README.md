@@ -2,10 +2,10 @@
 
 ## Where things stand
 
-_Last updated 2026-09-26. If this section is more than a few weeks stale, trust the code
+_Last updated 2026-10-08. If this section is more than a few weeks stale, trust the code
 over it and update it._
 
-**Six PRDs are shipped and the system they describe is running.** The service answers
+**Ten PRDs are shipped and the system they describe is running.** The service answers
 `POST /runs` and `POST /runs/stream`; `memory-core` is constructed by the app rather than
 sitting beside it; the graph compiles with a checkpointer and a retry policy on every node
 that performs I/O; and `packages/eval-harness` measures the result. Verified against live
@@ -89,17 +89,21 @@ is no secret. **Nothing blocks a merge until the owner applies
 `.github/rulesets/main.json`**, which requires `eval-replay`; `yarn lint:docs` keeps its
 check names equal to real jobs.
 
-**[P2-B](P2-B-retrieval-ablation.md) is in progress**, tracked in [#57](https://github.com/maxmillienjr/agent-native-monorepo/issues/57),
-and waiting on blind adjudication. The dataset (335 facts, 200 queries in four strata) was
-committed before any vector existed; `yarn eval:retrieval` runs with no key over the
-recorded embeddings and two runs from empty stores match byte for byte. The first run, on
-pre-registered labels: `vector` and `hybrid` both 0.940 Recall@10 and `graph` 0, because
-the seed linker produced no id the graph holds on any of the 200 queries. With the linker
-replaced by gold seeds, `hybrid·oracle` is 0.145 below `vector`. The pool of 3,029
-unlabelled candidates is committed for a separate session to judge; the decision rule's
-outcome, the ADR that records it and the documentation that states the result follow the
-adjudication. `graph-recall-001` is the first task to reach the graph, recorded and
-replayed.
+**[P2-B](P2-B-retrieval-ablation.md) has shipped**, tracked in
+[#57](https://github.com/maxmillienjr/agent-native-monorepo/issues/57), and the answer to
+ADR 0002 is no. `yarn eval:retrieval` scored vector, graph and hybrid on 200 queries labelled
+before any vector existed. It replays recorded embeddings with no key, and two runs from
+empty stores are byte-identical. On the deployed path `hybrid` equals `vector` at 0.940
+Recall@10, because the seed linker produced no id the graph holds on any query. With perfect
+seeds `hybrid` is 0.145 below `vector`, interval [−0.195, −0.095]: the graph ranks only by
+hop distance, and RRF weighs that hash-ordered list as heavily as the vector list. The
+pre-registered rule selects "neither does", and a blind model adjudication of the 3,029
+pooled candidates added one label and selects the same row. [ADR
+0009](../adr/0009-the-second-store-after-the-retrieval-ablation.md) is **proposed**, not
+accepted. It supersedes 0002 on acceptance and recommends taking the graph out of the fused
+list, with removing the graph path as the fallback. Nothing in code changes until it is
+accepted. Any linker fix must wait for P4-B's session filter on the graph. The ablation runs
+in no pipeline, and nothing owns wiring it in.
 
 **[P2-C](P2-C-otel-genai-semantics.md) has shipped**, tracked in
 [#74](https://github.com/maxmillienjr/agent-native-monorepo/issues/74). A run is now one
@@ -211,11 +215,11 @@ The three-tier memory model is instantiated and the graph is checkpointed. What 
 measuring whether the hybrid premise holds. The standard vocabulary for saying so is in
 place: P2-C emits the OpenTelemetry GenAI conventions.
 
-| ID                                   | Title                                                            | Size | Status      |
-| ------------------------------------ | ---------------------------------------------------------------- | ---- | ----------- |
-| [P2-A](P2-A-wire-memory-core.md)     | Wire memory-core into the service; add checkpointing and retry   | L    | shipped     |
-| [P2-B](P2-B-retrieval-ablation.md)   | Hybrid retrieval evaluation and the graph/vector/hybrid ablation | L    | in-progress |
-| [P2-C](P2-C-otel-genai-semantics.md) | OpenTelemetry GenAI semantics, including evaluation events       | L    | shipped     |
+| ID                                   | Title                                                            | Size | Status  |
+| ------------------------------------ | ---------------------------------------------------------------- | ---- | ------- |
+| [P2-A](P2-A-wire-memory-core.md)     | Wire memory-core into the service; add checkpointing and retry   | L    | shipped |
+| [P2-B](P2-B-retrieval-ablation.md)   | Hybrid retrieval evaluation and the graph/vector/hybrid ablation | L    | shipped |
+| [P2-C](P2-C-otel-genai-semantics.md) | OpenTelemetry GenAI semantics, including evaluation events       | L    | shipped |
 
 ## Tier 3 — Regulated-domain credibility
 

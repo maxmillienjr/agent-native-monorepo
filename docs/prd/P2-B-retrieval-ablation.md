@@ -2,11 +2,12 @@
 id: P2-B
 title: Hybrid retrieval evaluation and the graph/vector/hybrid ablation
 tier: 2
-status: in-progress
+status: shipped
 size: L
 depends_on: [P1-A, P1-B, P2-A]
 blocks: [P4-B]
 issue: 57
+controls: [CTL-EVAL-04]
 superseded_by: null
 ---
 
@@ -567,13 +568,18 @@ no network.
       timestamps and latencies. **Memory live, embeddings recorded.** Verified 2026-09-26:
       containers recreated before each run; the masked JSON, the masked Markdown and both
       pool files were identical.
-- [ ] The blind pooling pass is done, and the report carries metrics under the
-      pre-registered and the adjudicated labels. **Reviewer.** The pool is committed (3,029
-      candidates over 200 queries); the adjudication has not run.
-- [ ] The decision rule above is applied to the pre-registered labels and the outcome is
+- [x] The blind pooling pass is done, and the report carries metrics under the
+      pre-registered and the adjudicated labels. **Reviewer.** 3,029 pooled candidates were
+      judged by a separate session, `claude-opus-5-5`, that saw only `pool-candidates.json`.
+      One was judged relevant, and the conductor spot-checked about 120 decisions. The report
+      under `reports/adjudicated/` scores every condition under both sets, 201 and 202
+      relevant pairs.
+- [x] The decision rule above is applied to the pre-registered labels and the outcome is
       recorded in a new ADR listed in `docs/adr/README.md` — whichever row it lands in.
-      **Reviewer, against the committed report.** Waits on the adjudication, by the review's
-      instruction.
+      **Reviewer, against the committed report.** Row "neither does", for both the primary
+      and the diagnostic pair, and the same under the adjudicated labels. It is recorded in
+      ADR 0009, listed with status `proposed`, because the row makes it supersede ADR 0002
+      and choose a store, which the conductor reviews before acceptance.
 - [x] `graph-recall-001` passes `retrieved_from_source` on **model live, memory live** in the
       recording run, and on **model replay, memory live** from its committed cassette. The
       stub model axis runs it too, and is not what this criterion is verified on: the point
@@ -581,21 +587,20 @@ no network.
       Verified 2026-09-26: recorded at `5aca9f9` for three `generateContent` calls, and the
       recorded `plan` prompt carries the graph fact tagged `[neo4j]`; the replay passed all
       three tasks.
-- [ ] `docs/STATUS.md` row 15 cites the measurement; a new row records the ablation as a
+- [x] `docs/STATUS.md` row 15 cites the measurement; a new row records the ablation as a
       capability; `README.md:188` and `packages/eval-harness/README.md:163` state the result
-      rather than the plan. **Reviewer.** Written once the adjudicated report exists, since
-      those lines state the result.
+      rather than the plan. **Reviewer.** Row 15 says fusion executes and does not help; row
+      23 is the ablation. README's "Why both" paragraph and the harness README's new
+      retrieval-ablation section state the numbers and the row. The line that promised the
+      metrics on the `Grader` interface is gone.
 - [x] `.context/conventions.md` says where retrieval labels come from, that they are frozen
       before a run, and that an embedding file is re-recorded when `EMBEDDING_MODEL`,
       `EMBEDDING_DIMENSIONS` or the dataset changes. **Reviewer.**
 
 ## What shipped, and where it diverged
 
-Status at the adjudication checkpoint, 2026-09-26. Everything up to the first run and the
-pool is built; the adjudication, the ADR and the documentation that states the result are
-not.
-
-The first run, pre-registered labels, recorded embeddings, memory live:
+Shipped 2026-10-08. The first run was on 2026-09-26, and the adjudicated run on 2026-10-08,
+on the same dataset and embeddings. Pre-registered labels, recorded embeddings, memory live:
 
 | Condition                | Recall@10 | nDCG@10 | MRR   | relational R@10 | Empty |
 | ------------------------ | --------- | ------- | ----- | --------------- | ----- |
@@ -608,8 +613,23 @@ The first run, pre-registered labels, recorded embeddings, memory live:
 
 `hybrid` minus `vector` is exactly 0 on every query, interval `[0, 0]`: the linker produced
 ids for 150 queries and none is a concept in the graph. `hybrid·oracle` minus `vector` is
-−0.145, interval `[−0.195, −0.095]`. The rule's outcome is not stated until the adjudicated
-labels are in.
+−0.145, interval `[−0.195, −0.095]`.
+
+**The rule selects "neither does": the premise did not hold on this data.** Both pairs
+"do not earn their keep". The primary pair's upper bound, 0, is below +0.05. The
+diagnostic pair's whole interval is below zero, which the report states as a loss. The
+primary row is not "hybrid below vector", because `hybrid` equals `vector` rather than
+falling below it.
+
+The blind adjudication added one label: the fact that Brightwater Select PPO delegates
+review to Kestrel, for a relational query about that plan. Under the adjudicated labels
+`vector` and `hybrid` both score 0.943, both intervals are unchanged to three places, and
+the rule selects the same row. **Adjudication would not change the outcome.**
+
+[ADR 0009](../adr/0009-the-second-store-after-the-retrieval-ablation.md) records it,
+`proposed`. It recommends taking the graph out of the fused list and keeping it only for an
+explanation role that a named measurement would test, with removing the graph retrieval
+path as the fallback. The code change waits for acceptance.
 
 Where the implementation is not what the Design section describes:
 
@@ -643,6 +663,14 @@ Where the implementation is not what the Design section describes:
 - **The report withholds the rule's outcome until adjudication.** Intervals are printed
   from the first run; the outcome is stated only when `adjudication/decisions.json`
   exists, so the report that decides ADR 0002 carries both label sets.
+- **The report names the outcome-table row.** `outcomeRow` maps the two pairs' outcomes
+  onto the "What each outcome does" table, so the step from interval to row is code rather
+  than prose. "hybrid below vector" is the deployed `hybrid`'s own loss; a diagnostic loss
+  stays on its comparison.
+- **The ablation added a control and a baseline row.** `CTL-EVAL-04` records the measurement
+  as an implemented control. P1-D shipped while this was open, so its replay baseline is
+  regenerated to include `graph-recall-001`'s four cells. P1-D took this PRD's bootstrap as
+  its shared file byte for byte, and the two never diverged.
 
 What running found that nothing recorded:
 
@@ -655,6 +683,12 @@ What running found that nothing recorded:
 - **The relational stratum is where fusion loses most.** `hybrid·oracle` scores 0.180
   Recall@10 there against `vector`'s 0.760: the graph list is mostly distance-one facts in
   hash order, and RRF gives those ranks the same weight as the vector list's.
+- **`yarn eval:retrieval` runs in no pipeline.** This PRD left the tier to P1-C, and P1-C
+  shipped before the command existed. Nothing owns wiring it in. `CTL-EVAL-04`'s note and
+  `docs/STATUS.md` row 23 say so.
+- **The headroom was small.** `vector` at 0.940 left at most 0.060 for any hybrid to gain
+  on the pre-registered metric. That does not change the outcome — the diagnostic pair lost
+  outright — and ADR 0009 asks any successor to pre-register a rule with headroom.
 
 ## Risks and open questions
 
