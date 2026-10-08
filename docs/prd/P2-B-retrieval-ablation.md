@@ -5,7 +5,7 @@ tier: 2
 status: shipped
 size: L
 depends_on: [P1-A, P1-B, P2-A]
-blocks: [P4-B]
+blocks: [P2-D, P4-B]
 issue: 57
 controls: [CTL-EVAL-04]
 superseded_by: null

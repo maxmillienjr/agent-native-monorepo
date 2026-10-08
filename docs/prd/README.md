@@ -282,12 +282,13 @@ remains is the knowledge graph that `reflect` still writes: P2-D measures what i
 removes it. The standard vocabulary for reporting either is in place: P2-C emits the
 OpenTelemetry GenAI conventions.
 
-| ID                                   | Title                                                                    | Size | Status  |
-| ------------------------------------ | ------------------------------------------------------------------------ | ---- | ------- |
-| [P2-A](P2-A-wire-memory-core.md)     | Wire memory-core into the service; add checkpointing and retry           | L    | shipped |
-| [P2-B](P2-B-retrieval-ablation.md)   | Hybrid retrieval evaluation and the graph/vector/hybrid ablation         | L    | shipped |
-| [P2-C](P2-C-otel-genai-semantics.md) | OpenTelemetry GenAI semantics, including evaluation events               | L    | shipped |
-| P2-D                                 | Measure the graph's explanation role, or remove it (ADR 0009's fallback) | M    | draft   |
+| ID                                           | Title                                                                    | Size | Status  |
+| -------------------------------------------- | ------------------------------------------------------------------------ | ---- | ------- |
+| [P2-A](P2-A-wire-memory-core.md)             | Wire memory-core into the service; add checkpointing and retry           | L    | shipped |
+| [P2-B](P2-B-retrieval-ablation.md)           | Hybrid retrieval evaluation and the graph/vector/hybrid ablation         | L    | shipped |
+| [P2-C](P2-C-otel-genai-semantics.md)         | OpenTelemetry GenAI semantics, including evaluation events               | L    | shipped |
+| [P2-D](P2-D-graph-explanation-or-removal.md) | Measure the graph's explanation role, or remove it (ADR 0009's fallback) | M    | draft   |
+| P2-E                                         | Act on P2-D's outcome: remove the graph, or wire its explanation         | M    | draft   |
 
 ## Tier 3 — Regulated-domain credibility
 
@@ -327,7 +328,8 @@ The dependency spine, not a schedule:
 P0-A ──▶ P2-A ──▶ P1-A ──┬──▶ P1-B ──┬──▶ P1-C ──┬──▶ P1-D
                          │           │           ├──▶ P1-E
                          │           │           └──▶ P1-F
-                         │           ├──▶ P2-B ──────▶ P4-B
+                         │           ├──▶ P2-B ──┬──▶ P4-B
+                         │           │           └──▶ P2-D ──▶ P2-E
                          │           ├──▶ P2-C ──────▶ P1-F
                          │           ├──▶ P3-B ──────▶ P3-C
                          │           └──▶ P4-C
@@ -355,8 +357,12 @@ P1-E is drawn under P1-C, whose nightly live job it reads, but it also depends o
 directly: its embedding baseline is the committed cassettes' vectors, and its decision
 comparison reads the cassette format.
 
-P2-D, a draft with no file yet, follows P2-B and ADR 0009. It is not drawn: whoever writes
-it sets its edges, and its graph session filter is the M1 that P4-B handed over.
+P2-D is drawn under P2-B, whose corpus, recorded embeddings, seeding and bootstrap its
+measurement reuses. It also depends on P1-A directly, for the harness, and on P1-B, whose
+`ModelDeps` seam and recording pattern its conditional answer-level stage uses. Its graph
+session filter is the M1 that P4-B handed over, extended to edges. P2-E, a draft with no
+file yet, executes whichever outcome P2-D's ADR selects, removal or wiring, from the
+specification P2-D writes for both.
 
 P4-B is drawn under P2-B, whose `graphFacts` seed format its cross-session case needs (the
 graph-path task it also used was deleted with ADR 0009); it also depends on P1-A and P1-B directly, for the harness and
