@@ -45,10 +45,14 @@ function vectorOf(decision: Decision): string | undefined {
   return decision.response.kind === 'vector' ? decision.response.float32Base64 : undefined;
 }
 
-/** What `selectTool` returned: a tool name, or `null` for no tool or a recorded error. */
+/**
+ * What `selectTool` returned: a tool name, or `null` for no tool or a recorded
+ * error. Format 2 (P1-F) wraps the choice as `{ selection, tokenCounts }`.
+ */
 function toolChosen(decision: Decision): string | null {
   if (decision.response.kind !== 'value') return null;
-  const name = (decision.response.value as { toolName?: unknown } | null)?.toolName;
+  const value = decision.response.value as { selection?: { toolName?: unknown } | null } | null;
+  const name = value?.selection?.toolName;
   return typeof name === 'string' ? name : null;
 }
 

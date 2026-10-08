@@ -11,7 +11,7 @@ import {
 function cassette(taskId: string, embeds: readonly [string, string][]): Cassette {
   return CassetteSchema.parse({
     header: {
-      formatVersion: 1,
+      formatVersion: 2,
       taskId,
       trialIndex: 0,
       recordedAt: '2026-09-11T01:48:09.269Z',

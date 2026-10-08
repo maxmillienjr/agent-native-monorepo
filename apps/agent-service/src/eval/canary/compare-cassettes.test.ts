@@ -25,7 +25,7 @@ function cassette(
 ): Cassette {
   return CassetteSchema.parse({
     header: {
-      formatVersion: 1,
+      formatVersion: 2,
       taskId,
       trialIndex: 0,
       recordedAt: '2026-10-08T03:00:00.000Z',
@@ -43,7 +43,13 @@ function cassette(
         seam === 'embed'
           ? { kind: 'vector', float32Base64: encodeFloat32Base64(response as number[]) }
           : seam === 'act.selectTool'
-            ? { kind: 'value', value: response === null ? null : { toolName: response, input: {} } }
+            ? {
+                kind: 'value',
+                value: {
+                  selection: response === null ? null : { toolName: response, input: {} },
+                  tokenCounts: { prompt: 1, completion: 1 },
+                },
+              }
             : { kind: 'value', value: response },
       latencyMs: 1,
     })),
