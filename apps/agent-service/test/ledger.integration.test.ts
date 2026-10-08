@@ -1,6 +1,8 @@
 import 'reflect-metadata';
 import { execFile } from 'node:child_process';
 import { generateKeyPairSync, randomBytes, randomUUID, sign } from 'node:crypto';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -27,7 +29,20 @@ import { configureApp } from '../src/configure-app.js';
 import { PG_POOL } from '../src/memory/memory.tokens.js';
 import { createAgentServiceHarness } from '../src/eval/agent-harness.js';
 import { replayDecks, watchForModelRequests } from '../src/eval/cassette-deps.js';
+import { generateReviewerKey, signDetermination } from '../src/review/signer.js';
 import { skipUnlessIntegrationEnv } from './integration-env.js';
+
+const BUNDLES = join(
+  import.meta.dirname,
+  '../../../packages/eval-harness/datasets/prior-auth/bundles',
+);
+
+/** A synthetic reviewer, generated for this run and never written outside a temp dir. */
+const PHYSICIAN = generateReviewerKey({
+  reviewerKeyId: 'synthetic-ledger-key-001',
+  reviewerId: 'synthetic-ledger-reviewer-001',
+  credential: { type: 'synthetic-physician', jurisdiction: 'US-SYNTHETIC' },
+});
 
 /**
  * The decision ledger in the service, against live Postgres and Neo4j (P3-C).
@@ -234,6 +249,12 @@ describe.skipIf(SKIP)('decision ledger (integration)', () => {
     tsa = await startTestTsa();
     process.env['LEDGER_DATABASE_URL'] = service.writerUrl;
     env = { LEDGER_DATABASE_URL: service.writerUrl, LEDGER_TSA_CA: tsa.caFile };
+    const registry = join(
+      mkdtempSync(join(tmpdir(), 'synthetic-ledger-registry-')),
+      'registry.json',
+    );
+    writeFileSync(registry, JSON.stringify([PHYSICIAN.entry]));
+    process.env['REVIEWER_REGISTRY'] = registry;
 
     const moduleFixture = await Test.createTestingModule({ imports: [AppModule] }).compile();
     app = moduleFixture.createNestApplication<NestExpressApplication>();
@@ -245,6 +266,7 @@ describe.skipIf(SKIP)('decision ledger (integration)', () => {
   afterAll(async () => {
     await app?.close();
     delete process.env['LEDGER_DATABASE_URL'];
+    delete process.env['REVIEWER_REGISTRY'];
     await tsa?.close();
     await service?.drop();
     await admin?.end();
@@ -416,6 +438,115 @@ describe.skipIf(SKIP)('decision ledger (integration)', () => {
       expect(verified.code).toBe(0);
       expect(verified.stdout).toMatch(/uncommitted runs \(\d+\):/);
       expect(verified.stdout).toContain(`  ${runId}`);
+    });
+  });
+
+  describe('the decision path: $submit and the clinician’s determination', () => {
+    async function submit(task: string): Promise<string> {
+      const response = await request(app.getHttpServer())
+        .post('/fhir/Claim/$submit')
+        .set('Content-Type', 'application/fhir+json')
+        .send(readFileSync(join(BUNDLES, `${task}.bundle.json`), 'utf8'));
+      expect(response.status).toBe(200);
+      const latest = await pool.query<{ run_id: string }>(
+        `SELECT run_id FROM run_records WHERE graph = 'prior-auth' ORDER BY started_at DESC LIMIT 1`,
+      );
+      return latest.rows[0]!.run_id;
+    }
+
+    async function signedDenial(caseId: string) {
+      const view = await request(app.getHttpServer()).get(`/review/cases/${caseId}`);
+      expect(view.status).toBe(200);
+      const signing = (
+        view.body as { signing: { runId: string; recommendationSeq: number | null } }
+      ).signing;
+      return signDetermination({
+        privateKeyPem: PHYSICIAN.privateKeyPem,
+        reviewerKeyId: PHYSICIAN.entry.reviewerKeyId,
+        signing,
+        determination: {
+          kind: 'denial',
+          specificReason: 'Synthetic fixture: the sleep study does not document the criterion.',
+          attestation: {
+            reviewerId: PHYSICIAN.entry.reviewerId,
+            credential: PHYSICIAN.entry.credential,
+            attestedAt: '2026-10-08T12:00:00+00:00',
+          },
+        },
+      });
+    }
+
+    it('registers the reviewer registry’s key in the ledger at boot', async () => {
+      const rows = await service.ledger.readRows();
+      const registration = rows.entries.find(
+        (entry) => entry.entryId === uuidV5(`${PHYSICIAN.entry.reviewerKeyId}\nregistered`),
+      );
+      expect(registration?.kind).toBe('reviewer-key.registered');
+    });
+
+    it('commits a referral and its recommendation, and the case cites the recommendation', async () => {
+      const caseId = await submit('pa-e0601-one-missing');
+
+      const entries = await entriesFor(caseId);
+      expect(entries.map((entry) => entry.kind)).toEqual([
+        'run.recorded',
+        'disposition.recommended',
+      ]);
+      const view = await request(app.getHttpServer()).get(`/review/cases/${caseId}`);
+      expect(
+        (view.body as { signing: { recommendationSeq: number } }).signing.recommendationSeq,
+      ).toBe(entries[1]!.seq);
+    });
+
+    it('appends one determination.attested entry under the derived id for a denial, and ledger:verify exits 0', async () => {
+      const caseId = await submit('pa-e0601-one-missing');
+      // Signed first: supertest listens when the request is built, and the
+      // read inside signedDenial would close that listener under it.
+      const body = await signedDenial(caseId);
+
+      const decided = await request(app.getHttpServer())
+        .post(`/review/cases/${caseId}/determination`)
+        .set('Content-Type', 'application/json')
+        .send(body);
+      expect(decided.status).toBe(200);
+
+      const rows = await service.ledger.readRows();
+      const attested = rows.entries.filter((entry) => entry.kind === 'determination.attested');
+      expect(
+        attested.filter((entry) => entry.entryId === uuidV5(`${caseId}\ndetermination`)),
+      ).toHaveLength(1);
+      const verified = await cli('verify.js', [], env);
+      expect(verified.code).toBe(0);
+      expect(verified.stdout).toMatch(/determination\.attested \d+/);
+    });
+
+    it('answers 503 with the ledger’s database stopped, and the case stays pended', async () => {
+      const caseId = await submit('pa-e0601-one-missing');
+      const body = await signedDenial(caseId);
+
+      await admin.query(`ALTER DATABASE ${service.name} ALLOW_CONNECTIONS false`);
+      await admin.query(
+        'SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = $1 AND pid <> pg_backend_pid()',
+        [service.name],
+      );
+      let status: number;
+      try {
+        status = (
+          await request(app.getHttpServer())
+            .post(`/review/cases/${caseId}/determination`)
+            .set('Content-Type', 'application/json')
+            .send(body)
+        ).status;
+      } finally {
+        await admin.query(`ALTER DATABASE ${service.name} ALLOW_CONNECTIONS true`);
+      }
+
+      expect(status).toBe(503);
+      const view = await request(app.getHttpServer()).get(`/review/cases/${caseId}`);
+      expect((view.body as { status: string }).status).toBe('pended');
+      expect((await entriesFor(caseId)).map((entry) => entry.kind)).not.toContain(
+        'determination.attested',
+      );
     });
   });
 
