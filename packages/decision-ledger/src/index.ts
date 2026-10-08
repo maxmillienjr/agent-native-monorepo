@@ -57,3 +57,17 @@ export {
   type VerifiedEntry,
 } from './verify.js';
 export { fromJsonl, toJsonl } from './export.js';
+export {
+  anchorHead,
+  inspectTimestamp,
+  parseOpenSslTime,
+  requestTimestamp,
+  timestampQuery,
+  verifyAnchors,
+  verifyTimestamp,
+  type AnchorFailure,
+  type AnchorOptions,
+  type AnchorResult,
+  type TimestampInfo,
+  type TimestampVerification,
+} from './anchor.js';
