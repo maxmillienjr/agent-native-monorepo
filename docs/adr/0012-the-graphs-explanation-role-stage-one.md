@@ -30,7 +30,7 @@ section is written when stage 2 has run.
 
 ## The measurement
 
-**What ran.** `yarn eval:explanation` ran on the commit that added it, against empty
+**What ran.** `yarn eval:explanation` ran first on the commit that added it, against empty
 `pgvector/pgvector:pg16` and `neo4j:5-community` containers, with `GOOGLE_API_KEY` empty. It
 made no request to the model host, which the runner checks. The labels were committed on
 their own, before any commit with explainer or runner code, as the history of
@@ -47,6 +47,8 @@ ordered by length and then by the interleaved id and type sequence. Question con
 from `linkQuestionConcepts`, which matches stored labels as whole words, longest first, with
 no model call. The graph is seeded from P2-B's corpus through `PgNeo4jSeedManager`. The
 report is committed under `packages/eval-harness/datasets/retrieval-ablation/reports/explanation/`.
+It was regenerated once, to print n and `pairsToResolve` for every stratum as the PRD asks.
+No score moved, and the explainer did not change.
 
 **The construction check passed on the first run.** On the per-fact graph with the gold
 concepts, every relational pair reached its recall bound of 1.000. The explainer was not

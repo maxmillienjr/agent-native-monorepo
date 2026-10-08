@@ -453,56 +453,133 @@ docs/adr/NNNN-*.md                                           the outcome, whiche
 Each criterion names the axis it is verified on. "Pure" means a unit test with no store and
 no network. "Memory live" means `pgvector:pg16` and `neo4j:5-community` containers.
 
-- [ ] `explanation-labels.json` is committed before any commit that adds the explainer or the
+Ticked on 2026-10-08, each against the evidence named after it. Three criteria are split,
+because stage 1 was `good` and their second half needs stage 2. The open halves are P2-D's
+own, and stage 2 is the next piece of this PRD.
+
+- [x] `explanation-labels.json` is committed before any commit that adds the explainer or the
       runner, and the report prints its sha256 and the dataset's. **Reviewer, from
-      history.**
-- [ ] The labels load and validate. The loader checks that `datasetSha256` matches, that
+      history.** The labels commit holds the JSON alone. It follows the loader and precedes
+      M1, the explainer and the runner. The summary's header prints both hashes.
+- [x] The labels load and validate. The loader checks that `datasetSha256` matches, that
       every pair names a pre-registered relevant fact, that every gold concept and edge
       exists in the corpus, and that each relational pair has at least one gold path. It
       also checks that every answer-key alternative occurs in the fact's text and not in the
-      query's. **Pure.**
-- [ ] `mergeFact` sets `f.sessionId` on create and leaves it unchanged when a second session
+      query's. **Pure.** `explanation-labels.test.ts` covers each refusal. The committed file
+      loads, and it equals `deriveGoldPaths`. The answer-key check compares normalized text
+      (divergence 1).
+- [x] `mergeFact` sets `f.sessionId` on create and leaves it unchanged when a second session
       writes the same fact. `MENTIONS` and `RELATES_TO` are written per session. **Memory
-      live**, two sessions in one integration test.
-- [ ] `reflect` passes `state.sessionId` to `mergeFact` and `mergeRelationship`. **Pure**,
-      with a fake writer.
-- [ ] `explain` returns nothing for a fact another session owns, and no path that crosses an
-      edge only another session wrote. **Memory live**, two sessions.
-- [ ] `explain` has no unscoped signature: calling it without `sessionId` fails
-      `yarn turbo typecheck`. **Pure**, as a type test.
-- [ ] On a hand-built fixture graph, `explain` returns the hand-computed paths in the
+      live**, two sessions in one integration test: `semantic.integration.test.ts`, "keeps a
+      fact's first writer and writes MENTIONS and RELATES_TO once per session".
+- [x] `reflect` passes `state.sessionId` to `mergeFact` and `mergeRelationship`. **Pure**,
+      with a fake writer: `reflect.node.test.ts`.
+- [x] `explain` returns nothing for a fact another session owns, and no path that crosses an
+      edge only another session wrote. **Memory live**, two sessions:
+      `explainer.integration.test.ts`, "returns nothing for a fact another session owns, even
+      one it restated" and "crosses only edges the session wrote".
+- [x] `explain` has no unscoped signature: calling it without `sessionId` fails
+      `yarn turbo typecheck`. **Pure**, as a type test: `neo4j.explainer.test-d.ts`, which
+      also refuses a `crossSession` scope and an unscoped `expandFromSeeds`.
+- [x] On a hand-built fixture graph, `explain` returns the hand-computed paths in the
       specified order, at most three per fact and at most two hops. **Memory live.**
-- [ ] `linkQuestionConcepts` takes the longest non-overlapping match, matches whole words
+      `explainer.integration.test.ts`. The fixture's paths are drawn in its docstring.
+- [x] `linkQuestionConcepts` takes the longest non-overlapping match, matches whole words
       regardless of case, and ignores concepts the session has no edge to. **Pure** for
-      matching, **memory live** for scope.
-- [ ] After M1, `yarn eval:retrieval` reproduces the committed adjudicated report except for
-      timestamps and latencies. **Memory live, embeddings recorded.**
-- [ ] With `GOOGLE_API_KEY=` empty, `yarn eval:explanation` writes a JSON and a Markdown
+      matching (`neo4j.explainer.test.ts`, `matchConceptLabels`), **memory live** for scope
+      ("links only concepts the session has an edge to").
+- [x] After M1, `yarn eval:retrieval` reproduces the committed adjudicated report except for
+      timestamps and latencies. **Memory live, embeddings recorded.** Run from empty
+      containers at the branch head, the JSON report is identical to the committed one once
+      timestamps and latencies are masked. The summary differs only in latencies and in the
+      one heading the code renamed after the report was committed, which the Problem section
+      records.
+- [x] With `GOOGLE_API_KEY=` empty, `yarn eval:explanation` writes a JSON and a Markdown
       report. They hold path precision@3, recall@3 and Hit@1 for all four conditions, per
       stratum, with interval, n, sd and `pairsToResolve`, plus the dataset and label hashes
       and both axes. The run makes no request to `generativelanguage.googleapis.com`.
-      **Memory live, embeddings recorded.**
-- [ ] The construction check passes before any other condition is printed, and the report
-      says whether the explainer changed after the first run. **Memory live.**
-- [ ] Two consecutive runs from empty stores give byte-identical reports after masking
-      timestamps and latencies. **Memory live.**
-- [ ] `applyExplanationRule` maps intervals to `good`, `not good` and `inconclusive`, and
+      **Memory live.** The runner fails on any request to the model host. The axes are
+      memory `live`, model `none` and embeddings `none` (divergence 2).
+- [x] The construction check passes before any other condition is printed, and the report
+      says whether the explainer changed after the first run. **Memory live.** It passed on
+      the first run, and the explainer was not changed.
+- [x] Two consecutive runs from empty stores give byte-identical reports after masking
+      timestamps and latencies. **Memory live.** Both the JSON and the Markdown are
+      identical once `startedAt` and `finishedAt` are masked. The explainer's reads are not
+      timed.
+- [x] `applyExplanationRule` maps intervals to `good`, `not good` and `inconclusive`, and
       outcomes to the table's rows, on fixtures that include each boundary. **Pure.**
-- [ ] Stage 2 matches stage 1's outcome. If stage 1 is not `good`, the report says stage 2
-      did not run and made 0 `generateContent` calls. If stage 1 is `good`, the recording
-      run reports both graders for 38 queries × 2 conditions on **model live, memory live**.
-      **Model replay** then reproduces every grader result with no request to the model
-      host. **Reviewer, from the committed report.**
+      `explanation.test.ts`, which also pins `applyAnswerRule` at +0.10 and at a lower bound
+      of 0.
+- [x] Stage 2 matches stage 1's outcome, on the branch stage 1 took. Stage 1 is `good`, so
+      the report states that stage 2 has not run and made 0 `generateContent` calls.
+- [ ] Stage 2's recording run reports both graders for 38 queries × 2 conditions on **model
+      live, memory live**. **Model replay** then reproduces every grader result with no
+      request to the model host. **Reviewer, from the committed report.** _Open, P2-D stage
+      2: 76 calls, about eight days of free-tier quota._
 - [ ] `renderExplanationBlock` and the `without` prompt are pinned. The `without` prompt
-      equals `planNode`'s for the same state. **Pure.**
-- [ ] The ADR records the row the rule selected, is listed in `docs/adr/README.md`, states
-      that the result is under an oracle extractor, and, for a C row, supersedes ADR 0004.
-      It is `proposed` until the owner accepts it. **Reviewer.**
-- [ ] `docs/STATUS.md` rows 15 and 23, CTL-EVAL-04's note, `.context/conventions.md`'s
+      equals `planNode`'s for the same state. **Pure.** _Open, P2-D stage 2. Not written:
+      it is needed only once stage 1 is `good`, and this pass delivered stage 1._
+- [x] The ADR is listed in `docs/adr/README.md`, states that the result is under an oracle
+      extractor, and is `proposed` until the owner accepts it. **Reviewer.** ADR 0012.
+- [ ] The ADR records the row the rule selected and, for a C row, supersedes ADR 0004.
+      **Reviewer.** _Open, P2-D stage 2. Stage 1 alone selects no row._
+- [x] `docs/STATUS.md` rows 15 and 23, CTL-EVAL-04's note, `.context/conventions.md`'s
       Testing paragraph, `.context/architecture.md`'s Neo4j bullet and the docstring on
-      `CypherNeo4jReader` state the outcome and the CI-tier decision. **Reviewer.**
-- [ ] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
+      `CypherNeo4jReader` state stage 1's result and the CI-tier decision. **Reviewer.**
+- [ ] The same six places state the final outcome. **Reviewer.** _Open, P2-D stage 2._
+- [x] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
       pass.
+
+## Stage 1, and where it diverged
+
+Measured 2026-10-08, from empty containers, with no key. ADR 0012 has the full account.
+Relational stratum, pre-registered labels:
+
+| Condition                 | Precision@3          | Recall@3             | Hit@1                |
+| ------------------------- | -------------------- | -------------------- | -------------------- |
+| `explain` (decisive)      | 0.637 [0.553, 0.723] | 1.000 [1.000, 1.000] | 0.760 [0.640, 0.860] |
+| `explain·oracle`          | 0.637 [0.553, 0.723] | 1.000 [1.000, 1.000] | 0.760 [0.640, 0.860] |
+| `explain·per-fact`        | 0.990 [0.970, 1.000] | 1.000 [1.000, 1.000] | 1.000 [1.000, 1.000] |
+| `explain·per-fact·oracle` | 0.990 [0.970, 1.000] | 1.000 [1.000, 1.000] | 1.000 [1.000, 1.000] |
+
+**Stage 1 is `good`, and the rule selects no row yet.** Both lower bounds clear their
+thresholds. The pass is the weak kind the Design section anticipated: recall is all but
+guaranteed by the `reflect` shape and the relational construction, the label linker equals
+the oracle on every pair, and the extractor is the corpus. **The Problem section's
+prediction did not hold.** A length-0 path ranked first in 12 of 50 pairs, the program
+episodes. Most answer facts sit in an episode about B alone, so the `reflect` shape never
+linked them to A. Stage 2 is next. Its code is unwritten, and its 76 calls are scheduled
+against the quota table in `.context/conventions.md`.
+
+Where the implementation is not what the Design section describes:
+
+1. **Answer keys are checked in a normalized form.** The Design asks for alternatives "for
+   the forms a number can take", and for a loader check that every alternative occurs in the
+   fact's text. Taken literally the two conflict: "5 business days" does not occur in "five
+   business days". The loader and `answerKeyPresent` compare after `normalizeAnswerText`.
+   It lowercases, collapses whitespace, drops digit-group commas and writes number words up
+   to ninety as digits, so both forms pass, and a stage-2 answer in either form counts.
+2. **Stage 1's axes are memory `live`, model `none`, embeddings `none`.** The criterion names
+   "embeddings recorded". The runner seeds only the graph and reads no vector, so it loads
+   no embedding file. Stage 2 will read recorded query vectors for `VectorRetrievalFacade`.
+3. **`expandFromSeeds` took the scope too.** M1's file list names the writer, the
+   constraints and the explainer. P4-B's M1, which this PRD inherits, also scopes the
+   retrieval reader. It now takes a required `GraphReadScope` and filters the fact and every
+   edge on the path. The ablation passes the corpus session, and its report is unchanged.
+4. **The construction bound is checked per pair.** The Design compares the mean recall with
+   the mean bound. The check also requires every relational pair to reach its own bound,
+   and names any pair that does not. That is stricter, and on this run it made no difference.
+5. **The shortest-path cut is in TypeScript.** The Cypher returns every in-session path of
+   at most two hops from a question concept to a mentioned concept. `assembleExplanations`
+   keeps the shortest per mentioned concept, deduplicates a path seen in both directions,
+   orders and cuts. The ordering rule is then unit-tested without a store. A path's order
+   key interleaves edge types with ids, because two paths over the same concepts with
+   different types would otherwise tie.
+6. **The explainer's spans reuse existing attribute keys.** `memory.neo4j.explain` sets
+   `seedEntityCount`, `factCount` and `resultCount`. `memory.neo4j.linkQuestionConcepts`
+   sets `conceptCount` and `resultCount`. All are counts, and all were already in
+   `ALLOWED_SPAN_ATTRIBUTES`, so the allowlist is unchanged.
 
 ## Risks and open questions
 

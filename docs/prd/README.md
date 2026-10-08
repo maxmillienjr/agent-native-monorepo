@@ -141,10 +141,23 @@ re-run on 2026-10-08 matched every committed number but the latencies. `graph-re
 was deleted with its cassette and its four baseline cells, rather than converted, because
 conversion needed a live re-record; the other two cassettes replay unchanged and the gate
 reads `match`. P4-B was amended: the graph half of its cross-session leak is closed on the
-read side, its graph session filter (M1) moves to P2-D, and M2 and M3 stay. **P2-D owns the
-rest and has no file yet.** It measures the graph's explanation role against a rule fixed
-before the run, or removes the graph, which is ADR 0009's fallback, option C. It also owns
-M1 for any future graph read, and whether the ablation runs in a CI tier at all.
+read side, its graph session filter (M1) moves to P2-D, and M2 and M3 stay. P2-D owns the
+rest, in the next paragraph.
+
+**[P2-D](P2-D-graph-explanation-or-removal.md) is in progress**, tracked in
+[#100](https://github.com/maxmillienjr/agent-native-monorepo/issues/100), and stage 1 is
+`good`. Gold concept paths for P2-B's 201 pairs were committed before any explainer code.
+M1 now covers edges: every graph write carries its session, and both graph reads require
+one. `yarn eval:explanation` runs with no key and no embeddings. On the relational stratum,
+path recall@3 is 1.000 and precision@3 is 0.637 [0.553, 0.723], and two runs from empty
+stores are identical. The pass is weak evidence, as the PRD said it would be. Recall is all
+but guaranteed by how `reflect` links facts, the label linker equals the oracle, and the
+extractor is the corpus. The PRD's predicted failure appeared in only 12 of 50 pairs.
+[ADR 0012](../adr/0012-the-graphs-explanation-role-stage-one.md), proposed, records that
+the rule selects no outcome yet and recommends stage 2 as pre-registered. Stage 2 is 76
+`generateContent` calls on `plan`'s answers, about eight days of spare free-tier quota, and
+its code is not yet written. Neither command runs in CI, by decision: P2-E reproduces or
+archives both, depending on the outcome.
 
 **[P2-C](P2-C-otel-genai-semantics.md) has shipped**, tracked in
 [#74](https://github.com/maxmillienjr/agent-native-monorepo/issues/74). A run is now one
