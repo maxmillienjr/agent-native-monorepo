@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
-  "startedAt": "2026-10-08T19:00:20.628Z",
-  "finishedAt": "2026-10-08T19:00:25.828Z",
+  "startedAt": "2026-10-08T19:07:30.608Z",
+  "finishedAt": "2026-10-08T19:07:34.261Z",
   "axes": {
     "memory": "live",
     "model": "none",
@@ -54,21 +54,24 @@
             "mean": 0.543333333333333,
             "sd": 0.26897386262518175,
             "lower": 0.47333333333333316,
-            "upper": 0.6199999999999999
+            "upper": 0.6199999999999999,
+            "pairsToResolve": 149
           },
           "recall": {
             "n": 50,
             "mean": 1,
             "sd": 0,
             "lower": 1,
-            "upper": 1
+            "upper": 1,
+            "pairsToResolve": 1
           },
           "hit1": {
             "n": 50,
             "mean": 1,
             "sd": 0,
             "lower": 1,
-            "upper": 1
+            "upper": 1,
+            "pairsToResolve": null
           },
           "abstention": 0
         },
@@ -79,21 +82,24 @@
             "mean": 0.6366666666666664,
             "sd": 0.3171049598406741,
             "lower": 0.553333333333333,
-            "upper": 0.7233333333333334
+            "upper": 0.7233333333333334,
+            "pairsToResolve": 21
           },
           "recall": {
             "n": 50,
             "mean": 1,
             "sd": 0,
             "lower": 1,
-            "upper": 1
+            "upper": 1,
+            "pairsToResolve": 1
           },
           "hit1": {
             "n": 50,
             "mean": 0.76,
             "sd": 0.4314191105869001,
             "lower": 0.64,
-            "upper": 0.86
+            "upper": 0.86,
+            "pairsToResolve": null
           },
           "abstention": 0
         },
@@ -104,21 +110,24 @@
             "mean": 0.4099999999999999,
             "sd": 0.14368805971061535,
             "lower": 0.3733333333333334,
-            "upper": 0.4533333333333332
+            "upper": 0.4533333333333332,
+            "pairsToResolve": 10
           },
           "recall": {
             "n": 50,
             "mean": 1,
             "sd": 0,
             "lower": 1,
-            "upper": 1
+            "upper": 1,
+            "pairsToResolve": 1
           },
           "hit1": {
             "n": 50,
             "mean": 1,
             "sd": 0,
             "lower": 1,
-            "upper": 1
+            "upper": 1,
+            "pairsToResolve": null
           },
           "abstention": 0
         },
@@ -129,21 +138,24 @@
             "mean": null,
             "sd": null,
             "lower": null,
-            "upper": null
+            "upper": null,
+            "pairsToResolve": null
           },
           "recall": {
             "n": 0,
             "mean": null,
             "sd": null,
             "lower": null,
-            "upper": null
+            "upper": null,
+            "pairsToResolve": null
           },
           "hit1": {
             "n": 0,
             "mean": null,
             "sd": null,
             "lower": null,
-            "upper": null
+            "upper": null,
+            "pairsToResolve": null
           },
           "abstention": 1
         }
@@ -3575,21 +3587,24 @@
             "mean": 0.543333333333333,
             "sd": 0.26897386262518175,
             "lower": 0.47333333333333316,
-            "upper": 0.6199999999999999
+            "upper": 0.6199999999999999,
+            "pairsToResolve": 149
           },
           "recall": {
             "n": 50,
             "mean": 1,
             "sd": 0,
             "lower": 1,
-            "upper": 1
+            "upper": 1,
+            "pairsToResolve": 1
           },
           "hit1": {
             "n": 50,
             "mean": 1,
             "sd": 0,
             "lower": 1,
-            "upper": 1
+            "upper": 1,
+            "pairsToResolve": null
           },
           "abstention": 0
         },
@@ -3600,21 +3615,24 @@
             "mean": 0.6366666666666664,
             "sd": 0.3171049598406741,
             "lower": 0.553333333333333,
-            "upper": 0.7233333333333334
+            "upper": 0.7233333333333334,
+            "pairsToResolve": 21
           },
           "recall": {
             "n": 50,
             "mean": 1,
             "sd": 0,
             "lower": 1,
-            "upper": 1
+            "upper": 1,
+            "pairsToResolve": 1
           },
           "hit1": {
             "n": 50,
             "mean": 0.76,
             "sd": 0.4314191105869001,
             "lower": 0.64,
-            "upper": 0.86
+            "upper": 0.86,
+            "pairsToResolve": null
           },
           "abstention": 0
         },
@@ -3625,21 +3643,24 @@
             "mean": 0.4099999999999999,
             "sd": 0.14368805971061535,
             "lower": 0.3733333333333334,
-            "upper": 0.4533333333333332
+            "upper": 0.4533333333333332,
+            "pairsToResolve": 10
           },
           "recall": {
             "n": 50,
             "mean": 1,
             "sd": 0,
             "lower": 1,
-            "upper": 1
+            "upper": 1,
+            "pairsToResolve": 1
           },
           "hit1": {
             "n": 50,
             "mean": 1,
             "sd": 0,
             "lower": 1,
-            "upper": 1
+            "upper": 1,
+            "pairsToResolve": null
           },
           "abstention": 0
         },
@@ -3650,21 +3671,24 @@
             "mean": 0,
             "sd": 0,
             "lower": 0,
-            "upper": 0
+            "upper": 0,
+            "pairsToResolve": 1
           },
           "recall": {
             "n": 0,
             "mean": null,
             "sd": null,
             "lower": null,
-            "upper": null
+            "upper": null,
+            "pairsToResolve": null
           },
           "hit1": {
             "n": 0,
             "mean": null,
             "sd": null,
             "lower": null,
-            "upper": null
+            "upper": null,
+            "pairsToResolve": null
           },
           "abstention": 0.7647058823529411
         }
@@ -7154,21 +7178,24 @@
             "mean": 0.97,
             "sd": 0.11994896874104766,
             "lower": 0.93,
-            "upper": 1
+            "upper": 1,
+            "pairsToResolve": 1
           },
           "recall": {
             "n": 50,
             "mean": 1,
             "sd": 0,
             "lower": 1,
-            "upper": 1
+            "upper": 1,
+            "pairsToResolve": 1
           },
           "hit1": {
             "n": 50,
             "mean": 1,
             "sd": 0,
             "lower": 1,
-            "upper": 1
+            "upper": 1,
+            "pairsToResolve": null
           },
           "abstention": 0
         },
@@ -7179,21 +7206,24 @@
             "mean": 0.99,
             "sd": 0.07071067811865467,
             "lower": 0.97,
-            "upper": 1
+            "upper": 1,
+            "pairsToResolve": 1
           },
           "recall": {
             "n": 50,
             "mean": 1,
             "sd": 0,
             "lower": 1,
-            "upper": 1
+            "upper": 1,
+            "pairsToResolve": 1
           },
           "hit1": {
             "n": 50,
             "mean": 1,
             "sd": 0,
             "lower": 1,
-            "upper": 1
+            "upper": 1,
+            "pairsToResolve": null
           },
           "abstention": 0
         },
@@ -7204,21 +7234,24 @@
             "mean": 0.97,
             "sd": 0.11994896874104763,
             "lower": 0.93,
-            "upper": 1
+            "upper": 1,
+            "pairsToResolve": 1
           },
           "recall": {
             "n": 50,
             "mean": 1,
             "sd": 0,
             "lower": 1,
-            "upper": 1
+            "upper": 1,
+            "pairsToResolve": 1
           },
           "hit1": {
             "n": 50,
             "mean": 1,
             "sd": 0,
             "lower": 1,
-            "upper": 1
+            "upper": 1,
+            "pairsToResolve": null
           },
           "abstention": 0
         },
@@ -7229,21 +7262,24 @@
             "mean": null,
             "sd": null,
             "lower": null,
-            "upper": null
+            "upper": null,
+            "pairsToResolve": null
           },
           "recall": {
             "n": 0,
             "mean": null,
             "sd": null,
             "lower": null,
-            "upper": null
+            "upper": null,
+            "pairsToResolve": null
           },
           "hit1": {
             "n": 0,
             "mean": null,
             "sd": null,
             "lower": null,
-            "upper": null
+            "upper": null,
+            "pairsToResolve": null
           },
           "abstention": 1
         }
@@ -10489,21 +10525,24 @@
             "mean": 0.97,
             "sd": 0.11994896874104766,
             "lower": 0.93,
-            "upper": 1
+            "upper": 1,
+            "pairsToResolve": 1
           },
           "recall": {
             "n": 50,
             "mean": 1,
             "sd": 0,
             "lower": 1,
-            "upper": 1
+            "upper": 1,
+            "pairsToResolve": 1
           },
           "hit1": {
             "n": 50,
             "mean": 1,
             "sd": 0,
             "lower": 1,
-            "upper": 1
+            "upper": 1,
+            "pairsToResolve": null
           },
           "abstention": 0
         },
@@ -10514,21 +10553,24 @@
             "mean": 0.99,
             "sd": 0.07071067811865467,
             "lower": 0.97,
-            "upper": 1
+            "upper": 1,
+            "pairsToResolve": 1
           },
           "recall": {
             "n": 50,
             "mean": 1,
             "sd": 0,
             "lower": 1,
-            "upper": 1
+            "upper": 1,
+            "pairsToResolve": 1
           },
           "hit1": {
             "n": 50,
             "mean": 1,
             "sd": 0,
             "lower": 1,
-            "upper": 1
+            "upper": 1,
+            "pairsToResolve": null
           },
           "abstention": 0
         },
@@ -10539,21 +10581,24 @@
             "mean": 0.97,
             "sd": 0.11994896874104763,
             "lower": 0.93,
-            "upper": 1
+            "upper": 1,
+            "pairsToResolve": 1
           },
           "recall": {
             "n": 50,
             "mean": 1,
             "sd": 0,
             "lower": 1,
-            "upper": 1
+            "upper": 1,
+            "pairsToResolve": 1
           },
           "hit1": {
             "n": 50,
             "mean": 1,
             "sd": 0,
             "lower": 1,
-            "upper": 1
+            "upper": 1,
+            "pairsToResolve": null
           },
           "abstention": 0
         },
@@ -10564,21 +10609,24 @@
             "mean": 0,
             "sd": 0,
             "lower": 0,
-            "upper": 0
+            "upper": 0,
+            "pairsToResolve": 1
           },
           "recall": {
             "n": 0,
             "mean": null,
             "sd": null,
             "lower": null,
-            "upper": null
+            "upper": null,
+            "pairsToResolve": null
           },
           "hit1": {
             "n": 0,
             "mean": null,
             "sd": null,
             "lower": null,
-            "upper": null
+            "upper": null,
+            "pairsToResolve": null
           },
           "abstention": 0.7647058823529411
         }

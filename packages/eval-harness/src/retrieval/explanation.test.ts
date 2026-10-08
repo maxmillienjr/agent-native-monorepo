@@ -203,6 +203,10 @@ describe('summarizeExplanationCondition', () => {
     expect(summary.perStratum.relational.hit1.mean).toBe(0);
     expect(summary.perStratum.paraphrase.recall.mean).toBe(1);
     expect(summary.perStratum['no-entity'].pairs).toBe(0);
+    // Against the stage-1 thresholds for precision and recall; Hit@1 has none.
+    expect(summary.perStratum.relational.precision.pairsToResolve).toBeNull(); // on the line
+    expect(summary.perStratum.relational.recall.pairsToResolve).toBe(1); // sd 0
+    expect(summary.perStratum.relational.hit1.pairsToResolve).toBeNull();
     expect(summary.diagnostics).toEqual({
       relationalLinkedA: 1,
       relationalWithDirectMention: 1,

@@ -78,15 +78,27 @@ export interface MetricSummary {
   readonly sd: number | null;
   readonly lower: number | null;
   readonly upper: number | null;
+  /**
+   * The pairs a normal-approximation interval at this sd would need to put the
+   * mean clearly on one side of the stage-1 threshold. Null for a metric with
+   * no threshold (Hit@1), or when the metric is undefined on every pair.
+   */
+  readonly pairsToResolve: number | null;
 }
 
-/** The mean of the defined values, with `pairedBootstrap(values, zeros)` as its interval. */
+/**
+ * The mean of the defined values, with `pairedBootstrap(values, zeros)` as its
+ * interval, and `pairsToResolve` against `threshold` when one is given.
+ */
 export function summarizeMetric(
   values: readonly (number | null)[],
   bootstrap: BootstrapOptions,
+  threshold?: number,
 ): MetricSummary {
   const defined = values.filter((v): v is number => v !== null);
-  if (defined.length === 0) return { n: 0, mean: null, sd: null, lower: null, upper: null };
+  if (defined.length === 0) {
+    return { n: 0, mean: null, sd: null, lower: null, upper: null, pairsToResolve: null };
+  }
   const interval = pairedBootstrap(
     defined,
     defined.map(() => 0),
@@ -98,6 +110,8 @@ export function summarizeMetric(
     sd: interval.sd,
     lower: interval.lower,
     upper: interval.upper,
+    pairsToResolve:
+      threshold === undefined ? null : pairsToResolve(interval.sd, interval.mean - threshold),
   };
 }
 
@@ -183,10 +197,12 @@ export function summarizeExplanationCondition(
           precision: summarizeMetric(
             scores.map((s) => s.precision),
             bootstrap,
+            STAGE1_THRESHOLDS.precision,
           ),
           recall: summarizeMetric(
             scores.map((s) => s.recall),
             bootstrap,
+            STAGE1_THRESHOLDS.recall,
           ),
           hit1: summarizeMetric(
             scores.map((s) => s.hit1),
@@ -484,7 +500,17 @@ const withInterval = (m: MetricSummary): string =>
 
 function stratumTable(conditions: readonly ConditionReport[], stratum: Stratum): string {
   const lines = [
-    header(['Condition', 'Pairs', 'Precision@3', 'Recall@3', 'Hit@1', 'sd P / R', 'Abstained']),
+    header([
+      'Condition',
+      'Pairs',
+      'Precision@3',
+      'Recall@3',
+      'Hit@1',
+      'n P / R',
+      'sd P / R',
+      'To resolve P / R',
+      'Abstained',
+    ]),
   ];
   for (const c of conditions) {
     const s = c.perStratum[stratum];
@@ -495,7 +521,9 @@ function stratumTable(conditions: readonly ConditionReport[], stratum: Stratum):
         withInterval(s.precision),
         withInterval(s.recall),
         withInterval(s.hit1),
+        `${s.precision.n} / ${s.recall.n}`,
         `${f3(s.precision.sd)} / ${f3(s.recall.sd)}`,
+        `${s.precision.pairsToResolve ?? '—'} / ${s.recall.pairsToResolve ?? '—'}`,
         pct(s.abstention),
       ]),
     );
