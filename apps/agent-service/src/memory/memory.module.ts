@@ -14,6 +14,7 @@ import {
   PgPgvectorWriter,
   PgPgvectorReader,
   VectorRetrievalFacade,
+  PgRunRecordRepository,
 } from '@repo/memory-core';
 import { readMemoryConfig, type MemoryConfig } from './memory.config.js';
 import {
@@ -25,6 +26,7 @@ import {
   PGVECTOR_WRITER,
   RETRIEVAL_FACADE,
   CHECKPOINTER,
+  RUN_RECORDS,
 } from './memory.tokens.js';
 
 const logger = createLogger('memory-module');
@@ -106,6 +108,14 @@ const logger = createLogger('memory-module');
         pool ? new VectorRetrievalFacade(new PgPgvectorReader(pool)) : null,
     },
     {
+      // The run record (P3-B): written beside the checkpoints by the same role,
+      // and migrated with everything else above. Null on the unconfigured
+      // axis, where nothing is recorded and there are no checkpoints either.
+      provide: RUN_RECORDS,
+      inject: [PG_POOL],
+      useFactory: (pool: pg.Pool | null) => (pool ? new PgRunRecordRepository(pool) : null),
+    },
+    {
       provide: CHECKPOINTER,
       inject: [MEMORY_CONFIG, PG_POOL],
       useFactory: async (config: MemoryConfig | null, pool: pg.Pool | null) => {
@@ -126,6 +136,7 @@ const logger = createLogger('memory-module');
     PGVECTOR_WRITER,
     RETRIEVAL_FACADE,
     CHECKPOINTER,
+    RUN_RECORDS,
   ],
 })
 export class MemoryModule implements OnModuleDestroy {

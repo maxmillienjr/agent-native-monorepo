@@ -273,7 +273,7 @@ describe('request hashes across two runs of the same task', () => {
     // Every memory dependency null: the stub writers and the stub retrieval
     // facade, which is what makes this a unit test. The model half is the stub
     // set, decorated by a recorder that keeps the hashes.
-    const service = new RunsService(null, null, null, null, null);
+    const service = new RunsService(null, null, null, null, null, null);
     const recorder = new CassetteRecorder({ header: liveHeader });
     service.setModelDecorator((live) => recordingModelDeps(live, recorder));
 
@@ -321,7 +321,7 @@ describe('the decorator seam on RunsService', () => {
   });
 
   it('never touches the memory half', async () => {
-    const service = new RunsService(null, null, null, null, null);
+    const service = new RunsService(null, null, null, null, null, null);
     const seen: string[] = [];
 
     // A decorator that replaces the model half entirely, which is what replay
@@ -371,7 +371,7 @@ describe('the decorator seam on RunsService', () => {
       resolve: async <R>(call: { seam: string }): Promise<R> => seamAnswers[call.seam] as R,
     };
 
-    const service = new RunsService(null, null, null, null, null);
+    const service = new RunsService(null, null, null, null, null, null);
     service.setModelDecorator(() => replayModelDeps(deck));
 
     await expect(
@@ -399,7 +399,7 @@ describe('the decorator seam on RunsService', () => {
       resolve: async <R>(call: { seam: string }): Promise<R> => seamAnswers[call.seam] as R,
     };
 
-    const service = new RunsService(null, null, null, null, null);
+    const service = new RunsService(null, null, null, null, null, null);
     service.setModelDecorator((live) => {
       // `tools` is the one member of the lazy set that has to resolve it.
       void live.act.tools;

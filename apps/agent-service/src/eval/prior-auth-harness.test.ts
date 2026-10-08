@@ -23,10 +23,15 @@ describe('PriorAuthHarness', () => {
 
   beforeAll(() => {
     delete process.env['GOOGLE_API_KEY'];
-    runs = new RunsService(null, null, null, null, null);
-    const service = new PriorAuthService(runs, null, {
-      now: () => new Date('2026-09-22T10:00:00Z'),
-    });
+    runs = new RunsService(null, null, null, null, null, null);
+    const service = new PriorAuthService(
+      runs,
+      null,
+      {
+        now: () => new Date('2026-09-22T10:00:00Z'),
+      },
+      null,
+    );
     const context = { close: async () => {} } as unknown as INestApplicationContext;
     harness = new PriorAuthHarness(context, service, runs);
   });

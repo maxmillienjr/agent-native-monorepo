@@ -16,3 +16,5 @@ export const NEO4J_WRITER = 'NEO4J_WRITER';
 export const PGVECTOR_WRITER = 'PGVECTOR_WRITER';
 export const RETRIEVAL_FACADE = 'RETRIEVAL_FACADE';
 export const CHECKPOINTER = 'CHECKPOINTER';
+/** The run record (P3-B). Not a memory tier; provided here because it shares the pool. */
+export const RUN_RECORDS = 'RUN_RECORDS';

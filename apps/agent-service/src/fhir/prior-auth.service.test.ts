@@ -9,8 +9,10 @@ import {
   SimpleSpanProcessor,
   type ReadableSpan,
 } from '@opentelemetry/sdk-trace-base';
+import { HttpException } from '@nestjs/common';
 import { unlistedAttributeKeys } from '@repo/telemetry';
 import { RunsService } from '../runs/runs.service.js';
+import { InMemoryRunRecords } from '../audit/memory-run-records.js';
 import { PriorAuthService } from './prior-auth.service.js';
 
 /**
@@ -41,8 +43,8 @@ const bundle = (
 const FIXED = new Date('2026-03-01T10:00:00Z');
 
 function service(): PriorAuthService {
-  const runs = new RunsService(null, null, null, null, null);
-  return new PriorAuthService(runs, null, { now: () => FIXED });
+  const runs = new RunsService(null, null, null, null, null, null);
+  return new PriorAuthService(runs, null, { now: () => FIXED }, null);
 }
 
 const attribute = (spans: readonly ReadableSpan[], node: string, key: string): unknown =>
@@ -127,5 +129,66 @@ describe('the prior-authorization graph', () => {
     await service().submit(bundle('pa-k0823-one-missing'), 'corr-pa-6');
     // The clock is fixed, so the request was held for no time at all.
     expect(attribute(exporter.getFinishedSpans(), 'dispose', 'prior_auth.elapsed_ms')).toBe(0);
+  });
+});
+
+describe('the run record on the prior-authorization path, which fails closed (P3-B)', () => {
+  function recorded(records: InMemoryRunRecords): PriorAuthService {
+    const runs = new RunsService(null, null, null, null, null, records);
+    return new PriorAuthService(runs, null, { now: () => FIXED }, records);
+  }
+
+  it('records the bundle, the receipt time and the assessment', async () => {
+    const records = new InMemoryRunRecords();
+
+    const run = await recorded(records).submit(bundle('pa-e0601-all-met-structured'), 'corr-r1');
+    const stored = records.only();
+
+    expect(stored.record).toMatchObject({
+      runId: run.caseId,
+      graph: 'prior-auth',
+      sessionId: null,
+      outcome: 'success',
+      // The graph reads `receivedAt` as an input, so the record keeps it.
+      startedAt: FIXED,
+    });
+    expect(stored.decisions.map((row) => row.decision.seam)).toEqual(['assess.criteria']);
+  });
+
+  it('answers 503 and returns no decision when the assessment cannot be recorded', async () => {
+    const records = new InMemoryRunRecords();
+    records.failOn = 'append';
+
+    const failure = await recorded(records)
+      .submit(bundle('pa-e0601-all-met-structured'), 'corr-r2')
+      .then(
+        () => undefined,
+        (error: unknown) => error,
+      );
+
+    expect(failure).toBeInstanceOf(HttpException);
+    expect((failure as HttpException).getStatus()).toBe(503);
+    expect((failure as HttpException).getResponse()).toMatchObject({
+      resourceType: 'OperationOutcome',
+    });
+    expect(records.only().record.outcome).toBe('error');
+  });
+
+  it('answers 503 when the record of a finished run cannot be closed', async () => {
+    const records = new InMemoryRunRecords();
+    records.failOn = 'close';
+
+    await expect(
+      recorded(records).submit(bundle('pa-e0601-all-met-structured'), 'corr-r3'),
+    ).rejects.toMatchObject({ status: 503 });
+  });
+
+  it('answers 503 when the record cannot be opened', async () => {
+    const records = new InMemoryRunRecords();
+    records.failOn = 'open';
+
+    await expect(
+      recorded(records).submit(bundle('pa-e0601-all-met-structured'), 'corr-r4'),
+    ).rejects.toMatchObject({ status: 503 });
   });
 });

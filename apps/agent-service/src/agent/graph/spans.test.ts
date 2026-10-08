@@ -150,7 +150,7 @@ async function run(
   request: unknown = body(),
 ): Promise<ReadableSpan[]> {
   exporter.reset();
-  const service = new RunsService(null, null, null, null, null);
+  const service = new RunsService(null, null, null, null, null, null);
   service.setDeps(deps(tool));
   await service.executeTraced({ body: request, correlationId: 'corr-123' }).catch(() => undefined);
   const spans = exporter.getFinishedSpans();
@@ -279,7 +279,7 @@ describe('trace shape', () => {
     // P1-F. Two act steps, so four chat calls of { input 10, output 35 } each.
     // A plan-only total — what the field held before — would be { 10, 35 }.
     exporter.reset();
-    const service = new RunsService(null, null, null, null, null);
+    const service = new RunsService(null, null, null, null, null, null);
     service.setDeps(deps(async (input) => ({ results: [String(input)] })));
     const traced = await service.executeTraced({ body: body(2), correlationId: 'corr-usage' });
     const chats = named(exporter.getFinishedSpans(), `generate_content ${CHAT_MODEL}`);

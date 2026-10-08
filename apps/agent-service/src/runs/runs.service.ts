@@ -2,14 +2,18 @@ import { randomUUID } from 'node:crypto';
 import { Injectable, Inject } from '@nestjs/common';
 import type { Response } from 'express';
 import type { BaseCheckpointSaver } from '@langchain/langgraph';
-import type { RunResponse, StreamEvent } from '@repo/agent-contracts';
+import { RunRequestSchema, type RunResponse, type StreamEvent } from '@repo/agent-contracts';
+import type { Deck } from '@repo/agent-cassette';
 import { createLogger, withAgentSpan, type AgentSpan } from '@repo/telemetry';
 import {
   EMBEDDING_DIMENSIONS,
   type EpisodicRepository,
   type Neo4jWriter,
   type PgvectorWriter,
+  type RecordSeam,
+  type RecordedModelAxis,
   type RetrievalFacade,
+  type RunRecordRepository,
 } from '@repo/memory-core';
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import { buildAgentGraph, type GraphDeps } from '../agent/graph/graph.js';
@@ -25,9 +29,12 @@ import {
   PGVECTOR_WRITER,
   RETRIEVAL_FACADE,
   CHECKPOINTER,
+  RUN_RECORDS,
 } from '../memory/memory.tokens.js';
 import { NO_USAGE } from '../agent/model/usage.js';
 import { CHAT_MODEL, defaultTools, type ModelDeps } from '../agent/model/model-deps.js';
+import { recordingGraphDeps } from '../agent/model/decision-seam.js';
+import { RunRecorder } from '../audit/run-recorder.js';
 import type { ToolSelection } from '../agent/nodes/act.node.js';
 import {
   ASSESS_PROMPT,
@@ -122,6 +129,8 @@ function lazyModelDeps(create: () => ModelDeps): ModelDeps {
 export class RunsService {
   private graphDeps: GraphDeps | undefined;
   private decorateModel: ((deps: ModelDeps) => ModelDeps) | undefined;
+  private decoratedAxis: RecordedModelAxis | undefined;
+  private readonly recorder: RunRecorder;
 
   // Tokens are explicit: these are interfaces with no runtime value to infer,
   // and the dev path runs through tsx, where esbuild emits no decorator
@@ -132,7 +141,10 @@ export class RunsService {
     @Inject(PGVECTOR_WRITER) private readonly pgvectorWriter: PgvectorWriter | null,
     @Inject(RETRIEVAL_FACADE) private readonly retrievalFacade: RetrievalFacade | null,
     @Inject(CHECKPOINTER) private readonly checkpointer: BaseCheckpointSaver | null,
-  ) {}
+    @Inject(RUN_RECORDS) runRecords: RunRecordRepository | null,
+  ) {
+    this.recorder = new RunRecorder(runRecords);
+  }
 
   setDeps(deps: GraphDeps): void {
     this.graphDeps = deps;
@@ -148,9 +160,21 @@ export class RunsService {
    * half, the checkpointer and the retrieval facade stay exactly as a request
    * would have them. An evaluation that composed its own memory would measure a
    * system nobody deploys.
+   *
+   * `servedBy` names the axis the decorator puts in place of the configured
+   * one, for the run record's header: an evaluation replaying cassettes
+   * passes `replay`, because what decided the run was a recording and not the
+   * model the key would have selected. A recording decorator passes nothing;
+   * the live model still answers.
    */
-  setModelDecorator(decorate: (deps: ModelDeps) => ModelDeps): void {
+  setModelDecorator(decorate: (deps: ModelDeps) => ModelDeps, servedBy?: RecordedModelAxis): void {
     this.decorateModel = decorate;
+    this.decoratedAxis = servedBy;
+  }
+
+  /** What serves the model half of a run now, as its record states it. */
+  modelAxis(): RecordedModelAxis {
+    return this.decoratedAxis ?? (process.env['GOOGLE_API_KEY'] ? 'live' : 'stub');
   }
 
   /**
@@ -160,10 +184,17 @@ export class RunsService {
    * developer with Postgres but no API key got stub memory. `GOOGLE_API_KEY`
    * now selects the model half; `DATABASE_URL` + `NEO4J_URI`, resolved in
    * `MemoryModule`, select the memory half.
+   *
+   * With a run record open, the set is recorded last, outside anything that
+   * assembled or decorated it, so the record holds what the graph was served
+   * (P3-B).
    */
-  private getDeps(): GraphDeps {
-    if (this.graphDeps) return this.graphDeps;
+  private getDeps(deck: Deck<RecordSeam> | undefined): GraphDeps {
+    const deps = this.graphDeps ?? this.assembleDeps();
+    return deck === undefined ? deps : recordingGraphDeps(deps, deck);
+  }
 
+  private assembleDeps(): GraphDeps {
     const model = this.modelDeps();
 
     return {
@@ -300,12 +331,6 @@ export class RunsService {
     // The runId is minted here rather than in `ingress` because it is the
     // checkpointer's thread_id, and that has to exist before the invoke.
     const runId = randomUUID();
-    const compiled = buildAgentGraph(
-      this.getDeps(),
-      params.body,
-      params.correlationId,
-      this.checkpointer ?? undefined,
-    );
 
     logger.info({ msg: 'run.start', correlationId: params.correlationId, runId });
 
@@ -313,12 +338,15 @@ export class RunsService {
     // one per node: nothing encloses the graph and no instrumentation supplies
     // a parent. LangGraph propagates the active context, so one span here is
     // enough.
-    return withAgentSpan({ agentName: AGENT_NAME, runId }, async (agent) => {
-      const result = await compiled.invoke({ runId }, { configurable: { thread_id: runId } });
-      const state = result as unknown as AgentState;
-      agent.setConversationId(state.sessionId);
-      return buildRunResponse(state);
-    });
+    return withAgentSpan({ agentName: AGENT_NAME, runId }, (agent) =>
+      this.recorded(runId, params, async (deps) => {
+        const compiled = this.compile(deps, params);
+        const result = await compiled.invoke({ runId }, { configurable: { thread_id: runId } });
+        const state = result as unknown as AgentState;
+        agent.setConversationId(state.sessionId);
+        return buildRunResponse(state);
+      }),
+    );
   }
 
   /**
@@ -331,53 +359,44 @@ export class RunsService {
    *
    * Called by the evaluation harness, not by the HTTP surface. It runs the same
    * dependency set `execute` does — the same model axis, the same memory axis,
-   * the same checkpointer — because an evaluation that composes its own
-   * dependencies measures a system nobody deploys.
+   * the same checkpointer, the same run record — because an evaluation that
+   * composes its own dependencies measures a system nobody deploys.
    */
   async executeTraced(params: { body: unknown; correlationId: string }): Promise<TracedRun> {
     const runId = randomUUID();
-    const compiled = buildAgentGraph(
-      this.getDeps(),
-      params.body,
-      params.correlationId,
-      this.checkpointer ?? undefined,
-    );
 
     logger.info({ msg: 'run.traced.start', correlationId: params.correlationId, runId });
 
-    return withAgentSpan({ agentName: AGENT_NAME, runId }, async (agent) => {
-      const nodeSequence: string[] = [];
-      const state: Record<string, unknown> = { runId };
+    return withAgentSpan({ agentName: AGENT_NAME, runId }, (agent) =>
+      this.recorded(runId, params, async (deps) => {
+        const compiled = this.compile(deps, params);
+        const nodeSequence: string[] = [];
+        const state: Record<string, unknown> = { runId };
 
-      const stream = await compiled.stream({ runId }, { configurable: { thread_id: runId } });
-      for await (const chunk of stream) {
-        for (const [nodeName, update] of Object.entries(chunk)) {
-          nodeSequence.push(nodeName);
-          Object.assign(state, update);
+        const stream = await compiled.stream({ runId }, { configurable: { thread_id: runId } });
+        for await (const chunk of stream) {
+          for (const [nodeName, update] of Object.entries(chunk)) {
+            nodeSequence.push(nodeName);
+            Object.assign(state, update);
+          }
         }
-      }
 
-      const finalState = state as unknown as AgentState;
-      agent.setConversationId(finalState.sessionId);
+        const finalState = state as unknown as AgentState;
+        agent.setConversationId(finalState.sessionId);
 
-      return {
-        response: buildRunResponse(finalState),
-        nodeSequence,
-        toolOutputs: finalState.toolOutputs,
-        extraction: finalState.extraction,
-        traceId: agent.traceId,
-      };
-    });
+        return {
+          response: buildRunResponse(finalState),
+          nodeSequence,
+          toolOutputs: finalState.toolOutputs,
+          extraction: finalState.extraction,
+          traceId: agent.traceId,
+        };
+      }),
+    );
   }
 
   async stream(params: { body: unknown; correlationId: string; res: Response }): Promise<void> {
     const runId = randomUUID();
-    const compiled = buildAgentGraph(
-      this.getDeps(),
-      params.body,
-      params.correlationId,
-      this.checkpointer ?? undefined,
-    );
 
     logger.info({ msg: 'run.stream.start', correlationId: params.correlationId, runId });
 
@@ -386,30 +405,35 @@ export class RunsService {
     };
 
     await withAgentSpan({ agentName: AGENT_NAME, runId }, (agent) =>
-      this.streamInto(compiled, runId, params, sendEvent, agent),
+      this.streamInto(runId, params, sendEvent, agent),
     );
   }
 
   private async streamInto(
-    compiled: ReturnType<typeof buildAgentGraph>,
     runId: string,
-    params: { correlationId: string; res: Response },
+    params: { body: unknown; correlationId: string; res: Response },
     sendEvent: (event: StreamEvent) => void,
     agent: AgentSpan,
   ): Promise<void> {
     try {
-      const stream = await compiled.stream({ runId }, { configurable: { thread_id: runId } });
+      // Inside the containment, so a record that cannot be opened ends the
+      // stream with an error frame like any other failure.
+      await this.recorded(runId, params, async (deps) => {
+        const compiled = this.compile(deps, params);
+        const stream = await compiled.stream({ runId }, { configurable: { thread_id: runId } });
 
-      for await (const chunk of stream) {
-        const [nodeName] = Object.keys(chunk);
-        if (nodeName) {
-          sendEvent({ node: nodeName });
+        for await (const chunk of stream) {
+          const [nodeName] = Object.keys(chunk);
+          if (nodeName) {
+            sendEvent({ node: nodeName });
+          }
+          // `ingress` is the node that validated the body, so its update is
+          // where the session id first exists.
+          const sessionId = (chunk as Record<string, { sessionId?: unknown }>)['ingress']
+            ?.sessionId;
+          if (typeof sessionId === 'string') agent.setConversationId(sessionId);
         }
-        // `ingress` is the node that validated the body, so its update is
-        // where the session id first exists.
-        const sessionId = (chunk as Record<string, { sessionId?: unknown }>)['ingress']?.sessionId;
-        if (typeof sessionId === 'string') agent.setConversationId(sessionId);
-      }
+      });
 
       sendEvent({ node: 'done' });
     } catch (error) {
@@ -431,6 +455,41 @@ export class RunsService {
     } finally {
       params.res.end();
     }
+  }
+
+  private compile(deps: GraphDeps, params: { body: unknown; correlationId: string }) {
+    return buildAgentGraph(deps, params.body, params.correlationId, this.checkpointer ?? undefined);
+  }
+
+  /**
+   * One chat run, inside its run record (P3-B): opened before the graph is
+   * built, every decision appended as it resolves, closed with the outcome.
+   *
+   * Fail-open, which is the chat path's half of the decision made at review:
+   * a record that cannot be opened fails the run before any work, and an
+   * append that fails later is logged and leaves the record `partial`. The
+   * session id is read from the body without failing on it, because the record
+   * keeps the body as received and `ingress` is what rejects it.
+   */
+  private recorded<T>(
+    runId: string,
+    params: { body: unknown; correlationId: string },
+    work: (deps: GraphDeps) => Promise<T>,
+  ): Promise<T> {
+    const parsed = RunRequestSchema.safeParse(params.body);
+
+    return this.recorder.record(
+      {
+        runId,
+        graph: 'chat',
+        sessionId: parsed.success ? parsed.data.sessionId : null,
+        correlationId: params.correlationId,
+        request: params.body,
+        modelAxis: this.modelAxis(),
+      },
+      'fail-open',
+      (deck) => work(this.getDeps(deck)),
+    );
   }
 }
 

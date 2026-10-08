@@ -74,12 +74,15 @@ export class AgentServiceHarness implements AgentHarness<MemoryOutcome> {
     // ignores `live` entirely, which is why no model client is constructed on
     // that path.
     if (decks !== undefined) {
-      this.runs.setModelDecorator((live) =>
-        this.deck === undefined
-          ? live
-          : this.deck.mode === 'replay'
-            ? replayModelDeps(this.deck)
-            : recordingModelDeps(live, this.deck),
+      this.runs.setModelDecorator(
+        (live) =>
+          this.deck === undefined
+            ? live
+            : this.deck.mode === 'replay'
+              ? replayModelDeps(this.deck)
+              : recordingModelDeps(live, this.deck),
+        // A trial's run record names what decided it (P3-B).
+        decks.mode === 'replay' ? 'replay' : undefined,
       );
     }
   }
