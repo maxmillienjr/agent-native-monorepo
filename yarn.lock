@@ -3044,6 +3044,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@repo/gateway@workspace:apps/gateway"
   dependencies:
+    "@opentelemetry/api": "npm:^1.9.0"
     "@repo/agent-contracts": "workspace:*"
     "@repo/eslint-config": "workspace:*"
     "@repo/telemetry": "workspace:*"
