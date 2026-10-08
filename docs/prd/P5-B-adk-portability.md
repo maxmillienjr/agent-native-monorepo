@@ -2,11 +2,11 @@
 id: P5-B
 title: Agent Development Kit portability appendix
 tier: 5
-status: accepted
+status: in-progress
 size: S
 depends_on: [P5-A]
 blocks: []
-issue: null
+issue: 117
 superseded_by: null
 ---
 
