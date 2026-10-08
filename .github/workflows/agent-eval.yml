@@ -11,6 +11,15 @@ name: Agent Eval
 #           worse and the client breaking. About eight generateContent calls
 #           per trial, against a daily free tier of twenty.
 #
+# Two more jobs watch the model itself (P1-E), under the same secret gate:
+#
+#   canary  nightly and on dispatch. `yarn canary` asks the API what serves
+#           the pinned ids and the floating alias, and embeds the 21 baseline
+#           texts. Red when anything behind a pinned id changed; the way back
+#           to green is a committed baseline update. 2 generateContent calls.
+#   compare after the live job. The night's recorded decisions against the
+#           committed cassettes, read from the live artifact. No model call.
+#
 # What goes red is the regression gate's verdict (P1-D), not "a trial failed":
 #
 #   replay  EVAL_GATE=replay compares every (task, trial, grader) cell with the
@@ -34,6 +43,12 @@ on:
         description: Live trials per task. About 8 generateContent calls per trial at HEAD.
         type: number
         default: 1
+      chat_model:
+        description: >-
+          Run the live suite on another chat id, e.g. gemini-flash-latest. A migration
+          comparison, not the pinned rate: no tally is pushed. Empty runs the pinned id.
+        type: string
+        default: ''
 
 permissions:
   contents: read
@@ -135,11 +150,11 @@ jobs:
           if [ "$EVENT" != schedule ] && [ "$EVENT" != workflow_dispatch ]; then
             echo "> **Live tier:** not run on \`$EVENT\`. It runs nightly and on dispatch." >> "$GITHUB_STEP_SUMMARY"
           elif [ "$HAS_KEY" = false ]; then
-            echo '> **Live tier: did not run.** There is no `GOOGLE_API_KEY` repository secret, so the `eval-live` job was skipped. This replay is a frozen sample and cannot catch the model getting worse or the client breaking.' >> "$GITHUB_STEP_SUMMARY"
+            echo '> **Live tier and canary: did not run.** There is no `GOOGLE_API_KEY` repository secret, so the `eval-live`, `eval-compare` and `eval-canary` jobs were skipped. This replay is a frozen sample and cannot catch the model getting worse, the client breaking, or the model behind the pinned id changing.' >> "$GITHUB_STEP_SUMMARY"
           elif [ "$HAS_KEY" != true ]; then
             echo '> **Live tier: did not run.** The `eval-live-gate` job did not report whether a key exists.' >> "$GITHUB_STEP_SUMMARY"
           else
-            echo '> **Live tier:** see the `eval-live` job in this run.' >> "$GITHUB_STEP_SUMMARY"
+            echo '> **Live tier:** see the `eval-live` job in this run, and `eval-canary` for the model behind the pinned ids.' >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - uses: actions/upload-artifact@v7
@@ -198,8 +213,12 @@ jobs:
       # trial, rather than going green on the stub set.
       EVAL_EXPECT_AXES: model=live memory=live
       EVAL_TRIALS: ${{ inputs.trials || '1' }}
+      # Empty on the schedule, and on a dispatch that left it empty: the pinned id.
+      EVAL_CHAT_MODEL: ${{ inputs.chat_model }}
       # A failed trial is an expected sample here; the pooled verdict decides.
-      EVAL_GATE: live
+      # Not on another chat id: its tally would pool into the pinned epoch, and
+      # the runner refuses EVAL_GATE under an override anyway.
+      EVAL_GATE: ${{ !inputs.chat_model && 'live' || '' }}
 
     steps:
       - uses: actions/checkout@v7
@@ -220,6 +239,7 @@ jobs:
       # does not change it. The first nightly creates the orphan branch; every
       # later one appends to it.
       - name: Check out the evaluation history
+        if: ${{ !inputs.chat_model }}
         run: |
           yarn turbo build --filter=@repo/agent-service... --output-logs=errors-only
           yarn workspace @repo/agent-service eval:history open
@@ -238,7 +258,13 @@ jobs:
 
       - name: Job summary
         if: always()
+        env:
+          CHAT_MODEL: ${{ inputs.chat_model }}
         run: |
+          if [ -n "$CHAT_MODEL" ]; then
+            echo "> **Migration comparison on \`$CHAT_MODEL\`**, not the pinned rate. No tally was pushed to eval-history." >> "$GITHUB_STEP_SUMMARY"
+            echo >> "$GITHUB_STEP_SUMMARY"
+          fi
           if [ -f "$EVAL_OUTPUT_DIR/eval-summary.md" ]; then
             cat "$EVAL_OUTPUT_DIR/eval-summary.md" >> "$GITHUB_STEP_SUMMARY"
           else
@@ -262,7 +288,7 @@ jobs:
       # Even when the verdict is red: a regressed night is evidence too. An
       # aborted run wrote no tally, and this pushes nothing.
       - name: Push the tally to eval-history
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && !inputs.chat_model }}
         run: yarn workspace @repo/agent-service eval:history publish
 
       # In the same artifact as the reports: the decisions this run made are
@@ -279,4 +305,118 @@ jobs:
         with:
           name: eval-live
           path: ${{ env.EVAL_OUTPUT_DIR }}
+          if-no-files-found: warn
+
+  # The model behind the ids (P1-E). Skipped, never passed, without the key,
+  # for the reason the live job is.
+  canary:
+    name: eval-canary
+    needs: gate
+    if: >-
+      needs.gate.outputs.has_key == 'true' &&
+      (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+    # The live job's group: the same daily quota, and two runs on it at once
+    # make it impossible to tell which exhausted it.
+    concurrency:
+      group: eval-live
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # No service containers: the canary needs a key and no stores.
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24.x'
+          cache: 'yarn'
+
+      - run: echo "CANARY_OUTPUT_DIR=$RUNNER_TEMP/canary" >> "$GITHUB_ENV"
+
+      - run: yarn install --immutable
+
+      # Red on a pinned `changed`, `gone` or `unobserved`. Back to green is
+      # `CANARY_BASELINE=update yarn canary` with a key and a committed
+      # baseline, never a re-run.
+      - run: yarn canary
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+
+      - name: Job summary
+        if: always()
+        run: |
+          if [ -f "$CANARY_OUTPUT_DIR/canary-summary.md" ]; then
+            cat "$CANARY_OUTPUT_DIR/canary-summary.md" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo '## Canary — did not start' >> "$GITHUB_STEP_SUMMARY"
+            echo 'No summary was written. See the step that failed before `yarn canary`.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      # A moved alias is news about the next model and does not fail the run,
+      # so it has to be visible some other way than a colour.
+      - name: Floating-alias notice
+        if: always()
+        run: |
+          report="$CANARY_OUTPUT_DIR/canary-report.json"
+          [ -f "$report" ] || exit 0
+          jq -r '.results[] | select(.pinned == false and .verdict != "unchanged") | "\(.id) \(.verdict) \(.observed // "")"' "$report" |
+            while read -r id verdict observed; do
+              echo "::notice title=Floating alias $verdict::$id is $verdict ($observed). A migration input, not drift."
+            done
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: eval-canary
+          path: ${{ env.CANARY_OUTPUT_DIR }}
+          if-no-files-found: warn
+
+  # The night's live decisions against the committed cassettes (P1-E). Reads
+  # the eval-live artifact; skipped whenever the live job was.
+  compare:
+    name: eval-compare
+    needs: live
+    if: always() && needs.live.result != 'skipped'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # No key in this job: it reads files, and the runner's watcher fails it if
+    # a request reaches the model host regardless.
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24.x'
+          cache: 'yarn'
+
+      - run: |
+          echo "COMPARE_LIVE_DIR=$RUNNER_TEMP/eval-live/cassettes" >> "$GITHUB_ENV"
+          echo "COMPARE_OUTPUT_DIR=$RUNNER_TEMP/eval-compare" >> "$GITHUB_ENV"
+
+      - run: yarn install --immutable
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: eval-live
+          path: ${{ runner.temp }}/eval-live
+
+      - run: |
+          yarn turbo build --filter=@repo/agent-service... --output-logs=errors-only
+          yarn workspace @repo/agent-service canary:compare
+
+      - name: Job summary
+        if: always()
+        run: |
+          if [ -f "$COMPARE_OUTPUT_DIR/compare-summary.md" ]; then
+            cat "$COMPARE_OUTPUT_DIR/compare-summary.md" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo '## Decisions — did not run' >> "$GITHUB_STEP_SUMMARY"
+            echo 'No summary was written. See the step that failed.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: eval-compare
+          path: ${{ env.COMPARE_OUTPUT_DIR }}
           if-no-files-found: warn
