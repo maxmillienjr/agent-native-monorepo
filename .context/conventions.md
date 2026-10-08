@@ -117,8 +117,9 @@ decision. Under ADR 0012's outcome, P2-E either adds a reproduction step for bot
 replay job, if the graph is kept, or archives both, if it is removed. `eval:retrieval`
 measures the fused retrieval ADR 0009 retired, so it is a historical measurement: its
 `vector` condition is what a request gets, and its `graph` and `hybrid` conditions are not.
-`eval:explanation` is stage 1 of P2-D, the graph's explanation role, and reads the graph
-alone.
+`eval:explanation` is P2-D, the graph's explanation role. Stage 1 reads the graph alone.
+Stage 2 compares `plan`'s answers with and without the graph's paths, and by default it
+replays the committed answer file and makes no request.
 
 | Tier        | Runner                 | Command                       | Scope                                                    |
 | ----------- | ---------------------- | ----------------------------- | -------------------------------------------------------- |
@@ -128,7 +129,7 @@ alone.
 | E2E         | Playwright             | `yarn turbo test:e2e`         | Browser against the full `docker compose` stack          |
 | Eval        | `@repo/eval-harness`   | `yarn eval`                   | Agent trials against real stores, model replayed or live |
 | Retrieval   | `@repo/eval-harness`   | `yarn eval:retrieval`         | The P2-B ablation, pre-0009 design: recorded embeddings  |
-| Explanation | `@repo/eval-harness`   | `yarn eval:explanation`       | P2-D stage 1: graph paths, no model and no embeddings    |
+| Explanation | `@repo/eval-harness`   | `yarn eval:explanation`       | P2-D: graph paths, then `plan`'s answers, model replayed |
 
 - **Service tests need `--experimental-vm-modules`**, which the `test:service` script
   already carries. Jest's ESM support requires it, and without it every import in a spec
@@ -316,6 +317,15 @@ alone.
   recording of the 535 texts takes six invocations a minute apart. Its default,
   `EVAL_EMBEDDINGS_MODE` unset, makes no request to the model host and fails if one is
   made.
+- **Stage 2's answers are recorded once, a slice a day, and replayed.**
+  `EVAL_ANSWERS_MODE=record yarn eval:explanation` asks the `plan` calls that
+  `recorded/explanation-answers.json` lacks, at most `EVAL_STAGE2_MAX_CALLS` (default 8) and
+  13 seconds apart. It writes after every call, never asks a recorded answer again, and stops
+  without recording on a per-day 429, exiting 1. Each answer is a format-2 cassette decision,
+  and replay refuses one whose prompt hash is not what the run builds. `EVAL_ANSWERS_FILE`
+  points a dry run elsewhere, so fake answers never land in the committed file. The committed
+  ablation report holds aggregates only, so stage 2 selects its 38 queries by retrieving
+  again, and refuses any other count.
 - **`EVAL_TASKS` narrows `yarn eval` to named tasks.** Recording is per suite, so adding
   one task and recording its cassette otherwise re-records every other cassette and
   spends their `generateContent` calls. An unknown id is refused, and the selection is
@@ -381,7 +391,9 @@ Standing consumers, before any development spends a call:
 | `agent-eval.yml` `eval-live`, one trial each | about 8                   |
 | `agent-eval.yml` `eval-canary` (P1-E)        | 2–3                       |
 
-That leaves roughly 9–10 a day for recordings and live criteria. A PRD that needs live
+That leaves roughly 9–10 a day for recordings and live criteria. Both nightly jobs start
+at 03:00 UTC, which is the evening of the Pacific day (20:00 PDT, 19:00 PST), so a recording
+made earlier that day spends from the same pool the nightly will draw on afterwards. A PRD that needs live
 calls states its count and how it splits across days; whoever schedules the run checks this
 table first and does not start a recording that the day's remainder cannot finish. A key
 from a separate project doubles the pool and is the owner's decision.
