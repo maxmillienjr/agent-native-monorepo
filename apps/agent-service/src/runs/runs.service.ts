@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { Injectable, Inject, Optional } from '@nestjs/common';
 import type { Response } from 'express';
-import type { BaseCheckpointSaver } from '@langchain/langgraph';
+import { INTERRUPT, type BaseCheckpointSaver } from '@langchain/langgraph';
 import { RunRequestSchema, type RunResponse, type StreamEvent } from '@repo/agent-contracts';
 import type { Deck } from '@repo/agent-cassette';
 import { createLogger, withAgentSpan } from '@repo/telemetry';
@@ -375,6 +375,27 @@ export class RunsService {
   }
 
   /**
+   * The state to report, with `awaiting-approval` when the run is paused.
+   *
+   * A paused run ends its stream normally, with the state as of the pause and
+   * no `outcome`, because `egress` never ran — and `buildRunResponse` reads a
+   * missing outcome as `success`. The checkpointer is asked rather than the
+   * folded updates: it is the record a resume will read, so it is the
+   * one that says whether a task is waiting. Without a checkpointer nothing
+   * can pause, since `act` refuses an irreversible call there.
+   */
+  private async reportPause(
+    compiled: ReturnType<typeof buildAgentGraph>,
+    runId: string,
+    state: AgentState,
+  ): Promise<AgentState> {
+    if (this.checkpointer === null) return state;
+    const snapshot = await compiled.getState({ configurable: { thread_id: runId } });
+    const paused = snapshot.tasks.some((task) => task.interrupts.length > 0);
+    return paused ? { ...state, outcome: 'awaiting-approval' } : state;
+  }
+
+  /**
    * `execute`, with the trajectory recorded.
    *
    * Called by the evaluation harness, not by the HTTP surface. It runs the same
@@ -500,7 +521,7 @@ export class RunsService {
           next = await events.next();
         }
 
-        const state = next.value;
+        const state = await this.reportPause(compiled, runId, next.value);
         agent.setConversationId(state.sessionId);
         return { runId, state, nodeSequence, traceId: agent.traceId };
       }),
@@ -576,6 +597,9 @@ async function* runUpdates(
       continue;
     }
     for (const [node, update] of Object.entries(chunk as Record<string, Partial<AgentState>>)) {
+      // A pause arrives as an update under `__interrupt__`, which is not a
+      // node and is not state.
+      if (node === INTERRUPT) continue;
       Object.assign(state, update);
       yield { kind: 'updated', node, update };
     }
