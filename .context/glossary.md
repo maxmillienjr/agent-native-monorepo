@@ -6,8 +6,9 @@
   Destroyed at run completion. No external I/O.
 - **Episodic Memory:** Session-scoped turn history persisted in Postgres via Drizzle ORM.
   Retention is currently unbounded. Raw material for Semantic promotion.
-- **Semantic Memory:** Long-term knowledge stored across two complementary indices — a Neo4j
-  knowledge graph for symbolic traversal and a pgvector collection for dense similarity search.
+- **Semantic Memory:** Long-term knowledge distilled from runs. `reflect` writes it to two
+  indices, a pgvector collection and a Neo4j knowledge graph, and retrieval reads only the
+  pgvector collection (ADR 0009). The graph is kept for an explanation role not yet measured.
 
 ## LangGraph
 
@@ -39,12 +40,18 @@
 
 ## Retrieval
 
+- **Vector-only retrieval:** What `retrieve` does: one session-scoped cosine search over
+  `semantic_facts`, returned in the reader's order by `VectorRetrievalFacade`. A decision,
+  not a gap — see hybrid retrieval.
 - **RRF (Reciprocal Rank Fusion):** Merge strategy that combines ranked lists from multiple
-  sources. Score = Σ(1 / (k + rank_i)) where k is a smoothing constant (typically 60).
-  Intended to merge Neo4j graph traversal results with pgvector similarity results; the
-  implementation keys the two lists differently and so interleaves them instead. See
-  ADR 0002.
-- **Hybrid retrieval:** Querying both Neo4j and pgvector, then merging via RRF.
+  sources. Score = Σ(1 / (k + rank_i)) where k is a smoothing constant (typically 60). It
+  merged the graph and vector lists until ADR 0009, keyed on the fact's content hash
+  (ADR 0004). Today `rrfMerge` lives in `@repo/eval-harness`, and only the retrieval
+  ablation calls it.
+- **Hybrid retrieval:** Querying both Neo4j and pgvector, then merging via RRF. The service
+  did this until ADR 0009. P2-B's ablation found it no better than vector search on the
+  deployed path and 0.145 Recall@10 worse with perfect seeds, so it was removed from the
+  request path. `yarn eval:retrieval` still measures it, as history.
 
 ## Observability
 

@@ -39,7 +39,6 @@ message cannot tell the difference.
 | Grader                         | Kind | Asserts                                            |
 | ------------------------------ | ---- | -------------------------------------------------- |
 | `retrieved_context_min_length` | code | retrieval returned at least _n_ candidates         |
-| `retrieved_from_source`        | code | a candidate came from the named retriever          |
 | `outcome_must_be`              | code | the run reported the expected outcome              |
 | `token_counts_positive`        | code | prompt and completion counts are both above zero   |
 | `episodic_row_written`         | code | `episodes` rows exist carrying **this run's** id   |
@@ -137,11 +136,11 @@ roughly forty `generateContent` calls against this key's free-tier quota of 20 f
 `gemini-2.5-flash`, and has not been run, so none of these numbers is the suite's live pass
 rate, and none is presented as one.
 
-`graph-recall-001` (P2-B) is the third task and the only one whose seed reaches the graph
-retriever. One live trial recorded on 2026-09-26 passed every grader, `retrieved_from_source`
-among them. Its replay and its two stub trials pass too. That is a fact reaching `plan`'s
-prompt through the graph, not evidence that the graph improves retrieval — the ablation
-below is.
+P2-B added a third task, `graph-recall-001`, which proved that a fact only the graph held
+reached `plan`'s prompt, graded by a `retrieved_from_source` grader. ADR 0009 made retrieval
+vector-only, so no graph fact can reach the prompt, and the task, its cassette, its baseline
+cells and the grader were deleted together. The two remaining cassettes replay unchanged:
+their context never held a graph fact.
 
 ## Recording and replaying a trial
 
@@ -222,6 +221,10 @@ shared with P2-B's retrieval ablation.
 ## The retrieval ablation
 
 `yarn eval:retrieval` measures the graph/vector/hybrid question ADR 0002 left open (P2-B).
+It measured the design ADR 0009 then retired: `vector` is what a request gets today, and
+`graph` and `hybrid` are kept runnable as history. The fusion they need, `rrfMerge`, lives
+in `src/retrieval/rrf.ts` for that reason, and the runner holds the seed linker and the
+fused path the service used to run.
 It is not a suite and does not use `Grader`. A retrieval benchmark has no trial, no
 transcript and no threshold; its unit is a ranked list per query. What this package holds
 for it is pure:
@@ -250,7 +253,8 @@ The pre-registered rule selects "neither does". A blind model adjudication of 3,
 pooled candidates added one label and moved nothing. The reports are under
 `datasets/retrieval-ablation/reports/`, and
 [ADR 0009](../../docs/adr/0009-the-second-store-after-the-retrieval-ablation.md),
-proposed, sets out what to do about it.
+accepted, took the graph out of retrieval. The ablation runs in no CI tier; P2-D owns
+whether it should.
 
 ## What this package does not do
 

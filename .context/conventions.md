@@ -104,7 +104,9 @@ Each tier has one command, and the first five run in CI. Eval runs twice in
 `agent-eval.yml`: on the replay axis on every pull request, every push to `main` and
 nightly, and on the live axis nightly and on dispatch when a `GOOGLE_API_KEY` repository
 secret exists. `eval:retrieval` runs in no pipeline: P2-B left the choice of tier to P1-C,
-which shipped before the command existed.
+which shipped before the command existed, and P2-D now owns whether it runs in one at all.
+It measures the fused retrieval ADR 0009 retired, so it is a historical measurement: its
+`vector` condition is what a request gets, and its `graph` and `hybrid` conditions are not.
 
 | Tier        | Runner                 | Command                       | Scope                                                    |
 | ----------- | ---------------------- | ----------------------------- | -------------------------------------------------------- |
@@ -113,7 +115,7 @@ which shipped before the command existed.
 | Integration | Vitest                 | `yarn turbo test:integration` | Real Postgres/Neo4j — never mock a database              |
 | E2E         | Playwright             | `yarn turbo test:e2e`         | Browser against the full `docker compose` stack          |
 | Eval        | `@repo/eval-harness`   | `yarn eval`                   | Agent trials against real stores, model replayed or live |
-| Retrieval   | `@repo/eval-harness`   | `yarn eval:retrieval`         | The P2-B ablation: real stores, recorded embeddings      |
+| Retrieval   | `@repo/eval-harness`   | `yarn eval:retrieval`         | The P2-B ablation, pre-0009 design: recorded embeddings  |
 
 - **Service tests need `--experimental-vm-modules`**, which the `test:service` script
   already carries. Jest's ESM support requires it, and without it every import in a spec
@@ -276,9 +278,10 @@ which shipped before the command existed.
 - **A retriever's `ORDER BY` needs a unique secondary key.** Both semantic readers produce
   ties by construction — `expandFromSeeds` scores on hop distance, and the eval harness
   seeds every fact in a task with one vector — and an untied order is decided by whatever
-  order the store holds rows in, which changes across a delete-and-reseed. That order
-  reaches `plan`'s prompt through `rrfMerge` and `retrievedContext`, so it is an input to
-  the agent and not a presentation detail. Both readers break the tie on the content hash.
+  order the store holds rows in, which changes across a delete-and-reseed. The vector
+  reader's order reaches `plan`'s prompt through `retrievedContext`, so it is an input to
+  the agent and not a presentation detail; the graph reader's reaches the ablation's
+  `rrfMerge`. Both readers break the tie on the content hash.
 - **A script or test that runs git in another directory strips git's environment first.**
   Git exports `GIT_DIR` and `GIT_INDEX_FILE` to hooks and to `git rebase --exec`, and an
   inherited `GIT_DIR` overrides discovery from `cwd`. A fixture test that ran `git init` and

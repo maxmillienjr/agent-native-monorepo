@@ -68,19 +68,28 @@ rows 1-4.
   each turn once per run. `run_id` stays as a column recording which run first persisted the
   turn. First write wins: an edited and re-sent turn is dropped, not updated.
 
-### Semantic Memory (Long-Term Hybrid)
+### Semantic Memory (Long-Term)
 
-Two complementary indices, both written by the `reflect` node:
+Two indices, both written by the `reflect` node. **Only pgvector is read on a request.**
+Retrieval is vector-only by decision, after a negative measurement: P2-B's ablation found
+that fusing the graph's list with the vector list added nothing on the deployed path and
+lowered Recall@10 by 0.145 with perfect seeds, and ADR 0009 took the graph out of the read
+path.
 
-- **Neo4j Knowledge Graph:** Typed nodes (`:Concept`, `:Fact`) joined by `:MENTIONS`, plus
-  `:RELATES_TO` between concepts. Enables symbolic multi-hop traversal for explainable
-  relational recall. Uniqueness constraints on `:Concept(id)` and `:Fact(contentHash)` are
-  installed at boot — `MERGE` is not an upsert without them.
 - **pgvector Collection:** Dense embeddings, searched by exact cosine distance with the
-  content hash as a tiebreaker. Enables cosine similarity search for paraphrase and synonym
-  recall. Scoped to the requesting session unless the query opts out. The column carries an
-  HNSW index (`vector_cosine_ops`) that the tiebroken query cannot use — ADR 0006 records
-  that trade.
+  content hash as a tiebreaker. This is retrieval: `VectorRetrievalFacade` returns this
+  search, in the reader's order, to `plan`. Scoped to the requesting session unless the
+  query opts out. The column carries an HNSW index (`vector_cosine_ops`) that the tiebroken
+  query cannot use — ADR 0006 records that trade.
+- **Neo4j Knowledge Graph:** Typed nodes (`:Concept`, `:Fact`) joined by `:MENTIONS`, plus
+  `:RELATES_TO` between concepts. Written on every run and read by no request. It is kept
+  for an explanation role — which concepts a retrieved fact mentions, and how they connect
+  to the question's — that has not been measured, so `docs/STATUS.md` row 15 is `stubbed`.
+  P2-D measures that role or removes the graph (ADR 0009's fallback). `CypherNeo4jReader`
+  is kept in `memory-core`, unwired, for that measurement and for the ablation. It has no
+  session scope, so anything that reads the graph again takes P4-B's handed-over filter
+  first. Uniqueness constraints on `:Concept(id)` and `:Fact(contentHash)` are installed at
+  boot — `MERGE` is not an upsert without them.
 
 The dimension is one exported constant, `EMBEDDING_DIMENSIONS`, and every schema, DDL,
 fixture and stub derives from it. It is 768 because pgvector refuses an HNSW index above
@@ -93,19 +102,22 @@ pgvector. Each write is individually replay-safe and `reflect` is a function of
 set of them is still not one transaction — the guarantee is convergence under replay, not
 exactly-once. ADR 0001 explains why.
 
-**Why both?** Dense search finds semantically similar facts but cannot follow relational
-chains. Graph traversal follows explicit relationships but misses paraphrase variants.
-Together they provide complementary recall paths that reduce false negatives. Results are
-merged via Reciprocal Rank Fusion (RRF) over one candidate universe: both readers return
-facts, keyed on the same content hash. See ADR 0002 for the two-store choice and ADR 0004
-for why fusion needed the graph to store facts and not only concepts.
+**Why there were two.** ADR 0002 ran both on the theory that dense search and graph
+traversal fail on different questions, so their union, merged by Reciprocal Rank Fusion,
+recalls more than either. ADR 0004 made that fusion real by giving both readers one universe
+of facts keyed on the content hash. P2-B measured the premise against pre-registered labels
+and it did not hold, so ADR 0009 superseded 0002. The fusion survives only inside
+`yarn eval:retrieval`, which reproduces that measurement; ADR 0004 is moot on the request
+path, and `reflect` still writes the `:Fact` copy it introduced.
 
 ```
 Working Memory ──[reflect]──▶ Episodic (Postgres)
                               │
                               └──[reflect]──▶ Semantic
-                                               ├── Neo4j (entities + relationships)
+                                               ├── Neo4j (entities + relationships; not read)
                                                └── pgvector (distilled fact embeddings)
+                                                     │
+                              retrieve ◀──[cosine]───┘
 ```
 
 ## LangGraph Topology
@@ -152,7 +164,8 @@ The LangGraph graph is hosted inside a NestJS 11 microservice (`apps/agent-servi
 - **Observability:** One trace per run under an `invoke_agent` root, one span per graph
   node beneath it, OTLP HTTP export. Model calls, embeddings and tool executions have
   spans of their own in the OpenTelemetry GenAI vocabulary, with token usage on each model
-  call; content capture is off and an attribute allowlist holds it off. The reader classes
-  carry child spans for pgvector search and Neo4j expansion, and `MemoryModule` constructs
-  them (`memory/memory.module.ts:106`), so a live trace on the configured memory axis shows
-  those children under `agent.node.retrieve`.
+  call; content capture is off and an attribute allowlist holds it off. The pgvector reader
+  carries a child span for its search, and `MemoryModule` constructs it, so a live trace on
+  the configured memory axis shows `memory.pgvector.search` under `agent.node.retrieve`.
+  The Neo4j reader's `memory.neo4j.expand` span appears in no run, because no request
+  constructs that reader since ADR 0009.

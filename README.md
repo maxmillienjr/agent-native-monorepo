@@ -4,11 +4,13 @@
 
 > A production-grade chassis for stateful LangGraph agents, purpose-built for multi-agent development workflows.
 
-A Yarn 4 monorepo containing a NestJS 11 microservice that runs a LangGraph state machine designed around a **Three-Brain memory architecture**: per-run Working Memory, session-scoped Episodic Memory (Postgres + Drizzle ORM), and long-term Semantic Memory combining a Neo4j 5 knowledge graph with pgvector dense embeddings. This project demonstrates the intersection of senior monorepo engineering and production agentic systems: it is an extraction of production patterns from a proprietary platform, sanitized for public consumption.
+A Yarn 4 monorepo containing a NestJS 11 microservice that runs a LangGraph state machine designed around a **Three-Brain memory architecture**: per-run Working Memory, session-scoped Episodic Memory (Postgres + Drizzle ORM), and long-term Semantic Memory retrieved from pgvector dense embeddings, with a Neo4j 5 knowledge graph written beside it. This project demonstrates the intersection of senior monorepo engineering and production agentic systems: it is an extraction of production patterns from a proprietary platform, sanitized for public consumption.
 
 > **What is wired, and what is not.** All three memory tiers are live: `MemoryModule`
-> constructs the adapters and `RunsService` injects them, so a run reads from and writes to
-> Postgres, Neo4j and pgvector when `DATABASE_URL` and `NEO4J_URI` are set.
+> constructs the adapters and `RunsService` injects them, so a run reads from Postgres and
+> pgvector, and writes to all three stores, when `DATABASE_URL` and `NEO4J_URI` are set.
+> Retrieval is vector-only by decision, after a measurement found the graph did not help
+> ([ADR 0009](docs/adr/0009-the-second-store-after-the-retrieval-ablation.md)).
 > `packages/eval-harness` measures the agent, and `agent-eval.yml` runs it on every pull
 > request on replayed model decisions and compares every grader result with a committed
 > baseline, so any change in behaviour turns `eval-replay` red (P1-D). What this repository
@@ -62,14 +64,11 @@ graph TD
     EM["Episodic Memory<br/>(Postgres + Drizzle)"]
     Neo4j["Neo4j Knowledge Graph<br/>(entities + relationships)"]
     PGV["pgvector Collection<br/>(dense embeddings)"]
-    RRF["RRF Merge + Rerank"]
 
     WM -->|"reflect node"| EM
     EM -->|"reflect node"| Neo4j
     EM -->|"reflect node"| PGV
-    Neo4j -->|"graph expansion"| RRF
-    PGV -->|"cosine search"| RRF
-    RRF -->|"merged candidates"| WM
+    PGV -->|"cosine search (retrieve node)"| WM
 ```
 
 ---
@@ -81,11 +80,11 @@ This repository is an extraction of production patterns from a proprietary agent
 It exists to demonstrate architectural thinking in two domains that rarely overlap:
 
 1. **Senior monorepo engineering** — Yarn 4 workspaces, Turborepo build orchestration, shared TypeScript configs, and Zod schemas as the single source of truth for every type that crosses a package boundary.
-2. **Production agentic systems** — LangGraph state machines, hybrid symbolic + dense memory retrieval via Neo4j and pgvector, OpenTelemetry instrumentation at the graph-node level.
+2. **Production agentic systems** — LangGraph state machines, a three-tier memory whose retrieval design was measured against pre-registered labels and changed when the measurement came back negative, OpenTelemetry instrumentation at the graph-node level.
 
 Both lists are wired into the request path. `MemoryModule` constructs the adapters and
-`RunsService` injects them, so a run reads from and writes to Postgres, Neo4j and pgvector
-when `DATABASE_URL` and `NEO4J_URI` are set, and runs against a stub dependency set when
+`RunsService` injects them, so a run reads from Postgres and pgvector and writes to all
+three stores when `DATABASE_URL` and `NEO4J_URI` are set, and runs against a stub dependency set when
 they are not. The agent is measured, too — `yarn eval` runs trials and reports `pass@k` and
 `pass^k`, on every pull request against recorded model decisions and nightly against the
 live model once a key secret exists. A regression gate reads those numbers: on the replay
@@ -167,7 +166,7 @@ docker compose --profile full up --build
 
 ## Three-Brain Memory
 
-The memory system is three tiers with distinct scopes, persistence strategies, and access patterns, and all three are live. Working Memory is in-process. The other two are implemented in `packages/memory-core`, covered by integration tests against real Postgres and Neo4j, and constructed by `apps/agent-service`: `MemoryModule` builds the pool, the driver, the four adapters and the retrieval facade, and `RunsService` injects them by token. A run reads from and writes to Postgres, Neo4j and pgvector when `DATABASE_URL` and `NEO4J_URI` are set, and runs against a deterministic stub dependency set when they are not — memory and model are independent axes, and neither falls back. Per-capability detail is in [`docs/STATUS.md`](docs/STATUS.md).
+The memory system is three tiers with distinct scopes, persistence strategies, and access patterns, and all three are live. Working Memory is in-process. The other two are implemented in `packages/memory-core`, covered by integration tests against real Postgres and Neo4j, and constructed by `apps/agent-service`: `MemoryModule` builds the pool, the driver, the four adapters and the retrieval facade, and `RunsService` injects them by token. A run reads from Postgres and pgvector, and writes to Postgres, Neo4j and pgvector, when `DATABASE_URL` and `NEO4J_URI` are set, and runs against a deterministic stub dependency set when they are not — memory and model are independent axes, and neither falls back. Per-capability detail is in [`docs/STATUS.md`](docs/STATUS.md).
 
 ### Working Memory
 
@@ -179,22 +178,22 @@ Session-scoped turn history persisted in Postgres via Drizzle ORM. Records the f
 
 Retention is unbounded: there is no expiry column and no cleanup job. Writes upsert on the `(session_id, turn_index)` natural key, so a replayed run — or a re-sent history under a fresh `run_id` — lands on the same rows. First write wins, which makes the log a record of what was first seen rather than a mirror of the client's current history.
 
-### Semantic Memory (Hybrid)
+### Semantic Memory
 
-> **This was meant to be the architectural differentiator, and it has been measured: in retrieval, the graph adds nothing on the deployed path and lowers recall with a perfect linker.** Long-term memory spans two indices, both written by the `reflect` node and both read on every run. [ADR 0009](docs/adr/0009-the-second-store-after-the-retrieval-ablation.md), proposed, records the measurement and what to do about it.
+> **Retrieval is vector-only, by decision, after a negative measurement.** The two-index design was meant to be the architectural differentiator. It was measured, the graph added nothing to retrieval on the deployed path and lowered recall with a perfect linker, and [ADR 0009](docs/adr/0009-the-second-store-after-the-retrieval-ablation.md) took it out of the read path. The `reflect` node still writes both indices. The graph is kept for an explanation role that has not been measured, so [`docs/STATUS.md`](docs/STATUS.md) row 15 marks it `stubbed`, and P2-D either measures that role or removes the graph.
 
 The `reflect` node writes Postgres, then Neo4j, then pgvector, in three sequential loops. Each write is replay-safe — the episodic natural key, Cypher `MERGE`, and pgvector upsert on a content hash — and `reflect` reads its extraction from state rather than deriving it, so a retried attempt writes exactly what the first attempt wrote. The three are still not atomic together: a crash between them leaves the indices disagreeing until the retry, not permanently. That guarantee is convergence under replay, not exactly-once; [ADR 0001](docs/adr/0001-langgraph-over-a-durable-execution-engine.md) explains why the stronger one was not bought, and an outbox would be a new PRD.
 
-| Index            | Technology | What It Stores                                   | Retrieval Pattern                  |
-| ---------------- | ---------- | ------------------------------------------------ | ---------------------------------- |
-| Knowledge Graph  | Neo4j 5    | Entities (`:Concept`, `:Fact`) and relationships | Bounded multi-hop Cypher traversal |
-| Dense Embeddings | pgvector   | Distilled fact embeddings (768-dim)              | Exact cosine similarity via `<=>`  |
+| Index            | Technology | What It Stores                                   | Read on a run?                                         |
+| ---------------- | ---------- | ------------------------------------------------ | ------------------------------------------------------ |
+| Dense Embeddings | pgvector   | Distilled fact embeddings (768-dim)              | Yes: exact cosine similarity via `<=>`, session-scoped |
+| Knowledge Graph  | Neo4j 5    | Entities (`:Concept`, `:Fact`) and relationships | No, since ADR 0009: written, not read                  |
 
-**Why both, and did it work?** [ADR 0002](docs/adr/0002-neo4j-and-pgvector-rather-than-one-store.md) ran both on the theory that dense search and graph traversal fail on different questions, so their union recalls more than either. P2-B measured that on 200 labelled queries with `yarn eval:retrieval`, under a decision rule fixed before the run. It did not hold. On the deployed path `hybrid` and `vector` score the same Recall@10, 0.940, because the seed linker produced no id the graph holds on any of the 200 queries. With the linker replaced by perfect seeds, `hybrid` scores 0.145 _below_ `vector`. The graph ranks only by hop distance, and RRF gives its hash-ordered list the same weight as the vector list. That held in the relational queries built to favour the graph: 0.180 against 0.760. The rule selected "neither does", under both the pre-registered and the blind-adjudicated labels. The report is committed under `packages/eval-harness/datasets/retrieval-ablation/reports/`.
+**Why there were two, and what the measurement found.** [ADR 0002](docs/adr/0002-neo4j-and-pgvector-rather-than-one-store.md) ran both on the theory that dense search and graph traversal fail on different questions, so their union recalls more than either. P2-B measured that on 200 labelled queries with `yarn eval:retrieval`, under a decision rule fixed before the run. It did not hold. On the deployed path `hybrid` and `vector` score the same Recall@10, 0.940, because the seed linker produced no id the graph holds on any of the 200 queries. With the linker replaced by perfect seeds, `hybrid` scores 0.145 _below_ `vector`. The graph ranks only by hop distance, and RRF gives its hash-ordered list the same weight as the vector list. That held in the relational queries built to favour the graph: 0.180 against 0.760. The rule selected "neither does", under both the pre-registered and the blind-adjudicated labels. The report is committed under `packages/eval-harness/datasets/retrieval-ablation/reports/`, and `yarn eval:retrieval` still reproduces it: it measures the fused design ADR 0009 retired, which survives only inside the ablation.
 
-Results merge via **Reciprocal Rank Fusion (RRF)**, keyed on the fact's content hash. This used to interleave rather than fuse, and the reason was not the key: the graph returned `:Concept` nodes while pgvector returned facts, and two lists drawn from disjoint universes cannot intersect under any key. The graph now stores facts too — `(:Fact)-[:MENTIONS]->(:Concept)`, keyed on the same hash — so traversal reaches the same objects vector search returns, and a fact found by both paths is scored at the sum of its two reciprocal ranks. [ADR 0004](docs/adr/0004-one-candidate-universe-for-fusion.md) records the decision.
+Until ADR 0009 the two lists were merged with **Reciprocal Rank Fusion (RRF)**, keyed on the fact's content hash. That only became fusion once the graph stored facts too — `(:Fact)-[:MENTIONS]->(:Concept)`, keyed on the same hash — so that both readers returned the same kind of object ([ADR 0004](docs/adr/0004-one-candidate-universe-for-fusion.md)). `reflect` still writes the `:Fact` copy. No request fuses anything now.
 
-Vector retrieval is scoped to the requesting session by default, with an explicit `crossSession` opt-out. Graph retrieval is not scoped: [P4-B](docs/prd/P4-B-memory-poisoning-red-team.md) found it returns another session's facts and owns the filter.
+Retrieval is scoped to the requesting session by default, with an explicit `crossSession` opt-out. The graph has no session scope, which [P4-B](docs/prd/P4-B-memory-poisoning-red-team.md) found let it return another session's facts. Taking the graph out of the read path closed that, and the graph filter now belongs to P2-D, before anything reads the graph again.
 
 ---
 
@@ -208,7 +207,7 @@ its hash, and write an extra row rather than converging on the first attempt's.
 | Node       | Purpose                         | Key Input Fields               | Key Output Fields                        | Side Effects                                  |
 | ---------- | ------------------------------- | ------------------------------ | ---------------------------------------- | --------------------------------------------- |
 | `ingress`  | Validate request, seed state    | Raw HTTP body                  | Full `AgentState`                        | None                                          |
-| `retrieve` | Hybrid semantic recall          | `messages`, `topK`, `hopDepth` | `retrievedContext`                       | pgvector search, Neo4j traversal              |
+| `retrieve` | Semantic recall, vector-only    | `messages`, `topK`             | `retrievedContext`                       | pgvector search                               |
 | `plan`     | LLM planning step               | `messages`, `retrievedContext` | `currentPlan`, `messages`, `tokenCounts` | LLM API call                                  |
 | `act`      | Tool execution loop             | `currentPlan`                  | `toolOutputs`, `stepCount`               | Tool invocations                              |
 | `distill`  | Extract entities and facts      | `messages`                     | `extraction`                             | LLM API call                                  |
