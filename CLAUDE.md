@@ -5,8 +5,11 @@ before making any changes.
 
 ## Key Rules
 
-- All memory writes go through packages/memory-core — never write to Postgres, Neo4j, or
-  pgvector directly from app code.
+- Database writes have three owners, and app code never writes to Postgres, Neo4j or
+  pgvector directly. packages/memory-core owns memory, the run record and the case table;
+  the LangGraph checkpointer owns its own tables; packages/decision-ledger owns the ledger,
+  written as an insert-only role. The ledger has its own package because its writer must
+  not hold the UPDATE that memory's upserts need (ADR 0013).
 - The reflect node is the ONLY place that promotes data to Episodic or Semantic memory.
 - All graph nodes must have a corresponding OTel span. Use the span helpers in
   packages/telemetry — `withNodeSpan` for a node; see .context/conventions.md, Telemetry.

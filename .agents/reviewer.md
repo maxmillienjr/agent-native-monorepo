@@ -17,8 +17,16 @@ against the project's conventions.
    to `ALLOWED_SPAN_ATTRIBUTES` in the same change; reject one whose value is content —
    a prompt, a completion, a tool argument or result, or an id the model extracted.
 
-4. **Memory Encapsulation:** No direct database calls (Postgres, Neo4j, pgvector) outside
-   `packages/memory-core`. All memory writes go through the memory-core facade.
+4. **Database Writes Have Three Owners:** No direct database calls (Postgres, Neo4j,
+   pgvector) outside the three packages that own them. `packages/memory-core` owns memory,
+   P3-B's run record and P3-E's case table, all written with the service's role; every
+   memory write goes through its facade. The LangGraph checkpointer owns its own three
+   tables, which it writes from `memory/memory.module.ts`. `packages/decision-ledger` owns
+   the ledger, written as `ledger_writer`, which holds `SELECT` and `INSERT` and nothing
+   else. The ledger is a separate package because one pool cannot both upsert memory and
+   be unable to rewrite history (ADR 0013). Reject a change that gives the ledger's writer
+   any other grant, that reads `DATABASE_URL` for the ledger, or that imports
+   `@repo/decision-ledger` under `apps/agent-service/src/agent/`.
 
 5. **No `any`:** TypeScript strict mode. Use `unknown` with Zod parse where the type is
    truly unknown.
@@ -36,7 +44,9 @@ against the project's conventions.
    exception is `@repo/determination/clinician`, which holds the only constructor for an
    adverse determination and is kept out of the barrel on purpose, so the graph cannot
    reach it. Reject a change that re-exports it from `src/index.ts`, or that imports it
-   under `apps/agent-service/src/agent/`.
+   under `apps/agent-service/src/agent/`. The second exception is
+   `@repo/decision-ledger/testing`, a time-stamping authority for tests whose CA key sits
+   in a temporary directory. Reject an import of it outside a test file.
 
 10. **Sanitization:** The boundary is licensed content and real data, not vocabulary — see
     ADR 0003. Payer-domain terminology is permitted and expected in Tier 3. Reject a change
