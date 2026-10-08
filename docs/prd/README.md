@@ -13,8 +13,8 @@ stores from an empty database: one run leaves episodic rows, `:Concept` and `:Fa
 `semantic_facts` rows and checkpoints under the runId its own response returned.
 
 **`docs/STATUS.md` is the authority on any capability sentence, including the ones above.**
-Twenty-four rows, each with a status and evidence cited by name — nineteen `implemented`, one
-`planned`, three `stubbed`, one `removed`, none `broken`. The rule that keeps it true is in
+Twenty-four rows, each with a status and evidence cited by name — eighteen `implemented`, one
+`planned`, four `stubbed`, one `removed`, none `broken`. The rule that keeps it true is in
 `.context/conventions.md`: a change that moves a row moves it there in the same pull
 request. `yarn lint:docs` fails CI when a PRD's status disagrees with its row below.
 
@@ -114,12 +114,25 @@ Recall@10, because the seed linker produced no id the graph holds on any query. 
 seeds `hybrid` is 0.145 below `vector`, interval [−0.195, −0.095]: the graph ranks only by
 hop distance, and RRF weighs that hash-ordered list as heavily as the vector list. The
 pre-registered rule selects "neither does", and a blind model adjudication of the 3,029
-pooled candidates added one label and selects the same row. [ADR
-0009](../adr/0009-the-second-store-after-the-retrieval-ablation.md) is **proposed**, not
-accepted. It supersedes 0002 on acceptance and recommends taking the graph out of the fused
-list, with removing the graph path as the fallback. Nothing in code changes until it is
-accepted. Any linker fix must wait for P4-B's session filter on the graph. The ablation runs
-in no pipeline, and nothing owns wiring it in.
+pooled candidates added one label and selects the same row. ADR 0009 records what followed,
+in the next paragraph.
+
+**[ADR 0009](../adr/0009-the-second-store-after-the-retrieval-ablation.md) is accepted:
+retrieval is vector-only.** The owner chose option B on 2026-10-08, and it supersedes
+ADR 0002. `VectorRetrievalFacade` returns the session-scoped pgvector search and reads no
+graph; `retrieve` derives no seed ids, and `hopDepth` left the request contract because nothing
+reads it. `reflect` still writes concepts, relationships and `:Fact` nodes, and
+`CypherNeo4jReader` stays in `memory-core`, unwired, for a role nobody has measured, so
+`docs/STATUS.md` row 15 is `stubbed`. The seed linker and `rrfMerge` moved into the
+ablation, so `yarn eval:retrieval` still reproduces the measurement that decided it, and a
+re-run on 2026-10-08 matched every committed number but the latencies. `graph-recall-001`
+was deleted with its cassette and its four baseline cells, rather than converted, because
+conversion needed a live re-record; the other two cassettes replay unchanged and the gate
+reads `match`. P4-B was amended: the graph half of its cross-session leak is closed on the
+read side, its graph session filter (M1) moves to P2-D, and M2 and M3 stay. **P2-D owns the
+rest and has no file yet.** It measures the graph's explanation role against a rule fixed
+before the run, or removes the graph, which is ADR 0009's fallback, option C. It also owns
+M1 for any future graph read, and whether the ablation runs in a CI tier at all.
 
 **[P2-C](P2-C-otel-genai-semantics.md) has shipped**, tracked in
 [#74](https://github.com/maxmillienjr/agent-native-monorepo/issues/74). A run is now one
@@ -228,15 +241,18 @@ P1-E, in progress, watches whether the model behind the pinned ids has changed.
 
 ## Tier 2 — Make the architecture real
 
-The three-tier memory model is instantiated and the graph is checkpointed. What remains is
-measuring whether the hybrid premise holds. The standard vocabulary for saying so is in
-place: P2-C emits the OpenTelemetry GenAI conventions.
+The three-tier memory model is instantiated and the graph is checkpointed. The hybrid
+premise was measured by P2-B and did not hold, and ADR 0009 made retrieval vector-only. What
+remains is the knowledge graph that `reflect` still writes: P2-D measures what it is for, or
+removes it. The standard vocabulary for reporting either is in place: P2-C emits the
+OpenTelemetry GenAI conventions.
 
-| ID                                   | Title                                                            | Size | Status  |
-| ------------------------------------ | ---------------------------------------------------------------- | ---- | ------- |
-| [P2-A](P2-A-wire-memory-core.md)     | Wire memory-core into the service; add checkpointing and retry   | L    | shipped |
-| [P2-B](P2-B-retrieval-ablation.md)   | Hybrid retrieval evaluation and the graph/vector/hybrid ablation | L    | shipped |
-| [P2-C](P2-C-otel-genai-semantics.md) | OpenTelemetry GenAI semantics, including evaluation events       | L    | shipped |
+| ID                                   | Title                                                                    | Size | Status  |
+| ------------------------------------ | ------------------------------------------------------------------------ | ---- | ------- |
+| [P2-A](P2-A-wire-memory-core.md)     | Wire memory-core into the service; add checkpointing and retry           | L    | shipped |
+| [P2-B](P2-B-retrieval-ablation.md)   | Hybrid retrieval evaluation and the graph/vector/hybrid ablation         | L    | shipped |
+| [P2-C](P2-C-otel-genai-semantics.md) | OpenTelemetry GenAI semantics, including evaluation events               | L    | shipped |
+| P2-D                                 | Measure the graph's explanation role, or remove it (ADR 0009's fallback) | M    | draft   |
 
 ## Tier 3 — Regulated-domain credibility
 
@@ -304,8 +320,11 @@ P1-E is drawn under P1-C, whose nightly live job it reads, but it also depends o
 directly: its embedding baseline is the committed cassettes' vectors, and its decision
 comparison reads the cassette format.
 
-P4-B is drawn under P2-B, whose `graphFacts` seed format and graph-path task its
-cross-session case needs; it also depends on P1-A and P1-B directly, for the harness and
+P2-D, a draft with no file yet, follows P2-B and ADR 0009. It is not drawn: whoever writes
+it sets its edges, and its graph session filter is the M1 that P4-B handed over.
+
+P4-B is drawn under P2-B, whose `graphFacts` seed format its cross-session case needs (the
+graph-path task it also used was deleted with ADR 0009); it also depends on P1-A and P1-B directly, for the harness and
 the cassettes. P4-C used to hang off P2-A alone. It is now drawn under P1-B, because it
 changes the `act.selectTool` request and so re-records every cassette, and it adds an
 evaluation task; it still depends on P2-A (ADR 0001's second obligation) and on P1-A.
