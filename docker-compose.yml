@@ -31,6 +31,17 @@ services:
       timeout: 10s
       retries: 10
 
+  # One-shot: writes the Agent Card's signing key into a named volume the first
+  # time the stack comes up, and leaves it there after (P5-A). No private key is
+  # in the repository; this is where the stack's comes from.
+  a2a-keygen:
+    profiles: ['full']
+    image: node:24-alpine
+    command: ['node', '/a2a-keygen.mjs', '/keys/card-signing.pem', '--owner', '1001:1001']
+    volumes:
+      - ./scripts/a2a-keygen.mjs:/a2a-keygen.mjs:ro
+      - a2a-keys:/keys
+
   agent-service:
     profiles: ['full']
     build:
@@ -41,7 +52,7 @@ services:
       args:
         GIT_SHA: ${GIT_SHA:-}
     ports:
-      - '3000:3000'
+      - '${AGENT_SERVICE_HOST_PORT:-3000}:3000'
     environment:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/agentdb
       NEO4J_URI: bolt://neo4j:7687
@@ -50,11 +61,23 @@ services:
       GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
       OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
       OTEL_SERVICE_NAME: agent-service
+      # Service authentication is on in the stack (P5-A). Digests of two demo
+      # tokens, `console-demo-token` and `tck-demo-token`, with the same standing
+      # as POSTGRES_PASSWORD above: values for a local stack, not secrets.
+      SERVICE_CREDENTIALS: console:50698bf35afbe0a8b780bcc783b9511fb5ad2f961feb1e5186797369641a3ec2,tck:2668e973a0ed24adab1209a840ed18ff026873d3f82103f4a119b9039f4214c7
+      # Where a caller reaches the service, for the card's interface URL: the
+      # gateway. The TCK job points it at its auth proxy instead.
+      A2A_PUBLIC_URL: ${A2A_PUBLIC_URL:-http://localhost:3001}
+      A2A_CARD_SIGNING_KEYS: /keys/card-signing.pem
+    volumes:
+      - a2a-keys:/keys:ro
     depends_on:
       postgres:
         condition: service_healthy
       neo4j:
         condition: service_healthy
+      a2a-keygen:
+        condition: service_completed_successfully
     healthcheck:
       test: ['CMD-SHELL', 'wget -qO- http://localhost:3000/health || exit 1']
       interval: 10s
@@ -68,7 +91,7 @@ services:
       context: .
       dockerfile: apps/gateway/Dockerfile
     ports:
-      - '3001:3001'
+      - '${GATEWAY_HOST_PORT:-3001}:3001'
     environment:
       AGENT_SERVICE_URL: http://agent-service:3000
       GATEWAY_PORT: '3001'
@@ -90,7 +113,10 @@ services:
       context: .
       dockerfile: apps/console/Dockerfile
     ports:
-      - '8080:80'
+      - '${CONSOLE_HOST_PORT:-8080}:80'
+    environment:
+      # Substituted into nginx's Authorization header at start (P5-A).
+      CONSOLE_SERVICE_TOKEN: console-demo-token
     depends_on:
       gateway:
         condition: service_healthy
@@ -106,3 +132,4 @@ services:
 volumes:
   pgdata:
   neo4jdata:
+  a2a-keys:
