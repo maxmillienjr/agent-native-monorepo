@@ -171,6 +171,33 @@ controls:
         tier: unit
     note: Delivered by P1-C, and gated by P1-D. This is the replay axis, which grades a recorded sample rather than the live model. The job's exit is the regression gate's verdict against the committed baselines/replay.json, so a skipped task, a deleted assertion or a moved score fails it and a failure accepted in the baseline does not. The live job runs nightly and on dispatch, and is skipped until a GOOGLE_API_KEY repository secret exists. A red job blocks a merge only once the owner applies .github/rulesets/main.json.
 
+  - id: CTL-EVAL-04
+    title: Each retrieval store's contribution is measured against labels and a decision rule fixed before the run
+    status: implemented
+    maps:
+      - { framework: nist-ai-rmf-1.0, ref: MEASURE 2.3 }
+      - { framework: nist-ai-rmf-1.0, ref: MANAGE 1.1 }
+      - { framework: iso-iec-42001-2023, ref: A.6.2.4 }
+    evidence:
+      - kind: symbol
+        file: apps/agent-service/src/eval/run-retrieval-ablation.ts
+        name: runConditions
+      - { kind: symbol, file: packages/eval-harness/src/retrieval/evaluate.ts, name: applyDecisionRule }
+      - kind: test
+        file: packages/eval-harness/src/retrieval/dataset.test.ts
+        name: holds 200 queries, 50 per stratum, fixed before the first run
+        tier: unit
+      - kind: test
+        file: packages/eval-harness/src/retrieval/evaluate.test.ts
+        name: maps each pair of outcomes onto a row of the PRD table
+        tier: unit
+      - {
+          kind: doc,
+          file: docs/adr/0009-the-second-store-after-the-retrieval-ablation.md,
+          heading: The measurement,
+        }
+    note: Delivered by P2-B. The unit tests hold the dataset to its pre-registered shape and the rule to the PRD's outcome table; they do not re-run the ablation. yarn eval:retrieval runs in no CI pipeline, because P2-B left the tier to P1-C and P1-C shipped first, so a change to a reader, the facade or the linker is not re-measured until someone runs it. The result it recorded is that the graph does not earn its place in retrieval, and ADR 0009, proposed, decides what follows.
+
   - id: CTL-OUT-01
     title: Model output is schema-validated before it can reach memory
     status: implemented
