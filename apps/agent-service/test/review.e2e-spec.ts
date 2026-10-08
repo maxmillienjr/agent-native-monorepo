@@ -1,5 +1,5 @@
 import { generateKeyPairSync, randomUUID, sign, type KeyObject } from 'node:crypto';
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { Test, type TestingModule } from '@nestjs/testing';
@@ -9,7 +9,13 @@ import request from 'supertest';
 import type { CaseRepository, NewCase } from '@repo/memory-core';
 import type { AgentDisposition } from '@repo/determination';
 import { canonicalJson } from '@repo/agent-cassette';
-import { BundleSchema, ClaimResponseSchema } from '@repo/prior-auth';
+import {
+  AUTHORIZATION_NUMBER_EXTENSION,
+  BundleSchema,
+  ClaimResponseSchema,
+  OperationOutcomeSchema,
+  ParametersSchema,
+} from '@repo/prior-auth';
 import { AppModule } from '../src/app.module.js';
 import { FHIR_JSON, configureApp } from '../src/configure-app.js';
 import { PRIOR_AUTH_CLOCK } from '../src/fhir/prior-auth.service.js';
@@ -57,6 +63,39 @@ const BUNDLES = resolve(
 );
 const readBundle = (task: string): Record<string, unknown> =>
   JSON.parse(readFileSync(join(BUNDLES, `${task}.bundle.json`), 'utf8')) as Record<string, unknown>;
+
+/**
+ * A committed bundle with its member number replaced, so that a test's cases
+ * are the only ones an inquiry for that member can match, on a live table
+ * that holds every earlier run's cases too.
+ */
+function bundleForMember(task: string, member: string): Record<string, unknown> {
+  const body = readBundle(task) as { entry: { resource: Record<string, unknown> }[] };
+  const patient = body.entry.find((entry) => entry.resource['resourceType'] === 'Patient');
+  const identifiers = patient?.resource['identifier'] as { value: string }[] | undefined;
+  if (identifiers?.[0] === undefined) throw new Error(`${task} has no member identifier`);
+  identifiers[0].value = member;
+  return body;
+}
+
+/**
+ * Every `$inquire` response this spec receives is written to
+ * `FHIR_CAPTURE_DIR` when it is set, as `fhir.e2e-spec.ts` does for `$submit`,
+ * so `fhir-validate.yml` validates them: the `Parameters` as a whole, and
+ * each returned bundle on its own for the PAS report.
+ */
+const captureDir = process.env['FHIR_CAPTURE_DIR'];
+function captureInquiry(name: string, body: { parameter?: { resource?: unknown }[] }): void {
+  if (captureDir === undefined || captureDir === '') return;
+  mkdirSync(captureDir, { recursive: true });
+  writeFileSync(join(captureDir, `${name}.inquiry.json`), `${JSON.stringify(body, null, 2)}\n`);
+  for (const [index, parameter] of (body.parameter ?? []).entries()) {
+    writeFileSync(
+      join(captureDir, `${name}.inquiry-return-${index + 1}.json`),
+      `${JSON.stringify(parameter.resource, null, 2)}\n`,
+    );
+  }
+}
 
 const RECEIVED = new Date('2026-09-22T10:00:00Z');
 const DECIDED = new Date('2026-09-23T15:00:00Z');
@@ -524,6 +563,146 @@ describe.each(AXES)('clinician review surface (e2e), memory %s', (axis) => {
       const response = await decide(caseId, signedBody(caseId, approvalBy(PHYSICIAN), PHYSICIAN));
       expect(response.status).toBe(HttpStatus.CONFLICT);
       expect((await cases.get(caseId))?.status).toBe('approved-automated');
+    });
+  });
+
+  describe('Claim/$inquire', () => {
+    const inquire = (body: unknown) =>
+      http()
+        .post('/fhir/Claim/$inquire')
+        .set('Content-Type', FHIR_JSON)
+        .send(typeof body === 'string' ? body : JSON.stringify(body));
+    const outcomes = (body: { parameter?: { name: string; resource: unknown }[] }) =>
+      (body.parameter ?? []).map((parameter) => {
+        expect(parameter.name).toBe('return');
+        const bundle = BundleSchema.parse(parameter.resource);
+        expect(bundle.entry?.[0]?.resource?.resourceType).toBe('ClaimResponse');
+        const claimResponse = ClaimResponseSchema.parse(bundle.entry?.[0]?.resource);
+        return [String(claimResponse.identifier?.[0]?.value), claimResponse.outcome];
+      });
+
+    it('returns each matching case, queued until it is decided and complete after', async () => {
+      const member = `SYN-INQ-${randomUUID().slice(0, 8)}`;
+      const body = bundleForMember('pa-e0601-one-missing', member);
+      const first = caseIdOf(
+        (await http().post('/fhir/Claim/$submit').set('Content-Type', FHIR_JSON).send(body)).body,
+      );
+      // A minute later, so the two are returned in order of receipt.
+      now = new Date(RECEIVED.getTime() + 60_000);
+      const second = caseIdOf(
+        (await http().post('/fhir/Claim/$submit').set('Content-Type', FHIR_JSON).send(body)).body,
+      );
+
+      const before = await inquire(body);
+      expect(before.status).toBe(HttpStatus.OK);
+      expect(before.headers['content-type']).toContain(FHIR_JSON);
+      ParametersSchema.parse(before.body);
+      captureInquiry(`${axis}-pended`, before.body);
+      expect(outcomes(before.body)).toEqual([
+        [first, 'queued'],
+        [second, 'queued'],
+      ]);
+
+      now = DECIDED;
+      const decided = await http()
+        .post(`/review/cases/${first}/determination`)
+        .send(signedBody(first, approvalBy(PHYSICIAN), PHYSICIAN));
+      expect(decided.status).toBe(HttpStatus.OK);
+
+      const after = await inquire(body);
+      captureInquiry(`${axis}-decided`, after.body);
+      expect(outcomes(after.body)).toEqual([
+        [first, 'complete'],
+        [second, 'queued'],
+      ]);
+
+      // An authorization number narrows the match to the case it was issued for.
+      const byNumber = bundleForMember('pa-e0601-one-missing', member) as {
+        entry: { resource: { item: Record<string, unknown>[] } }[];
+      };
+      const item = byNumber.entry[0]?.resource.item[0];
+      if (item === undefined) throw new Error('no item');
+      item['extension'] = [{ url: AUTHORIZATION_NUMBER_EXTENSION, valueString: first }];
+      expect(outcomes((await inquire(byNumber)).body)).toEqual([[first, 'complete']]);
+    });
+
+    it('ignores the inquiry Claim.identifier, and returns no return parameter for no match', async () => {
+      const member = `SYN-INQ-${randomUUID().slice(0, 8)}`;
+      const body = bundleForMember('pa-e0470-one-missing', member) as {
+        entry: { resource: Record<string, unknown> }[];
+      };
+      const caseId = caseIdOf(
+        (await http().post('/fhir/Claim/$submit').set('Content-Type', FHIR_JSON).send(body)).body,
+      );
+
+      const asSubmitted = await inquire(body);
+      const claim = body.entry[0]?.resource;
+      if (claim === undefined) throw new Error('no claim');
+      claim['identifier'] = [{ system: 'https://example.org/fhir/sid/inquiry', value: 'INQ-1' }];
+      const reidentified = await inquire(body);
+      expect(outcomes(reidentified.body)).toEqual(outcomes(asSubmitted.body));
+      expect(outcomes(reidentified.body)).toEqual([[caseId, 'queued']]);
+
+      const nobody = await inquire(bundleForMember('pa-e0470-one-missing', `${member}-absent`));
+      expect(nobody.status).toBe(HttpStatus.OK);
+      expect(nobody.body).toEqual({
+        resourceType: 'Parameters',
+        meta: { security: [expect.objectContaining({ code: 'HTEST' })] },
+      });
+      captureInquiry(`${axis}-no-match`, nobody.body);
+    });
+
+    it('answers a body that is not a Bundle with 400, and one with nothing to match on with 422', async () => {
+      const notABundle = await inquire({ resourceType: 'Patient', id: 'synthetic' });
+      expect(notABundle.status).toBe(HttpStatus.BAD_REQUEST);
+      expect(OperationOutcomeSchema.safeParse(notABundle.body).success).toBe(true);
+
+      const anonymous = readBundle('pa-e0470-one-missing') as {
+        entry: { resource: Record<string, unknown> }[];
+      };
+      for (const entry of anonymous.entry) delete entry.resource['identifier'];
+      const unmatched = await inquire(anonymous);
+      expect(unmatched.status).toBe(HttpStatus.UNPROCESSABLE_ENTITY);
+      expect(OperationOutcomeSchema.safeParse(unmatched.body).success).toBe(true);
+    });
+  });
+
+  describe('the sentinel', () => {
+    it('shows the rationale to the reviewer, and never in a determination or an inquiry', async () => {
+      referWithSentinel();
+      const member = `SYN-SEN-${randomUUID().slice(0, 8)}`;
+      const body = bundleForMember('pa-k0823-ambiguous', member);
+      const submitted = await http()
+        .post('/fhir/Claim/$submit')
+        .set('Content-Type', FHIR_JSON)
+        .send(body);
+      const caseId = caseIdOf(submitted.body);
+      expect(submitted.text).not.toContain(SENTINEL);
+
+      const view = await http().get(`/review/cases/${caseId}`);
+      expect(view.text).toContain(SENTINEL);
+
+      const pendedInquiry = await http()
+        .post('/fhir/Claim/$inquire')
+        .set('Content-Type', FHIR_JSON)
+        .send(body);
+      expect(pendedInquiry.body.parameter).toHaveLength(1);
+      expect(pendedInquiry.text).not.toContain(SENTINEL);
+
+      now = DECIDED;
+      const decided = await http()
+        .post(`/review/cases/${caseId}/determination`)
+        .send(signedBody(caseId, denialBy(PHYSICIAN), PHYSICIAN));
+      expect(decided.status).toBe(HttpStatus.OK);
+      expect(decided.text).not.toContain(SENTINEL);
+
+      const decidedInquiry = await http()
+        .post('/fhir/Claim/$inquire')
+        .set('Content-Type', FHIR_JSON)
+        .send(body);
+      expect(decidedInquiry.body.parameter).toHaveLength(1);
+      expect(decidedInquiry.text).not.toContain(SENTINEL);
+      captureInquiry(`${axis}-denied`, decidedInquiry.body);
     });
   });
 });

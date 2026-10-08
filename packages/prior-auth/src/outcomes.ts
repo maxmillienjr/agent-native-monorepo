@@ -24,13 +24,22 @@ export function operationOutcome(
 export const CLAIM_SUBMIT_DEFINITION = 'http://hl7.org/fhir/OperationDefinition/Claim-submit';
 
 /**
+ * The canonical of PAS 2.2.1's `Claim/$inquire`. Base R4 defines no inquiry
+ * operation, so the surface names the one it is shaped after.
+ */
+export const CLAIM_INQUIRE_DEFINITION =
+  'http://hl7.org/fhir/us/davinci-pas/OperationDefinition/Claim-inquiry';
+
+/**
  * What `GET /fhir/metadata` returns: exactly the operations the service
  * implements.
  *
  * It describes itself as shaped after PAS 2.2.1 and does not `instantiate`
  * PAS's CapabilityStatement, because it is not conformant: a conformant PAS
  * `Claim` needs X12 codes ADR 0008 keeps out of the repository, and a PAS
- * server must support subscriptions and `$inquire`, which are P3-E's.
+ * server must support subscriptions, which nothing here builds (P3-E's
+ * non-goals). It declares no `Subscription` resource, so it says what is
+ * true: a provider learns a final decision by `$inquire`.
  */
 export function capabilityStatement(date: string): FhirCapabilityStatement {
   return {
@@ -43,8 +52,8 @@ export function capabilityStatement(date: string): FhirCapabilityStatement {
     date,
     publisher: 'agent-native-monorepo (synthetic)',
     description:
-      'A FHIR R4 prior-authorization intake shaped after Da Vinci PAS 2.2.1, not conformant ' +
-      'to it: no X12 code values, no subscriptions and no $inquire. Synthetic data only.',
+      'A FHIR R4 prior-authorization intake and inquiry shaped after Da Vinci PAS 2.2.1, not ' +
+      'conformant to it: no X12 code values and no subscriptions. Synthetic data only.',
     kind: 'instance',
     software: { name: 'agent-service' },
     implementation: { description: 'agent-service prior-authorization intake' },
@@ -56,7 +65,10 @@ export function capabilityStatement(date: string): FhirCapabilityStatement {
         resource: [
           {
             type: 'Claim',
-            operation: [{ name: 'submit', definition: CLAIM_SUBMIT_DEFINITION }],
+            operation: [
+              { name: 'submit', definition: CLAIM_SUBMIT_DEFINITION },
+              { name: 'inquire', definition: CLAIM_INQUIRE_DEFINITION },
+            ],
           },
         ],
       },

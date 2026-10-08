@@ -46,7 +46,12 @@ export {
   toResponseBundle,
   type ResponseContext,
 } from './claim-response.js';
-export { operationOutcome, capabilityStatement, CLAIM_SUBMIT_DEFINITION } from './outcomes.js';
+export {
+  operationOutcome,
+  capabilityStatement,
+  CLAIM_SUBMIT_DEFINITION,
+  CLAIM_INQUIRE_DEFINITION,
+} from './outcomes.js';
 export { identifierKey, memberKeyOf, partyKeyOf } from './case-keys.js';
 export {
   readInquiry,

@@ -18,7 +18,9 @@ on:
       - 'packages/prior-auth/**'
       - 'packages/eval-harness/datasets/prior-auth/**'
       - 'apps/agent-service/src/fhir/**'
+      - 'apps/agent-service/src/review/**'
       - 'apps/agent-service/test/fhir.e2e-spec.ts'
+      - 'apps/agent-service/test/review.e2e-spec.ts'
       - 'scripts/fhir-validate.mjs'
       - '.github/workflows/fhir-validate.yml'
   schedule:
@@ -70,7 +72,8 @@ jobs:
       - run: yarn turbo build --filter=@repo/agent-service...
 
       # The responses to validate are the ones the service actually returns:
-      # the spec posts every committed bundle and writes each response here.
+      # fhir.e2e-spec.ts posts every committed bundle and writes each response
+      # here, and review.e2e-spec.ts writes every $inquire response (P3-E).
       - name: Capture the service's responses
         run: yarn workspace @repo/agent-service test:service
         env:

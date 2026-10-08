@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
  * The HL7 FHIR Validator over the prior-authorization dataset and the
- * responses the service spec captured (P3-D). `fhir-validate.yml` runs it.
+ * responses the service specs captured (P3-D, and P3-E for `$inquire`).
+ * `fhir-validate.yml` runs it.
  *
  * Two different questions, kept apart:
  *
@@ -11,8 +12,10 @@
  *   its meta.profile names, with zero errors. A non-zero count exits 1.
  *
  *   Reported. The request bundles against PAS 2.2.1's
- *   profile-pas-request-bundle and the response bundles against
- *   profile-pas-response-bundle. Every error is sorted into a class, and the
+ *   profile-pas-request-bundle, the `$submit` response bundles against
+ *   profile-pas-response-bundle, and each bundle a `$inquire` returned
+ *   (captured on its own as `*.inquiry-return-N.json`) against
+ *   profile-pas-inquiry-response-bundle. Every error is sorted into a class, and the
  *   table goes to the job summary. The expected classes are the X12-bound
  *   elements ADR 0008 keeps out of the repository and the profile-choice
  *   errors that follow from them; anything else is printed as `other`, which
@@ -170,11 +173,16 @@ function main() {
   const requests = filesIn(BUNDLES, '.bundle.json');
   const capturedFiles = filesIn(captured, '.json');
   const responses = filesIn(captured, '.response.json');
+  const inquiryReturns = capturedFiles.filter((file) => /\.inquiry-return-\d+\.json$/.test(file));
   if (requests.length !== 24)
     throw new Error(`expected 24 request bundles, found ${requests.length}`);
   if (responses.length === 0)
     throw new Error(
       `no captured responses in ${captured}; run the service spec with FHIR_CAPTURE_DIR`,
+    );
+  if (inquiryReturns.length === 0)
+    throw new Error(
+      `no captured $inquire returns in ${captured}; run the service specs with FHIR_CAPTURE_DIR`,
     );
 
   // PAS is loaded for the definition of its careTeamClaimScope extension,
@@ -203,6 +211,12 @@ function main() {
       ['-ig', PINNED.pas, '-profile', `${PAS}/profile-pas-response-bundle`],
       responses,
     ),
+    ...validate(
+      jar,
+      join(out, 'pas-inquiry.json'),
+      ['-ig', PINNED.pas, '-profile', `${PAS}/profile-pas-inquiry-response-bundle`],
+      inquiryReturns,
+    ),
   ];
   const tally = new Map();
   const others = [];
@@ -215,14 +229,14 @@ function main() {
   }
 
   const lines = [
-    '## FHIR validation (P3-D)',
+    '## FHIR validation (P3-D, P3-E)',
     '',
     `Validator ${PINNED.validator}, FHIR ${PINNED.fhir}, ${PINNED.usCore}, ${PINNED.pas}; terminology off.`,
     '',
     `**Gated — base R4 and US Core 6.1.0:** ${gate.length} file(s), ${gateErrors.length} error(s).`,
     ...gateErrors.map((error) => `- \`${error.file}\` ${error.where}: ${error.text}`),
     '',
-    `**Reported — PAS 2.2.1:** ${requests.length} request bundle(s), ${responses.length} response bundle(s).`,
+    `**Reported — PAS 2.2.1:** ${requests.length} request bundle(s), ${responses.length} response bundle(s), ${inquiryReturns.length} $inquire return bundle(s).`,
     '',
     '| class | errors | why it is expected |',
     '| --- | ---: | --- |',

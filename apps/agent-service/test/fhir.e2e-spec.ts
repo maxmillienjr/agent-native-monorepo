@@ -175,8 +175,14 @@ describe('FHIR prior-authorization surface (e2e)', () => {
         (resource.operation ?? []).map((operation) => `${resource.type}/$${operation.name}`),
       ),
     ]);
-    expect(operations).toEqual(['Claim/$submit']);
+    expect(operations).toEqual(['Claim/$submit', 'Claim/$inquire']);
     expect(statement.description).toContain('shaped after Da Vinci PAS 2.2.1');
+    // PAS requires subscriptions for the final response; none is built, and
+    // the statement says so by declaring no Subscription resource (P3-E).
+    expect(statement.rest?.flatMap((rest) => rest.resource ?? []).map((r) => r.type)).toEqual([
+      'Claim',
+    ]);
+    expect(JSON.stringify(statement)).not.toContain('Subscription');
   });
 
   describe('with a case store that cannot write', () => {
