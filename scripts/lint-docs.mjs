@@ -165,6 +165,36 @@ if (existsSync(statusPath)) {
   fail(statusName, 'missing');
 }
 
+// --- One turbo across the root and the images ------------------------------
+// Each Dockerfile installs turbo globally to run `turbo prune`, pinned by hand
+// beside a comment that says it matches the root devDependency. Nothing checked
+// that. The root moved to 2.10.12 and later 2.11.5 while the images stayed on
+// 2.10.11, and the drift surfaced only when a turbo.json key the newer version
+// added failed to parse inside the older one at image-build time. Compare each
+// pin with the version yarn.lock resolved, not with the range in package.json.
+const lockPath = join(root, 'yarn.lock');
+const lockedTurbo = existsSync(lockPath)
+  ? /^"turbo@npm:[^"]*":\n\s+version:\s*(\S+)/m.exec(readFileSync(lockPath, 'utf-8'))?.[1]
+  : undefined;
+if (lockedTurbo === undefined) {
+  fail('turbo version', 'no turbo entry in yarn.lock');
+} else if (existsSync(join(root, 'apps'))) {
+  for (const app of readdirSync(join(root, 'apps'))) {
+    const dockerfile = join(root, 'apps', app, 'Dockerfile');
+    if (!existsSync(dockerfile)) continue;
+    readFileSync(dockerfile, 'utf-8')
+      .split('\n')
+      .forEach((line, i) => {
+        const m = /npm install -g turbo@(\S+)/.exec(line);
+        if (m && m[1] !== lockedTurbo)
+          fail(
+            `apps/${app}/Dockerfile:${i + 1}`,
+            `installs turbo ${m[1]}, but yarn.lock resolves the root's turbo to ${lockedTurbo}`,
+          );
+      });
+  }
+}
+
 // --- One Node major across the README, the workflows and the images -------
 // docs/STATUS.md asserts these three agree, but that row is the one row citing no
 // anchor, so the check above had nothing to resolve and nothing to rot. A
