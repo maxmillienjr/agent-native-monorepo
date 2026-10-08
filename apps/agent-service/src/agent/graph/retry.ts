@@ -27,6 +27,16 @@ function isCassetteMiss(error: unknown): boolean {
 }
 
 /**
+ * Detects a run record that could not be written on the fail-closed path
+ * (P3-B). Retrying the node would make the model call again and leave its
+ * answer unrecordable too. Matched on `name` for the same reason as a miss:
+ * graph code does not import the audit wiring.
+ */
+function isRecordWriteFailure(error: unknown): boolean {
+  return error instanceof Error && error.name === 'RunRecordWriteError';
+}
+
+/**
  * Applied to every node that performs I/O.
  *
  * Note what this requires of those nodes: a `retryPolicy` only ever fires on a
@@ -42,5 +52,8 @@ export const IO_RETRY: RetryPolicy = {
   backoffFactor: 2,
   jitter: true,
   retryOn: (error: unknown) =>
-    !(error instanceof z.ZodError) && !isClientError(error) && !isCassetteMiss(error),
+    !(error instanceof z.ZodError) &&
+    !isClientError(error) &&
+    !isCassetteMiss(error) &&
+    !isRecordWriteFailure(error),
 };

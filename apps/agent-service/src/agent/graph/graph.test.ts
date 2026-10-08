@@ -3,6 +3,7 @@ import { EMBEDDING_DIMENSIONS } from '@repo/memory-core';
 import { CassetteMissError } from '@repo/agent-cassette';
 import { buildAgentGraph, type GraphDeps } from './graph.js';
 import { NO_USAGE } from '../model/usage.js';
+import { RunRecordWriteError } from '../../audit/persisting-deck.js';
 
 /**
  * The graph is assembled at request time, so a construction error surfaces as a
@@ -183,6 +184,31 @@ describe('buildAgentGraph', () => {
     await expect(
       compiled.invoke({ runId: '550e8400-e29b-41d4-a716-446655440006' }),
     ).rejects.toThrow(CassetteMissError);
+    expect(attempts).toBe(1);
+  });
+
+  it('does not retry a run record that could not be written', async () => {
+    // On the fail-closed path a retried node would make the model call again,
+    // and its answer could not be recorded either (P3-B).
+    let attempts = 0;
+    const deps = makeDeps();
+    deps.plan.callLlm = async () => {
+      attempts += 1;
+      throw new RunRecordWriteError('decision 2 could not be recorded');
+    };
+
+    const compiled = buildAgentGraph(
+      deps,
+      {
+        sessionId: '550e8400-e29b-41d4-a716-446655440000',
+        messages: [{ role: 'user', content: 'What is LangGraph?' }],
+      },
+      'corr-123',
+    );
+
+    await expect(
+      compiled.invoke({ runId: '550e8400-e29b-41d4-a716-446655440007' }),
+    ).rejects.toThrow(RunRecordWriteError);
     expect(attempts).toBe(1);
   });
 });

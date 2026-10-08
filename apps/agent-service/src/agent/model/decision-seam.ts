@@ -1,7 +1,19 @@
-import { EMBEDDING_DIMENSIONS, EMBEDDING_MODEL } from '@repo/memory-core';
-import type { Deck, DecisionCall, TokenCounts } from '@repo/agent-cassette';
+import {
+  EMBEDDING_DIMENSIONS,
+  EMBEDDING_MODEL,
+  type RecordSeam,
+  type RetrievalFacade,
+  type RetrievalQueryInput,
+} from '@repo/memory-core';
+import {
+  encodeFloat32Base64,
+  type Deck,
+  type DecisionCall,
+  type TokenCounts,
+} from '@repo/agent-cassette';
 import { withInferenceSpan, type InferenceRequest, type InferenceSeam } from '@repo/telemetry';
 import type { EvidenceItem, PolicyCriterion } from '@repo/prior-auth';
+import type { GraphDeps } from '../graph/graph.js';
 import type { ActNodeDeps } from '../nodes/act.node.js';
 import type { DistillNodeDeps } from '../nodes/distill.node.js';
 import type { PlanNodeDeps } from '../nodes/plan.node.js';
@@ -62,6 +74,20 @@ export const calls = {
   ): DecisionCall => ({
     seam: 'assess.criteria',
     request: { criteria: [...criteria], evidence: [...evidence] },
+  }),
+  /**
+   * The run record's seventh seam, which no cassette holds.
+   *
+   * The query embedding is written as base64 float32, the codec the `embed`
+   * seam's response uses, and not as the array the facade receives. That is
+   * what makes the hash survive a replay: a recorded embedding comes back as
+   * the float32 rounding of what the model returned, so a replayed `retrieve`
+   * asks with the rounded vector. Rounded on both sides, the two requests are
+   * the same bytes. It is also a quarter of the size.
+   */
+  retrieve: (query: RetrievalQueryInput): DecisionCall<RecordSeam> => ({
+    seam: 'memory.retrieve',
+    request: { ...query, queryEmbedding: encodeFloat32Base64(query.queryEmbedding) },
   }),
 } as const;
 
@@ -152,6 +178,40 @@ export function recordingModelDeps(live: ModelDeps, deck: Deck): ModelDeps {
   };
 }
 
+/** Retrieval, with what the store returned appended to the deck. */
+export function recordingRetrievalFacade(
+  live: RetrievalFacade,
+  deck: Deck<RecordSeam>,
+): RetrievalFacade {
+  return {
+    retrieve: (query) => deck.resolve(calls.retrieve(query), () => live.retrieve(query)),
+  };
+}
+
+/**
+ * A whole chat-graph dependency set, recorded: the five model seams, the tool,
+ * and the retrieval read (P3-B).
+ *
+ * It wraps the set the graph is about to receive, whatever assembled it — the
+ * service's axes, a decorator an evaluation installed, or a set a test handed
+ * `setDeps` — so the record holds what the graph was served, and an evaluation
+ * on the configured memory axis is recorded like any other run. The writers in
+ * `reflect` are not a seam: they are a function of recorded inputs, and replay
+ * derives them instead of reading them back.
+ */
+export function recordingGraphDeps(deps: GraphDeps, deck: Deck<RecordSeam>): GraphDeps {
+  return {
+    retrieve: {
+      retrievalFacade: recordingRetrievalFacade(deps.retrieve.retrievalFacade, deck),
+      embedQuery: recordEmbed(deps.retrieve.embedQuery, deck),
+    },
+    plan: recordPlan(deps.plan, deck),
+    act: recordAct(deps.act, deck),
+    distill: recordDistill(deps.distill, deck),
+    reflect: { ...deps.reflect, embedText: recordEmbed(deps.reflect.embedText, deck) },
+  };
+}
+
 /**
  * Replay: a `ModelDeps` built entirely from the deck.
  *
@@ -221,6 +281,15 @@ export function replayModelDeps(deck: Deck): ModelDeps {
         ),
     },
   };
+}
+
+/**
+ * Retrieval served from the deck: what the store returned when the run was
+ * recorded. Constructs no pool, so a replay that reached for the store would
+ * have nothing to reach.
+ */
+export function replayRetrievalFacade(deck: Deck<RecordSeam>): RetrievalFacade {
+  return { retrieve: (query) => deck.resolve(calls.retrieve(query), unreachable) };
 }
 
 function unreachable(): Promise<never> {
