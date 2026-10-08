@@ -1,0 +1,19 @@
+# The A2A TCK tests this service is expected to fail (P5-A), one per line:
+# a pytest node id, then the reason. scripts/tck-check.mjs fails the e2e job on
+# a failure not listed here, on a listed test that passes, and on a listed test
+# that did not run. Pinned to a2a-tck 263b9cf, --transport jsonrpc --level must.
+#
+# The TCK picks the system under test's behaviour by messageId prefix and
+# asserts on scripted content. This agent answers every message with one text
+# answer and one JSON run artifact, so a scenario that scripts another shape
+# fails here on content, not on protocol.
+tests/compatibility/core_operations/test_artifacts.py::TestTextArtifact::test_task_has_text_artifact[jsonrpc]  scenario-scripted content: expects the text "Generated text content"
+tests/compatibility/core_operations/test_artifacts.py::TestFileArtifact::test_task_has_file_artifact[jsonrpc]  scenario-scripted content: expects a file part named output.txt; this agent returns no files
+tests/compatibility/core_operations/test_artifacts.py::TestFileUrlArtifact::test_task_has_file_url_artifact[jsonrpc]  scenario-scripted content: expects a file URL part; this agent returns no files
+tests/compatibility/core_operations/test_artifacts.py::TestDataArtifact::test_task_has_data_artifact[jsonrpc]  scenario-scripted content: expects the data {"key": "value", "count": 42}
+tests/compatibility/core_operations/test_artifacts.py::TestMessageResponse::test_returns_message_with_text_part[jsonrpc]  scenario-scripted content: expects a bare Message; every message here starts a task
+# A defect in the TCK at this commit. CORE-SEND-003's requirement says an
+# unsupported media type MUST get ContentTypeNotSupportedError (§3.1.1), and the
+# service returns it, but the RequirementSpec sets no expected_error, so the
+# generic check asserts a successful response instead.
+tests/compatibility/core_operations/test_requirements.py::test_must_requirement[CORE-SEND-003-jsonrpc]  TCK defect at 263b9cf: no expected_error on the spec, so the error the requirement asks for is scored as a failure

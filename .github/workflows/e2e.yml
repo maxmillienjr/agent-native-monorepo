@@ -64,11 +64,15 @@ jobs:
       # against a page with no backend behind it. Here the console container serves
       # the production bundle and proxies /api to the gateway, which is the path a
       # reader actually exercises.
+      # Authentication is enforced in the stack: compose sets SERVICE_CREDENTIALS
+      # (P5-A). A2A_PUBLIC_URL puts the TCK's auth proxy on the Agent Card, so
+      # every call the TCK makes from the card comes back through the proxy.
       - name: Start the full stack
         run: docker compose --profile full up -d --build --wait --wait-timeout 300
         # Names the agent-service image's commit in its run records (P3-B).
         env:
           GIT_SHA: ${{ github.sha }}
+          A2A_PUBLIC_URL: http://localhost:9999
 
       - run: yarn playwright install --with-deps chromium
         working-directory: apps/console
@@ -76,6 +80,50 @@ jobs:
       - run: yarn turbo test:e2e
         env:
           E2E_BASE_URL: http://localhost:8080
+
+      # nginx substitutes the console's token into its config when it starts; it
+      # must never be in the bundle a browser downloads.
+      - name: The console bundle carries no service token
+        run: |
+          if grep -rl console-demo-token apps/console/dist; then
+            echo "::error::the service token is in apps/console/dist"
+            exit 1
+          fi
+          if docker compose --profile full exec -T console grep -rl console-demo-token /usr/share/nginx/html; then
+            echo "::error::the service token is in the console image's html"
+            exit 1
+          fi
+
+      - name: A2A against live stores
+        run: node scripts/a2a-compose-check.mjs http://localhost:3001
+
+      # P5-A: the A2A TCK at a pinned commit, MUST level, JSON-RPC only, against
+      # the running stack on the stub model axis and the live memory axis. Moving
+      # the pin is a deliberate change. The TCK cannot send a credential, so it
+      # runs through tck-auth-proxy.mjs, and tck-check.mjs holds the result to
+      # tck-expected.txt in both directions.
+      - name: A2A TCK
+        env:
+          TCK_COMMIT: 263b9cfaf16a554bdfb166a7ba5b67716e946349
+          TCK_TOKEN: tck-demo-token
+        run: |
+          git clone --quiet https://github.com/a2aproject/a2a-tck.git "$RUNNER_TEMP/a2a-tck"
+          git -C "$RUNNER_TEMP/a2a-tck" checkout --quiet "$TCK_COMMIT"
+          python3 -m venv "$RUNNER_TEMP/a2a-tck/.venv"
+          "$RUNNER_TEMP/a2a-tck/.venv/bin/pip" install --quiet -e "$RUNNER_TEMP/a2a-tck"
+          node scripts/tck-auth-proxy.mjs 9999 http://localhost:3001 &
+          sleep 1
+          (cd "$RUNNER_TEMP/a2a-tck" && .venv/bin/python run_tck.py \
+            --sut-host http://localhost:9999 --transport jsonrpc --level must) || true
+          node scripts/tck-check.mjs "$RUNNER_TEMP/a2a-tck/reports/junitreport.xml" scripts/tck-expected.txt
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: a2a-tck-compatibility
+          path: ${{ runner.temp }}/a2a-tck/reports/compatibility.json
+          if-no-files-found: warn
+          retention-days: 30
 
       - name: Dump container logs on failure
         if: failure()
