@@ -18,12 +18,15 @@ export {
 } from './policy.js';
 export {
   decisionDueBy,
+  isOverdue,
+  compareCases,
   priorityFromCode,
   systemClock,
   STANDARD_DECISION_HOURS,
   EXPEDITED_DECISION_HOURS,
   type Clock,
   type Priority,
+  type QueueKey,
 } from './clock.js';
 export {
   readSubmission,
