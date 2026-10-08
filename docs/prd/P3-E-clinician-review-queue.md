@@ -8,6 +8,7 @@ depends_on: [P3-A, P3-D]
 blocks: [P3-F]
 issue: 98
 superseded_by: null
+controls: [CTL-HUM-02]
 ---
 
 # P3-E · Clinician review queue, `$inquire` and the decision clock
@@ -500,65 +501,65 @@ case store), the **ledger** axis (P3-C's `LEDGER_DATABASE_URL`) and the **auth**
 
 **Decision record and topology**
 
-- [ ] The new ADR exists, is indexed in `docs/adr/README.md`, cites ADR 0001's revisit
+- [x] The new ADR exists, is indexed in `docs/adr/README.md`, cites ADR 0001's revisit
       clause, and names the revisit trigger for the case layer.
-- [ ] `git grep -nE 'interrupt\(|new Command\(' apps/agent-service/src` matches nothing. The
+- [x] `git grep -nE 'interrupt\(|new Command\(' apps/agent-service/src` matches nothing. The
       prior-authorization graph's edges are P3-D's and end at `dispose`.
 
 **Case store**
 
-- [ ] `case.repo.contract.ts` passes against `DrizzleCaseRepository` (memory live, Postgres
+- [x] `case.repo.contract.ts` passes against `DrizzleCaseRepository` (memory live, Postgres
       container) and against `InMemoryCaseRepository` (memory unconfigured). It covers
       enqueue, a duplicate `case_id` rejected, queue order, match, decide, and a second
       decide conflicting.
-- [ ] Twenty concurrent `decide` calls with distinct determinations on one pended case yield
+- [x] Twenty concurrent `decide` calls with distinct determinations on one pended case yield
       exactly one success and nineteen conflicts. Memory live and memory unconfigured.
-- [ ] A row whose `disposition` is edited to `{ "kind": "denial", … }` makes `get` throw.
+- [x] A row whose `disposition` is edited to `{ "kind": "denial", … }` makes `get` throw.
       Memory live.
-- [ ] Booting with memory unconfigured logs `review.cases.volatile` at `warn`. Booting with
+- [x] Booting with memory unconfigured logs `review.cases.volatile` at `warn`. Booting with
       it configured and Postgres stopped exits 1, as today.
 
 **`$submit` enqueues**
 
-- [ ] Each of P3-D's 24 bundles posted to `$submit` leaves one case row: `pended` for every
+- [x] Each of P3-D's 24 bundles posted to `$submit` leaves one case row: `pended` for every
       `queued` response and `approved-automated` for every `complete` one. Memory
       unconfigured, and memory live for one bundle of each kind.
-- [ ] With a case repository that throws, `$submit` returns `503` with an `OperationOutcome`,
+- [x] With a case repository that throws, `$submit` returns `503` with an `OperationOutcome`,
       and the body contains no `ClaimResponse`. Memory unconfigured, repository injected.
 
 **Queue and clock**
 
-- [ ] `clock.test-d.ts` fails `yarn turbo typecheck` if `QueueKey` gains or loses a key, or
+- [x] `clock.test-d.ts` fails `yarn turbo typecheck` if `QueueKey` gains or loses a key, or
       if `Parameters<typeof compareCases>[0]` is not `QueueKey`.
-- [ ] Two sets of pended cases with identical clock fields and opposite findings, one all
+- [x] Two sets of pended cases with identical clock fields and opposite findings, one all
       `met` and one all `not-met`, come back from `GET /review/cases` in the same order.
       Memory live and memory unconfigured.
-- [ ] With the `Clock` fixed, a standard case received `2026-03-01T10:00:00Z` is not overdue
+- [x] With the `Clock` fixed, a standard case received `2026-03-01T10:00:00Z` is not overdue
       at `2026-03-08T09:59:59Z` and is overdue at `2026-03-08T10:00:00Z`. An expedited case
       is overdue at `2026-03-04T10:00:00Z`.
-- [ ] Two sweeps over one overdue case set `overdue_flagged_at` once and emit one
+- [x] Two sweeps over one overdue case set `overdue_flagged_at` once and emit one
       `review.case.overdue` event. The case stays `pended`, and `$inquire` still returns
       `outcome: queued` for it. Memory live.
 
 **Determination**
 
-- [ ] A denial signed by a registered key whose credential type the policy lists returns
+- [x] A denial signed by a registered key whose credential type the policy lists returns
       `200` and a `Bundle` whose `ClaimResponse` has `outcome: complete`, no `preAuthRef`,
       and the `specificReason` in a `processNote`. The case row is `decided` with the
       `reviewer_id` and signature. Memory live, ledger unconfigured, auth open.
-- [ ] A clinician approval on another case returns `outcome: complete` with a `preAuthRef`.
-- [ ] Each of these gets the stated status, and the case stays `pended`: no signature `400`;
+- [x] A clinician approval on another case returns `outcome: complete` with a `preAuthRef`.
+- [x] Each of these gets the stated status, and the case stays `pended`: no signature `400`;
       a key not in the registry `401`; a valid signature over a different case id `401`;
       `attestation.reviewerId` not the key's `401`; a credential type the policy does not
       list `403`; `partial-approval` `422`; an empty `specificReason` `400`; an unknown case
       id `404`.
-- [ ] A byte-identical resubmission of a decided case returns `200` with the stored body. A
+- [x] A byte-identical resubmission of a decided case returns `200` with the stored body. A
       different determination on it returns `409`.
-- [ ] With `REVIEWER_REGISTRY` unset, the determination route returns `503` and
+- [x] With `REVIEWER_REGISTRY` unset, the determination route returns `503` and
       `GET /review/cases` returns `200`. With it malformed, boot exits 1 naming it.
-- [ ] `yarn turbo lint` passes with `src/review/` importing `@repo/determination/clinician`,
+- [x] `yarn turbo lint` passes with `src/review/` importing `@repo/determination/clinician`,
       and P3-A's lint test for a path under `src/agent/` still reports one error.
-- [ ] The sentinel test: a rationale sentinel from a stub `assess` appears in
+- [x] The sentinel test: a rationale sentinel from a stub `assess` appears in
       `GET /review/cases/:id` and in neither the determination response nor any `$inquire`
       response.
 - [ ] Ledger configured (checkable once P3-C has shipped; until then this box stays open
@@ -571,28 +572,153 @@ case store), the **ledger** axis (P3-C's `LEDGER_DATABASE_URL`) and the **auth**
 
 **`$inquire`**
 
-- [ ] An inquiry `Bundle` naming a member, insurer and provider returns a `Parameters` with
+- [x] An inquiry `Bundle` naming a member, insurer and provider returns a `Parameters` with
       one `return` Bundle per matching case, each with a `ClaimResponse` first. A pended
       case's is `queued`, and after a determination the same inquiry returns `complete`.
       Memory live and memory unconfigured.
-- [ ] Changing the inquiry `Claim.identifier` does not change the result. An inquiry
+- [x] Changing the inquiry `Claim.identifier` does not change the result. An inquiry
       matching no case returns a `Parameters` with no `return` parameter. A non-`Bundle`
       body returns `400` with an `OperationOutcome`.
-- [ ] `GET /fhir/metadata` lists `$submit` and `$inquire`, and no `Subscription` resource.
+- [x] `GET /fhir/metadata` lists `$submit` and `$inquire`, and no `Subscription` resource.
 - [ ] P3-D's `fhir-validate.yml` validates the captured `$inquire` responses against base R4
-      with zero errors, and its PAS report lists only X12-bound elements for them.
+      with zero errors, and its PAS report lists only X12-bound elements for them. Ticked once
+      the workflow has run on the pull request; the local run is in "What shipped".
 
 **Bookkeeping**
 
-- [ ] `docs/STATUS.md` has a row for the review queue and determination route, citing
-      `review.e2e-spec.ts` and stating that on-time means decided, not notified. P3-C's
-      "determinations and attestations in the ledger" row names P3-E, not P3-D.
-- [ ] `.context/conventions.md`'s "Before real data" lists the case table's request and
+- [x] `docs/STATUS.md` has a row for the review queue and determination route, citing
+      `review.e2e-spec.ts` and stating that on-time means decided, not notified.
+- [ ] P3-C's "determinations and attestations in the ledger" row names P3-E, not P3-D. The
+      row is P3-C's to add and does not exist yet; P3-C's criterion now names P3-E as the
+      producer, so the row will. Owner **P3-C**.
+- [x] `.context/conventions.md`'s "Before real data" lists the case table's request and
       rationale columns, with retention, encryption and access as owned items.
-- [ ] Every fixture reviewer, key and registry entry is labelled synthetic, and
+- [x] Every fixture reviewer, key and registry entry is labelled synthetic, and
       `lint-data.mjs` passes.
-- [ ] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
+- [x] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
       pass.
+
+## What shipped, and where it diverged
+
+_Recorded 2026-10-08, on the branch for #98._ Every ticked criterion was verified on model
+`stub` with no `generateContent` call, on memory unconfigured and on memory live against
+throwaway Postgres and Neo4j containers, ledger unconfigured, auth open. The review spec,
+`apps/agent-service/test/review.e2e-spec.ts`, runs both memory axes: unconfigured under
+`yarn turbo test:service`, and live too under `yarn turbo test:integration`, which is what
+the integration job in `e2e.yml` runs with `REQUIRE_INTEGRATION_ENV`. Run that way, the file
+passed 34 of 34 across both axes, and the memory-core suite 46 of 46.
+
+**Built as designed.** ADR 0010 records the case layer and cites ADR 0001's revisit clause.
+`prior_auth_cases` is migration `0002` in `memory-core`, with `DrizzleCaseRepository` and the
+volatile `InMemoryCaseRepository` held to one contract. `$submit` enqueues before it answers
+and answers 503 when it cannot. `src/review/` serves the queue, one case and the determination
+route; `$inquire` and the CapabilityStatement are in `src/fhir/`; `ReviewSweep` flags. No
+graph node was added, and `git grep -nE 'interrupt\(|new Command\(' apps/agent-service/src`
+matches nothing.
+
+**The probe, re-run.** The Problem section's probe of `interrupt()` was on LangGraph 0.4.10.
+P5-C has since moved the pin to 1.4.18, so it was run again on 2026-10-08 with the same
+throwaway graph, then deleted. Every finding held: a second resume on a finished thread is
+dropped silently, a resume on an unknown thread creates it, two concurrent resumes both
+report success, a graph with no checkpointer throws `GraphValueError`, and the resumed value
+is still typed `any`. ADR 0010 cites both runs.
+
+**Checks the design did not state.**
+
+- **The attestation's credential must equal the registered one**, not only its `reviewerId`
+  (401). Without it, a key registered to a credential the policy does not list could sign a
+  denial claiming one it does.
+- **`recommendationSeq` must be the case's** (400). The body carries it because P3-C's bytes
+  do; a value other than the one `CaseView` served is a client error.
+- **A registry entry may carry `revokedAt`.** Revocation was to be a ledger entry, and there
+  is no ledger yet, so the file holds it until P3-C does. A revoked key is 401.
+- **`$submit` refuses a request it could not key** (422): a patient with no identifier typed
+  `MB`, or a provider with no identifier. A case nobody can inquire about is one the payer
+  could not answer for. All 24 bundles carry both.
+- **A denial on a code no policy covers is 403**, because there is no credential list to match.
+  An approval on such a case is issued with a `preAuthRef` and no `preAuthPeriod`.
+
+**Other divergences.**
+
+- **`request` and `response` are `json`, not `jsonb`.** `jsonb` reorders keys, so a retried
+  determination would be answered with a body that differs in key order from the first. The
+  spec compares the retry's bytes with the first response's, on both axes.
+- **The table has a `reviewer_key_id` column**, which the sketch did not. An auditor cannot
+  re-verify a stored signature without knowing which key made it. A CHECK constraint refuses
+  a half-decided row whatever wrote it, and a second index serves `$inquire`.
+- **`decide` takes a `beforeCommit` hook**, run under the lock before the update. It is where
+  P3-C's `determination.attested` append goes; the contract shows a throw there leaves the
+  case pended, on both stores.
+- **`flagOverdue` returns the case, its priority and its deadline**, not only the id, because
+  the span event carries the priority and the minutes past due.
+- **The queue route re-sorts with `compareCases`.** The store already returns clock order;
+  sorting again over `QueueKey` makes the route's order the clock's by type, not only by
+  query.
+- **The demo signer is `yarn workspace @repo/agent-service review:sign`**, not
+  `scripts/review-sign.mjs`. It must sign exactly the bytes `signature.ts` verifies, and a
+  root script may import only root devDependencies. Its key file goes under a gitignored
+  `.review-keys/`.
+- **Case keys are `system|value` tokens**, so the same value in two identifier systems never
+  matches. The CapabilityStatement names PAS's `Claim-inquiry` canonical, because base R4
+  defines no inquiry operation.
+- **Spans.** `@repo/telemetry` gained `withServiceSpan`, which opens `review.queue`,
+  `review.case`, `review.determination`, `review.overdue_sweep` and `fhir.inquire`, each held
+  to `ALLOWED_SPAN_ATTRIBUTES`; `memory-core` opens `memory.cases.*` around each query.
+- **A `Date` from the service spec failed `z.date()`.** Jest's ESM VM context is another realm,
+  so the first `$submit` through the real module answered 503. The case schemas check the
+  `Date` tag instead, and the conventions now say so.
+- **`turbo.json` orders `test:integration` after its dependencies'.** `memory-core`'s contract
+  empties the table before each test, and the review spec's live axis runs at the same time
+  otherwise.
+- **CTL-HUM-02** is new and `implemented`: a determination only over a verified signature, by
+  a listed credential, once per case. CTL-HUM-01's note no longer says the route is to come.
+- **The migration is `0002`.** P3-B's run record adds a `memory-core` migration in parallel,
+  and whichever lands second renumbers its file and journal entry.
+- **P3-C and P3-D were amended in this change.** P3-C named P3-D as the reviewer surface and
+  the determinations row's owner; both are P3-E's since P3-D's review split. P3-D said its
+  checkpoint was what P3-E resumes, and that a pended case lived only in the response; neither
+  is true now.
+
+**The walkthrough, 2026-10-08.** The built service, booted with no model key and no database,
+logged `review.cases.volatile` at level 40 and loaded a one-key registry written by the
+signer's `keygen`. A `$submit` of `pa-e0601-one-missing` answered `queued`; the queue held
+it; the signer's `sign` signed a denial over its `CaseView`; the determination answered 200
+with the specific reason in the note; and `$inquire` returned it `complete`. Booted with a
+registry missing a field, it exited 1 with an error that begins `REVIEWER_REGISTRY names`
+and names the field, `0.reviewerId`. Booted with memory configured and the Postgres container
+stopped, it exited 1 with `connect ECONNREFUSED`.
+
+**The validator, locally.** The service specs were run with `FHIR_CAPTURE_DIR`, and
+`scripts/fhir-validate.mjs` with the pinned 6.10.4 jar in an `eclipse-temurin:17-jre`
+container. The gate covered 61 files, the 24 bundles and 37 captures including four `$inquire`
+`Parameters` and the five bundles they returned, with 0 errors. The PAS report, now also holding each
+returned bundle to `profile-pas-inquiry-response-bundle`, had 0 errors in `other`; the five
+returns added six errors, all in the `queued` outcome class, two for each pended return, and
+the two decided returns conform outright.
+
+**Open criteria, and who owns them.** The ledger half (P3-C) and the auth half (P5-A) stay
+open, as review decided, and so does P3-C's row naming P3-E. P3-C adds the
+`determination.attested` append in `beforeCommit` and the `disposition.recommended` append at
+`$submit`, since P3-E landed first. P5-A adds `/fhir/*` and `/review/*` to its middleware and
+passes the bearer's principal to `ReviewService.determine`, which already compares it with a
+registry entry's `principal` when both are present.
+
+**Hand-off to P3-F.** Appeals stay out, as Non-goals says. What P3-F inherits: a decided case
+row carries `reviewer_id`, so the non-involvement rule of § 422.590 is one comparison, and
+`decided_at`, from which § 422.582's 60-day filing window counts; the registry, the signed
+payload and the locked `decide`, which a reconsideration reuses with a second determination;
+and the sweep, which flags a 30-day or 72-hour reconsideration clock the same way. Forwarding
+an affirmed denial to the independent entity is a timer that acts, which is ADR 0010's revisit
+trigger, so P3-F decides whether the case table is still enough.
+
+**What the docs should have said.** Four things had to be worked out here. A `Date` made in a
+service spec is not a `Date` to a package's Zod schema. Two workspaces' integration tasks share
+one database and ran at once. A root script cannot reach workspace code, so a tool that must
+agree with it byte for byte lives in the workspace. And `.context/architecture.md` described no
+FHIR surface at all. The conventions and the architecture now cover all four. One is left: the
+STATUS resolver treats only `*.test.ts` and `*.spec.ts` names as test files, so the shared
+`case.repo.contract.ts` cannot be cited by test title, and row 27 cites the two `decide`
+methods instead.
 
 ## Risks and open questions
 
