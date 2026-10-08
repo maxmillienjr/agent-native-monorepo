@@ -1,17 +1,9 @@
-// The prior-authorization domain. Built up across P3-D's commits; see the
-// final barrel for the whole surface.
+// The prior-authorization domain: the FHIR R4 subset the surface reads and
+// writes, the fictional payer's policy catalogue, the request clock, and the
+// one mapping from an `AgentDisposition` to a `ClaimResponse`. It imports
+// `@repo/determination`'s barrel only, never `./clinician` (P3-A).
 export * from './fhir/datatypes.js';
 export * from './fhir/resources.js';
-export { SYSTEMS, HTEST } from './systems.js';
-export {
-  decisionDueBy,
-  priorityFromCode,
-  systemClock,
-  STANDARD_DECISION_HOURS,
-  EXPEDITED_DECISION_HOURS,
-  type Clock,
-  type Priority,
-} from './clock.js';
 export {
   PRIOR_AUTH_DATA_DIR,
   HcpcsLevelIICodeSchema,
@@ -25,6 +17,15 @@ export {
   type PolicyCriterion,
 } from './policy.js';
 export {
+  decisionDueBy,
+  priorityFromCode,
+  systemClock,
+  STANDARD_DECISION_HOURS,
+  EXPEDITED_DECISION_HOURS,
+  type Clock,
+  type Priority,
+} from './clock.js';
+export {
   readSubmission,
   resolveReference,
   coverageActiveOn,
@@ -35,3 +36,6 @@ export {
   type SubmissionIssue,
 } from './request.js';
 export { decideDisposition, normalizeFindings, type ReferralReason } from './disposition.js';
+export { toClaimResponse, toResponseBundle, type ResponseContext } from './claim-response.js';
+export { operationOutcome, capabilityStatement, CLAIM_SUBMIT_DEFINITION } from './outcomes.js';
+export { SYSTEMS, HTEST } from './systems.js';
