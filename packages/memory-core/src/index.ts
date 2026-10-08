@@ -80,6 +80,36 @@ export {
   VectorRetrievalFacade,
 } from './semantic/retrieval-facade.js';
 
+// The run record (P3-B) — what a production run received and decided, beside
+// its checkpoints. Not a memory tier: nothing in a graph reads it, and
+// `audit:replay` is its reader. Here because it is written with the role that
+// writes everything else in this package (ADR 0007).
+export {
+  GitShaSchema,
+  RECORD_SEAMS,
+  RETRIEVAL_SEAM,
+  RUN_DECISION_FORMAT_VERSION,
+  RecordedModelAxisSchema,
+  RunDecisionRowSchema,
+  RunDecisionSchema,
+  RunGraphSchema,
+  RunOutcomeSchema,
+  RunRecordOpenSchema,
+  RunRecordSchema,
+  type RecordSeam,
+  type RecordedModelAxis,
+  type RunDecision,
+  type RunDecisionRow,
+  type RunGraph,
+  type RunOutcome,
+  type RunRecord,
+  type RunRecordOpen,
+  type RunRecordRepository,
+  type StoredRun,
+  PgRunRecordRepository,
+  createReadOnlyPool,
+} from './audit/index.js';
+
 // Inspection — reading back what one run persisted, and restoring a session to
 // its seeded state between evaluation trials. The read surface exists so that
 // `packages/eval-harness` can assert against persisted state without opening a
