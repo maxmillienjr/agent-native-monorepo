@@ -39,6 +39,9 @@ import { createLogger, errorType, withServiceSpan } from '@repo/telemetry';
 import { CASE_REPOSITORY } from '../memory/memory.tokens.js';
 import { PRIOR_AUTH_CLOCK } from '../fhir/prior-auth.service.js';
 import { REVIEWER_REGISTRY, type ReviewerRegistry } from './registry.js';
+import type { AttestedDetermination } from '@repo/decision-ledger';
+import { RUN_LEDGER } from '../ledger/ledger.tokens.js';
+import type { RunLedger } from '../ledger/run-ledger.js';
 import { signedBytes, verifySignature } from './signature.js';
 
 const logger = createLogger('review');
@@ -150,6 +153,7 @@ export class ReviewService {
     @Inject(CASE_REPOSITORY) private readonly cases: CaseRepository,
     @Inject(PRIOR_AUTH_CLOCK) private readonly clock: Clock,
     @Inject(REVIEWER_REGISTRY) private readonly registry: ReviewerRegistry | null,
+    @Inject(RUN_LEDGER) private readonly runLedger: RunLedger | null = null,
   ) {}
 
   /**
@@ -352,16 +356,44 @@ export class ReviewService {
         respondedAt: now,
       });
 
+      // With a ledger configured, the signed determination is appended under
+      // the case's lock, before the row is updated (P3-C). A failed or refused
+      // append throws there, so nothing is written and the case stays pended:
+      // a determination the ledger cannot hold is not issued. The ledger
+      // re-checks the signature against its own key entries, which are
+      // authoritative once it holds them.
+      const runLedger = this.runLedger;
+      const attest =
+        runLedger === null
+          ? {}
+          : {
+              beforeCommit: async () => {
+                await runLedger.attest({
+                  runId: row.caseId,
+                  recommendationSeq: body.recommendationSeq,
+                  // The determination as signed, not as minted: the ledger
+                  // verifies the reviewer's bytes.
+                  determination: body.determination as AttestedDetermination,
+                  reviewerKeyId: key.entry.reviewerKeyId,
+                  signature: body.signature,
+                });
+              },
+            };
+
       let result: Awaited<ReturnType<CaseRepository['decide']>>;
       try {
-        result = await this.cases.decide(row.caseId, {
-          determination,
-          reviewerId: key.entry.reviewerId,
-          reviewerKeyId: key.entry.reviewerKeyId,
-          signature: body.signature,
-          decidedAt: now,
-          response: response as unknown as Record<string, unknown>,
-        });
+        result = await this.cases.decide(
+          row.caseId,
+          {
+            determination,
+            reviewerId: key.entry.reviewerId,
+            reviewerKeyId: key.entry.reviewerKeyId,
+            signature: body.signature,
+            decidedAt: now,
+            response: response as unknown as Record<string, unknown>,
+          },
+          attest,
+        );
       } catch (error) {
         logger.error({
           msg: 'review.decide.failed',

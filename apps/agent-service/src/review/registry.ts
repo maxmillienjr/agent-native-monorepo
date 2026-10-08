@@ -15,9 +15,11 @@ export const REVIEWER_REGISTRY = 'REVIEWER_REGISTRY';
  * them. `principal`, when present, is the authenticated caller the key may be
  * used by once P5-A enforces authentication. `revokedAt` retires the key.
  *
- * With a ledger configured (P3-C), each entry would be appended as a
- * `reviewer-key.registered` entry and the ledger's registrations and
- * revocations become authoritative. Until then this file is.
+ * With a ledger configured (P3-C), each entry is appended at boot as a
+ * `reviewer-key.registered` entry if it is absent, and a `revokedAt` as a
+ * `reviewer-key.revoked` one, and from then on the ledger's entries are
+ * authoritative: an attestation by a key the ledger has revoked is refused by
+ * the append in `decide`, whatever this file says. Without one, this file is.
  */
 export const ReviewerRegistryEntrySchema = z
   .object({
@@ -80,6 +82,11 @@ export class ReviewerRegistry {
 
   get size(): number {
     return this.keys.size;
+  }
+
+  /** Every entry, revoked ones included: what the ledger registers at boot. */
+  entries(): ReviewerRegistryEntry[] {
+    return [...this.keys.values()].map((key) => key.entry);
   }
 }
 

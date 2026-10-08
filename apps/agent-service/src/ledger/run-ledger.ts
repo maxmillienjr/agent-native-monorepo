@@ -77,9 +77,53 @@ export class RunLedger {
     });
   }
 
+  /**
+   * Registers each reviewer key the ledger does not hold yet, and revokes
+   * each one the registry marks revoked. Idempotent through the derived ids;
+   * a key whose registry entry no longer matches its registration throws,
+   * because the ledger, not the file, is authoritative once it holds a key.
+   */
+  async registerKeys(
+    entries: readonly {
+      readonly reviewerKeyId: string;
+      readonly reviewerId: string;
+      readonly credential: { readonly type: string; readonly jurisdiction: string };
+      readonly publicKey: string;
+      readonly revokedAt?: string;
+    }[],
+  ): Promise<{ registered: number; revoked: number }> {
+    let revoked = 0;
+    for (const entry of entries) {
+      await this.ledger.append({
+        entryId: uuidV5(`${entry.reviewerKeyId}\nregistered`),
+        payload: {
+          kind: 'reviewer-key.registered',
+          reviewerKeyId: entry.reviewerKeyId,
+          reviewerId: entry.reviewerId,
+          credential: { type: entry.credential.type, jurisdiction: entry.credential.jurisdiction },
+          publicKey: entry.publicKey,
+        },
+      });
+      if (entry.revokedAt !== undefined) {
+        await this.ledger.append({
+          entryId: uuidV5(`${entry.reviewerKeyId}\nrevoked`),
+          payload: {
+            kind: 'reviewer-key.revoked',
+            reviewerKeyId: entry.reviewerKeyId,
+            reason: `Revoked in the reviewer registry at ${entry.revokedAt}.`,
+          },
+        });
+        revoked += 1;
+      }
+    }
+    return { registered: entries.length, revoked };
+  }
+
   /** Appends a clinician's signed determination; refused unless the chain's rules hold. */
   attest(payload: Omit<DeterminationAttestedPayload, 'kind'>): Promise<StoredEntry> {
     return this.ledger.appendAttestation({
+      // P3-E's derived id: one determination per case, so a retry after a
+      // failed commit finds this entry, and a different one throws.
       entryId: uuidV5(`${payload.runId ?? payload.reviewerKeyId}\ndetermination`),
       payload: { kind: 'determination.attested', ...payload },
     });
