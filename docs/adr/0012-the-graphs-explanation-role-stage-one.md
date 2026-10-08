@@ -157,9 +157,12 @@ owner's decision.
 
 **Option 1: run stage 2 as pre-registered, and leave P2-D `in-progress` until it has.** The
 stage-2 code, `renderExplanationBlock`, the `without` prompt pinned to `planNode`'s, the
-resumable answer file and the two graders, is not yet written. It is the next piece of P2-D,
-and it lands before any call is spent. Nothing in stage 1 is re-run or changed. P2-E stays a
-draft with no file until the rule has selected a row.
+resumable answer file and the two graders, was written on 2026-10-08 with no
+`generateContent` call. A dry run on a fake model showed it resumable across a kill, a
+budget and a per-day 429, without asking any recorded answer again. What remains is the 76
+calls: eight a day for ten days, after the nightly's share, on the schedule in P2-D's
+"Stage 2's code, and the run that remains". Nothing in stage 1 is re-run or changed. P2-E
+stays a draft with no file until the rule has selected a row.
 
 **Whatever stage 2 shows, two findings stand:**
 
