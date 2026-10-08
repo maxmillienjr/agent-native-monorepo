@@ -365,33 +365,33 @@ apps/agent-service/src/agent/graph/{graph,resume,spans}.test.ts, test/runs.e2e-s
 axis, which is legitimate here: these criteria test the saga and the gate, not the agent's
 choices. The agent's choices are checked only on the live and replay axes.
 
-- [ ] **Pure (typecheck).** `types.test.ts` holds a compensable definition without
+- [x] **Pure (typecheck).** `types.test-d.ts` holds a compensable definition without
       `compensate` under `// @ts-expect-error`, and `yarn turbo typecheck` passes. It passes
       only while the omission is an error.
-- [ ] **Pure.** `defineRegistry` rejects duplicate names and descriptions under 40
+- [x] **Pure.** `defineRegistry` rejects duplicate names and descriptions under 40
       characters.
-- [ ] **Pure.** The request a fake `selectTool` receives carries every tool's description,
+- [x] **Pure.** The request a fake `selectTool` receives carries every tool's description,
       tier and JSON schema, and on the second iteration the first call's input and output.
-- [ ] **Pure.** A selection whose input fails the tool's schema is recorded with the Zod
+- [x] **Pure.** A selection whose input fails the tool's schema is recorded with the Zod
       issues, and `execute` is called zero times. A selection response that does not parse
       throws `SelectionFormatError`.
-- [ ] **Pure.** A fake that selects the same `(tool, input)` twice results in exactly one
+- [x] **Pure.** A fake that selects the same `(tool, input)` twice results in exactly one
       `execute`, and the loop ends with no error.
-- [ ] **Pure.** In a graph with a fake selection, `request-records` succeeds and a second
+- [x] **Pure.** In a graph with a fake selection, `request-records` succeeds and a second
       call names an unknown case. The first request is withdrawn exactly once, the node
       sequence contains `compensate`, and the outcome is `partial`. With two applied
       effects, they are compensated in reverse order.
-- [ ] **Pure.** A compensation that fails twice and then succeeds is retried by `IO_RETRY`,
+- [x] **Pure.** A compensation that fails twice and then succeeds is retried by `IO_RETRY`,
       and an effect already marked `compensated` is not compensated again. One that fails
       every time fails the run.
-- [ ] **Pure.** `openRequest` called twice with one idempotency key returns one `requestId`
+- [x] **Pure.** `openRequest` called twice with one idempotency key returns one `requestId`
       and leaves one open request.
-- [ ] **Pure (`MemorySaver`).** With an irreversible fixture tool, the first invoke pauses
+- [x] **Pure (`MemorySaver`).** With an irreversible fixture tool, the first invoke pauses
       with `execute` called zero times. Resuming with `approved: true` executes it exactly
       once. Resuming with `approved: false` executes it zero times and runs `compensate` for
       an earlier applied effect. Compiled without a checkpointer, the run records the
       refusal and `execute` is called zero times.
-- [ ] **Memory live (service test).** `RunsService.execute` with the irreversible fixture
+- [x] **Memory live (service test).** `RunsService.execute` with the irreversible fixture
       registered returns `outcome: 'awaiting-approval'`, and the `PostgresSaver` holds a
       checkpoint for that `runId`.
 - [ ] **Model live / memory live (recording run).** `tool-use-001` makes at most 4
@@ -401,16 +401,132 @@ choices. The agent's choices are checked only on the live and replay axes.
 - [ ] **Replay.** `EVAL_CASSETTE_MODE=replay yarn eval` passes every task, makes no request
       to `generativelanguage.googleapis.com`, and never calls `SyntheticCaseBoard`
       (asserted with a spy). Two consecutive replays give identical reports.
-- [ ] `.context/architecture.md` shows `approve` and `compensate` in the topology.
+- [x] `.context/architecture.md` shows `approve` and `compensate` in the topology.
       `.context/workflows.md` has an "Add a tool" entry that names the tier rule and the
       idempotency key. `docs/STATUS.md` records the registry, and records that tool output
       does not reach the answer.
-- [ ] CTL-AGY-01 carries the retitle and the `test` anchors, either in
+- [x] CTL-AGY-01 carries the retitle and the `test` anchors, either in
       `governance/controls.yaml` or in P4-A's initial catalogue.
 - [ ] If P1-F has shipped, the task files' budgets are re-derived from this recording by
       P1-F's rule.
-- [ ] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
+- [x] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
       pass.
+
+## What shipped, and where it diverged
+
+_Recorded 2026-10-08, on the branch for #102._ Every ticked criterion was verified on the
+pure axis, or with throwaway Postgres and Neo4j containers on model `stub` / memory `live`.
+No `generateContent` call was made. The recording, and the three criteria that depend on
+it, are the step left (see "The recording").
+
+**Where the criteria are held.** `tools/registry.test.ts`, `tools/case-board.test.ts`,
+`nodes/act.node.test.ts`, `nodes/compensate.node.test.ts`, `nodes/approve.node.test.ts`,
+`runs/runs.service.test.ts` and `test/approval.integration.test.ts`. The bare-string
+`web-search` input that one live call sent is a named case in two of them: the schema
+refuses it and `execute` runs zero times.
+
+**`interrupt()` was re-probed on LangGraph 1.4.19.** P5-C's upgrade excluded interrupts and
+P3-E's probe ran on 0.4.10, so a throwaway Vitest file repeated P3-E's probe on the version
+`main` pins, and was deleted afterwards.
+
+- A pause works as before. `invoke` returns `__interrupt__`, `getState` reports the paused
+  node in `next`, and a resumed node runs again from its first line.
+- **New in 1.x: `interrupt(value, { responseSchema })`.** A Zod schema is surfaced as JSON
+  Schema on the interrupt and parses the resume value. A resume of the wrong shape throws a
+  `ZodError`, and the thread stays paused with `next` unchanged. `approve` passes
+  `ApprovalDecisionSchema`, so a malformed decision is refused rather than read as one.
+- **Unchanged hazards.** A resume on a finished thread is still a silent no-op. A resume on
+  an unknown thread still creates a checkpoint for it. Two concurrent resumes still both
+  succeed, and the second one wins. None is reachable here, because no route resumes a run.
+  The PRD that adds the first real irreversible tool owns the endpoint and the guard: check
+  `getState(...).tasks` for a pending interrupt, and serialise decisions, as P3-E's locked
+  decide does.
+- Without a checkpointer, `interrupt()` still throws `GraphValueError: No checkpointer set`.
+  `stream` yields the pause as an `__interrupt__` update, which is not a node, so
+  `executeTraced` drops it from the node sequence.
+
+**Divergences from the design.**
+
+- **The approvals flag comes from the compile, not from `RunsService`.** The design put it
+  on `ActNodeDeps`, set from `this.checkpointer !== null`. `buildAgentGraph` already knows
+  whether it was given a checkpointer, so it passes `'pause'` or `'refuse'` to `act`. Two
+  places that could disagree became one.
+- **No `zod-to-json-schema` declaration.** `@langchain/core` 1.x no longer depends on it. It
+  vendors it behind `toJsonSchema` in `@langchain/core/utils/json_schema`, and
+  `apps/agent-service` already depends on that package. `$schema` is stripped from each
+  descriptor, because a constant URI in every selection request is input tokens spent on
+  nothing.
+- **The type test is `types.test-d.ts`.** `.context/conventions.md` names that suffix for
+  type tests, which `tsc` checks and Vitest never runs. The criterion's text was updated to
+  match.
+- **An input is a strict Zod object, by type.** `ToolInput` is `z.AnyZodObject`, so a schema
+  like `z.string()` does not compile. Every tool declares `.strict()`, so the JSON Schema
+  says `additionalProperties: false` and the parse enforces it.
+- **`compensate` undoes one effect per pass and loops.** The design had one node walk every
+  applied effect. A node's update is written only when the node returns, so a walk that
+  failed on its second undo would lose the mark on its first. The checkpoint would then not
+  say which effects were undone, and a resume would undo the first one again. One effect per
+  pass makes both statements in the design true.
+- **The pause is not inside a span.** `approve` calls `interrupt()` before `withNodeSpan`,
+  because the span helper records any throw as an error, and every pause is a throw. The
+  `act` span that requested the pause carries `tool.awaiting_approval`. Four keys joined
+  `ALLOWED_SPAN_ATTRIBUTES`: `tool.tier`, `tool.duplicate_suppressed`, `tool.compensation`
+  and `tool.awaiting_approval`. Each is a tier word or a boolean, and none is content.
+- **A suppressed duplicate is not a tool output.** It ran nothing, so the trajectory does not
+  list it, and `tool_trajectory_precision` counts only calls that happened.
+- **The stream reports a pause in its terminal frame.** The `done` frame carries
+  `state.outcome: 'awaiting-approval'`, the first frame to use `state`, rather than a node
+  name that nothing runs. Only the fixture reaches it.
+- **The replay spy is a channel.** `SyntheticCaseBoard` publishes each operation on a
+  `node:diagnostics_channel`, and `yarn eval` fails a replay that reaches any board, as it
+  fails one that reaches the model host. The unit test spies on the class prototype.
+- **The memory-live criterion is an integration test.** `apps/agent-service` had no store
+  tier. It now has `test:integration`, which the existing `e2e.yml` job runs with
+  `REQUIRE_INTEGRATION_ENV`. `turbo.json` orders it after `memory-core`'s suite, because
+  both migrate one database and `memory-core` truncates it.
+
+**A conflict to resolve at merge.** One of P3-E's criteria says a grep for `interrupt(` and
+`new Command(` under `apps/agent-service/src` matches nothing. Once this lands it matches
+`approve.node.ts` and `approve.node.test.ts`. The criterion's intent is that the
+prior-authorization graph does not pause, so whichever PRD merges second narrows the grep
+to `apps/agent-service/src/agent/prior-auth`.
+
+### The recording
+
+Nothing here spends a call until the quota table in `.context/conventions.md` says the day
+has room. The selection request changed shape, so every committed `act.selectTool`
+decision misses, and `EVAL_CASSETTE_MODE=replay yarn eval` aborts today. It names
+`tool-use-002` as having no cassette, and with that task set aside it reports a
+`CassetteMissError` at `act.selectTool` on `memory-recall-001`. It stays red until the
+re-record.
+
+1. With the stores up and `GOOGLE_API_KEY` set, run
+   `EVAL_CASSETTE_MODE=record EVAL_TRIALS=1 yarn eval`. Expected `generateContent` calls,
+   one trial each:
+
+   | Task                | Expected                                     | Ceiling, `2 + maxSteps` |
+   | ------------------- | -------------------------------------------- | ----------------------- |
+   | `memory-recall-001` | 3: plan, a `null` selection, distill         | 7                       |
+   | `tool-use-001`      | 4: plan, `web-search`, a `null` one, distill | 5                       |
+   | `tool-use-002`      | 4: plan, `request-records`, `null`, distill  | 5                       |
+   | Total               | about 11, the design's estimate              | 17                      |
+
+   If P4-B has merged with cassettes, its tasks re-record in the same run: 3 for each
+   single-run task and 6 for `rt-003`. That makes two days. Count before starting.
+
+2. Read the recording before accepting it. `tool-use-001` must call `web-search` once. A
+   `tool.duplicate_suppressed` span means the guard ended the loop rather than the model.
+   `tool-use-002` must call `request-records` with schema-valid input.
+3. Run `EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval` to regenerate
+   `baselines/replay.json` (P1-D). Then replay twice and diff the two reports.
+4. Re-derive the budgets by P1-F's rule from the new recording: input tokens × 1.5 and
+   output tokens × 2, each rounded up to the next hundred, and `modelCalls` = `2 + maxSteps`.
+   Set them on all three task files, and delete the sentences in the notes of
+   `tool-use-001` and `memory-recall-001` that describe the repeats.
+5. The canary's embedding probe compares against the committed cassettes' vectors, so its
+   count of 21 changes with the new set. Check that `yarn canary` reads the new set.
+
+That closes the recording, replay and budget criteria, and P4-C then ships.
 
 ## Risks and open questions
 

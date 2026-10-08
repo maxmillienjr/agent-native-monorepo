@@ -13,8 +13,8 @@ stores from an empty database: one run leaves episodic rows, `:Concept` and `:Fa
 `semantic_facts` rows and checkpoints under the runId its own response returned.
 
 **`docs/STATUS.md` is the authority on any capability sentence, including the ones above.**
-Twenty-six rows, each with a status and evidence cited by name — twenty-one `implemented`,
-one `planned`, three `stubbed`, one `removed`, none `broken`. The rule that keeps it true is in
+Twenty-eight rows, each with a status and evidence cited by name — twenty-two `implemented`,
+two `planned`, three `stubbed`, one `removed`, none `broken`. The rule that keeps it true is in
 `.context/conventions.md`: a change that moves a row moves it there in the same pull
 request. `yarn lint:docs` fails CI when a PRD's status disagrees with its row below.
 
@@ -232,6 +232,27 @@ those fixes, every bundle and every captured response validates against US Core 
 only distance from PAS left is X12. The recording needs 20 `generateContent` calls, a full
 free-tier day, so it is planned as two batches on two days. Until it is made, the agent's
 accuracy on the labelled set is unmeasured, and STATUS row 26 says so.
+
+**[P4-C](P4-C-reversible-tool-registry.md) is in progress**, tracked in
+[#102](https://github.com/maxmillienjr/agent-native-monorepo/issues/102), with one step
+left: the live recording. A tool now declares a description, a Zod input and a
+reversibility tier, and a `compensable` tool without a `compensate` does not compile. The
+registry holds `web-search` and `request-records`, a compensable records request on an
+in-process synthetic case board. The `act` loop fix P1-F handed over is in: `selectTool` is
+sent every tool's description, tier and schema and the run's previous calls, a response
+that does not parse is retried instead of read as "no tool", and `act` refuses an unknown
+tool, an input its schema rejects and a call that already succeeded. A failed step aborts,
+and `compensate` undoes the applied effects newest first. An irreversible call pauses on
+`interrupt()` in `approve`, and is refused on a graph with no checkpointer. A paused run
+reports `awaiting-approval`, and an integration test finds its pending call in Postgres.
+Only a test fixture is irreversible, and no route resumes a run: the first PRD with a real
+irreversible tool owns that route, reusing P3-E's reviewer registry, signed approval and
+locked decide. CTL-AGY-01 is `implemented` under its new title. Re-probed on LangGraph
+1.4.19, `interrupt()` now validates the resume value against a Zod schema, while the three
+silent resume hazards P3-E found on 0.4.10 remain. The selection request changed, so replay
+misses on every recorded selection until the re-record, about 11 `generateContent` calls on
+three tasks. Tool output still reaches the next selection and not the answer, which STATUS
+row 28 records as unowned.
 
 **Where the detail lives.** Each PRD carries its own risks, its divergences from the design
 that was reviewed, and — where a shipped record turned out to be wrong — the correction that
