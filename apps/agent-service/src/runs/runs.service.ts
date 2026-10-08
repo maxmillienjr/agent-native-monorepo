@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { Injectable, Inject, Optional } from '@nestjs/common';
 import type { Response } from 'express';
-import type { BaseCheckpointSaver } from '@langchain/langgraph';
+import { INTERRUPT, type BaseCheckpointSaver } from '@langchain/langgraph';
 import type { RunResponse, StreamEvent } from '@repo/agent-contracts';
 import { createLogger, withAgentSpan, type AgentSpan } from '@repo/telemetry';
 import {
@@ -361,8 +361,29 @@ export class RunsService {
       const result = await compiled.invoke({ runId }, { configurable: { thread_id: runId } });
       const state = result as unknown as AgentState;
       agent.setConversationId(state.sessionId);
-      return buildRunResponse(state);
+      return buildRunResponse(await this.reportPause(compiled, runId, state));
     });
+  }
+
+  /**
+   * The state to report, with `awaiting-approval` when the run is paused.
+   *
+   * A paused invoke returns normally, with the state as of the pause and no
+   * `outcome`, because `egress` never ran — and `buildRunResponse` reads a
+   * missing outcome as `success`. The checkpointer is asked rather than the
+   * invoke's return value: it is the record a resume will read, so it is the
+   * one that says whether a task is waiting. Without a checkpointer nothing
+   * can pause, since `act` refuses an irreversible call there.
+   */
+  private async reportPause(
+    compiled: ReturnType<typeof buildAgentGraph>,
+    runId: string,
+    state: AgentState,
+  ): Promise<AgentState> {
+    if (this.checkpointer === null) return state;
+    const snapshot = await compiled.getState({ configurable: { thread_id: runId } });
+    const paused = snapshot.tasks.some((task) => task.interrupts.length > 0);
+    return paused ? { ...state, outcome: 'awaiting-approval' } : state;
   }
 
   /**
@@ -396,12 +417,15 @@ export class RunsService {
       const stream = await compiled.stream({ runId }, { configurable: { thread_id: runId } });
       for await (const chunk of stream) {
         for (const [nodeName, update] of Object.entries(chunk)) {
+          // A pause arrives as an update under `__interrupt__`, which is not a
+          // node and is not state.
+          if (nodeName === INTERRUPT) continue;
           nodeSequence.push(nodeName);
           Object.assign(state, update);
         }
       }
 
-      const finalState = state as unknown as AgentState;
+      const finalState = await this.reportPause(compiled, runId, state as unknown as AgentState);
       agent.setConversationId(finalState.sessionId);
 
       return {
@@ -444,8 +468,13 @@ export class RunsService {
     try {
       const stream = await compiled.stream({ runId }, { configurable: { thread_id: runId } });
 
+      let paused = false;
       for await (const chunk of stream) {
         const [nodeName] = Object.keys(chunk);
+        if (nodeName === INTERRUPT) {
+          paused = true;
+          continue;
+        }
         if (nodeName) {
           sendEvent({ node: nodeName });
         }
@@ -455,7 +484,13 @@ export class RunsService {
         if (typeof sessionId === 'string') agent.setConversationId(sessionId);
       }
 
-      sendEvent({ node: 'done' });
+      // A field on the terminal frame rather than a node name nobody runs, as
+      // `error` is: a paused stream has ended without finishing.
+      sendEvent(
+        paused
+          ? { node: 'done', state: { runId, outcome: 'awaiting-approval' } }
+          : { node: 'done' },
+      );
     } catch (error) {
       // Contained below, so the root span is marked here or not at all.
       agent.recordError(error);
