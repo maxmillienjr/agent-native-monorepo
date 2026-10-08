@@ -10,7 +10,7 @@ const KEY_SHAPED = ['AI', 'za', 'x'.repeat(35)].join('');
 
 function header(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
-    formatVersion: 1,
+    formatVersion: 2,
     taskId: 'memory-recall-001',
     trialIndex: 0,
     recordedAt: '2026-01-01T00:00:00.000Z',
@@ -128,6 +128,23 @@ describe('CassetteRecorder', () => {
     expect((await recorder.close()).decisions[0]?.tokenCounts).toEqual({
       prompt: 120,
       completion: 30,
+    });
+  });
+
+  it('keeps the reasoning share of the output when the caller reports one', async () => {
+    const recorder = new CassetteRecorder({
+      header: header(),
+      tokenCountsFor: () => ({ prompt: 120, completion: 930, reasoning: 900 }),
+    });
+
+    await recorder.resolve({ seam: 'act.selectTool', request: { plan: 'p' } }, () =>
+      Promise.resolve({ selection: null }),
+    );
+
+    expect((await recorder.close()).decisions[0]?.tokenCounts).toEqual({
+      prompt: 120,
+      completion: 930,
+      reasoning: 900,
     });
   });
 

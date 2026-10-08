@@ -43,8 +43,21 @@ export type Seam = (typeof SEAMS)[number];
  */
 export const VECTOR_SEAM: Seam = 'embed';
 
+/**
+ * The format this package writes and the only one its player reads.
+ *
+ * Version 2 (P1-F) changed what the two JSON chat seams return: `selectTool`
+ * and `extractEntities` now hand back their usage beside the parsed value, as
+ * `callLlm` always did. Their requests did not change, so a version-1 decision
+ * still matches on its hash — and would then hand `act` a response with no
+ * `selection` in it, which `act` reads as "no tool". The replay would not
+ * abort; it would run a different trajectory and grade it. The version is
+ * what turns that into a refusal.
+ */
+export const CASSETTE_FORMAT_VERSION = 2;
+
 export const CassetteHeaderSchema = z.object({
-  formatVersion: z.literal(1),
+  formatVersion: z.literal(CASSETTE_FORMAT_VERSION),
   taskId: z.string().min(1),
   trialIndex: z.number().int().nonnegative(),
   recordedAt: z.string().datetime(),
@@ -76,7 +89,19 @@ export const DecisionSchema = z.object({
   /** Kept for the miss diff, never for lookup. Redacted before it is written. */
   request: z.unknown(),
   response: DecisionResponseSchema,
-  tokenCounts: z.object({ prompt: z.number(), completion: z.number() }).optional(),
+  /**
+   * What the call used, at the three chat seams. `completion` is billed output,
+   * thinking included; `reasoning` is the thinking part of it, present when
+   * the response reported a total to derive it from. Absent on `embed` and
+   * `act.tool`, which report no usage, and on a recorded error.
+   */
+  tokenCounts: z
+    .object({
+      prompt: z.number(),
+      completion: z.number(),
+      reasoning: z.number().optional(),
+    })
+    .optional(),
   latencyMs: z.number().nonnegative(),
 });
 

@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { canonicalJson, decisionKey, requestHash } from './hash.js';
 import { decodeFloat32Base64 } from './vector.js';
 import {
+  CASSETTE_FORMAT_VERSION,
   CassetteSchema,
   type Cassette,
   type Decision,
@@ -76,7 +77,7 @@ export class ReplayedError extends Error {
 /**
  * Enough of the header to say precisely what is wrong with it.
  *
- * `CassetteSchema` would reject a `formatVersion` of 2 or an `axes.model` of
+ * `CassetteSchema` would reject a `formatVersion` of 1 or an `axes.model` of
  * `stub` on its own, but as a Zod issue on `header.formatVersion` — accurate
  * and unreadable. Peeking first is what turns that into one sentence.
  */
@@ -177,9 +178,11 @@ function parseForReplay(cassette: unknown, config: ReplayConfig): Cassette {
   const peek = HeaderPeekSchema.safeParse(cassette);
   const header = peek.success ? peek.data.header : undefined;
 
-  if (header?.formatVersion !== undefined && header.formatVersion !== 1) {
+  if (header?.formatVersion !== undefined && header.formatVersion !== CASSETTE_FORMAT_VERSION) {
     throw new CassetteIncompatibleError([
-      `formatVersion is ${canonicalJson(header.formatVersion)}, this player reads 1`,
+      `formatVersion is ${canonicalJson(header.formatVersion)}, this player reads ` +
+        `${CASSETTE_FORMAT_VERSION}: the cassette was written in an older format and has to ` +
+        'be re-recorded, not replayed',
     ]);
   }
 

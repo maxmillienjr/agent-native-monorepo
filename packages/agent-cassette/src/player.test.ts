@@ -17,7 +17,7 @@ const CONFIG: ReplayConfig = {
 
 function header(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
-    formatVersion: 1,
+    formatVersion: 2,
     taskId: 'memory-recall-001',
     trialIndex: 0,
     recordedAt: '2026-01-01T00:00:00.000Z',
@@ -173,9 +173,18 @@ describe('replay refuses', () => {
     );
   });
 
-  it('a formatVersion that is not 1', () => {
-    expect(() => new CassettePlayer(cassette([], { formatVersion: 2 }), CONFIG)).toThrow(
-      /formatVersion is 2, this player reads 1/,
+  it('a formatVersion that is not 2', () => {
+    expect(() => new CassettePlayer(cassette([], { formatVersion: 3 }), CONFIG)).toThrow(
+      /formatVersion is 3, this player reads 2/,
+    );
+  });
+
+  it('a version-1 cassette, which would match on its hashes and replay the wrong shape', () => {
+    // The requests did not change between the formats, so without the check a
+    // version-1 `act.selectTool` decision would be served, and `act` would read
+    // its pre-P1-F response as "no tool".
+    expect(() => new CassettePlayer(cassette([], { formatVersion: 1 }), CONFIG)).toThrow(
+      /formatVersion is 1, this player reads 2: .* has to be re-recorded/,
     );
   });
 

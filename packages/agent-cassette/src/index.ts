@@ -10,6 +10,7 @@
  * repository whole.
  */
 export {
+  CASSETTE_FORMAT_VERSION,
   SEAMS,
   VECTOR_SEAM,
   CassetteHeaderSchema,
