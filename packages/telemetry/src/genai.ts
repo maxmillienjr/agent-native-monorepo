@@ -161,6 +161,20 @@ export const ALLOWED_SPAN_ATTRIBUTES: ReadonlySet<string> = new Set<string>([
   'prior_auth.decision_due_by',
   'prior_auth.disposition',
   'prior_auth.elapsed_ms',
+  // The review surface, `$inquire` and the overdue sweep (P3-E). A case id the
+  // server assigned, counts, times and outcomes. Never a finding, a reason, a
+  // reviewer or anything that identifies the member.
+  'prior_auth.case_id',
+  'prior_auth.status',
+  'prior_auth.determination',
+  'prior_auth.decided_within_ms',
+  'prior_auth.on_time',
+  'prior_auth.minutes_past_due',
+  'prior_auth.match_count',
+  'review.case_count',
+  'review.overdue_count',
+  'review.flagged_count',
+  'review.outcome',
   // The memory-core spans.
   'topK',
   'queryLength',
@@ -325,6 +339,19 @@ export function withNodeSpan<T>(
   const attributes: Attributes =
     options.operation === undefined ? {} : { [GEN_AI.OPERATION_NAME]: options.operation };
   return withSpan(`agent.node.${node}`, SpanKind.INTERNAL, attributes, fn);
+}
+
+// --- service spans -------------------------------------------------------------
+
+/**
+ * A span for work that is not part of an agent run: a route of the clinician
+ * review surface, `$inquire`, the overdue sweep (P3-E). It has no GenAI
+ * operation, because no model is involved; it records `error.type` and ERROR
+ * status on a throw like every other helper, and never the message. Its
+ * attributes are held to `ALLOWED_SPAN_ATTRIBUTES` like a node's.
+ */
+export function withServiceSpan<T>(name: string, fn: (span: Span) => Promise<T>): Promise<T> {
+  return withSpan(name, SpanKind.INTERNAL, {}, fn);
 }
 
 // --- execute_tool --------------------------------------------------------------

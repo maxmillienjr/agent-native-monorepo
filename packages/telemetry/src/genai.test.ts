@@ -18,6 +18,7 @@ import {
   withAgentSpan,
   withInferenceSpan,
   withNodeSpan,
+  withServiceSpan,
   withToolSpan,
 } from './genai.js';
 
@@ -156,6 +157,25 @@ describe('withNodeSpan', () => {
     const span = only();
     expect(span.status.code).toBe(SpanStatusCode.ERROR);
     expect(span.attributes['error.type']).toBe('TypeError');
+  });
+});
+
+describe('withServiceSpan', () => {
+  it('opens an internal span with no GenAI operation, and records error.type on a throw', async () => {
+    await expect(
+      withServiceSpan('review.determination', async (span) => {
+        span.setAttribute('prior_auth.case_id', 'synthetic-case');
+        throw new HttpError(409);
+      }),
+    ).rejects.toThrow();
+
+    const span = only();
+    expect(span.name).toBe('review.determination');
+    expect(span.kind).toBe(SpanKind.INTERNAL);
+    expect(span.attributes[GEN_AI.OPERATION_NAME]).toBeUndefined();
+    expect(span.attributes['error.type']).toBe('409');
+    expect(span.status).toEqual({ code: SpanStatusCode.ERROR, message: '409' });
+    expect(unlistedAttributeKeys([span])).toEqual([]);
   });
 });
 
