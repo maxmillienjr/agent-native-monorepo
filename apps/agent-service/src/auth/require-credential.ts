@@ -35,6 +35,16 @@ export function principalOf(req: Request): string | undefined {
   return principals.get(req);
 }
 
+/**
+ * The principal a bearer token named, or undefined when the service runs open:
+ * `anonymous` is every caller, so it authenticates no one. What a check that
+ * binds an action to a caller should read.
+ */
+export function authenticatedPrincipal(req: Request): string | undefined {
+  const principal = principals.get(req);
+  return principal === OPEN_PRINCIPAL ? undefined : principal;
+}
+
 function bearerToken(header: string | undefined): string | undefined {
   const match = header === undefined ? null : /^bearer +(\S+) *$/i.exec(header);
   return match?.[1];

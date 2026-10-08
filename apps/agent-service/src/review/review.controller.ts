@@ -1,7 +1,9 @@
-import { Body, Controller, Get, HttpCode, Inject, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Inject, Param, Post, Query, Req } from '@nestjs/common';
+import type { Request } from 'express';
 import type { FhirBundle } from '@repo/prior-auth';
 import { z } from 'zod';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe.js';
+import { authenticatedPrincipal } from '../auth/require-credential.js';
 import { ReviewService, type CaseView, type QueueItem } from './review.service.js';
 
 const QueueQuerySchema = z
@@ -15,9 +17,10 @@ const QueueQuerySchema = z
  *
  * It lives under `src/review/`, outside `src/agent/`, because the
  * determination route imports `@repo/determination/clinician`, which P3-A's
- * lint rule forbids under `src/agent/**`. P5-A's authentication is meant to
- * cover `/review/*` when it lands; until then the signature on a
- * determination is what binds it to a reviewer.
+ * lint rule forbids under `src/agent/**`. Every route here needs a bearer
+ * credential when `SERVICE_CREDENTIALS` is set (P5-A); the signature on a
+ * determination is what binds it to a reviewer, and the credential is what
+ * binds it to a caller.
  */
 @Controller('review')
 export class ReviewController {
@@ -39,12 +42,18 @@ export class ReviewController {
 
   /**
    * A clinician's signed determination. The body is read at the boundary by
-   * `ReviewService.determine`, which says what each status means. There is
-   * no authenticated principal until P5-A covers `/review/*`.
+   * `ReviewService.determine`, which says what each status means. It is given
+   * the principal the bearer token named, so a key registered to a principal
+   * can be used by that caller only (403 otherwise). In open mode there is no
+   * authenticated principal, and the check does not apply.
    */
   @Post('cases/:caseId/determination')
   @HttpCode(200)
-  determine(@Param('caseId') caseId: string, @Body() body: unknown): Promise<FhirBundle> {
-    return this.review.determine(caseId, body, undefined);
+  determine(
+    @Param('caseId') caseId: string,
+    @Body() body: unknown,
+    @Req() req: Request,
+  ): Promise<FhirBundle> {
+    return this.review.determine(caseId, body, authenticatedPrincipal(req));
   }
 }
