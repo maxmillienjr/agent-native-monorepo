@@ -2,11 +2,11 @@
 id: P5-A
 title: Agent2Agent v1.0 server with a signed Agent Card
 tier: 5
-status: accepted
+status: in-progress
 size: L
 depends_on: []
 blocks: [P5-B]
-issue: null
+issue: 107
 superseded_by: null
 controls: [CTL-ACC-01]
 ---

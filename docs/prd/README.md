@@ -376,11 +376,11 @@ provider actually operates under. Uses synthetic data only.
 
 ## Tier 5 — Interoperability
 
-| ID                              | Title                                            | Size | Status   |
-| ------------------------------- | ------------------------------------------------ | ---- | -------- |
-| [P5-A](P5-A-a2a-server.md)      | Agent2Agent v1.0 server with a signed Agent Card | L    | accepted |
-| [P5-B](P5-B-adk-portability.md) | Agent Development Kit portability appendix       | S    | accepted |
-| [P5-C](P5-C-langgraph-1x.md)    | Upgrade to LangGraph 1.x                         | S    | shipped  |
+| ID                              | Title                                            | Size | Status      |
+| ------------------------------- | ------------------------------------------------ | ---- | ----------- |
+| [P5-A](P5-A-a2a-server.md)      | Agent2Agent v1.0 server with a signed Agent Card | L    | in-progress |
+| [P5-B](P5-B-adk-portability.md) | Agent Development Kit portability appendix       | S    | accepted    |
+| [P5-C](P5-C-langgraph-1x.md)    | Upgrade to LangGraph 1.x                         | S    | shipped     |
 
 ## Sequencing
 
