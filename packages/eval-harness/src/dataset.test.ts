@@ -90,6 +90,19 @@ describe('the shipped dataset', () => {
     expect(task.requires).toEqual({ model: ['live', 'replay'] });
   });
 
+  it('budgets every shipped task on all three keys, with modelCalls at 2 + maxSteps', () => {
+    for (const task of loadMemoryRecallSuite().tasks) {
+      const maxSteps = (task.input as { config: { maxSteps: number } }).config.maxSteps;
+      expect(Object.keys(task.budgets ?? {}).sort(), task.id).toEqual([
+        'inputTokens',
+        'modelCalls',
+        'outputTokens',
+      ]);
+      // One plan call, at most maxSteps selections, one distill call.
+      expect(task.budgets?.modelCalls, task.id).toBe(2 + maxSteps);
+    }
+  });
+
   it('leaves a task that declared nothing without a requirement', () => {
     const task = loadMemoryRecallSuite().tasks.find((t) => t.id === 'memory-recall-001')!;
     expect(task.requires).toBeUndefined();

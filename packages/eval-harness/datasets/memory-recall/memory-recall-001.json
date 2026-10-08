@@ -2,8 +2,8 @@
   "id": "memory-recall-001",
   "description": "Basic single-turn research query with synthetic memory data",
   "retrievalPath": "vector",
-  "budgets": { "modelCalls": 7 },
-  "notes": "This task exercises the vector path, which since ADR 0009 is the only retrieval path a run has. Its neo4j seed entries are :Concept nodes that no request reads; before ADR 0009 the graph retriever returned nothing from them either, because they carry no :Fact. trajectory_precision over the node sequence is reported rather than gated because act loops up to maxSteps and every extra iteration lowers it; the tool metrics are reported rather than gated because whether the model reaches for a tool is a property of the model, and the stub set never does.",
+  "budgets": { "inputTokens": 2600, "outputTokens": 12900, "modelCalls": 7 },
+  "notes": "This task exercises the vector path, which since ADR 0009 is the only retrieval path a run has. Its neo4j seed entries are :Concept nodes that no request reads; before ADR 0009 the graph retriever returned nothing from them either, because they carry no :Fact. trajectory_precision over the node sequence is reported rather than gated because act loops up to maxSteps and every extra iteration lowers it; the tool metrics are reported rather than gated because whether the model reaches for a tool is a property of the model, and the stub set never does. The budgets are per trial and come from the format-2 recording of 2026-10-08 by P1-F's rule: inputTokens is the recorded input x 1.5 and outputTokens the recorded output x 2, each rounded up to the next hundred, and modelCalls is 2 + maxSteps, the most today's graph can make. Recorded: 1730 input and 6442 output tokens over 3 calls, 3524 of them thinking.",
   "input": {
     "sessionId": "550e8400-e29b-41d4-a716-446655440000",
     "messages": [
