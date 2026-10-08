@@ -25,9 +25,10 @@ export {
 // Semantic Memory — the embedding dimension every schema and DDL derives from
 export { EMBEDDING_DIMENSIONS, EMBEDDING_MODEL, l2Normalize } from './semantic/embedding.js';
 
-// Semantic Memory — Neo4j knowledge graph. `reflect` writes it; no request
-// reads it since ADR 0009, and the reader is kept for the P2-B ablation and
-// for P2-D's explanation measurement.
+// Semantic Memory — Neo4j knowledge graph. `reflect` writes it, every write and
+// read is scoped to a session (P2-D's M1), and no request reads it since
+// ADR 0009. The reader is kept for the P2-B ablation, and the explainer is what
+// P2-D measures.
 export {
   EntityWriteSchema,
   RelationshipWriteSchema,

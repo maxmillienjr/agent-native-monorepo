@@ -35,14 +35,18 @@ export interface Neo4jReader {
  * by hop distance alone.
  *
  * Not on any request path. ADR 0009 took the graph out of retrieval after
- * P2-B's ablation, and `MemoryModule` no longer constructs this class. It is
- * kept in `memory-core`, and not deleted with the fusion, for two callers: the
- * ablation runner, which reproduces the measurement that decided ADR 0002, and
- * P2-D, whose explanation measurement reads the graph. It is scoped to one
- * session, as P4-B's M1 specified and P2-D extended to edges: the facts it
- * returns are the session's own, reached over `RELATES_TO` and `MENTIONS`
- * edges the session wrote. P2-B's corpus is one session, so the scope leaves
- * the ablation's numbers as they were.
+ * P2-B's ablation, and `MemoryModule` no longer constructs this class. Its one
+ * caller is the ablation runner, which reproduces the measurement that decided
+ * ADR 0002; P2-D's explanation reads the graph through `CypherNeo4jExplainer`
+ * instead. It is scoped to one session, as P4-B's M1 specified and P2-D
+ * extended to edges: the facts it returns are the session's own, reached over
+ * `RELATES_TO` and `MENTIONS` edges the session wrote. P2-B's corpus is one
+ * session, so the scope leaves the ablation's numbers as they were.
+ *
+ * Its future follows P2-D's outcome (ADR 0012). Stage 1 is `good` and stage 2
+ * decides: under removal it goes with the graph, and the ablation is archived
+ * at the last commit that reproduced it; under keep it stays for the ablation,
+ * which P2-E then reproduces in CI. Until then no pipeline runs it.
  */
 export class CypherNeo4jReader implements Neo4jReader {
   constructor(private readonly driver: Driver) {}
