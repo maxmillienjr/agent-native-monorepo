@@ -6,7 +6,7 @@ import { redactDeep } from '@repo/agent-cassette';
 import { abortError, type AbortCause, type AbortError } from '@repo/eval-harness';
 import { createGeminiEmbedder } from '../../agent/model/gemini-embedder.js';
 import { classifyRateLimit, dailyQuotaIds } from '../../agent/model/rate-limit.js';
-import { PINNED_CHAT_MODEL } from '../../runs/runs.service.js';
+import { PINNED_CHAT_MODEL } from '../../agent/model/model-deps.js';
 import { MODEL_HOST } from '../cassette-deps.js';
 import { updatedBaseline, type CanaryBaseline, type CanaryObservations } from './baseline.js';
 import {

@@ -22,14 +22,17 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { cassettePath } from '@repo/eval-harness';
 import { NO_USAGE } from '../agent/model/usage.js';
-import { CHAT_MODEL, RunsService, type ModelDeps } from '../runs/runs.service.js';
+import { CHAT_MODEL, type ModelDeps } from '../agent/model/model-deps.js';
+import { RunsService } from '../runs/runs.service.js';
+import {
+  recordingModelDeps,
+  replayModelDeps,
+  tokenCountsFor,
+} from '../agent/model/decision-seam.js';
 import {
   MODEL_HOST,
   recordServedDecision,
-  recordingModelDeps,
   replayDecks,
-  replayModelDeps,
-  tokenCountsFor,
   watchForModelRequests,
 } from './cassette-deps.js';
 

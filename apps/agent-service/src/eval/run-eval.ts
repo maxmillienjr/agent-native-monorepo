@@ -35,9 +35,9 @@ import { loadEnvFile } from '../load-env.js';
 import { explainAbort } from './abort-cause.js';
 import { createAgentServiceHarness } from './agent-harness.js';
 import { createPriorAuthHarness } from './prior-auth-harness.js';
+import { gitHead } from '../audit/code-identity.js';
 import {
   MODEL_HOST,
-  gitHead,
   recordingDecks,
   replayDecks,
   watchForModelRequests,
@@ -52,7 +52,7 @@ import {
   readGateMode,
   type GateMode,
 } from './gate.js';
-import { CHAT_MODEL, PINNED_CHAT_MODEL } from '../runs/runs.service.js';
+import { CHAT_MODEL, PINNED_CHAT_MODEL } from '../agent/model/model-deps.js';
 import { committedCassetteDigest } from './history.js';
 import { GEMINI_PRICES } from './pricing.js';
 import { runAndReport, type RunEnd } from './run-suite.js';

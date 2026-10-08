@@ -9,7 +9,8 @@ import {
 } from '@opentelemetry/sdk-trace-base';
 import { EMBEDDING_DIMENSIONS } from '@repo/memory-core';
 import { ALLOWED_SPAN_ATTRIBUTES, unlistedAttributeKeys } from '@repo/telemetry';
-import { CHAT_MODEL, RunsService } from '../../runs/runs.service.js';
+import { CHAT_MODEL } from '../model/model-deps.js';
+import { RunsService } from '../../runs/runs.service.js';
 import { invokeChat, type ChatClient, type ChatReply } from '../model/gemini-chat.js';
 import { createGeminiEmbedder } from '../model/gemini-embedder.js';
 import type { GraphDeps } from './graph.js';

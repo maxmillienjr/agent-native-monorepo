@@ -100,7 +100,7 @@ const value = await deck.resolve({ seam: 'embed', request: { text } }, () => emb
 
 `CassettePlayer` implements the same interface and never calls the thunk. The wiring that
 turns a `Deck` into the model half of a dependency set is
-`apps/agent-service/src/eval/cassette-deps.ts`, and reading `EVAL_CASSETTE_MODE` is the
+`apps/agent-service/src/agent/model/decision-seam.ts`, and reading `EVAL_CASSETTE_MODE` is the
 harness's — that separation is what keeps this package's dependency list one line long.
 
 ## Tests

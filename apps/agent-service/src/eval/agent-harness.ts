@@ -21,7 +21,8 @@ import {
 import { AppModule } from '../app.module.js';
 import { PG_POOL, NEO4J_DRIVER } from '../memory/memory.tokens.js';
 import { RunsService, type TracedRun } from '../runs/runs.service.js';
-import { recordingModelDeps, replayModelDeps, type TrialDecks } from './cassette-deps.js';
+import { recordingModelDeps, replayModelDeps } from '../agent/model/decision-seam.js';
+import type { TrialDecks } from './cassette-deps.js';
 import type { SpanCollector } from './span-records.js';
 
 /**

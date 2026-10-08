@@ -4,7 +4,7 @@
  *
  * The package is the format, the hash, the recorder and the player. It is not
  * wired to anything: turning a `Deck` into the model half of a dependency set
- * is `apps/agent-service/src/eval/cassette-deps.ts`, and reading
+ * is `apps/agent-service/src/agent/model/decision-seam.ts`, and reading
  * `EVAL_CASSETTE_MODE` is the harness's. That separation is what keeps the one
  * runtime dependency `zod` and keeps the package liftable out of this
  * repository whole.

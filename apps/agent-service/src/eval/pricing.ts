@@ -1,5 +1,5 @@
 import type { PriceTable } from '@repo/eval-harness';
-import { PINNED_CHAT_MODEL } from '../runs/runs.service.js';
+import { PINNED_CHAT_MODEL } from '../agent/model/model-deps.js';
 
 /**
  * List prices for the models this service calls, for the cost column of an

@@ -1,4 +1,3 @@
-import { execFileSync } from 'node:child_process';
 import { subscribe } from 'node:diagnostics_channel';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
@@ -11,206 +10,27 @@ import {
   CassetteRecorder,
   type Deck,
   type Decision,
-  type DecisionCall,
   type ReplayConfig,
-  type TokenCounts,
 } from '@repo/agent-cassette';
-import {
-  activeInferenceSpan,
-  withInferenceSpan,
-  type InferenceRequest,
-  type InferenceSeam,
-} from '@repo/telemetry';
-import type { EvidenceItem, PolicyCriterion } from '@repo/prior-auth';
-import { CHAT_MODEL, defaultTools, type ModelDeps } from '../runs/runs.service.js';
+import { activeInferenceSpan } from '@repo/telemetry';
+import { CHAT_MODEL } from '../agent/model/model-deps.js';
+import { tokenCountsFor } from '../agent/model/decision-seam.js';
 import { RE_RECORD_COMMAND, UPDATE_BASELINE_COMMAND } from './abort-cause.js';
 
 /**
- * `ModelDeps` ⟷ `Deck`, in both directions.
+ * Cassettes, for evaluation trials.
  *
- * This is the only file that knows both what a cassette is and what the service
- * is. `packages/agent-cassette` depends on `zod` and nothing else in this
+ * The seam itself — the request builders and `recordingModelDeps` /
+ * `replayModelDeps` — is the agent's, in `src/agent/model/decision-seam.ts`,
+ * because every production run records through it too (P3-B). What is left
+ * here is what only an evaluation needs: one cassette per trial, the set's
+ * provenance, the replayed spans' usage, and the watcher that fails a replay
+ * which reached the model host.
+ *
+ * `packages/agent-cassette` depends on `zod` and nothing else in this
  * repository; `RunsService` takes a `(ModelDeps) => ModelDeps` and never learns
- * that a cassette exists. The translation between them lives here because it is
- * the one place that can hold both without either of them growing a dependency
- * on the other.
+ * that a cassette exists.
  */
-
-/**
- * The requests, spelled once.
- *
- * A recorded request and a replayed one are hashed by the same function over
- * the same object, so the two directions cannot be allowed to describe the same
- * call differently — a field that exists on one side and not the other is a
- * miss on every trial, and the error it produces points at the prompt rather
- * than at the two spellings that actually disagree.
- *
- * Nothing here carries the `runId`. That is what lets a replayed run mint a
- * fresh one, write under it, and still be graded by `episodic_row_written` and
- * `entity_merged`, which read persisted state for *this* run. `hash-stability`
- * in the unit tests is the assertion that keeps it true.
- */
-const calls = {
-  plan: (systemPrompt: string, userPrompt: string): DecisionCall => ({
-    seam: 'plan.callLlm',
-    request: { systemPrompt, userPrompt },
-  }),
-  selectTool: (plan: string, toolNames: readonly string[]): DecisionCall => ({
-    seam: 'act.selectTool',
-    request: { plan, toolNames: [...toolNames] },
-  }),
-  tool: (name: string, input: unknown): DecisionCall => ({
-    seam: 'act.tool',
-    label: name,
-    request: input,
-  }),
-  extract: (context: string): DecisionCall => ({
-    seam: 'distill.extractEntities',
-    request: { context },
-  }),
-  embed: (text: string): DecisionCall => ({ seam: 'embed', request: { text } }),
-  assess: (
-    criteria: readonly PolicyCriterion[],
-    evidence: readonly EvidenceItem[],
-  ): DecisionCall => ({
-    seam: 'assess.criteria',
-    request: { criteria: [...criteria], evidence: [...evidence] },
-  }),
-} as const;
-
-/** The three seams that are a `generateContent` call, and so carry usage. */
-const CHAT_SEAMS: ReadonlySet<DecisionCall['seam']> = new Set([
-  'plan.callLlm',
-  'act.selectTool',
-  'distill.extractEntities',
-]);
-
-/**
- * The usage a chat seam returned beside its answer.
- *
- * Every chat seam returns `{ ..., tokenCounts }` from format 2 on (P1-F), so
- * the recorder reads it at all three. `embed` and `act.tool` report none, and
- * none is claimed for them.
- */
-export function tokenCountsFor(call: DecisionCall, response: unknown): TokenCounts | undefined {
-  if (!CHAT_SEAMS.has(call.seam)) return undefined;
-  return (response as { tokenCounts?: TokenCounts } | null | undefined)?.tokenCounts;
-}
-
-/** Recording: the live set, with every decision it makes appended to the deck. */
-export function recordingModelDeps(live: ModelDeps, deck: Deck): ModelDeps {
-  return {
-    plan: {
-      callLlm: (systemPrompt, userPrompt) =>
-        deck.resolve(calls.plan(systemPrompt, userPrompt), () =>
-          live.plan.callLlm(systemPrompt, userPrompt),
-        ),
-    },
-    act: {
-      tools: live.act.tools.map((tool) => ({
-        name: tool.name,
-        execute: (input) => deck.resolve(calls.tool(tool.name, input), () => tool.execute(input)),
-      })),
-      selectTool: (plan, tools) =>
-        deck.resolve(
-          calls.selectTool(
-            plan,
-            tools.map((tool) => tool.name),
-          ),
-          () => live.act.selectTool(plan, tools),
-        ),
-    },
-    distill: {
-      extractEntities: (context) =>
-        deck.resolve(calls.extract(context), () => live.distill.extractEntities(context)),
-    },
-    embed: (text) => deck.resolve(calls.embed(text), () => live.embed(text)),
-    assess: {
-      assessCriteria: (criteria, evidence) =>
-        deck.resolve(calls.assess(criteria, evidence), () =>
-          live.assess.assessCriteria(criteria, evidence),
-        ),
-    },
-  };
-}
-
-/**
- * Replay: a `ModelDeps` built entirely from the deck.
- *
- * The live set is not an argument. A decorator that took one and ignored it
- * would still have caused it to be constructed, and the claim worth making is
- * that a replayed run has no model client in the process at all — which is
- * checkable by reading this signature rather than by trusting the player.
- *
- * The tool registry comes from `defaultTools` because the recorded
- * `act.selectTool` request carries the tool names. Rebuilding the list from the
- * cassette's own `act.tool` entries would give a run that selected no tool an
- * empty registry, and the recorded request would then miss on its own hash.
- */
-export function replayModelDeps(deck: Deck): ModelDeps {
-  const unreachable = (): Promise<never> => {
-    throw new Error(
-      'a replayed dependency set tried to make a live call, which should be unreachable: ' +
-        'the player never calls the thunk and no model client was constructed',
-    );
-  };
-
-  // The span a live call would have had, so a transcript's spans do not depend
-  // on the axis. The models are the running configuration's, which the player
-  // has already checked equal to the cassette header's. What the recording
-  // measured arrives through `onServe`; see `recordServedDecision`.
-  const chat = (seam: Exclude<InferenceSeam, 'embed'>, json: boolean): InferenceRequest => ({
-    operation: 'generate_content',
-    model: CHAT_MODEL,
-    seam,
-    ...(json ? { outputType: 'json' as const } : {}),
-  });
-  const embedding: InferenceRequest = {
-    operation: 'embeddings',
-    model: EMBEDDING_MODEL,
-    seam: 'embed',
-    dimensions: EMBEDDING_DIMENSIONS,
-  };
-
-  return {
-    plan: {
-      callLlm: (systemPrompt, userPrompt) =>
-        withInferenceSpan(chat('plan.callLlm', false), () =>
-          deck.resolve(calls.plan(systemPrompt, userPrompt), unreachable),
-        ),
-    },
-    act: {
-      tools: defaultTools().map((tool) => ({
-        name: tool.name,
-        execute: (input) => deck.resolve(calls.tool(tool.name, input), unreachable),
-      })),
-      selectTool: (plan, tools) =>
-        withInferenceSpan(chat('act.selectTool', true), () =>
-          deck.resolve(
-            calls.selectTool(
-              plan,
-              tools.map((tool) => tool.name),
-            ),
-            unreachable,
-          ),
-        ),
-    },
-    distill: {
-      extractEntities: (context) =>
-        withInferenceSpan(chat('distill.extractEntities', true), () =>
-          deck.resolve(calls.extract(context), unreachable),
-        ),
-    },
-    embed: (text) =>
-      withInferenceSpan(embedding, () => deck.resolve(calls.embed(text), unreachable)),
-    assess: {
-      assessCriteria: (criteria, evidence) =>
-        withInferenceSpan(chat('assess.criteria', true), () =>
-          deck.resolve(calls.assess(criteria, evidence), unreachable),
-        ),
-    },
-  };
-}
 
 /**
  * What a replayed decision says about the span it is served inside.
@@ -258,13 +78,6 @@ export interface TrialDecks {
    * cassette written from a crashed run replays a run that never happened.
    */
   close(completed: boolean): Promise<void>;
-}
-
-/** The commit a recording is made at, and whether the tree it was made from was clean. */
-export function gitHead(): { sha: string; dirty: boolean } {
-  const sha = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
-  const status = execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' }).trim();
-  return { sha, dirty: status !== '' };
 }
 
 /**

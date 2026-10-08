@@ -38,7 +38,8 @@ import { createLogger } from '@repo/telemetry';
 import { loadEnvFile } from '../load-env.js';
 import { createGeminiEmbedder } from '../agent/model/gemini-embedder.js';
 import { readMemoryConfig } from '../memory/memory.config.js';
-import { MODEL_HOST, gitHead, watchForModelRequests } from './cassette-deps.js';
+import { gitHead } from '../audit/code-identity.js';
+import { MODEL_HOST, watchForModelRequests } from './cassette-deps.js';
 import {
   embeddingFilePath,
   readEmbeddingsMode,
