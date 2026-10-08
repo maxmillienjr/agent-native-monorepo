@@ -26,7 +26,7 @@ import { CHAT_MODEL, type ModelDeps } from '../runs/runs.service.js';
 import type { CaseBoard } from '../agent/tools/case-board.js';
 import { defaultRegistry, defineRegistry, type ToolRegistry } from '../agent/tools/registry.js';
 import type { ToolSelectionRequest } from '../agent/tools/selection.js';
-import type { ToolDefinition } from '../agent/tools/types.js';
+import type { CompensableTool, ToolDefinition } from '../agent/tools/types.js';
 import { RE_RECORD_COMMAND, UPDATE_BASELINE_COMMAND } from './abort-cause.js';
 
 /**
@@ -71,6 +71,14 @@ const calls = {
     label: name,
     request: input,
   }),
+  // The step's input and output, which is what an undo is a function of. The
+  // idempotency key is left out: it carries the run id, and a replayed run
+  // mints a new one.
+  compensate: (name: string, input: unknown, output: unknown): DecisionCall => ({
+    seam: 'act.compensate',
+    label: name,
+    request: { input, output },
+  }),
   extract: (context: string): DecisionCall => ({
     seam: 'distill.extractEntities',
     request: { context },
@@ -114,10 +122,14 @@ export function recordingModelDeps(live: ModelDeps, deck: Deck): ModelDeps {
         ),
     },
     act: {
-      registry: throughDeck(live.act.registry, (tool) => ({
-        execute: (input, ctx) =>
+      registry: throughDeck(live.act.registry, {
+        execute: (tool) => (input, ctx) =>
           deck.resolve(calls.tool(tool.name, input), () => tool.execute(input, ctx)),
-      })),
+        compensate: (tool) => (input, output, ctx) =>
+          deck.resolve(calls.compensate(tool.name, input, output), () =>
+            tool.compensate(input, output, ctx),
+          ),
+      }),
       selectTool: (request) =>
         deck.resolve(calls.selectTool(request), () => live.act.selectTool(request)),
     },
@@ -184,9 +196,11 @@ export function replayModelDeps(deck: Deck): ModelDeps {
         ),
     },
     act: {
-      registry: throughDeck(defaultRegistry(UNREACHABLE_BOARD), (tool) => ({
-        execute: (input) => deck.resolve(calls.tool(tool.name, input), unreachable),
-      })),
+      registry: throughDeck(defaultRegistry(UNREACHABLE_BOARD), {
+        execute: (tool) => (input) => deck.resolve(calls.tool(tool.name, input), unreachable),
+        compensate: (tool) => (input, output) =>
+          deck.resolve(calls.compensate(tool.name, input, output), unreachable),
+      }),
       selectTool: (request) =>
         withInferenceSpan(chat('act.selectTool', true), () =>
           deck.resolve(calls.selectTool(request), unreachable),
@@ -216,10 +230,17 @@ export function replayModelDeps(deck: Deck): ModelDeps {
  */
 function throughDeck(
   registry: ToolRegistry,
-  route: (tool: ToolDefinition) => Partial<Pick<ToolDefinition, 'execute'>>,
+  route: {
+    execute: (tool: ToolDefinition) => ToolDefinition['execute'];
+    compensate: (tool: CompensableTool) => CompensableTool['compensate'];
+  },
 ): ToolRegistry {
   return defineRegistry(
-    registry.tools.map((tool) => ({ ...tool, ...route(tool) }) as ToolDefinition),
+    registry.tools.map((tool): ToolDefinition =>
+      tool.tier === 'compensable'
+        ? { ...tool, execute: route.execute(tool), compensate: route.compensate(tool) }
+        : { ...tool, execute: route.execute(tool) },
+    ),
   );
 }
 
@@ -241,7 +262,8 @@ const UNREACHABLE_BOARD: CaseBoard = {
  *
  * The player calls this from inside `resolve`, so the active span is the
  * inference or embeddings span `replayModelDeps` opened — or, at the
- * `act.tool` seam, the `execute_tool` span `act` opened. Each is marked
+ * `act.tool` and `act.compensate` seams, the `execute_tool` span `act` or
+ * `compensate` opened. Each is marked
  * `agent_native.replayed`, and a reader summing usage across tiers filters on
  * it: no call happened, and the span's duration is replay speed.
  *

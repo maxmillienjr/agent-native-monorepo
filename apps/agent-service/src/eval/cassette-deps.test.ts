@@ -260,6 +260,92 @@ describe('the recording and replay directions of the same seam', () => {
 });
 
 /**
+ * A run whose saga ran, recorded through the service and replayed through it.
+ *
+ * Replay serves `act.tool` and `act.compensate` from the cassette, so the
+ * ordering logic runs and no effect does. The spy is on the class, so it sees
+ * any board in the process — the service's own included.
+ */
+describe('a compensated run, recorded and replayed', () => {
+  const key = process.env['GOOGLE_API_KEY'];
+
+  beforeEach(() => {
+    delete process.env['GOOGLE_API_KEY'];
+  });
+
+  afterEach(() => {
+    if (key !== undefined) process.env['GOOGLE_API_KEY'] = key;
+    vi.restoreAllMocks();
+  });
+
+  const body = {
+    sessionId: '550e8400-e29b-41d4-a716-446655440000',
+    messages: [{ role: 'user', content: 'Ask for the missing records on the case.' }],
+    config: { maxSteps: 3 },
+  };
+  const script = [
+    {
+      toolName: 'request-records',
+      input: { caseId: 'PA-100001', documents: ['lab-results'], dueInDays: 5 },
+    },
+    {
+      toolName: 'request-records',
+      input: { caseId: 'PA-999999', documents: ['lab-results'], dueInDays: 5 },
+    },
+  ];
+
+  it('replays the compensation from the cassette and never reaches the case board', async () => {
+    const recorder = new CassetteRecorder({ header: liveHeader, tokenCountsFor });
+    const recordingService = new RunsService(null, null, null, null, null);
+    const remaining = [...script];
+    recordingService.setModelDecorator((live) =>
+      recordingModelDeps(
+        {
+          ...live,
+          act: {
+            registry: live.act.registry,
+            selectTool: async () => ({
+              selection: remaining.shift() ?? null,
+              tokenCounts: NO_USAGE,
+            }),
+          },
+        },
+        recorder,
+      ),
+    );
+    const recorded = await recordingService.executeTraced({ body, correlationId: 'record-saga' });
+    const cassette = await recorder.close();
+
+    expect(
+      cassette.decisions
+        .filter((decision) => decision.seam.startsWith('act.'))
+        .map((decision) => [decision.seam, decision.label]),
+    ).toEqual([
+      ['act.selectTool', undefined],
+      ['act.tool', 'request-records'],
+      ['act.selectTool', undefined],
+      ['act.tool', 'request-records'],
+      ['act.compensate', 'request-records'],
+    ]);
+
+    const opened = vi.spyOn(SyntheticCaseBoard.prototype, 'openRequest');
+    const withdrawn = vi.spyOn(SyntheticCaseBoard.prototype, 'withdrawRequest');
+    const player = new CassettePlayer(cassette, replayConfig);
+    const replayingService = new RunsService(null, null, null, null, null);
+    replayingService.setModelDecorator(() => replayModelDeps(player));
+    const replayed = await replayingService.executeTraced({ body, correlationId: 'replay-saga' });
+
+    expect(replayed.nodeSequence).toEqual(recorded.nodeSequence);
+    expect(replayed.nodeSequence).toContain('compensate');
+    expect(replayed.toolOutputs.map((output) => output.effect)).toEqual(['compensated', 'none']);
+    expect(replayed.response.outcome).toBe('partial');
+    expect(player.remaining()).toBe(0);
+    expect(opened).not.toHaveBeenCalled();
+    expect(withdrawn).not.toHaveBeenCalled();
+  });
+});
+
+/**
  * The premise the whole scheme rests on, asserted by running rather than by
  * reading five call sites: no recorded request depends on the `runId`.
  *

@@ -27,11 +27,17 @@ import { z } from 'zod';
  * `assess.criteria` is the prior-authorization graph's one call (P3-D). The
  * chat graph never makes it, so a memory-recall cassette holds none and
  * replays unchanged.
+ *
+ * `act.compensate` is a tool's undo, run when the loop aborts after a
+ * compensable step (P4-C). On replay it is served like `act.tool`, so no
+ * effect runs in either direction. A new value reads no old cassette
+ * differently, so the format version stays.
  */
 export const SEAMS = [
   'plan.callLlm',
   'act.selectTool',
   'act.tool',
+  'act.compensate',
   'distill.extractEntities',
   'embed',
   'assess.criteria',
@@ -87,7 +93,7 @@ export const DecisionResponseSchema = z.discriminatedUnion('kind', [
 
 export const DecisionSchema = z.object({
   seam: z.enum(SEAMS),
-  /** Which tool, at the `act.tool` seam. Absent elsewhere. */
+  /** Which tool, at the `act.tool` and `act.compensate` seams. Absent elsewhere. */
   label: z.string().optional(),
   /** sha256 over canonical JSON of `{ seam, label, request }`. The lookup key. */
   requestHash: z.string().length(64),
