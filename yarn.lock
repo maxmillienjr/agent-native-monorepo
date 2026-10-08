@@ -5,6 +5,26 @@ __metadata:
   version: 8
   cacheKey: 10c0
 
+"@a2a-js/sdk@npm:~1.2.1":
+  version: 1.2.1
+  resolution: "@a2a-js/sdk@npm:1.2.1"
+  dependencies:
+    jose: "npm:^6.2.3"
+  peerDependencies:
+    "@bufbuild/protobuf": ^2.10.2
+    "@grpc/grpc-js": ^1.11.0
+    express: ^4.21.2 || ^5.1.0
+  peerDependenciesMeta:
+    "@bufbuild/protobuf":
+      optional: true
+    "@grpc/grpc-js":
+      optional: true
+    express:
+      optional: true
+  checksum: 10c0/ffadf408329da93e331d0ff8cd319bba56900aea09badb093dfcc58da9254cf532f2f357bd3028c4692cf21313bee3a2a2ff3741de2f2e52a4ddabb3377576c6
+  languageName: node
+  linkType: hard
+
 "@babel/code-frame@npm:^7.0.0, @babel/code-frame@npm:^7.12.13, @babel/code-frame@npm:^7.28.6, @babel/code-frame@npm:^7.29.0":
   version: 7.29.0
   resolution: "@babel/code-frame@npm:7.29.0"
@@ -2893,6 +2913,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@repo/agent-service@workspace:apps/agent-service"
   dependencies:
+    "@a2a-js/sdk": "npm:~1.2.1"
     "@langchain/core": "npm:^1.2.14"
     "@langchain/google-genai": "npm:^2.3.2"
     "@langchain/langgraph": "npm:^1.4.19"
@@ -2922,8 +2943,11 @@ __metadata:
     "@types/express": "npm:^5.0.0"
     "@types/node": "npm:^22.20.4"
     "@types/supertest": "npm:^7.2.1"
+    canonicalize: "npm:^2.1.0"
     eslint: "npm:^9.39.5"
+    express: "npm:^5.1.0"
     jest: "npm:^29.7.0"
+    jose: "npm:^6.2.3"
     reflect-metadata: "npm:^0.2.2"
     rxjs: "npm:^7.8.0"
     supertest: "npm:^7.3.0"
@@ -4578,6 +4602,15 @@ __metadata:
   version: 1.0.30001810
   resolution: "caniuse-lite@npm:1.0.30001810"
   checksum: 10c0/d29bc73f33c888025d54c7ff2984372d3b350b15a6a9e174884fb40976175e9177f202e2a72c2d428dddfc032784bc8ba635a31d168fcab9fac65756d7b3d6b4
+  languageName: node
+  linkType: hard
+
+"canonicalize@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "canonicalize@npm:2.1.0"
+  bin:
+    canonicalize: bin/canonicalize.js
+  checksum: 10c0/3b1ec612765851e71eeff2868f5ccbf0a06ffd8db8deef36efda89167527f96803b555c4ca8b5f5230f0a13badeeac5541c9244c8996fea97d00cee8dca2bf35
   languageName: node
   linkType: hard
 
@@ -7438,6 +7471,13 @@ __metadata:
   bin:
     jest: bin/jest.js
   checksum: 10c0/f40eb8171cf147c617cc6ada49d062fbb03b4da666cb8d39cdbfb739a7d75eea4c3ca150fb072d0d273dce0c753db4d0467d54906ad0293f59c54f9db4a09d8b
+  languageName: node
+  linkType: hard
+
+"jose@npm:^6.2.3":
+  version: 6.2.12
+  resolution: "jose@npm:6.2.12"
+  checksum: 10c0/e8582b946fabcae228819982dda4849908c353e9cb098f02f773635aa0d2f4917f17484c7441b8d526e564013b4cf96951455c94f81d0a39ee765bad44ce293d
   languageName: node
   linkType: hard
 
