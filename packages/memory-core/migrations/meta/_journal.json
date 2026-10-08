@@ -15,6 +15,13 @@
       "when": 1788001826172,
       "tag": "0001_semantic_facts",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788001826173,
+      "tag": "0002_run_records",
+      "breakpoints": true
     }
   ]
 }
