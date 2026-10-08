@@ -560,14 +560,19 @@ no model.
       change gives `held` 342/400 (85.5%) and `regressed` 2/400 (0.5%); 0.9 → 0.5 gives
       `regressed` 390/400 (97.5%); n = 5 gives `insufficient-evidence` 400/400. The test
       asserts the thresholds, so a change to the rule that misses one fails it.
-- [ ] **Model `live` / memory `live`:** `EVAL_GATE=live` exits 0 on a run with a failed
-      trial and a verdict other than `regressed`, and appends a tally that validates
-      against `LiveTallySchema`. It is verified locally with the developer key
-      (`EVAL_TRIALS=1`, 8 calls) and stated as such, because no repository secret exists.
-      **Not run:** this implementation was not cleared to spend the developer key's daily
-      quota. The runner half is unit-tested — `gate.test.ts` › "on live, appends a tally
-      that validates and stays green on a failed trial" — but no live model produced the
-      trial. **Owner:** the repository owner, one local run of eight calls.
+
+_Split at review, 2026-10-08: the failed-trial behaviour is gate logic and is verified on
+fakes; the live half verifies the integration on the live model._
+
+- [x] **Fakes:** with `EVAL_GATE=live`, a run that has a failed trial and a verdict other
+      than `regressed` exits 0 and appends a tally that validates against
+      `LiveTallySchema`. `gate.test.ts` › "on live, appends a tally that validates and stays
+      green on a failed trial", passing on 2026-10-08.
+- [ ] **Model `live` / memory `live`:** `EVAL_GATE=live` on a real live run exits 0 on a
+      verdict other than `regressed`, and appends a tally that validates against
+      `LiveTallySchema`. It is verified locally with the developer key (`EVAL_TRIALS=1`, 8
+      calls) and stated as such, because no repository secret exists. **Not run yet.**
+      **Owner:** the repository owner, one local run of eight calls.
 - [ ] **Model `live` / memory `live`, in CI:** the nightly pushes its tally to
       `eval-history`, and after five nights in one epoch its summary reports the pooled
       5×2 rate with the list of runs. This needs the repository secret. If none exists at
