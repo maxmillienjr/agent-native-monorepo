@@ -15,6 +15,7 @@ function makeState(overrides: Partial<AgentState> = {}): AgentState {
     maxSteps: 10,
     topK: 10,
     shouldContinue: true,
+    aborted: false,
     ...overrides,
   };
 }
@@ -40,5 +41,9 @@ describe('shouldContinueActing', () => {
     expect(
       shouldContinueActing(makeState({ shouldContinue: false, stepCount: 1, maxSteps: 10 })),
     ).toBe('distill');
+  });
+
+  it('leaves the loop on a failed step, whatever the step bound says', () => {
+    expect(shouldContinueActing(makeState({ aborted: true, stepCount: 1 }))).toBe('distill');
   });
 });

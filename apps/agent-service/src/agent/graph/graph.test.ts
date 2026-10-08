@@ -3,6 +3,7 @@ import { EMBEDDING_DIMENSIONS } from '@repo/memory-core';
 import { CassetteMissError } from '@repo/agent-cassette';
 import { buildAgentGraph, type GraphDeps } from './graph.js';
 import { NO_USAGE } from '../model/usage.js';
+import { defineRegistry } from '../tools/registry.js';
 
 /**
  * The graph is assembled at request time, so a construction error surfaces as a
@@ -21,7 +22,10 @@ function makeDeps(): GraphDeps {
     plan: {
       callLlm: async () => ({ content: 'a plan', tokenCounts: { prompt: 0, completion: 0 } }),
     },
-    act: { tools: [], selectTool: async () => ({ selection: null, tokenCounts: NO_USAGE }) },
+    act: {
+      registry: defineRegistry([]),
+      selectTool: async () => ({ selection: null, tokenCounts: NO_USAGE }),
+    },
     distill: {
       extractEntities: async () => ({
         extraction: { entities: [], relationships: [], facts: [] },

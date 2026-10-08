@@ -22,7 +22,11 @@ import {
   type InferenceSeam,
 } from '@repo/telemetry';
 import type { EvidenceItem, PolicyCriterion } from '@repo/prior-auth';
-import { CHAT_MODEL, defaultTools, type ModelDeps } from '../runs/runs.service.js';
+import { CHAT_MODEL, type ModelDeps } from '../runs/runs.service.js';
+import type { CaseBoard } from '../agent/tools/case-board.js';
+import { defaultRegistry, defineRegistry, type ToolRegistry } from '../agent/tools/registry.js';
+import type { ToolSelectionRequest } from '../agent/tools/selection.js';
+import type { ToolDefinition } from '../agent/tools/types.js';
 import { RE_RECORD_COMMAND, UPDATE_BASELINE_COMMAND } from './abort-cause.js';
 
 /**
@@ -55,9 +59,12 @@ const calls = {
     seam: 'plan.callLlm',
     request: { systemPrompt, userPrompt },
   }),
-  selectTool: (plan: string, toolNames: readonly string[]): DecisionCall => ({
+  // The whole request: the plan, every tool's description, tier and schema,
+  // and the run's previous calls. A tool added to the registry, a description
+  // reworded or an output that changed all move this hash, which is the point.
+  selectTool: (request: ToolSelectionRequest): DecisionCall => ({
     seam: 'act.selectTool',
-    request: { plan, toolNames: [...toolNames] },
+    request,
   }),
   tool: (name: string, input: unknown): DecisionCall => ({
     seam: 'act.tool',
@@ -107,18 +114,12 @@ export function recordingModelDeps(live: ModelDeps, deck: Deck): ModelDeps {
         ),
     },
     act: {
-      tools: live.act.tools.map((tool) => ({
-        name: tool.name,
-        execute: (input) => deck.resolve(calls.tool(tool.name, input), () => tool.execute(input)),
+      registry: throughDeck(live.act.registry, (tool) => ({
+        execute: (input, ctx) =>
+          deck.resolve(calls.tool(tool.name, input), () => tool.execute(input, ctx)),
       })),
-      selectTool: (plan, tools) =>
-        deck.resolve(
-          calls.selectTool(
-            plan,
-            tools.map((tool) => tool.name),
-          ),
-          () => live.act.selectTool(plan, tools),
-        ),
+      selectTool: (request) =>
+        deck.resolve(calls.selectTool(request), () => live.act.selectTool(request)),
     },
     distill: {
       extractEntities: (context) =>
@@ -142,10 +143,13 @@ export function recordingModelDeps(live: ModelDeps, deck: Deck): ModelDeps {
  * that a replayed run has no model client in the process at all — which is
  * checkable by reading this signature rather than by trusting the player.
  *
- * The tool registry comes from `defaultTools` because the recorded
- * `act.selectTool` request carries the tool names. Rebuilding the list from the
- * cassette's own `act.tool` entries would give a run that selected no tool an
- * empty registry, and the recorded request would then miss on its own hash.
+ * The tool registry comes from `defaultRegistry` because the recorded
+ * `act.selectTool` request carries every tool's description, tier and schema.
+ * Rebuilding the list from the cassette's own `act.tool` entries would give a
+ * run that selected no tool an empty registry, and the recorded request would
+ * then miss on its own hash. The board it is built over throws: the tool seams
+ * are served from the deck, so a replay that reached a board would be running
+ * an effect the recording already ran.
  */
 export function replayModelDeps(deck: Deck): ModelDeps {
   const unreachable = (): Promise<never> => {
@@ -180,19 +184,12 @@ export function replayModelDeps(deck: Deck): ModelDeps {
         ),
     },
     act: {
-      tools: defaultTools().map((tool) => ({
-        name: tool.name,
+      registry: throughDeck(defaultRegistry(UNREACHABLE_BOARD), (tool) => ({
         execute: (input) => deck.resolve(calls.tool(tool.name, input), unreachable),
       })),
-      selectTool: (plan, tools) =>
+      selectTool: (request) =>
         withInferenceSpan(chat('act.selectTool', true), () =>
-          deck.resolve(
-            calls.selectTool(
-              plan,
-              tools.map((tool) => tool.name),
-            ),
-            unreachable,
-          ),
+          deck.resolve(calls.selectTool(request), unreachable),
         ),
     },
     distill: {
@@ -211,6 +208,33 @@ export function replayModelDeps(deck: Deck): ModelDeps {
     },
   };
 }
+
+/**
+ * The registry with each tool's functions routed through the deck. Name,
+ * description, tier and input stay the registry's own, so the selection
+ * request a recording hashes is the one a request would send.
+ */
+function throughDeck(
+  registry: ToolRegistry,
+  route: (tool: ToolDefinition) => Partial<Pick<ToolDefinition, 'execute'>>,
+): ToolRegistry {
+  return defineRegistry(
+    registry.tools.map((tool) => ({ ...tool, ...route(tool) }) as ToolDefinition),
+  );
+}
+
+/** The board a replayed registry is built over, which nothing may reach. */
+const UNREACHABLE_BOARD: CaseBoard = {
+  openRequest: () => {
+    throw new Error('a replayed run reached the case board: act.tool must be served from the deck');
+  },
+  withdrawRequest: () => {
+    throw new Error(
+      'a replayed run reached the case board: act.compensate must be served from the deck',
+    );
+  },
+  openRequests: () => [],
+};
 
 /**
  * What a replayed decision says about the span it is served inside.

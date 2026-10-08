@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, Optional } from '@nestjs/common';
 import type { Response } from 'express';
 import type { BaseCheckpointSaver } from '@langchain/langgraph';
 import type { RunResponse, StreamEvent } from '@repo/agent-contracts';
@@ -27,7 +27,11 @@ import {
   CHECKPOINTER,
 } from '../memory/memory.tokens.js';
 import { NO_USAGE } from '../agent/model/usage.js';
-import type { ActNodeDeps, ToolSelection } from '../agent/nodes/act.node.js';
+import type { ActNodeDeps } from '../agent/nodes/act.node.js';
+import { CASE_BOARD } from '../agent/agent.module.js';
+import { SyntheticCaseBoard, type CaseBoard } from '../agent/tools/case-board.js';
+import { defaultRegistry } from '../agent/tools/registry.js';
+import { SELECT_TOOL_PROMPT, parseSelection, selectionPrompt } from '../agent/tools/selection.js';
 import type { DistillNodeDeps } from '../agent/nodes/distill.node.js';
 import type { PlanNodeDeps } from '../agent/nodes/plan.node.js';
 import {
@@ -132,29 +136,6 @@ export interface ModelDeps {
 }
 
 /**
- * The tool registry, which is the one thing in `ModelDeps` that costs no model
- * call.
- *
- * It is built here rather than twice inside the two axis branches because a
- * replayed dependency set needs the same registry the recorded run had: the
- * `act.selectTool` request carries the tool names, so a replay whose tool list
- * differs from the recording's misses on the hash before it gets anywhere near
- * a tool.
- *
- * The one registered tool is a pure function. A registry that holds tools which
- * change the world needs reversibility tiers before a cassette of one is safe,
- * and that is P4-C's.
- */
-export function defaultTools(): ActNodeDeps['tools'] {
-  return [
-    {
-      name: 'web-search',
-      execute: async (input) => ({ results: [`Result for: ${JSON.stringify(input)}`] }),
-    },
-  ];
-}
-
-/**
  * A `ModelDeps` that constructs its real one on first use.
  *
  * It exists so that `getDeps` can hand a decorator the dependency set it is
@@ -171,10 +152,10 @@ function lazyModelDeps(create: () => ModelDeps): ModelDeps {
   return {
     plan: { callLlm: (system, user) => deps().plan.callLlm(system, user) },
     act: {
-      get tools() {
-        return deps().act.tools;
+      get registry() {
+        return deps().act.registry;
       },
-      selectTool: (plan, tools) => deps().act.selectTool(plan, tools),
+      selectTool: (request) => deps().act.selectTool(request),
     },
     distill: { extractEntities: (context) => deps().distill.extractEntities(context) },
     embed: (text) => deps().embed(text),
@@ -198,6 +179,12 @@ export class RunsService {
     @Inject(PGVECTOR_WRITER) private readonly pgvectorWriter: PgvectorWriter | null,
     @Inject(RETRIEVAL_FACADE) private readonly retrievalFacade: RetrievalFacade | null,
     @Inject(CHECKPOINTER) private readonly checkpointer: BaseCheckpointSaver | null,
+    // Optional so a spec can construct the service with the five memory
+    // arguments and get a board of its own; `AgentModule` provides the one a
+    // request uses.
+    @Optional()
+    @Inject(CASE_BOARD)
+    private readonly caseBoard: CaseBoard = new SyntheticCaseBoard(),
   ) {}
 
   setDeps(deps: GraphDeps): void {
@@ -290,22 +277,13 @@ export class RunsService {
     return {
       plan: { callLlm },
       act: {
-        tools: defaultTools(),
-        selectTool: async (plan, tools) => {
-          const toolNames = tools.map((t) => t.name).join(', ');
-          const response = await callSelect(
-            'You select the best tool for a task. Respond with JSON: {"toolName": "...", "input": ...} or null if no tool is needed.',
-            `Plan: ${plan}\nAvailable tools: ${toolNames}`,
-          );
-          // The call is paid for whether or not its answer parses, so the
-          // usage goes back either way.
-          let selection: ToolSelection | null;
-          try {
-            selection = JSON.parse(response.content) as ToolSelection | null;
-          } catch {
-            selection = null;
-          }
-          return { selection, tokenCounts: response.tokenCounts };
+        registry: defaultRegistry(this.caseBoard),
+        selectTool: async (request) => {
+          const response = await callSelect(SELECT_TOOL_PROMPT, selectionPrompt(request));
+          // A response that does not parse throws, and `IO_RETRY` pays for a
+          // second call; the inference span recorded the first one's usage,
+          // as it does for `distill`'s.
+          return { selection: parseSelection(response.content), tokenCounts: response.tokenCounts };
         },
       },
       distill: {
@@ -340,7 +318,7 @@ export class RunsService {
         }),
       },
       act: {
-        tools: defaultTools(),
+        registry: defaultRegistry(this.caseBoard),
         // Stub: no tool needed. No model was called, so nothing was used —
         // unlike `plan`'s canned figures, which predate P1-F and stay.
         selectTool: async () => ({ selection: null, tokenCounts: NO_USAGE }),

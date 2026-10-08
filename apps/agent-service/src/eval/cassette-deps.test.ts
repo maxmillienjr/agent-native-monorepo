@@ -22,6 +22,10 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { cassettePath } from '@repo/eval-harness';
 import { NO_USAGE } from '../agent/model/usage.js';
+import { SyntheticCaseBoard } from '../agent/tools/case-board.js';
+import { defaultRegistry, defineRegistry } from '../agent/tools/registry.js';
+import { selectionRequest } from '../agent/tools/selection.js';
+import { webSearchTool } from '../agent/tools/web-search.tool.js';
 import { CHAT_MODEL, RunsService, type ModelDeps } from '../runs/runs.service.js';
 import {
   MODEL_HOST,
@@ -83,19 +87,26 @@ function fakeLive(calls: string[]): ModelDeps {
       },
     },
     act: {
-      tools: [
-        {
-          name: 'web-search',
-          execute: async (input) => {
-            calls.push(`tool:${JSON.stringify(input)}`);
-            return { results: ['a result'] };
-          },
-        },
-      ],
-      selectTool: async (plan) => {
-        calls.push(`select:${plan}`);
+      // The default registry, as every dependency set has it, with web-search
+      // answering without a network: the selection request carries every
+      // tool's description, so a replay built from any other list would miss.
+      registry: defineRegistry(
+        defaultRegistry(new SyntheticCaseBoard()).tools.map((tool) =>
+          tool.name === 'web-search'
+            ? {
+                ...webSearchTool,
+                execute: async (input: unknown) => {
+                  calls.push(`tool:${JSON.stringify(input)}`);
+                  return { results: ['a result'] };
+                },
+              }
+            : tool,
+        ),
+      ),
+      selectTool: async (request) => {
+        calls.push(`select:${request.plan}`);
         return {
-          selection: { toolName: 'web-search', input: { q: 'langgraph' } },
+          selection: { toolName: 'web-search', input: { query: 'langgraph' } },
           tokenCounts: { prompt: 23, completion: 130, reasoning: 120 },
         };
       },
@@ -130,12 +141,17 @@ function fakeLive(calls: string[]): ModelDeps {
   };
 }
 
+const CTX = { runId: 'run-1', idempotencyKey: 'run-1:0' };
+
+/** The selection request a first `act` step sends with this plan. */
+const firstRequest = (deps: ModelDeps) => selectionRequest('a plan', deps.act.registry, []);
+
 /** Drives every seam once, in the order a run would. */
 async function exercise(deps: ModelDeps): Promise<unknown[]> {
   const plan = await deps.plan.callLlm('system', 'user');
-  const { selection } = await deps.act.selectTool('a plan', deps.act.tools);
-  const tool = deps.act.tools.find((entry) => entry.name === selection?.toolName);
-  const output = await tool!.execute(selection!.input);
+  const { selection } = await deps.act.selectTool(firstRequest(deps));
+  const tool = deps.act.registry.get(selection!.toolName);
+  const output = await tool!.execute(selection!.input as { query: string }, CTX);
   const extraction = await deps.distill.extractEntities('a conversation');
   const vector = await deps.embed('a fact');
 
@@ -328,7 +344,10 @@ describe('the decorator seam on RunsService', () => {
       plan: {
         callLlm: async () => ({ content: 'a plan', tokenCounts: { prompt: 1, completion: 1 } }),
       },
-      act: { tools: [], selectTool: async () => ({ selection: null, tokenCounts: NO_USAGE }) },
+      act: {
+        registry: defineRegistry([]),
+        selectTool: async () => ({ selection: null, tokenCounts: NO_USAGE }),
+      },
       distill: {
         extractEntities: async () => ({
           extraction: { entities: [], relationships: [], facts: [] },
@@ -398,8 +417,8 @@ describe('the decorator seam on RunsService', () => {
 
     const service = new RunsService(null, null, null, null, null);
     service.setModelDecorator((live) => {
-      // `tools` is the one member of the lazy set that has to resolve it.
-      void live.act.tools;
+      // `registry` is the one member of the lazy set that has to resolve it.
+      void live.act.registry;
       return replayModelDeps(deck);
     });
 
@@ -519,9 +538,11 @@ describe('replayed spans', () => {
     exporter.reset();
 
     await deps.plan.callLlm('system', 'user');
-    const { selection } = await deps.act.selectTool('a plan', deps.act.tools);
+    const { selection } = await deps.act.selectTool(firstRequest(deps));
     // `act` opens this span around the tool; the decision is served inside it.
-    await withToolSpan('web-search', () => deps.act.tools[0]!.execute(selection!.input));
+    await withToolSpan('web-search', () =>
+      deps.act.registry.get('web-search')!.execute(selection!.input as { query: string }, CTX),
+    );
     await deps.distill.extractEntities('a conversation');
     await deps.embed('a fact');
 

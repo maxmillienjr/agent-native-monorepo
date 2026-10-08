@@ -34,6 +34,7 @@ const AgentStateAnnotation = Annotation.Root({
   maxSteps: Annotation<number>,
   topK: Annotation<number>,
   shouldContinue: Annotation<boolean>,
+  aborted: Annotation<boolean>,
   // Must be here as well as in AgentStateSchema. A key absent from the
   // annotation is dropped between nodes, and the failure mode is a `reflect`
   // that silently writes nothing.

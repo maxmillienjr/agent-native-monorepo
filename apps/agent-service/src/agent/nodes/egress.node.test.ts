@@ -20,6 +20,7 @@ const state = {
   maxSteps: 10,
   topK: 10,
   shouldContinue: false,
+  aborted: false,
 } satisfies AgentState;
 
 /**
