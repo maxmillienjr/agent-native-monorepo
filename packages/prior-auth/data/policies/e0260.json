@@ -1,0 +1,27 @@
+{
+  "id": "cbk-dme-e0260",
+  "hcpcs": "E0260",
+  "service": "Hospital bed, semi-electric (head and foot adjustment), with any type side rails, with mattress",
+  "title": "Semi-electric hospital bed, initial request",
+  "version": "2026.1",
+  "effective": "2026-01-01",
+  "approvalPeriodDays": 180,
+  "disclaimer": "Synthetic. Invented for the fictional Cedarbrook Synthetic Health Plan. These criteria and their thresholds are not any payer's or CMS's coverage criteria, are not paraphrased from any, and are not clinical guidance.",
+  "criteria": [
+    {
+      "id": "e0260-positioning-need",
+      "title": "Positioning an ordinary bed cannot provide",
+      "requirement": "The prescriber documents that the member must be positioned with the head raised 35 degrees or more, or in another position an ordinary bed cannot hold."
+    },
+    {
+      "id": "e0260-linked-diagnosis",
+      "title": "A diagnosis the positioning need follows from",
+      "requirement": "The member has a recorded diagnosis that the prescriber links to the positioning need."
+    },
+    {
+      "id": "e0260-frequent-adjustment",
+      "title": "Position changes often enough to need a motor",
+      "requirement": "The prescriber's note states that the position must change several times a day or without delay, which a manual crank cannot do."
+    }
+  ]
+}

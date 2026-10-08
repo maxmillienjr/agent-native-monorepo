@@ -1,0 +1,32 @@
+{
+  "id": "cbk-dme-e0601",
+  "hcpcs": "E0601",
+  "service": "Continuous positive airway pressure (cpap) device",
+  "title": "Continuous positive airway pressure device, initial request",
+  "version": "2026.1",
+  "effective": "2026-01-01",
+  "approvalPeriodDays": 90,
+  "disclaimer": "Synthetic. Invented for the fictional Cedarbrook Synthetic Health Plan. These criteria and their thresholds are not any payer's or CMS's coverage criteria, are not paraphrased from any, and are not clinical guidance.",
+  "criteria": [
+    {
+      "id": "e0601-osa-diagnosis",
+      "title": "Obstructive sleep apnea is diagnosed",
+      "requirement": "The member has a diagnosis of obstructive sleep apnea, recorded as a condition or stated by the prescriber."
+    },
+    {
+      "id": "e0601-ahi-threshold",
+      "title": "Apnea-hypopnea index of 18 or more",
+      "requirement": "A sleep study dated within the 12 months before the request reports an apnea-hypopnea index (AHI) of at least 18 events per hour."
+    },
+    {
+      "id": "e0601-conservative-trial",
+      "title": "A conservative measure was tried first",
+      "requirement": "The record documents at least 21 days of positional therapy or a weight-management programme that did not resolve the symptoms."
+    },
+    {
+      "id": "e0601-prescriber-order",
+      "title": "Signed order with a pressure setting",
+      "requirement": "A signed prescriber order names the device and its pressure setting or pressure range."
+    }
+  ]
+}

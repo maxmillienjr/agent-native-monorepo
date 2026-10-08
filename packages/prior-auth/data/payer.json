@@ -1,0 +1,24 @@
+{
+  "disclaimer": "Synthetic. Cedarbrook Synthetic Health Plan is a fictional payer invented for a portfolio repository. It is not modelled on any real payer, and nothing here is coverage, billing or clinical guidance.",
+  "notice": "ICD-10-CM codes and descriptors in this dataset are from the International Classification of Diseases, Tenth Revision, Clinical Modification, developed by the National Center for Health Statistics (Source: CDC/NCHS) under authorization from the World Health Organization, which owns ICD-10. Their use here does not imply endorsement by CDC, NCHS, HHS or the United States Government. Each descriptor is reproduced unchanged, and ICD-10-CM is available at no charge on the NCHS website. HCPCS Level II codes and descriptors are from the Centers for Medicare & Medicaid Services' alpha-numeric HCPCS file. See docs/adr/0008-code-systems-the-repository-may-contain.md.",
+  "payer": {
+    "id": "cedarbrook",
+    "name": "Cedarbrook Synthetic Health Plan",
+    "identifier": {
+      "system": "https://example.org/fhir/sid/payer-id",
+      "value": "CBK-SYN-001"
+    }
+  },
+  "plans": [
+    {
+      "id": "cbk-ma-standard",
+      "name": "Cedarbrook Medicare Advantage Standard (synthetic)",
+      "regime": "CMS-0057-F"
+    },
+    {
+      "id": "cbk-ma-plus",
+      "name": "Cedarbrook Medicare Advantage Plus (synthetic)",
+      "regime": "CMS-0057-F"
+    }
+  ]
+}

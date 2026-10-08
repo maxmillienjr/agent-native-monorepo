@@ -1,0 +1,32 @@
+{
+  "id": "cbk-dme-e0470",
+  "hcpcs": "E0470",
+  "service": "Respiratory assist device, bi-level pressure capability, without backup rate feature, used with noninvasive interface, e.g., nasal or facial mask (intermittent assist device with continuous positive airway pressure device)",
+  "title": "Bi-level respiratory assist device without backup rate, initial request",
+  "version": "2026.1",
+  "effective": "2026-01-01",
+  "approvalPeriodDays": 90,
+  "disclaimer": "Synthetic. Invented for the fictional Cedarbrook Synthetic Health Plan. These criteria and their thresholds are not any payer's or CMS's coverage criteria, are not paraphrased from any, and are not clinical guidance.",
+  "criteria": [
+    {
+      "id": "e0470-osa-diagnosis",
+      "title": "Obstructive sleep apnea is diagnosed",
+      "requirement": "The member has a diagnosis of obstructive sleep apnea, recorded as a condition or stated by the prescriber."
+    },
+    {
+      "id": "e0470-cpap-failure",
+      "title": "Continuous pressure was tried and failed",
+      "requirement": "The record documents a trial of at least 21 days of continuous positive airway pressure, and the prescriber states that it was not tolerated or did not control the apnea."
+    },
+    {
+      "id": "e0470-ahi-threshold",
+      "title": "Apnea-hypopnea index of 18 or more",
+      "requirement": "A sleep study dated within the 12 months before the request reports an apnea-hypopnea index (AHI) of at least 18 events per hour."
+    },
+    {
+      "id": "e0470-bilevel-titration",
+      "title": "Bi-level settings were shown to work",
+      "requirement": "A titration study or the prescriber's note documents that bi-level pressure at the ordered settings controlled the apnea."
+    }
+  ]
+}
