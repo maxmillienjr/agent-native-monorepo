@@ -23,6 +23,18 @@ export interface ActNodeDeps {
   ) => Promise<{ selection: ToolSelection | null; tokenCounts: CallUsage }>;
 }
 
+/**
+ * What `act` does with an irreversible selection: hand it to `approve`, which
+ * pauses on `interrupt()`, or refuse it. `buildAgentGraph` decides from
+ * whether it compiled with a checkpointer, because `interrupt()` without one
+ * throws `No checkpointer set` from inside the node — so the gate fails closed
+ * on the axis where it cannot work, and says why.
+ */
+export type Approvals = 'pause' | 'refuse';
+
+export const NO_CHECKPOINTER_REFUSAL =
+  'irreversible tool requires an approval, and this graph has no checkpointer to pause on';
+
 /** `${runId}:${stepCount}`: the same on a retry of one step, different on the next. */
 export function stepKey(runId: string, stepCount: number): string {
   return `${runId}:${stepCount}`;
@@ -34,11 +46,15 @@ export function stepKey(runId: string, stepCount: number): string {
  * In order — an unknown tool aborts; an input its schema refuses aborts with
  * the Zod issues, and `execute` is not called; a `(tool, input)` pair that
  * already succeeded in this run is suppressed and ends the loop without an
- * error; an irreversible tool is refused; anything else executes. Every
- * failure aborts the loop, so a partial sequence of effects is never left for
- * the model to improvise around.
+ * error; an irreversible tool goes to `approve`, or is refused when the graph
+ * cannot pause; anything else executes. Every failure aborts the loop, so a
+ * partial sequence of effects is never left for the model to improvise around.
  */
-export async function actNode(state: AgentState, deps: ActNodeDeps): Promise<Partial<AgentState>> {
+export async function actNode(
+  state: AgentState,
+  deps: ActNodeDeps,
+  approvals: Approvals,
+): Promise<Partial<AgentState>> {
   return withNodeSpan('act', async (span) => {
     span.setAttribute('run_id', state.runId);
     span.setAttribute('session_id', state.sessionId);
@@ -104,15 +120,28 @@ export async function actNode(state: AgentState, deps: ActNodeDeps): Promise<Par
     }
 
     if (tool.tier === 'irreversible') {
-      return abort({
-        toolName: tool.name,
-        input: parsed.data,
-        output: null,
-        error: 'irreversible tool requires an approval, and this graph has no gate to ask for one',
-        tier: tool.tier,
-        idempotencyKey,
-        effect: 'none',
-      });
+      if (approvals === 'refuse') {
+        return abort({
+          toolName: tool.name,
+          input: parsed.data,
+          output: null,
+          error: NO_CHECKPOINTER_REFUSAL,
+          tier: tool.tier,
+          idempotencyKey,
+          effect: 'none',
+        });
+      }
+      span.setAttribute('tool.awaiting_approval', true);
+      return {
+        pendingApproval: {
+          toolName: tool.name,
+          input: parsed.data,
+          tier: 'irreversible',
+          idempotencyKey,
+        },
+        stepCount,
+        tokenCounts,
+      };
     }
 
     const output = await runTool(tool, parsed.data, { runId: state.runId, idempotencyKey });
