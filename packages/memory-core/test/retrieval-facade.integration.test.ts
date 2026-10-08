@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import neo4j, { type Driver } from 'neo4j-driver';
+import { ZodError } from 'zod';
 import pg from 'pg';
 import { CypherNeo4jWriter } from '../src/semantic/neo4j/neo4j.writer.js';
 import { CypherNeo4jReader } from '../src/semantic/neo4j/neo4j.reader.js';
@@ -180,6 +181,11 @@ describe.skipIf(SKIP)('VectorRetrievalFacade (integration)', () => {
       });
 
       expect(results.map((r) => r.contentHash)).toContain('sha256-facade-other-session');
+    });
+
+    it('refuses a query that names no session and does not opt out', async () => {
+      // Before P4-B's M2 this read every session, the other session's fact included.
+      await expect(facade.retrieve({ queryEmbedding })).rejects.toThrow(ZodError);
     });
   });
 
