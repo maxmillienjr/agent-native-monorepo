@@ -38,6 +38,15 @@
   it. An edited statement is neither re-applied nor rejected — it diverges silently between
   databases migrated before the edit and after it. A comment may be corrected in place, and
   `0001_semantic_facts.sql` says where it was (ADR 0006).
+- **A migration that touches `run_records` or `run_decisions` is additive only.**
+  `audit:replay` runs at the commit that wrote a record (ADR 0007), so an old build has to
+  read a table that a newer build migrated. Add a nullable or defaulted column; never
+  rename, retype or drop one, and never narrow what a column accepts. That is why `graph`,
+  `model_axis` and `outcome` carry no `CHECK`: widening one later would mean dropping it.
+  Zod validates them in both directions instead.
+- **Two pull requests that each add a migration collide on its number.** Drizzle reads the
+  order from `meta/_journal.json`, so the second to merge renumbers its file and its
+  journal entry, and moves its `when` past the first's.
 
 ## Commits
 
@@ -213,11 +222,27 @@ alone.
   talks to Postgres and Neo4j directly — and export `DATABASE_URL`, `NEO4J_URI`,
   `NEO4J_USER` and `NEO4J_PASSWORD` to match `docker-compose.yml`. With any of the first two
   absent, `test/integration-env.ts` skips every suite so a laptop with no Docker is not a
-  crash, and `yarn turbo test:integration` then reports 27 skipped tests and exits 0. That
-  is a pass by shape and a no-op by content. `REQUIRE_INTEGRATION_ENV=1` turns the skip into
+  crash, and `yarn turbo test:integration` then reports 51 skipped tests over two
+  workspaces and exits 0. That is a pass by shape and a no-op by content. `REQUIRE_INTEGRATION_ENV=1` turns the skip into
   a failure naming each missing variable; the integration job in `e2e.yml` sets it on every
   pull request, and it is the flag to reach for whenever a green integration run needs to
   mean something.
+- **`apps/agent-service` has an integration tier too, and it runs after `memory-core`'s.**
+  `test/audit-replay.integration.test.ts` boots the whole application on the stores and
+  exercises the run record and `audit:replay` (P3-B). Turbo orders it after
+  `@repo/memory-core#test:integration`, because both suites share one Postgres and
+  memory-core's truncates tables in `beforeAll`. It needs `dist/` built for the one test
+  that runs the compiled command, which the task's `dependsOn` already does.
+- **Every run on the configured memory axis leaves a run record, and `audit:replay` reads
+  it.** `yarn audit:replay <runId>` (or `node dist/audit/replay.js <runId>` in the image)
+  re-executes the run from its record and compares every checkpoint; `--read-only` prints
+  the reconstruction without running anything, and `--json` is for a program. It needs only
+  `DATABASE_URL`, reads through a read-only pool, and exits 0 on a match, 1 on a divergence
+  and 2 when the run cannot be replayed here. **It replays only at the recorded commit**, so
+  a record made from a working tree with uncommitted changes is replayed against the commit
+  and says the tree was dirty, and an image must be built with
+  `--build-arg GIT_SHA=$(git rev-parse HEAD)` for its records to name a commit at all.
+  ADR 0007 says why.
 - **A cassette is recorded against a commit, a prompt and a model, and replays nothing
   else.** `EVAL_CASSETTE_MODE=record` writes one cassette per trial to
   `packages/eval-harness/datasets/memory-recall/cassettes/<taskId>.trial-<n>.json`, holding
@@ -407,6 +432,41 @@ from a separate project doubles the pool and is the owner's decision.
   `|6.1.0`, because loading PAS brings US Core 7.0.0 and an unversioned canonical would
   resolve to whichever loaded last.
 
+## Before real data
+
+This repository holds synthetic data only (ADR 0003), and nothing in it can show that a
+deployment protects real member data. A deployment that serves real members must meet each
+precondition below first. **The deploying covered entity owns every one of them**, and
+`governance/controls.yaml` lists them as `procedural` (CTL-AUD-03), because no test here
+can evidence a deployment's configuration. The reading of the regulations is a
+portfolio's, not counsel's.
+
+- **The run record and the checkpoints hold whatever a caller sent.** `run_records`,
+  `run_decisions`, `checkpoints`, `checkpoint_blobs` and `checkpoint_writes` hold the
+  request, every prompt and answer, and the retrieved context: member data, in a real
+  deployment. P3-B added the first two; the checkpoints already held the same class of data
+  (ADR 0007).
+- **Encryption at rest.** Volume encryption for the database, or envelope encryption of
+  `request` and `decision` under a KMS key the service's role cannot export.
+- **Reads are logged.** Reading a run's prompts is itself activity under 45 CFR
+  § 164.312(b). Log `SELECT` on those five tables, for example with `pgaudit`, and keep the
+  log outside the database the service writes.
+- **Audit readers have their own role.** `audit:replay` needs only `SELECT` on the five
+  tables. Give the people who run it a read-only role, separate from the service's, which
+  writes them. The command already opens every session read-only; the role makes that the
+  database's guarantee and not the command's.
+- **A retention period that meets the record-keeping floor.** A Medicare Advantage
+  organization keeps records for ten years from the end of the contract period or the
+  completion of an audit (42 CFR § 422.504(d)), and a Medicaid managed care plan for no
+  less than ten (42 CFR § 438.3(u)). Nothing in this repository deletes a run record or a
+  checkpoint, by decision (P3-B). A prune command, when one is built, must write a
+  deletion event to P3-C's ledger, because deleting from an audit store is itself an
+  integrity event.
+- **Integrity is P3-C's, and is not here yet.** Every table above can be rewritten by
+  whoever holds the service's credentials, and a consistent edit to a record and its
+  checkpoints passes `audit:replay`. Until P3-C's ledger commits each record to a hash
+  chain, nothing detects one.
+
 ## Error Handling
 
 - Validate at system boundaries with Zod. Trust internal types.
@@ -414,6 +474,15 @@ from a separate project doubles the pool and is the owner's decision.
   a 4xx `HttpException` carries — `ZodValidationPipe` attaches `error: 'Validation Error'`
   and the Zod `issues`, and rebuilding the body from scratch throws away the only part a
   client can act on. 5xx payloads are never forwarded.
+- **A run record that cannot be written fails closed where the run returns a decision.**
+  P3-B's split, decided at review: the prior-authorization path returns a recommendation,
+  so a record that cannot be opened, appended to or closed there answers `503` with an
+  `OperationOutcome` and no `ClaimResponse`. The chat path completes, logs
+  `run.record.append_failed`, and closes the record `partial`. A record that cannot be
+  opened fails a run on either path, before any work. `RunRecordWriteError` is never
+  retried by `IO_RETRY`, because the retried node would pay for a second answer it could
+  not record either. A new path that returns a recommendation or a determination takes the
+  fail-closed policy.
 - **Inject Nest dependencies by explicit token: `@Inject(Foo) private readonly foo: Foo`.**
   `yarn dev` runs through tsx, and esbuild does not implement `emitDecoratorMetadata`, so
   Nest has no `design:paramtypes` to resolve an implicit constructor parameter and injects
