@@ -4,6 +4,7 @@ import {
   type PairedBootstrapResult,
 } from '../stats/paired-bootstrap.js';
 import { STRATA, type RetrievalDataset, type Stratum } from './dataset.js';
+import type { Stage2Status } from './explanation-answers.js';
 import { pathKey, type ExplanationPair, type GoldPath } from './explanation-labels.js';
 
 /**
@@ -422,6 +423,12 @@ export interface ExplanationReportInput {
   readonly constructionCondition: string;
   /** The condition the rule reads. */
   readonly decisiveCondition: string;
+  /**
+   * Stage 2's state, when stage 1 is `good` and an answer file exists.
+   * Absent, the report says stage 2 has not run, as it did before stage 2's
+   * code existed, so a run with no answer file reproduces stage 1's report.
+   */
+  readonly stage2?: Stage2Status;
 }
 
 export function buildExplanationReport(input: ExplanationReportInput): ExplanationReport {
@@ -464,12 +471,18 @@ export function buildExplanationReport(input: ExplanationReportInput): Explanati
             reason: 'the construction check failed, so no condition was scored',
           }
         : stage1.outcome === 'good'
-          ? {
-              ran: false,
-              generateContentCalls: 0,
-              reason:
-                'stage 1 is good; stage 2 is scheduled separately against the free-tier quota and has not run',
-            }
+          ? input.stage2 === undefined
+            ? {
+                ran: false,
+                generateContentCalls: 0,
+                reason:
+                  'stage 1 is good; stage 2 is scheduled separately against the free-tier quota and has not run',
+              }
+            : {
+                ran: input.stage2.ran,
+                generateContentCalls: input.stage2.generateContentCalls,
+                reason: input.stage2.reason,
+              }
           : {
               ran: false,
               generateContentCalls: 0,
@@ -479,7 +492,9 @@ export function buildExplanationReport(input: ExplanationReportInput): Explanati
       stage1 === null
         ? null
         : stage1.outcome === 'good'
-          ? null // decided by stage 2
+          ? (input.stage2?.outcome ?? null) === null
+            ? null // decided by stage 2
+            : explanationOutcome(stage1.outcome, input.stage2!.outcome)
           : explanationOutcome(stage1.outcome, null),
   };
 }

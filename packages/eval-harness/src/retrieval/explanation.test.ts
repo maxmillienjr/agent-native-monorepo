@@ -262,6 +262,37 @@ describe('buildExplanationReport', () => {
     expect(renderExplanationMarkdown(failed)).toContain('**Outcome: option C.**');
   });
 
+  it('takes stage 2 from its status, and the outcome only once stage 2 has one', () => {
+    const conditions = [reflectLike, perfect];
+    const partial = buildExplanationReport({
+      ...input,
+      conditions,
+      stage2: { ran: false, generateContentCalls: 12, reason: 'part-recorded', outcome: null },
+    });
+    expect(partial.stage2).toEqual({
+      ran: false,
+      generateContentCalls: 12,
+      reason: 'part-recorded',
+    });
+    expect(partial.outcome).toBeNull();
+
+    const met = buildExplanationReport({
+      ...input,
+      conditions,
+      stage2: { ran: true, generateContentCalls: 76, reason: 'recorded', outcome: 'met' },
+    });
+    expect(met.stage2.ran).toBe(true);
+    expect(met.outcome).toBe('keep the graph for explanation');
+
+    const notMet = buildExplanationReport({
+      ...input,
+      conditions,
+      stage2: { ran: true, generateContentCalls: 76, reason: 'recorded', outcome: 'not met' },
+    });
+    expect(notMet.outcome).toBe('option C');
+    expect(renderExplanationMarkdown(notMet)).toContain('**Outcome: option C.**');
+  });
+
   it('prints no condition when the construction check fails', () => {
     const broken = condition('explain·per-fact·oracle', 'construction check', () => []);
     const report = buildExplanationReport({ ...input, conditions: [reflectLike, broken] });

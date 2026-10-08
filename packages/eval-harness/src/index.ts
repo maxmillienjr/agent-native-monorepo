@@ -221,6 +221,28 @@ export {
   type Stage2Outcome,
 } from './retrieval/explanation.js';
 
+// P2-D's stage 2: the answer graders, the paired comparison and its report.
+export {
+  STAGE2_CALLS,
+  STAGE2_CONDITIONS,
+  STAGE2_QUERY_COUNT,
+  bridgeConcepts,
+  bridgeNamed,
+  buildStage2Report,
+  gradeStage2Answer,
+  renderStage2Json,
+  renderStage2Markdown,
+  stage2Status,
+  type GraderSummary,
+  type Stage2Answer,
+  type Stage2Condition,
+  type Stage2Grades,
+  type Stage2QueryInput,
+  type Stage2QueryResult,
+  type Stage2Report,
+  type Stage2Status,
+} from './retrieval/explanation-answers.js';
+
 // The ablation's arithmetic and its report.
 export {
   DECISION_MARGIN,
