@@ -121,9 +121,23 @@ export type Decision = z.infer<typeof DecisionSchema>;
 export type Cassette = z.infer<typeof CassetteSchema>;
 export type TokenCounts = NonNullable<Decision['tokenCounts']>;
 
+/**
+ * A recorded decision at a seam from a wider vocabulary than the cassette's.
+ *
+ * A cassette's decisions are `Decision`, at one of `SEAMS`. A production run
+ * record (P3-B) holds the same shape at one more seam, `memory.retrieve`, and
+ * validates it with its own extension of `DecisionSchema`, so that a cassette
+ * can never hold a retrieval and a record always can. Everything here that
+ * hashes, encodes or replays a decision is generic over the seam for that one
+ * reason; nothing in this package names a seam outside `SEAMS`.
+ */
+export type RecordedDecision<S extends string = Seam> = Omit<Decision, 'seam'> & {
+  readonly seam: S;
+};
+
 /** One decision as the caller describes it, before it has been resolved. */
-export interface DecisionCall {
-  readonly seam: Seam;
+export interface DecisionCall<S extends string = Seam> {
+  readonly seam: S;
   readonly label?: string;
   readonly request: unknown;
 }
@@ -138,9 +152,9 @@ export interface DecisionCall {
  * all — so "replay never falls through to a live call" is structural rather
  * than a promise the player makes.
  */
-export interface Deck {
+export interface Deck<S extends string = Seam> {
   readonly mode: 'record' | 'replay';
-  resolve<R>(call: DecisionCall, live: () => Promise<R>): Promise<R>;
+  resolve<R>(call: DecisionCall<S>, live: () => Promise<R>): Promise<R>;
 }
 
 /**

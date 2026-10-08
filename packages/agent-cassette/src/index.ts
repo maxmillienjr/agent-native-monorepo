@@ -24,6 +24,7 @@ export {
   type DecisionResponse,
   type Deck,
   type RecordedAxes,
+  type RecordedDecision,
   type ReplayConfig,
   type Seam,
   type TokenCounts,
@@ -38,11 +39,19 @@ export {
   redactDeep,
   redactString,
 } from './redact.js';
-export { CassetteRecorder, CassetteRecordRefusedError, type RecorderOptions } from './recorder.js';
+export {
+  CassetteRecorder,
+  CassetteRecordRefusedError,
+  buildDecision,
+  encodeError,
+  encodeResponse,
+  type RecorderOptions,
+} from './recorder.js';
 export {
   CassetteIncompatibleError,
   CassetteMissError,
   CassettePlayer,
+  DecisionQueue,
   ReplayedError,
   diffLines,
   type PlayerOptions,

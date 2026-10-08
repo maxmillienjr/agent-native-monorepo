@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import type { DecisionCall, Seam } from './types.js';
+import type { DecisionCall } from './types.js';
 
 /**
  * Canonical JSON: the same value serialises to the same bytes on every run and
@@ -63,8 +63,8 @@ function isOmitted(value: unknown): boolean {
  * tools called with an identical input cannot collide, and so that a request
  * shape shared by two seams cannot either.
  */
-export function requestHash(call: DecisionCall): string {
-  const subject: { seam: Seam; label?: string; request: unknown } = {
+export function requestHash(call: DecisionCall<string>): string {
+  const subject: { seam: string; label?: string; request: unknown } = {
     seam: call.seam,
     request: call.request,
   };
@@ -82,6 +82,6 @@ export function requestHash(call: DecisionCall): string {
  * occur in a seam name or a hex hash, so no label can be shaped to collide with
  * a different key.
  */
-export function decisionKey(seam: Seam, label: string | undefined, hash: string): string {
+export function decisionKey(seam: string, label: string | undefined, hash: string): string {
   return `${seam}\u0000${label ?? ''}\u0000${hash}`;
 }

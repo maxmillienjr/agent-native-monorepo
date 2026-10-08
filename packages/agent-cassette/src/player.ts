@@ -8,6 +8,7 @@ import {
   type Decision,
   type DecisionCall,
   type Deck,
+  type RecordedDecision,
   type ReplayConfig,
   type Seam,
 } from './types.js';
@@ -41,7 +42,7 @@ export class CassetteIncompatibleError extends Error {
  */
 export class CassetteMissError extends Error {
   constructor(
-    readonly seam: Seam,
+    readonly seam: string,
     readonly label: string | undefined,
     readonly missedRequestHash: string,
     readonly diff: string,
@@ -93,7 +94,7 @@ const HeaderPeekSchema = z
   })
   .partial();
 
-export interface PlayerOptions {
+export interface PlayerOptions<S extends string = Seam> {
   /**
    * Called synchronously with each decision as it is served, inside `resolve`
    * and before a recorded error is rethrown.
@@ -103,38 +104,46 @@ export interface PlayerOptions {
    * A hook rather than a dependency, so the package keeps `zod` as its only
    * runtime import.
    */
-  readonly onServe?: (decision: Decision) => void;
+  readonly onServe?: (decision: RecordedDecision<S>) => void;
 }
 
-export class CassettePlayer implements Deck {
+/**
+ * The replay semantics, over decisions that are already parsed: one queue per
+ * `(seam, label, requestHash)`, consumed in recorded order.
+ *
+ * That is what lets a retried error followed by a success replay as the error
+ * and then the success, and two identical requests in one run replay as two
+ * entries rather than one served twice. `CassettePlayer` is this over a
+ * cassette it has checked against the running configuration; P3-B's audit
+ * replay is this over a production run record, whose seams include
+ * `memory.retrieve`. The two must not disagree about what a miss is.
+ */
+export class DecisionQueue<S extends string = Seam> implements Deck<S> {
   readonly mode = 'replay';
 
-  private readonly cassette: Cassette;
-  private readonly queues = new Map<string, Decision[]>();
-  private readonly bySeam = new Map<string, Decision[]>();
-  private readonly consumed = new Set<Decision>();
+  private readonly queues = new Map<string, RecordedDecision<S>[]>();
+  private readonly bySeam = new Map<string, RecordedDecision<S>[]>();
+  private readonly consumed = new Set<RecordedDecision<S>>();
 
   constructor(
-    cassette: unknown,
-    config: ReplayConfig,
-    private readonly options: PlayerOptions = {},
+    private readonly decisions: readonly RecordedDecision<S>[],
+    private readonly options: PlayerOptions<S> = {},
   ) {
-    this.cassette = parseForReplay(cassette, config);
-
-    for (const decision of this.cassette.decisions) {
+    for (const decision of decisions) {
       const key = decisionKey(decision.seam, decision.label, decision.requestHash);
       pushInto(this.queues, key, decision);
       pushInto(this.bySeam, seamKey(decision.seam, decision.label), decision);
     }
   }
 
-  get header(): Cassette['header'] {
-    return this.cassette.header;
-  }
-
   /** How many recorded decisions are still unconsumed. The wiring reports it. */
   remaining(): number {
-    return this.cassette.decisions.length - this.consumed.size;
+    return this.decisions.length - this.consumed.size;
+  }
+
+  /** The unconsumed decisions, in recorded order: what a shorter run left behind. */
+  unconsumed(): RecordedDecision<S>[] {
+    return this.decisions.filter((decision) => !this.consumed.has(decision));
   }
 
   /**
@@ -142,7 +151,7 @@ export class CassettePlayer implements Deck {
    * wiring constructs no model client at all, so there is nothing behind it to
    * fall through to; ignoring it here is the second half of that guarantee.
    */
-  async resolve<R>(call: DecisionCall, _live: () => Promise<R>): Promise<R> {
+  async resolve<R>(call: DecisionCall<S>, _live: () => Promise<R>): Promise<R> {
     const hash = requestHash(call);
     const queue = this.queues.get(decisionKey(call.seam, call.label, hash));
     const decision = queue?.shift();
@@ -162,7 +171,7 @@ export class CassettePlayer implements Deck {
    * thing to diff against than nothing, and which of the two it is does not
    * change what the reader has to do about it.
    */
-  private missDiff(call: DecisionCall): string {
+  private missDiff(call: DecisionCall<S>): string {
     const recorded = this.bySeam.get(seamKey(call.seam, call.label)) ?? [];
     const nearest = recorded.find((entry) => !this.consumed.has(entry)) ?? recorded.at(-1);
 
@@ -171,6 +180,32 @@ export class CassettePlayer implements Deck {
     }
 
     return diffLines(pretty(nearest.request), pretty(call.request));
+  }
+}
+
+/** A cassette, checked against the running configuration, replayed through a `DecisionQueue`. */
+export class CassettePlayer implements Deck {
+  readonly mode = 'replay';
+
+  private readonly cassette: Cassette;
+  private readonly queue: DecisionQueue;
+
+  constructor(cassette: unknown, config: ReplayConfig, options: PlayerOptions = {}) {
+    this.cassette = parseForReplay(cassette, config);
+    this.queue = new DecisionQueue(this.cassette.decisions, options);
+  }
+
+  get header(): Cassette['header'] {
+    return this.cassette.header;
+  }
+
+  /** How many recorded decisions are still unconsumed. The wiring reports it. */
+  remaining(): number {
+    return this.queue.remaining();
+  }
+
+  resolve<R>(call: DecisionCall, live: () => Promise<R>): Promise<R> {
+    return this.queue.resolve(call, live);
   }
 }
 
@@ -235,7 +270,7 @@ function configMismatches(header: Cassette['header'], config: ReplayConfig): str
  * package deliberately knows nothing about what a plan or an extraction looks
  * like — so this is the one place the seam's own type is taken on trust.
  */
-function replayResponse<R>(decision: Decision): R {
+function replayResponse<R>(decision: Pick<Decision, 'response'>): R {
   const response = decision.response;
 
   if (response.kind === 'error') {
@@ -247,11 +282,11 @@ function replayResponse<R>(decision: Decision): R {
   return response.value as R;
 }
 
-function seamKey(seam: Seam, label: string | undefined): string {
+function seamKey(seam: string, label: string | undefined): string {
   return `${seam} ${label ?? ''}`;
 }
 
-function pushInto(map: Map<string, Decision[]>, key: string, decision: Decision): void {
+function pushInto<T>(map: Map<string, T[]>, key: string, decision: T): void {
   const existing = map.get(key);
   if (existing === undefined) map.set(key, [decision]);
   else existing.push(decision);

@@ -4,10 +4,17 @@ import {
   CassetteIncompatibleError,
   CassetteMissError,
   CassettePlayer,
+  DecisionQueue,
   ReplayedError,
 } from './player.js';
 import { encodeFloat32Base64 } from './vector.js';
-import type { Decision, DecisionCall, DecisionResponse, ReplayConfig } from './types.js';
+import type {
+  Decision,
+  DecisionCall,
+  DecisionResponse,
+  RecordedDecision,
+  ReplayConfig,
+} from './types.js';
 
 const CONFIG: ReplayConfig = {
   chatModel: 'gemini-2.5-flash',
@@ -255,5 +262,51 @@ describe('onServe', () => {
 
     // The wiring reads the recorded usage off the second.
     expect(served).toEqual([failed, planned]);
+  });
+});
+
+describe('DecisionQueue', () => {
+  // A run record's seams are a superset of the cassette's (P3-B). The queue is
+  // the one place both are replayed, so it must serve a seam it has never
+  // heard of by the same rules.
+  const RETRIEVE: DecisionCall<'memory.retrieve'> = {
+    seam: 'memory.retrieve',
+    request: { queryEmbedding: 'AAAA', topK: 10 },
+  };
+
+  function recorded<S extends string>(
+    call: DecisionCall<S>,
+    response: DecisionResponse,
+  ): RecordedDecision<S> {
+    return {
+      seam: call.seam,
+      requestHash: requestHash(call),
+      request: call.request,
+      response,
+      latencyMs: 1,
+    };
+  }
+
+  it('serves a seam outside SEAMS by the same queue-per-key rules', async () => {
+    const queue = new DecisionQueue<'memory.retrieve'>([
+      recorded(RETRIEVE, { kind: 'value', value: ['first'] }),
+      recorded(RETRIEVE, { kind: 'value', value: ['second'] }),
+    ]);
+
+    await expect(queue.resolve(RETRIEVE, neverLive())).resolves.toEqual(['first']);
+    await expect(queue.resolve(RETRIEVE, neverLive())).resolves.toEqual(['second']);
+    await expect(queue.resolve(RETRIEVE, neverLive())).rejects.toBeInstanceOf(CassetteMissError);
+  });
+
+  it('lists what a shorter run left behind, in recorded order', async () => {
+    const queue = new DecisionQueue<string>([
+      recorded(RETRIEVE, { kind: 'value', value: [] }),
+      recorded(PLAN, { kind: 'value', value: 'a plan' }),
+    ]);
+
+    await queue.resolve(RETRIEVE, neverLive());
+
+    expect(queue.remaining()).toBe(1);
+    expect(queue.unconsumed().map((entry) => entry.seam)).toEqual(['plan.callLlm']);
   });
 });

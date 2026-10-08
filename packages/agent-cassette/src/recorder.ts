@@ -12,7 +12,7 @@ import {
   type DecisionResponse,
   type Deck,
   type RecordedAxes,
-  type Seam,
+  type RecordedDecision,
   type TokenCounts,
 } from './types.js';
 
@@ -126,26 +126,41 @@ export class CassetteRecorder implements Deck {
     latencyMs: number,
     counted?: { call: DecisionCall; result: unknown },
   ): void {
-    const decision: Decision = {
-      seam: call.seam,
-      requestHash: requestHash(call),
-      // The request is kept for the miss diff and never for lookup, so
-      // redacting it cannot move a hash.
-      request: redactDeep(call.request),
-      response,
-      latencyMs: Math.max(0, latencyMs),
-    };
-
-    if (call.label !== undefined) decision.label = call.label;
-
     const tokenCounts =
       counted === undefined
         ? undefined
         : this.options.tokenCountsFor?.(counted.call, counted.result);
-    if (tokenCounts !== undefined) decision.tokenCounts = tokenCounts;
 
-    this.decisions.push(decision);
+    this.decisions.push(buildDecision(call, response, latencyMs, tokenCounts));
   }
+}
+
+/**
+ * One resolved call as a decision: hashed, redacted and timed.
+ *
+ * Exported so that a deck which is not this recorder — P3-B's production run
+ * record, which appends each decision to Postgres as it resolves rather than
+ * buffering a file — writes exactly the decision this one would. Two spellings
+ * of the hash or the redaction would let a record and a cassette of the same
+ * call disagree.
+ */
+export function buildDecision<S extends string>(
+  call: DecisionCall<S>,
+  response: DecisionResponse,
+  latencyMs: number,
+  tokenCounts?: TokenCounts,
+): RecordedDecision<S> {
+  return {
+    seam: call.seam,
+    ...(call.label === undefined ? {} : { label: call.label }),
+    requestHash: requestHash(call),
+    // The request is kept for the miss diff and never for lookup, so
+    // redacting it cannot move a hash.
+    request: redactDeep(call.request),
+    response,
+    ...(tokenCounts === undefined ? {} : { tokenCounts }),
+    latencyMs: Math.max(0, latencyMs),
+  };
 }
 
 function parseHeader(header: unknown): CassetteHeader {
@@ -175,7 +190,8 @@ function describeAxes(header: unknown): string {
   return `model=${axes?.model ?? '<missing>'} memory=${axes?.memory ?? '<missing>'}`;
 }
 
-function encodeResponse(seam: Seam, result: unknown): DecisionResponse {
+/** A value a seam returned, as it is written: a vector as base64 float32, anything else redacted. */
+export function encodeResponse(seam: string, result: unknown): DecisionResponse {
   if (seam === VECTOR_SEAM && isNumberVector(result)) {
     return { kind: 'vector', float32Base64: encodeFloat32Base64(result) };
   }
@@ -187,7 +203,7 @@ function encodeResponse(seam: Seam, result: unknown): DecisionResponse {
  * error can carry the request URL it failed on, and a URL can carry a key;
  * nothing else on the object is worth the risk of finding that out later.
  */
-function encodeError(error: unknown): DecisionResponse {
+export function encodeError(error: unknown): DecisionResponse {
   if (error instanceof Error) {
     const status = (error as { status?: unknown }).status;
     return {
