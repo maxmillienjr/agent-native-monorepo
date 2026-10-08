@@ -89,3 +89,10 @@ under this PRD in the same change. Never add `controls:` to a `shipped` PRD.
 questions that would change the scope. `accepted` → `in-progress` happens when an issue is
 opened. Never edit a `shipped` PRD to describe what was actually built — write the
 divergence into the PRD that follows it, or supersede the record.
+
+**An accepted PRD whose premise a later decision changes is amended, not rewritten.** Put a
+dated note under the title (`Amended at ADR NNNN's acceptance, YYYY-MM-DD`) that lists what
+moved, to which PRD, and what stays. Then mark each changed sentence in place with
+`_Amended YYYY-MM-DD:_` and keep the finding it replaces where it is the record of what was
+found. A mitigation that moves to another PRD keeps its design text as the specification
+the new owner inherits. P4-B's amendment at ADR 0009 is the worked example.
