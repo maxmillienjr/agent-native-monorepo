@@ -2,12 +2,12 @@
 id: P4-B
 title: Memory-poisoning red team mapped to OWASP Agentic Top 10
 tier: 4
-status: accepted
+status: in-progress
 size: M
 depends_on: [P1-A, P1-B, P2-B]
 blocks: []
 controls: [CTL-MEM-02]
-issue: null
+issue: 96
 superseded_by: null
 ---
 
