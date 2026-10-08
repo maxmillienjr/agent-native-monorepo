@@ -2,7 +2,8 @@ import { z } from 'zod';
 import { EMBEDDING_DIMENSIONS, EMBEDDING_MODEL, l2Normalize } from '@repo/memory-core';
 import { withInferenceSpan } from '@repo/telemetry';
 
-const ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models';
+/** The Gemini API's models collection, spelled once for every direct call (P1-E's canary too). */
+export const GEMINI_MODELS_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models';
 
 /**
  * Carries the HTTP status so the graph's `retryOn` can tell a 4xx from a 5xx,
@@ -28,7 +29,8 @@ const ErrorBodySchema = z.object({
   error: z.object({ details: z.array(z.unknown()).optional() }).passthrough(),
 });
 
-function errorDetailsOf(body: string): unknown[] | undefined {
+/** The `google.rpc` details of an error body, or `undefined` when it has none or is not JSON. */
+export function errorDetailsOf(body: string): unknown[] | undefined {
   try {
     const parsed = ErrorBodySchema.safeParse(JSON.parse(body));
     return parsed.success ? parsed.data.error.details : undefined;
@@ -64,7 +66,7 @@ export function createGeminiEmbedder(apiKey: string): (text: string) => Promise<
   // usage block, and a count that was never reported is not written as zero.
   return (text: string): Promise<number[]> =>
     withInferenceSpan(request, async () => {
-      const response = await fetch(`${ENDPOINT}/${EMBEDDING_MODEL}:embedContent`, {
+      const response = await fetch(`${GEMINI_MODELS_ENDPOINT}/${EMBEDDING_MODEL}:embedContent`, {
         method: 'POST',
         headers: { 'content-type': 'application/json', 'x-goog-api-key': apiKey },
         body: JSON.stringify({
