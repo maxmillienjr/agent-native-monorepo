@@ -20,6 +20,10 @@ export const RunResponseSchema = z
     sessionId: UuidSchema,
     messages: z.array(MessageSchema),
     outcome: OutcomeSchema,
+    /**
+     * Every model call the run made, not the `plan` call alone, with
+     * `completion` counting thinking tokens (P1-F; see `TokenCountsSchema`).
+     */
     tokenCounts: TokenCountsSchema,
     retrievedContext: z.array(RetrievedContextItemSchema),
   })

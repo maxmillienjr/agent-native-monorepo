@@ -16,6 +16,21 @@ export const RetrievedContextItemSchema = z.object({
 });
 export type RetrievedContextItem = z.infer<typeof RetrievedContextItemSchema>;
 
+/**
+ * A run's token usage, summed over every `generateContent` call a successful
+ * node made: `plan`, each `act` step's tool selection, and `distill` (P1-F).
+ *
+ * `completion` is billed output — the visible answer plus the thinking tokens a
+ * thinking model is billed for — derived from the reply's total the same way
+ * the run's inference spans derive `gen_ai.usage.output_tokens`. Embedding
+ * calls are not counted: the embedding API reports no usage.
+ *
+ * Until P1-F this was the `plan` call alone, with `completion` the visible
+ * answer only. The shape did not change; the meaning did.
+ *
+ * A node that throws after its model call and is retried paid for both calls;
+ * the spans record both and this total records the attempt that succeeded.
+ */
 export const TokenCountsSchema = z.object({
   prompt: z.number().int().nonnegative(),
   completion: z.number().int().nonnegative(),
