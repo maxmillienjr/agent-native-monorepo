@@ -486,9 +486,13 @@ controls:
         file: packages/decision-ledger/src/appeal.test.ts
         name: refuses a reconsideration by the denier under a second key, on append and in the verifier
         tier: unit
+      - kind: test
+        file: apps/agent-service/test/appeal-auth.e2e-spec.ts
+        name: answers 403 to a valid reconsideration from a's key sent with b's token, and 200 with a's
+        tier: service
       - { kind: ci, workflow: ci.yml, job: ci, run: yarn turbo test:service }
       - { kind: ci, workflow: e2e.yml, job: e2e, run: yarn turbo test:integration }
-    note: Delivered by P3-F, after 42 CFR § 422.590(h) and § 422.592(a), for Medicare Advantage only. Non-involvement is enforced against the reviewer who signed the initial determination, by reviewer id so a second key of theirs is refused too, and not against everyone involved in it; that two reviewer ids are two people is the registry's claim (Before real data). It is held by the branded constructor, the route, a foreign key and CHECK in Postgres, and, with a ledger, by the verifier from the chain alone. Reconsideration needs a physician credential the policy lists. The forward to the independent entity is a recorded event with a case-file digest, not a delivery to an outside system. Authenticating the caller of /review/appeals/* is P5-A's.
+    note: Delivered by P3-F, after 42 CFR § 422.590(h) and § 422.592(a), for Medicare Advantage only. Non-involvement is enforced against the reviewer who signed the initial determination, by reviewer id so a second key of theirs is refused too, and not against everyone involved in it; that two reviewer ids are two people is the registry's claim (Before real data). It is held by the branded constructor, the route, a foreign key and CHECK in Postgres, and, with a ledger, by the verifier from the chain alone. Reconsideration needs a physician credential the policy lists. The forward to the independent entity is a recorded event with a case-file digest, not a delivery to an outside system. With SERVICE_CREDENTIALS set, a key registered to a principal can reconsider or dismiss only for that caller (P5-A).
 
   - id: CTL-AUD-01
     title: Each decision is recorded in a hash-chained, tamper-evident ledger

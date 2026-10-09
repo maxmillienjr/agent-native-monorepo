@@ -625,7 +625,8 @@ portfolio's, not counsel's.
   denial, the filing and the reconsideration in one document. Each takes the run record's
   encryption at rest, read logging and ten-year retention floor; nothing here deletes an
   appeal. Who may read an appeal or its case file is the deployment's to restrict, as for a
-  case, until P5-A authenticates `/review/*`. Delivering the case file to the independent
+  case: a service credential names a principal, not a reviewer, and the appeal routes serve
+  any caller holding one (P5-A). Delivering the case file to the independent
   entity, and the agreement that governs that disclosure, are the deployment's too: a
   forward here is a record, not a delivery.
 
