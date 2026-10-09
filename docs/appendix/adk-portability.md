@@ -19,7 +19,7 @@ decision; this page holds the evidence.
 ## Versions
 
 Each was the latest release on 2026-10-08. The PRD was drafted on 2026-09-26 against the
-releases in the second column, and every ADK release since then was taken.
+releases in the "Drafted against" column, and every ADK release since then was taken.
 
 | What                   | Pinned here                                       | Drafted against | Released   |
 | ---------------------- | ------------------------------------------------- | --------------- | ---------- |
@@ -46,10 +46,10 @@ longer holds at 2.2.1. The other three reasons stand on their own.
 **Product names, as Google's pages give them on this date.** The managed runtime once called
 Vertex AI Agent Engine is now **Agent Runtime** (also "Agent Platform Runtime"), and its
 documentation sits under **Gemini Enterprise Agent Platform**, which Google announced on
-2026-04-22 as "the evolution of Vertex AI". That page lists ADK, Agent2Agent, LangChain,
-LangGraph, AG2 and LlamaIndex. The Agentspace of earlier role descriptions is sold as part of
-Gemini Enterprise, launched 2025-10-09; no primary Google page states that rename in a
-sentence, so this page does not quote one.
+2026-04-22 as "the evolution of Vertex AI". The runtime's overview page lists ADK,
+Agent2Agent, LangChain, LangGraph, AG2 and LlamaIndex. The Agentspace of earlier role
+descriptions is sold as part of Gemini Enterprise, launched 2025-10-09; no primary Google page
+states that rename in a sentence, so this page does not quote one.
 
 ## The concept map
 
