@@ -1,7 +1,9 @@
-import { Body, Controller, Get, HttpCode, Inject, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Inject, Param, Post, Query, Req } from '@nestjs/common';
+import type { Request } from 'express';
 import type { FhirBundle } from '@repo/prior-auth';
 import { z } from 'zod';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe.js';
+import { authenticatedPrincipal } from '../auth/require-credential.js';
 import {
   AppealService,
   type AppealQueueItem,
@@ -24,10 +26,10 @@ const QueueQuerySchema = z
  * case's response, so `$inquire` returns the approval.
  *
  * Filing is staff intake, because a request can arrive orally
- * (§ 422.584(c)(1)) and a member portal is not built. P5-A's authentication
- * is meant to cover `/review/*`, these routes included; until then the
- * signature on a reconsideration or a dismissal is what binds it to a
- * reviewer, and the reads are anonymous.
+ * (§ 422.584(c)(1)) and a member portal is not built. Every route here needs
+ * a bearer credential when `SERVICE_CREDENTIALS` is set (P5-A): the
+ * signature on a reconsideration or a dismissal binds it to a reviewer, and
+ * the credential binds it to a caller.
  */
 @Controller('review/appeals')
 export class AppealController {
@@ -60,17 +62,31 @@ export class AppealController {
     return this.appeals.caseFile(appealId);
   }
 
-  /** A physician's signed reconsideration: `200` with the response in force. */
+  /**
+   * A physician's signed reconsideration: `200` with the response in force.
+   * It is given the principal the bearer token named, so a key registered to
+   * a principal can be used by that caller only (403 otherwise), as P5-A
+   * binds a determination. In open mode there is none, and the check does
+   * not apply.
+   */
   @Post(':appealId/reconsideration')
   @HttpCode(200)
-  reconsider(@Param('appealId') appealId: string, @Body() body: unknown): Promise<FhirBundle> {
-    return this.appeals.reconsider(appealId, body, undefined);
+  reconsider(
+    @Param('appealId') appealId: string,
+    @Body() body: unknown,
+    @Req() req: Request,
+  ): Promise<FhirBundle> {
+    return this.appeals.reconsider(appealId, body, authenticatedPrincipal(req));
   }
 
-  /** A signed dismissal: `200` with the appeal. */
+  /** A signed dismissal: `200` with the appeal. The caller is bound as for a reconsideration. */
   @Post(':appealId/dismissal')
   @HttpCode(200)
-  dismiss(@Param('appealId') appealId: string, @Body() body: unknown): Promise<AppealView> {
-    return this.appeals.dismiss(appealId, body, undefined);
+  dismiss(
+    @Param('appealId') appealId: string,
+    @Body() body: unknown,
+    @Req() req: Request,
+  ): Promise<AppealView> {
+    return this.appeals.dismiss(appealId, body, authenticatedPrincipal(req));
   }
 }
