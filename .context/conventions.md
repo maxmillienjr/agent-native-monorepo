@@ -472,6 +472,13 @@ from a separate project doubles the pool and is the owner's decision.
   in three of those files, and one of them was the prompt that reviews pull requests.
   If it is aspirational, it belongs in `docs/prd/` or in the status matrix, not in the
   present tense.
+- **`docs/appendix/` holds dated evidence records.** An appendix answers a question a
+  reader asks about the repository from outside it, such as how it maps onto another
+  framework, and backs the ADR that decides it. Its header names the date, the repository
+  commit and every external version it cites, so it stays true as a record after it stops
+  being current. Its claims about this repository cite `path#name` as STATUS does. It is
+  refreshed by re-running what it records against new versions and replacing the record, not
+  by editing a row. It makes no capability claim about HEAD, so it has no STATUS row.
 - **`docs/STATUS.md` is that status matrix**, one row per documented capability with what
   is actually behind it and which PRD owns the rest. A change that moves a row — wiring an
   adapter, deleting a claim — updates the row in the same pull request.
