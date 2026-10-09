@@ -26,3 +26,4 @@ every branch has used: `git fetch origin && git log --all --format=%s -- 'docs/a
 | [0012](0012-the-graphs-explanation-role-stage-one.md)                               | The graph's explanation role, after stage 1                                       | proposed           |
 | [0013](0013-the-ledger-is-written-by-a-role-that-cannot-rewrite-it.md)              | The decision ledger is written by a role that cannot rewrite it                   | accepted           |
 | [0014](0014-service-authentication-bearer-at-the-service-open-when-unconfigured.md) | Service authentication: bearer credentials at the service, open when unconfigured | accepted           |
+| [0016](0016-langgraph-rather-than-adk-with-a2a-as-the-seam.md)                      | LangGraph rather than ADK, with A2A as the integration seam                       | accepted           |
