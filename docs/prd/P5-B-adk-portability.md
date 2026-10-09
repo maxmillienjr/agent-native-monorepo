@@ -2,7 +2,7 @@
 id: P5-B
 title: Agent Development Kit portability appendix
 tier: 5
-status: in-progress
+status: shipped
 size: S
 depends_on: [P5-A]
 blocks: []
@@ -187,28 +187,90 @@ Written as observable conditions, not intentions:
 
 ## Acceptance criteria
 
-- [ ] `docs/appendix/adk-portability.md` exists, and `README.md` and
+- [x] `docs/appendix/adk-portability.md` exists, and `README.md` and
       `.context/architecture.md` each link to it.
-- [ ] Its header states the date and pins every version it cites: ADK Python, Java, Go and
+- [x] Its header states the date and pins every version it cites: ADK Python, Java, Go and
       TypeScript releases, `@a2a-js/sdk`, and this repository's commit.
-- [ ] Every row of the concept map has a fit from {clean, partial, none, redundant} and is
+- [x] Every row of the concept map has a fit from {clean, partial, none, redundant} and is
       marked `run` or `read`. On this repository's side it cites a path and a symbol that
       exist at HEAD. On ADK's side it cites a path at the pinned tag.
-- [ ] The map has at least the fifteen rows in the Design table.
-- [ ] Every `run` row names the trial step that ran it. Steps T1 to T5 are each recorded
+- [x] The map has at least the fifteen rows in the Design table.
+- [x] Every `run` row names the trial step that ran it. Steps T1 to T5 are each recorded
       with date, commit, versions, command and result, or recorded as not run with the
       reason.
-- [ ] The trial output shows zero requests to `generativelanguage.googleapis.com`.
-- [ ] T5's record states whether an ADK TypeScript `RemoteA2AAgent` completed a task
+- [x] The trial output shows zero requests to `generativelanguage.googleapis.com`.
+- [x] T5's record states whether an ADK TypeScript `RemoteA2AAgent` completed a task
       against P5-A's server with authentication enforced, and which A2A version it spoke.
-- [ ] The LangGraph section quotes ADR 0001's two revisit conditions and states, for each,
+- [x] The LangGraph section quotes ADR 0001's two revisit conditions and states, for each,
       whether it holds at HEAD, with evidence.
-- [ ] Wherever the trial contradicted the Design table's expected fit, the appendix says so
+- [x] Wherever the trial contradicted the Design table's expected fit, the appendix says so
       in that row.
-- [ ] The ADR exists, is listed in `docs/adr/README.md`, and does not contradict ADR 0001.
-- [ ] `git grep -n '@google/adk' -- '*package.json' yarn.lock` returns nothing.
-- [ ] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
+- [x] The ADR exists, is listed in `docs/adr/README.md`, and does not contradict ADR 0001.
+- [x] `git grep -n '@google/adk' -- '*package.json' yarn.lock` returns nothing.
+- [x] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
       pass.
+
+## What the implementation found
+
+_Recorded 2026-10-08, on the branch for #117._ The appendix is
+`docs/appendix/adk-portability.md` and the decision is ADR 0016. The trial ran out of tree
+on the stub model axis, with a `fetch` guard that counted zero requests to
+`generativelanguage.googleapis.com` in every step. T3 and T5 used throwaway Postgres and
+Neo4j containers on host ports 42432 and 42687, removed after, and T5 ran the service from
+`dist` with `SERVICE_CREDENTIALS` set. The trial's output is in the appendix and in the pull
+request.
+
+**Every criterion is met, each with its evidence.** T1 to T5 all ran; none became a `read`
+row. T5 ran on ADK for TypeScript, so the Python fallback was not needed.
+
+**Where it diverged from the design, and why.**
+
+- **Pinned newer than drafted.** Every ADK line released after 2026-09-26: TypeScript
+  `adk-v2.2.1` (2026-10-06), Python `v2.11.0` and Java `v1.11.0` (2026-10-02), Go `v2.5.0`
+  (2026-09-30). The appendix gives both columns. The client's `@a2a-js/sdk` resolved to
+  0.3.14 under the same `^0.3.10`, so T5's dependency on the v0.3 path is unchanged.
+- **The second reason for "doc plus trial, not a committed spike" no longer holds.** ADK
+  2.2.0 raised `adm-zip` to `^0.6.1` (adk-js #923). `npm audit` of 2.2.1 reports two
+  `moderate` advisories and no `high`; the same audit of 2.1.0 reports eight `adm-zip`
+  advisories rated `high`. Reasons 1, 3 and 4 stand, and ADR 0016 says the spike is rejected
+  on them alone.
+- **Checkpoint and resume is `none`, not `partial`.** The design expected a different resume
+  mechanism with the same count. The count differed: `distill` ran again. ADK for
+  TypeScript 2.2.1's `Runner.runAsync` takes no invocation id, and `eventsForCurrentRun`
+  keeps a prior invocation's node outputs only when it paused for human input, so a failed
+  run's outputs, which were in Postgres, were dropped. `ResumabilityConfig`'s own comment
+  says a run that "failed midway" can resume. Python's `run_async` takes an `invocation_id`;
+  that was read, not run.
+- **Two rows the design did not have.** The clinician gate (`none`, and untouched by a port)
+  and the run record with audit replay (`partial`). The map has seventeen rows.
+- **The design's "here" column had moved.** Semantic memory is no longer RRF over two
+  stores, and `hopDepth` no longer exists (ADR 0009). What `searchMemory` lacks is a `topK`
+  and a session scope.
+- **Telemetry is partial for a reason the design did not name.** ADK puts model and tool
+  content on spans unless `ADK_CAPTURE_MESSAGE_CONTENT_IN_SPANS` is turned off; this
+  repository has no switch and an allowlist that fails the run.
+- **Deployment.** The design said the platform documents Python only. adk.dev now marks
+  Python and Go on its Agent Runtime page and all four languages on Cloud Run, and `adk-js`
+  ships an undocumented `adk deploy agent_engine`. The managed runtime is now called Agent
+  Runtime.
+- **The cassette seam has three losses the design did not list.** The Gemini client refuses
+  to construct without a key even when every call is short-circuited;
+  `afterModelCallback` is not given the request; and a miss arrives as an `UNKNOWN_ERROR`
+  event rather than the thrown class this repository's abort classification reads.
+- **T5 found a wiring trap.** `RemoteA2AAgentConfig.agentCard` is documented as the URL of
+  the card, and the 0.3 resolver appends `.well-known/agent-card.json` to it. The base URL
+  works. The doubled path answered 401, because the server denies every route it does not
+  exempt.
+- **No `docs/STATUS.md` row.** The design makes no capability claim about HEAD, so there is
+  nothing for a row to hold true. README and the architecture name ADK for TypeScript without
+  a version now, because 2.1.0 and 2.2.1 both speak v0.3.
+
+**What the scaffolding did not say.** `docs/appendix/` is new, and the Documentation
+conventions named `docs/prd/`, `docs/adr/` and `docs/STATUS.md` but not a third kind of
+document: one that holds evidence, is dated and pinned like a PRD's trial record, and makes
+no claim about HEAD that a later commit could falsify. Without that rule the appendix reads as
+either a capability claim, which the convention would hold to HEAD, or a PRD, which it is
+not. `.context/conventions.md` now says what an appendix is and how one is refreshed.
 
 ## Risks and open questions
 

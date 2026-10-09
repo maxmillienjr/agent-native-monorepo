@@ -5,7 +5,7 @@
 _Last updated 2026-10-08. If this section is more than a few weeks stale, trust the code
 over it and update it._
 
-**Seventeen PRDs are shipped and the system they describe is running.** The service answers
+**Eighteen PRDs are shipped and the system they describe is running.** The service answers
 `POST /runs` and `POST /runs/stream`; `memory-core` is constructed by the app rather than
 sitting beside it; the graph compiles with a checkpointer and a retry policy on every node
 that performs I/O; and `packages/eval-harness` measures the result. Verified against live
@@ -297,6 +297,21 @@ the work found that a malformed variable had stopped exiting: one pino worker pe
 deadlocked `process.exit`. CTL-ACC-01 is now three rows, two implemented and encryption in
 transit not applicable.
 
+**[P5-B](P5-B-adk-portability.md) has shipped**, tracked in
+[#117](https://github.com/maxmillienjr/agent-native-monorepo/issues/117). Why this is not
+built on Google's Agent Development Kit now has a written answer, checked by running it.
+`docs/appendix/adk-portability.md` maps seventeen concepts against ADK for TypeScript 2.2.1,
+with Python 2.11.0, Java 1.11.0 and Go 2.5.0 pinned, and ADR 0016 records the decision: stay
+on LangGraph, integrate over A2A. An out-of-tree trial on the stub axis, with no request to
+the Gemini API, ran the seven nodes as an ADK `Workflow` with the same sequence and final
+state, so the case is not that ADK cannot express the graph. It is that ADK for TypeScript
+did not resume a failed run (`distill` ran again where LangGraph skips it), has no evaluation
+module, and is not needed for interoperability: an ADK `RemoteA2AAgent` completed a task
+against the authenticated A2A server over v0.3 and was refused without its token. ADK 2.2.0
+also cleared the `adm-zip` advisories that were one of the PRD's reasons not to commit a
+spike; the other reasons stand. No STATUS row, because a dated record claims nothing about
+HEAD.
+
 **Where the detail lives.** Each PRD carries its own risks, its divergences from the design
 that was reviewed, and — where a shipped record turned out to be wrong — the correction that
 followed. P2-A is the one to read first: it shipped, was reopened the same day when two of
@@ -391,11 +406,11 @@ provider actually operates under. Uses synthetic data only.
 
 ## Tier 5 — Interoperability
 
-| ID                              | Title                                            | Size | Status      |
-| ------------------------------- | ------------------------------------------------ | ---- | ----------- |
-| [P5-A](P5-A-a2a-server.md)      | Agent2Agent v1.0 server with a signed Agent Card | L    | shipped     |
-| [P5-B](P5-B-adk-portability.md) | Agent Development Kit portability appendix       | S    | in-progress |
-| [P5-C](P5-C-langgraph-1x.md)    | Upgrade to LangGraph 1.x                         | S    | shipped     |
+| ID                              | Title                                            | Size | Status  |
+| ------------------------------- | ------------------------------------------------ | ---- | ------- |
+| [P5-A](P5-A-a2a-server.md)      | Agent2Agent v1.0 server with a signed Agent Card | L    | shipped |
+| [P5-B](P5-B-adk-portability.md) | Agent Development Kit portability appendix       | S    | shipped |
+| [P5-C](P5-C-langgraph-1x.md)    | Upgrade to LangGraph 1.x                         | S    | shipped |
 
 ## Sequencing
 
@@ -456,10 +471,10 @@ was previously drawn as a predecessor of P2-A; it is not one. `retryPolicy`,
 `@langchain/langgraph@0.4.10`, where P2-A shipped. P5-C has since moved the pins to
 `@langchain/langgraph@1.4.18` and `@langchain/langgraph-checkpoint-postgres@1.0.5`.
 
-P5-B waits on P5-A. The appendix recommends integrating with an ADK estate over A2A
-rather than porting, and the one trial step that checks that recommendation needs P5-A's
+P5-B waited on P5-A. The appendix recommends integrating with an ADK estate over A2A
+rather than porting, and the one trial step that checks that recommendation needed P5-A's
 server — its authentication and its v0.3 compatibility, which is what ADK for TypeScript
-2.1.0 speaks.
+speaks. Both have shipped.
 
 P3-C and P3-D wait on P3-A. The ledger records the attestation an adverse determination
 carries, and the prior-authorization surface emits its results through the determination
