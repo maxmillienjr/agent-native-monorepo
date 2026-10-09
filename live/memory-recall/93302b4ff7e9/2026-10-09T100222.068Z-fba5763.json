@@ -1,0 +1,86 @@
+{
+  "kind": "live-tally",
+  "suite": "memory-recall",
+  "cassetteDigest": "93302b4ff7e90b89dfd8e56349a4c603c01efa918c0e35a85615388fbf23d62a",
+  "gitSha": "fba57635a195906a13aa663ad253439b319cd19e",
+  "startedAt": "2026-10-09T10:02:22.068Z",
+  "tasks": {
+    "memory-recall-001": {
+      "trials": [
+        true
+      ],
+      "graders": {
+        "retrieved_context_min_length": [
+          true
+        ],
+        "outcome_must_be": [
+          true
+        ],
+        "token_counts_positive": [
+          true
+        ],
+        "episodic_row_written": [
+          true
+        ],
+        "entity_merged": [
+          true
+        ],
+        "trajectory_in_order_match": [
+          true
+        ],
+        "trajectory_any_order_match": [
+          true
+        ],
+        "trajectory_precision": [
+          true
+        ],
+        "trajectory_recall": [
+          true
+        ],
+        "tool_trajectory_precision": [
+          true
+        ],
+        "tool_trajectory_recall": [
+          true
+        ]
+      }
+    },
+    "tool-use-001": {
+      "trials": [
+        true
+      ],
+      "graders": {
+        "retrieved_context_min_length": [
+          true
+        ],
+        "outcome_must_be": [
+          true
+        ],
+        "token_counts_positive": [
+          true
+        ],
+        "episodic_row_written": [
+          true
+        ],
+        "entity_merged": [
+          true
+        ],
+        "trajectory_in_order_match": [
+          true
+        ],
+        "trajectory_precision": [
+          true
+        ],
+        "trajectory_recall": [
+          true
+        ],
+        "tool_trajectory_precision": [
+          true
+        ],
+        "tool_trajectory_recall": [
+          true
+        ]
+      }
+    }
+  }
+}
