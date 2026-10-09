@@ -2,7 +2,7 @@
 id: P3-F
 title: 'Appeals: reconsideration lifecycle for adverse determinations'
 tier: 3
-status: in-progress
+status: shipped
 size: M
 depends_on: [P3-A, P3-E]
 blocks: []
@@ -678,14 +678,14 @@ ones it is checked on.
 - [x] The rationale sentinel from a stub `assess` appears in `GET /review/appeals/:id` and in
       the case file, and in no FHIR response, the reversal's included.
 - [x] `GET /fhir/metadata` is unchanged.
-- [ ] P3-D's `fhir-validate.yml` validates the captured reversal response against base R4
+- [x] P3-D's `fhir-validate.yml` validates the captured reversal response against base R4
       with zero errors.
 - [x] Ledger configured (checkable once P3-C has shipped; until then open with owner P3-C):
       each action appends its entry; `ledger:verify` exits 0, and exits non-zero on a chain
       whose `reconsideration.attested` key resolves to the cited determination's reviewer.
       With the ledger's database stopped, a reconsideration returns `503` and the appeal
       stays `filed`. Memory live.
-- [ ] Auth enforced (checkable once P5-A has shipped; until then open with owner P5-A): a
+- [x] Auth enforced (checkable once P5-A has shipped; until then open with owner P5-A): a
       valid reconsideration from a registry entry naming principal `a`, sent with principal
       `b`'s token, returns `403`.
 
@@ -824,8 +824,17 @@ written down.
   worktree the missing link otherwise resolves to the outer checkout's older copy
   (`.context/conventions.md`, Dependencies).
 
-**Left open.** The auth criterion is P5-A's. The validator criterion is ticked when
-`fhir-validate.yml` passes on this PR.
+**The validator, on the pull request.** `fhir-validate.yml` run 37862110913 on #116 gated 64
+captured files against base R4 and US Core 6.1.0 with 0 errors. That included the reversal's
+response bundle, the `$inquire` that returned it and its returned bundle, each with 0 errors
+in `gate.json`.
+
+**P5-A landed while this was open, so its criterion is met here.** The appeal controller now
+passes the principal the bearer token named, as P5-A does for a determination.
+`appeal-auth.e2e-spec.ts` boots with two credentials and refuses a filing with no token
+(401). It refuses a reconsideration signed by a key registered to `a` and sent with `b`'s
+token (403, the appeal still filed), and accepts it with `a`'s (200). No criterion is left
+open.
 
 ## Risks and open questions
 

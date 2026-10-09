@@ -5,7 +5,7 @@
 _Last updated 2026-10-08. If this section is more than a few weeks stale, trust the code
 over it and update it._
 
-**Eighteen PRDs are shipped and the system they describe is running.** The service answers
+**Nineteen PRDs are shipped and the system they describe is running.** The service answers
 `POST /runs` and `POST /runs/stream`; `memory-core` is constructed by the app rather than
 sitting beside it; the graph compiles with a checkpointer and a retry policy on every node
 that performs I/O; and `packages/eval-harness` measures the result. Verified against live
@@ -13,7 +13,7 @@ stores from an empty database: one run leaves episodic rows, `:Concept` and `:Fa
 `semantic_facts` rows and checkpoints under the runId its own response returned.
 
 **`docs/STATUS.md` is the authority on any capability sentence, including the ones above.**
-Thirty-three rows, each with a status and evidence cited by name — twenty-eight `implemented`,
+Thirty-four rows, each with a status and evidence cited by name — twenty-nine `implemented`,
 one `planned`, three `stubbed`, one `removed`, none `broken`. The rule that keeps it true is in
 `.context/conventions.md`: a change that moves a row moves it there in the same pull
 request. `yarn lint:docs` fails CI when a PRD's status disagrees with its row below.
@@ -262,7 +262,7 @@ that it verifies against `REVIEWER_REGISTRY` and cannot produce, from a credenti
 lists, and only once per case. `POST /fhir/Claim/$inquire` returns each case's current
 response, and an overdue sweep flags cases and never decides them. STATUS row 28 says that on
 time means decided, not notified. P3-C has since added the ledger appends. P5-A has since
-authenticated `/review/*`. Appeals belong to P3-F.
+authenticated `/review/*`. P3-F has since added appeals.
 
 **[P3-C](P3-C-decision-ledger.md) has shipped**, tracked in
 [#108](https://github.com/maxmillienjr/agent-native-monorepo/issues/108). What the service
@@ -311,6 +311,22 @@ against the authenticated A2A server over v0.3 and was refused without its token
 also cleared the `adm-zip` advisories that were one of the PRD's reasons not to commit a
 spike; the other reasons stand. No STATUS row, because a dated record claims nothing about
 HEAD.
+
+**[P3-F](P3-F-appeals-reconsideration.md) has shipped**, tracked in
+[#112](https://github.com/maxmillienjr/agent-native-monorepo/issues/112). A denial can now be
+appealed, under Medicare Advantage's Part 422, Subpart M and nothing else. Filing an appeal
+records its filing deadline and a 30-day or 72-hour clock from receipt. The reviewer who made
+the denial cannot reconsider it, and that is enforced four times: by the branded
+`Reconsideration`'s one constructor, by the route, by a foreign key and CHECK on
+`prior_auth_appeals`, and by the ledger's verifier from the chain alone. The comparison is by
+reviewer id, so a second key of theirs is refused too. A reversal puts an approval in force
+that `$inquire` returns. An affirmation forwards the case to the independent entity in the
+same write, and an appeal past its deadline is forwarded as deemed affirmed by any write that
+finds it and by the sweep. ADR 0015 keeps that timer in the case layer, narrowing ADR 0010's
+trigger. A forward is a record, not a delivery. P3-C and P5-A both landed first, so P3-F added
+the four appeal kinds to the ledger and bound each signed action to the caller's token.
+Appeals of a decision not made in time stay out by decision. CTL-HUM-03 is `implemented`,
+and STATUS row 34 is new.
 
 **Where the detail lives.** Each PRD carries its own risks, its divergences from the design
 that was reviewed, and — where a shipped record turned out to be wrong — the correction that
@@ -394,7 +410,7 @@ provider actually operates under. Uses synthetic data only.
 | [P3-C](P3-C-decision-ledger.md)               | Hash-chained, tamper-evident decision ledger                  | L    | shipped     |
 | [P3-D](P3-D-payer-dataset-fhir-prior-auth.md) | Synthetic payer dataset and FHIR prior-authorization surface  | L    | in-progress |
 | [P3-E](P3-E-clinician-review-queue.md)        | Clinician review queue, `$inquire` and the decision clock     | M    | shipped     |
-| [P3-F](P3-F-appeals-reconsideration.md)       | Appeals: reconsideration lifecycle for adverse determinations | M    | in-progress |
+| [P3-F](P3-F-appeals-reconsideration.md)       | Appeals: reconsideration lifecycle for adverse determinations | M    | shipped     |
 
 ## Tier 4 — Governance and agent security as code
 
