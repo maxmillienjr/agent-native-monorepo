@@ -202,7 +202,11 @@ Each message is a task, and the task's `run` artifact carries the run id and `me
 the messages the run was given. Send a second message with the first one's `contextId` and
 it is given three: the conversation is rebuilt from episodic memory. **On the stub memory
 axis there is no memory to rebuild from, so every message is given one.** A request with no
-`A2A-Version` header is treated as v0.3, which is what ADK for TypeScript 2.1.0 speaks.
+`A2A-Version` header is treated as v0.3, which is what ADK for TypeScript speaks.
+[`docs/appendix/adk-portability.md`](docs/appendix/adk-portability.md) records an ADK for
+TypeScript `RemoteA2AAgent` completing a task here with a bearer token, maps the architecture
+onto ADK concept by concept, and says why the repository stays on LangGraph
+([ADR 0016](docs/adr/0016-langgraph-rather-than-adk-with-a2a-as-the-seam.md)).
 Conformance is the A2A TCK's MUST-level JSON-RPC tests at a pinned commit, run in CI with
 the exceptions listed in `scripts/tck-expected.txt`; there is no A2A certification.
 

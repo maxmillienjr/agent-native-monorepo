@@ -308,8 +308,11 @@ the service's own port.
 
 `apps/agent-service/src/a2a/` serves A2A v1.0 over JSON-RPC, on `@a2a-js/sdk`'s request
 handler mounted as Express middleware, not as Nest controllers. One endpoint,
-`/a2a/jsonrpc`, also takes the v0.3 method names, because ADK for TypeScript 2.1.0 speaks
-v0.3 (P5-B depends on that).
+`/a2a/jsonrpc`, also takes the v0.3 method names, because ADK for TypeScript speaks v0.3:
+2.1.0 and 2.2.1 both depend on `@a2a-js/sdk ^0.3.10`. How this agent maps onto ADK, and why
+an ADK estate calls it over A2A rather than porting it, is in
+[the ADK portability appendix](../docs/appendix/adk-portability.md), a dated record with
+its trial, and in ADR 0016.
 
 ```
 A2A message ─▶ RunExecutor ─▶ rebuildHistory (episodic, read-only)
