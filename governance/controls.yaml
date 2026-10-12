@@ -678,7 +678,7 @@ controls:
         name: gives two principals in one context two sessions
         tier: unit
       - { kind: ci, workflow: e2e.yml, job: browser-e2e }
-    note: Delivered by P5-A. Tasks live in the SDK's owner-scoped store keyed by the authenticated principal, so another principal's GetTask is -32001 and its ListTasks omits them. A context's session id is UUIDv5 over principal and context, so the same context id from two principals is two conversations; the compose job checks that against live memory. Not covered, and stated in ADR 0014 as a residual, is POST /runs, whose contract lets an authenticated caller name any session. In open mode every caller is one principal.
+    note: Delivered by P5-A. Tasks live in the SDK's owner-scoped store keyed by the authenticated principal, so another principal's GetTask is -32001 and its ListTasks omits them. A context's session id is UUIDv5 over principal and context, so the same context id from two principals is two conversations; the compose job checks that against live memory. Not covered, and stated in ADR 0014 as a residual, is POST /runs, whose contract lets an authenticated caller name any session. That includes another principal's A2A session, because the namespace is a constant in source and a caller who knows a principal's name and one of its context ids can compute the session id and send it to /runs. P5-D measured that on 2026-10-12 (a turn written into the other principal's next prompt) and owns closing it, as CTL-ACC-04. In open mode every caller is one principal.
 
   - id: CTL-ACC-03
     title: Traffic to the service is encrypted in transit
@@ -686,3 +686,12 @@ controls:
     maps:
       - { framework: hipaa-164.312, ref: (e)(1) }
     rationale: Nothing in this repository is deployed, and TLS terminates at the deploying organization's ingress, outside the code here. A2A §7.1 makes HTTPS a MUST in production, so a deployment that serves real callers must put one in front of the gateway. The repository holds synthetic data only (ADR 0003). Decided at P5-A's review, which split this out of CTL-ACC-01.
+
+  - id: CTL-ACC-04
+    title: A /runs caller reads and writes only its own principal's sessions
+    status: planned
+    owner: P5-D
+    maps:
+      - { framework: hipaa-164.312, ref: (a)(1) }
+      - { framework: owasp-asi-2026, ref: ASI03 }
+      - { framework: owasp-asi-2026, ref: ASI06 }

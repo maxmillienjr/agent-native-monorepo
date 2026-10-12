@@ -8,7 +8,7 @@ depends_on: [P5-A]
 blocks: []
 issue: null
 superseded_by: null
-controls: []
+controls: [CTL-ACC-04]
 ---
 
 # P5-D · Caller-scoped sessions on `POST /runs`
