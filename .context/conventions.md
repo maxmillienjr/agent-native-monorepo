@@ -413,7 +413,8 @@ replays the committed answer file and makes no request.
   that reads `episodes`, `semantic_facts` or `run_records` after `POST /runs` looks up
   `runsSessionId(principal, sessionId)`, with `anonymous` in open mode, or goes through the
   response's `runId` (ADR 0017). `RunsService` called in process, as the evaluation harness
-  does, derives nothing.
+  does, derives nothing. The stream's terminal frame carries the client's id too, and
+  `RunsService.stream` takes it as `clientSessionId` because its body is already scoped.
 - **A recorded run's checkpoint history is read with `recordedHistory`.** `getStateHistory`
   is a method of a compiled graph, not of the saver, so reading a run's checkpoints means
   compiling its graph. `audit/replay-run.ts#recordedHistory` does that with nothing that

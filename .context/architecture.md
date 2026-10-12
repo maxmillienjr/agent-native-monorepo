@@ -289,7 +289,11 @@ than pausing a thread with `interrupt()`.
 The LangGraph graph is hosted inside a NestJS 11 microservice (`apps/agent-service`):
 
 - **POST /runs** — Request/response mode. Waits for `egress`, returns `RunResponse`.
-- **POST /runs/stream** — Streaming mode. Emits SSE events per node completion.
+- **POST /runs/stream** — Streaming mode. Emits an SSE frame per node completion, `{ node }`,
+  then one terminal frame: `done`, whose `state` carries the `runId`, `sessionId`,
+  `outcome` and `tokenCounts` that `POST /runs` would have returned, or `error`, whose
+  `state` carries all of them but `tokenCounts`. Only the terminal frame has a `state`, and
+  it is what the console's Run Inspector shows.
 - **POST /fhir/Claim/$submit**, **POST /fhir/Claim/$inquire**, **GET /fhir/metadata** —
   the prior-authorization surface (P3-D, P3-E), shaped after Da Vinci PAS 2.2.1. `$submit`
   runs a second, four-node graph (`intake → lookup → assess → dispose`) inline, and enqueues
@@ -338,7 +342,9 @@ the service's own port.
   a conversation, and the surface derives where it is stored, before it calls the shared
   run loop: A2A from the `contextId` (`contextSessionId`), and `RunsController` from the
   `sessionId` (`runsSessionId`, in a namespace of its own). Open mode derives too, with
-  every caller `anonymous`. `/runs` answers with the client's id, so the storage key is
+  every caller `anonymous`. `/runs` answers with the client's id, and so does the stream's
+  terminal frame, which `RunsController` hands `RunsService.stream` as `clientSessionId`
+  because the body it passes is already scoped. The storage key is
   `run_records.session_id` for the response's `runId`. `RunsService` derives nothing,
   because the evaluation harness calls it in process on the session its task seeded.
 
