@@ -17,7 +17,16 @@
       "observedAt": "2026-10-08"
     }
   },
-  "chat": {},
+  "chat": {
+    "gemini-2.5-flash": {
+      "modelVersion": "gemini-2.5-flash",
+      "observedAt": "2026-10-12"
+    },
+    "gemini-flash-latest": {
+      "modelVersion": "gemini-3.8-flash",
+      "observedAt": "2026-10-12"
+    }
+  },
   "embedding": {
     "model": "gemini-embedding-001",
     "dimensions": 768,
