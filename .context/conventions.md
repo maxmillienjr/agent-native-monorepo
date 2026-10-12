@@ -330,6 +330,11 @@ replays the committed answer file and makes no request.
   cassette in an older format is refused before any store is reset, with the same two
   commands in the message: P1-F's format 2 changed what two seams return and not what they
   ask, so an old set would otherwise match and replay the wrong shape.
+  **`eval-replay` is not the only reader of the committed cassettes.** Two integration
+  tests in `e2e` replay `memory-recall-001` through a whole run, P3-B's audit replay and
+  P3-C's ledger, so a change to any model request turns `e2e` red with `eval-replay`, at
+  the same seam, until the re-record. A failure there in `test:integration` also stops the
+  `&&` before the review and appeal specs run, so read those separately.
   **The free tier also allows 5 `generateContent` calls a minute**, and a record or live
   run of both tasks makes about eight in half a minute, so it reaches that limit. The chat
   client is meant to wait it out: `stopOnDailyQuota` retries any 429 that does not name a
