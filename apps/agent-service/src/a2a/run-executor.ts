@@ -91,7 +91,8 @@ function messageText(message: Message): string {
  *
  * Events, in order: the task `SUBMITTED`; one `WORKING` status per node, as
  * that node's update arrives, with `metadata.node`; the `answer` and `run`
- * artifacts; `COMPLETED`, with `metadata.outcome`. A failure is `FAILED`,
+ * artifacts; `COMPLETED`, with `metadata.outcome`, or `FAILED` with it when the
+ * run paused for an approval (P4-C). A failure is `FAILED`,
  * with a message that names the node and never the error, which is logged
  * with the correlation and run ids instead: a 5xx payload is never forwarded
  * (`.context/conventions.md`, Error Handling). The executor never throws,
@@ -209,6 +210,18 @@ export class RunExecutor implements AgentExecutor {
             }),
           ),
         );
+        // A paused run has not finished, so it is not `COMPLETED` (P4-C). Nor
+        // is it `INPUT_REQUIRED`: that invites a follow-up message on the task,
+        // and nothing resumes a paused thread, over A2A or HTTP. Terminal and
+        // failed, with the outcome, keeps every task terminal.
+        if (response.outcome === 'awaiting-approval') {
+          status(
+            TaskState.TASK_STATE_FAILED,
+            { outcome: response.outcome },
+            'The run is paused for an approval, and this server takes none over A2A.',
+          );
+          return;
+        }
         // `partial` is still a completed run; the outcome says which.
         status(TaskState.TASK_STATE_COMPLETED, { outcome: response.outcome });
       } catch (error) {

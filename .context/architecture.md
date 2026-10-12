@@ -396,8 +396,10 @@ A2A message ─▶ RunExecutor ─▶ rebuildHistory (episodic, read-only)
   serialized in process. On the stub memory axis there is nothing to read, so every message
   is a conversation of one.
 - **Every task ends terminal.** `COMPLETED` (an outcome of `partial` still completes, and
-  says so in metadata) or `FAILED`, whose message names the node and never the error. A
-  message naming a finished task is `-32004`, and `CancelTask` on a running one is `-32002`.
+  says so in metadata) or `FAILED`, whose message names the node and never the error. A run
+  paused for an approval is `FAILED` too, with `outcome: 'awaiting-approval'`, because
+  nothing resumes it over A2A (P4-C). A message naming a finished task is `-32004`, and
+  `CancelTask` on a running one is `-32002`.
 - **Tasks live in memory.** `GetTask` after a restart answers not-found, though the run's
   checkpoints and record exist. Two replicas would lose tasks between them.
 - **The card is signed once, at boot,** by every key in `A2A_CARD_SIGNING_KEYS`, with ES256
