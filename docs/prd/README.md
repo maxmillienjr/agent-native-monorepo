@@ -327,6 +327,7 @@ trigger. A forward is a record, not a delivery. P3-C and P5-A both landed first,
 the four appeal kinds to the ledger and bound each signed action to the caller's token.
 Appeals of a decision not made in time stay out by decision. CTL-HUM-03 is `implemented`,
 and STATUS row 34 is new.
+
 **[P4-C](P4-C-reversible-tool-registry.md) is in progress**, tracked in
 [#102](https://github.com/maxmillienjr/agent-native-monorepo/issues/102), with one step
 left: the live recording. A tool now declares a description, a Zod input and a
@@ -343,10 +344,18 @@ Only a test fixture is irreversible, and no route resumes a run: the first PRD w
 irreversible tool owns that route, reusing P3-E's reviewer registry, signed approval and
 locked decide. CTL-AGY-01 is `implemented` under its new title. Re-probed on LangGraph
 1.4.19, `interrupt()` now validates the resume value against a Zod schema, while the three
-silent resume hazards P3-E found on 0.4.10 remain. The selection request changed, so replay
-misses on every recorded selection until the re-record, about 11 `generateContent` calls on
-three tasks. Tool output still reaches the next selection and not the answer, which STATUS
-row 36 records as unowned.
+silent resume hazards P3-E found on 0.4.10 remain. Tool output still reaches the next
+selection and not the answer, which STATUS row 36 records as unowned. **It records and
+lands before P4-B**, decided 2026-10-12, and was rebased onto `main` that day. The seam
+P3-B moved now records the selection, every tool call and every compensation into the run
+record as well as a cassette. A full `audit:replay` of a compensated run matches, and its
+`--read-only` view now attributes the undo. A2A ends a paused run's task `FAILED` rather
+than `COMPLETED`. P3-E's no-interrupt grep is narrowed to the prior-authorization graph,
+and P3-D's E0601 cassettes on #120 still replay 6/6. Replay misses on every recorded
+selection until the re-record: 11 `generateContent` calls in two batches, the two tool
+tasks then `memory-recall-001`, on the head #106 names. Until then `eval-replay` and two
+`e2e` integration tests are red, and nothing else. Once it merges, the nightly spends about
+11 calls instead of 8, so about 6–7 a day are left for recordings.
 
 **[P5-D](P5-D-caller-scoped-sessions.md) has shipped**, tracked in
 [#125](https://github.com/maxmillienjr/agent-native-monorepo/issues/125). On 2026-10-12 a
