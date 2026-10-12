@@ -285,24 +285,26 @@ replays the committed answer file and makes no request.
 - **A cassette is recorded against a commit, a prompt and a model, and replays nothing
   else.** `EVAL_CASSETTE_MODE=record` writes one cassette per trial to
   `packages/eval-harness/datasets/memory-recall/cassettes/<taskId>.trial-<n>.json`, holding
-  the decisions the run made at the five `ModelDeps` seams and the tool call — not HTTP
-  traffic. `EVAL_CASSETTE_MODE=replay` serves them back with no model client in the process
+  the decisions the run made at the five `ModelDeps` seams, the tool calls and their
+  compensations (`act.compensate`, P4-C) — not HTTP traffic. `EVAL_CASSETTE_MODE=replay` serves them back with no model client in the process
   at all, on a memory axis that stays live: the stores are still reset, re-seeded and read
   by the outcome graders, because a replayed store read would leave those graders nothing
   real to assert against. Recording is refused off the live model axis by the header
   schema's two literals — a recording of the canned stub set is schema-valid, replays
   cleanly and measures nothing.
   **Re-record when any of these moves:** a prompt string (`plan.node.ts`,
-  `extraction.ts`, the `selectTool` instruction in `runs.service.ts`), the request a seam
-  sends, the chat or embedding model id, the embedding width, the tool registry, a graph
+  `extraction.ts`, the `selectTool` instruction in `tools/selection.ts`), the request a seam
+  sends, the chat or embedding model id, the embedding width, the tool registry (any tool's
+  name, description, tier or input schema is in every selection request), a graph
   change that alters which decisions a run makes, or the canary reporting `changed` on a
   pinned id. The first four are mechanical — the request hash moves, every replay misses,
   and `CassetteMissError` prints the diff. The last is the one nothing else notices: the id
   is the same, so the cassettes replay cleanly with the old model's answers. The
   cost is real and it falls on prompt changes, which are common here; the alternative,
   keying on a normalized shape, serves the old answer to the new prompt and calls it a
-  pass. Re-recording needs a live key and about eight `generateContent` calls against a
-  20-request daily free tier, so it is a deliberate act rather than a step in a loop.
+  pass. Re-recording needs a live key and about eleven `generateContent` calls for the
+  three tasks against a 20-request daily free tier, so it is a deliberate act rather than a
+  step in a loop.
   ADR 0005 records the seam choice and what replay stops measuring. **After a re-record,
   regenerate the replay baseline** with `EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval`
   and commit both: the baseline is tied to the set by a digest, and a new set with the old
@@ -311,6 +313,16 @@ replays the committed answer file and makes no request.
   cassette in an older format is refused before any store is reset, with the same two
   commands in the message: P1-F's format 2 changed what two seams return and not what they
   ask, so an old set would otherwise match and replay the wrong shape.
+- **Three checks replay the committed memory-recall cassettes, not one.** `eval-replay`
+  runs the suite. In the `e2e` job's integration step, `audit-replay.integration.test.ts`
+  › "replays a run whose decisions came from the committed cassettes, with no request to
+  the model host" (P3-B) and `ledger.integration.test.ts` › "commits a run on model replay,
+  served from the committed cassettes, and catches an edit to it" (P3-C) each replay
+  `memory-recall-001`. So a change that moves a recorded request turns all three red until
+  the re-record, and the Vitest failure short-circuits the `&&` in `test:integration`, which
+  leaves `review.e2e-spec` and `appeal.e2e-spec` unrun in that job: run them directly with
+  the stores exported to show they pass. The prior-authorization cassettes hold one seam,
+  `assess.criteria`, so a change to the chat graph's seams does not move them.
   **The free tier also allows 5 `generateContent` calls a minute**, and a record or live
   run of both tasks makes about eight in half a minute, so it reaches that limit. The chat
   client is meant to wait it out: `stopOnDailyQuota` retries any 429 that does not name a
@@ -708,6 +720,17 @@ portfolio's, not counsel's.
   outer checkout's `node_modules` and resolve that checkout's copy of the package, which
   can be older, so the error names a missing export rather than a missing package. P3-F
   met this when it rebased onto P3-C's `@repo/decision-ledger`.
+- **`tsc --build` can leave a package's `dist/` stale, and Turbo then caches it.** Each
+  package's `tsconfig.tsbuildinfo` sits beside `tsconfig.json`, outside the `dist/**` Turbo
+  restores, and `tsc -b` decides a project is up to date from its own sources and that
+  file, not from the declarations of the packages it imports. When a dependency's types
+  change and the dependent's sources do not, Turbo reruns the dependent's build under a new
+  hash, `tsc -b` emits nothing, and the old `dist/` is cached under the new hash; `--force`
+  alone does not help. P4-C met it when `act.compensate` joined `@repo/agent-cassette`'s
+  `SEAMS` and `memory-core`'s `RECORD_SEAMS`, which spreads it, kept the old union: the
+  symptom is a type error naming a union that lacks the new member. Delete
+  `packages/*/tsconfig.tsbuildinfo` and run `yarn turbo build --force`. CI builds from a
+  clean checkout and never meets it.
 - Pin major versions. Use `^` for minor/patch ranges.
 - **Clear an advisory by version, and touch only what the dependent's range cannot reach.**
   When `dependency-audit` fails, run `yarn why <pkg>` first, then compare the via clause
