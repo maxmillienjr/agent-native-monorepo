@@ -135,6 +135,15 @@ runs **open**: it serves every caller without a credential and says so at boot, 
 [ADR 0014](docs/adr/0014-service-authentication-bearer-at-the-service-open-when-unconfigured.md)
 says why open is the unconfigured default and what a deployment must set.
 
+The `sessionId` in those curls names your conversation; it is not the key the service
+stores it under. Every `/runs` request runs in a session derived from the caller's principal
+and that id, in open mode too, where the principal is `anonymous`
+([ADR 0017](docs/adr/0017-every-surface-derives-its-session-from-the-caller.md)). The
+response gives the id back as you sent it, and you continue the conversation by sending it
+again. To find a run's rows in Postgres, start from the response's `runId`:
+`run_records.session_id` for that run is the session `episodes` and `semantic_facts` are
+keyed on.
+
 Memory is a second, independent axis. Set `DATABASE_URL` and `NEO4J_URI` — as
 `docker compose --profile full` does — and the service constructs the real adapters, runs
 its migrations, installs the Neo4j constraints and checkpoints every run. Set neither and
@@ -181,6 +190,10 @@ curl -X POST http://localhost:3001/runs \
   -H 'Content-Type: application/json' \
   -d '{"sessionId": "550e8400-e29b-41d4-a716-446655440000", "messages": [{"role": "user", "content": "What is LangGraph?"}]}'
 ```
+
+The session belongs to the token's principal, so the same `sessionId` sent with
+`console-demo-token` is a different conversation, and neither caller can read or write the
+other's.
 
 ### Calling it as another agent (A2A)
 

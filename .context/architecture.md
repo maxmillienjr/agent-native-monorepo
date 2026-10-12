@@ -163,7 +163,8 @@ The checkpoints are a run's trace, not its inputs: they hold no request body, no
 attempt, no commit and no retrieval query (ADR 0007). So every run on the configured memory
 axis, on both graphs, also writes a **run record** to Postgres beside them:
 
-- `run_records`: the body as received, the commit (`GIT_SHA` in the image, the working tree
+- `run_records`: the body as the run loop received it, with the session already derived
+  by the surface (ADR 0017), the commit (`GIT_SHA` in the image, the working tree
   otherwise), the chat and embedding models, which axis served the model half, when the
   request arrived, and the outcome.
 - `run_decisions`: one row per decision, appended as it resolves, at the cassette's seams
@@ -333,8 +334,13 @@ the service's own port.
   The console's nginx adds the console's token when the container starts, so it is in no
   bundle. Anyone who reaches the console's port uses it; the console has no user login.
 - **What a principal can see.** On the A2A surface a task belongs to the principal that
-  created it. `POST /runs` still lets an authenticated caller name any `sessionId`; ADR 0014
-  states that as a residual.
+  created it. A session belongs to a principal on both surfaces (ADR 0017). The client names
+  a conversation, and the surface derives where it is stored, before it calls the shared
+  run loop: A2A from the `contextId` (`contextSessionId`), and `RunsController` from the
+  `sessionId` (`runsSessionId`, in a namespace of its own). Open mode derives too, with
+  every caller `anonymous`. `/runs` answers with the client's id, so the storage key is
+  `run_records.session_id` for the response's `runId`. `RunsService` derives nothing,
+  because the evaluation harness calls it in process on the session its task seeded.
 
 ## Agent2Agent (A2A)
 
