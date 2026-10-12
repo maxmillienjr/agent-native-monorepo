@@ -2,10 +2,10 @@
 
 ## Where things stand
 
-_Last updated 2026-10-08. If this section is more than a few weeks stale, trust the code
+_Last updated 2026-10-12. If this section is more than a few weeks stale, trust the code
 over it and update it._
 
-**Nineteen PRDs are shipped and the system they describe is running.** The service answers
+**Twenty PRDs are shipped and the system they describe is running.** The service answers
 `POST /runs` and `POST /runs/stream`; `memory-core` is constructed by the app rather than
 sitting beside it; the graph compiles with a checkpointer and a retry policy on every node
 that performs I/O; and `packages/eval-harness` measures the result. Verified against live
@@ -328,6 +328,20 @@ the four appeal kinds to the ledger and bound each signed action to the caller's
 Appeals of a decision not made in time stay out by decision. CTL-HUM-03 is `implemented`,
 and STATUS row 34 is new.
 
+**[P5-D](P5-D-caller-scoped-sessions.md) has shipped**, tracked in
+[#125](https://github.com/maxmillienjr/agent-native-monorepo/issues/125). On 2026-10-12 a
+probe showed that one principal could compute another's A2A session id and send it to
+`POST /runs`. The request read the other principal's memory and wrote a turn into its next
+prompt. Now both `/runs` routes run in `runsSessionId(principal, sessionId)`, a UUIDv5 in a
+namespace of their own, in open mode too. The response keeps the client's id, so a client
+continues as before. `RunsService` derives nothing, so the evaluation harness, its
+cassettes and its baseline are unchanged, and the replay gate still reports `match`.
+Integration tests on live stores run the probe in reverse. ADR 0017 extends ADR 0014 to
+`/runs` and narrows ADR 0007's "the body as received" to the body the run loop received.
+A2A records had already held that since P5-A. CTL-ACC-04 is `implemented`, and STATUS
+row 33 no longer lists `/runs` as not built. Open mode still puts every caller in one
+principal, and the console still has no user login.
+
 **Where the detail lives.** Each PRD carries its own risks, its divergences from the design
 that was reviewed, and — where a shipped record turned out to be wrong — the correction that
 followed. P2-A is the one to read first: it shipped, was reopened the same day when two of
@@ -422,12 +436,12 @@ provider actually operates under. Uses synthetic data only.
 
 ## Tier 5 — Interoperability
 
-| ID                                     | Title                                            | Size | Status      |
-| -------------------------------------- | ------------------------------------------------ | ---- | ----------- |
-| [P5-A](P5-A-a2a-server.md)             | Agent2Agent v1.0 server with a signed Agent Card | L    | shipped     |
-| [P5-B](P5-B-adk-portability.md)        | Agent Development Kit portability appendix       | S    | shipped     |
-| [P5-C](P5-C-langgraph-1x.md)           | Upgrade to LangGraph 1.x                         | S    | shipped     |
-| [P5-D](P5-D-caller-scoped-sessions.md) | Caller-scoped sessions on `POST /runs`           | S    | in-progress |
+| ID                                     | Title                                            | Size | Status  |
+| -------------------------------------- | ------------------------------------------------ | ---- | ------- |
+| [P5-A](P5-A-a2a-server.md)             | Agent2Agent v1.0 server with a signed Agent Card | L    | shipped |
+| [P5-B](P5-B-adk-portability.md)        | Agent Development Kit portability appendix       | S    | shipped |
+| [P5-C](P5-C-langgraph-1x.md)           | Upgrade to LangGraph 1.x                         | S    | shipped |
+| [P5-D](P5-D-caller-scoped-sessions.md) | Caller-scoped sessions on `POST /runs`           | S    | shipped |
 
 ## Sequencing
 

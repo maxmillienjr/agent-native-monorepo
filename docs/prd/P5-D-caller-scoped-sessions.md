@@ -2,7 +2,7 @@
 id: P5-D
 title: Scope POST /runs sessions to the authenticated caller
 tier: 5
-status: in-progress
+status: shipped
 size: S
 depends_on: [P5-A]
 blocks: []
@@ -289,45 +289,121 @@ Every criterion is on model `stub`, with no `generateContent` call. Each one nam
 memory axis. The integration tier is `yarn turbo test:integration`, against Postgres and
 Neo4j, as `e2e.yml`'s `e2e` job runs it with `REQUIRE_INTEGRATION_ENV` set.
 
-- [ ] **Unit.** `runsSessionId` returns a UUID, is stable for one principal and id, differs
+- [x] **Unit.** `runsSessionId` returns a UUID, is stable for one principal and id, differs
       for two principals with one id, and differs from `contextSessionId` for the same
       principal and the same string. `contextSessionId`'s existing tests in
       `session-id.test.ts` pass unedited, including "matches the RFC 9562 example".
-- [ ] **Service tier, memory stub.** With `SERVICE_CREDENTIALS` set to two principals,
+      `src/auth/session-scope.test.ts`, six tests, among them "differs from the A2A session
+      for the same principal and the same string". `session-id.test.ts` is byte-identical
+      to `main`'s, because `session-id.ts` re-exports the moved `uuidV5`.
+- [x] **Service tier, memory stub.** With `SERVICE_CREDENTIALS` set to two principals,
       `POST /runs` from each with one `sessionId` returns `200`, and each response's
       `sessionId` equals the one sent. `runs.e2e-spec.ts` passes with no edit to the
-      file.
-- [ ] **Integration, memory live: the reverse of Problem's measurement.** Principal `a`
+      file. `test/runs-session.e2e-spec.ts`, "answers each principal 200 with the session id
+      it sent". The memory stub stores nothing, so the same file also reads the body
+      `RunsService` receives: "runs each principal's request in that principal's session",
+      "scopes POST /runs/stream the same way", and "derives the session for anonymous too,
+      and answers with the id sent". `runs.e2e-spec.ts` is byte-identical to `main`'s.
+- [x] **Integration, memory live: the reverse of Problem's measurement.** Principal `a`
       sends an A2A message in context `C`. Principal `b` sends `POST /runs` with
       `sessionId = contextSessionId('a', C)` and three messages. `b`'s `retrievedContext` is
       empty, and `a`'s second message in `C` reports `messageCount: 3`. No `episodes` row
       under `contextSessionId('a', C)` carries `b`'s run id.
-- [ ] **Integration, memory live: two principals, one id.** `a` and `b` each send
+      `test/runs-session.integration.test.ts`, "does not let b read or write a's A2A session
+      by naming its derived id". It also checks that `a`'s session holds turns `0..3` and
+      nothing else. With the scope removed from the controller, it fails on `b`'s
+      `retrievedContext`, which holds `a`'s fact. The two tests below fail the same way.
+- [x] **Integration, memory live: two principals, one id.** `a` and `b` each send
       `POST /runs` with the same `sessionId`. The `run_records` rows of the two runs have
       different `session_id` values, equal to `runsSessionId('a', id)` and
       `runsSessionId('b', id)`. `b`'s `retrievedContext` holds no fact whose `episodeId` is
-      `a`'s run.
-- [ ] **Integration, memory live: continuity within a principal.** `a` sends two
+      `a`'s run. Same file, "gives two principals with one sessionId two sessions". No
+      `episodes` row is stored under the raw id.
+- [x] **Integration, memory live: continuity within a principal.** `a` sends two
       `POST /runs` with one `sessionId`, the second carrying the first's messages plus a new
       user turn. The second run's `retrievedContext` includes the fact the first run
       wrote, and `episodes` for `runsSessionId('a', id)` holds turns `0..3` with no gap.
-- [ ] **Integration, memory live: audit replay.** `audit-replay.integration.test.ts`
+      Same file, "continues one principal’s conversation across two requests".
+- [x] **Integration, memory live: audit replay.** `audit-replay.integration.test.ts`
       passes. Its one changed assertion compares `run_records.request` with the posted body
       under the derived `sessionId`, and every other test in the file is unedited.
       `ledger.integration.test.ts` passes unedited, and `RUN_DIGEST_VERSION` is still `1`.
-- [ ] **Replay axis, memory live.** `EVAL_CASSETTE_MODE=replay yarn eval` reports the gate
+      The test is now titled "leaves one run_records row holding the body sent, under its
+      derived session, and every decision in order", and the file gained two imports.
+      `yarn turbo test:integration` passed locally with `REQUIRE_INTEGRATION_ENV=1` (41
+      Vitest and 61 Jest tests in `agent-service`), and in the `e2e` job of run 38285901199.
+- [x] **Replay axis, memory live.** `EVAL_CASSETTE_MODE=replay yarn eval` reports the gate
       verdict `match` against the committed `baselines/replay.json`. The pull request
-      changes no file under `packages/eval-harness/datasets/`.
-- [ ] **Compose tier, memory live.** `scripts/a2a-compose-check.mjs` still passes all its
+      changes no file under `packages/eval-harness/datasets/`. Locally with
+      `EVAL_GATE=replay` it was `match` over 21 cells with no differences, and `eval-replay`
+      passed in run 38285901266.
+- [x] **Compose tier, memory live.** `scripts/a2a-compose-check.mjs` still passes all its
       lines, and the Playwright test "a submitted run streams through to done on the
-      authenticated stack" passes in `e2e.yml`'s `browser-e2e`.
-- [ ] The ADR exists, is indexed in `docs/adr/README.md`, and states that it extends
+      authenticated stack" passes in `e2e.yml`'s `browser-e2e`. Run 38285901199: the
+      script printed four `ok` lines (nine checkpoint rows, then 1, 3 and 1 messages), and
+      Playwright passed 6 of 6.
+- [x] The ADR exists, is indexed in `docs/adr/README.md`, and states that it extends
       ADR 0014 and narrows ADR 0007 without superseding either. CTL-ACC-04 is
       `implemented` with the integration tests above as its anchors, and CTL-ACC-02's note
       no longer names `/runs` as uncovered. STATUS row 33's **Not built** no longer lists
-      `/runs`.
-- [ ] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
-      pass.
+      `/runs`. This is ADR 0017, "Every surface derives its session from the caller".
+      CTL-ACC-04 is also anchored on `runsSessionId`, the service test and the unit test.
+- [x] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
+      pass. So do `yarn turbo test:unit` and `yarn turbo test:service`.
+
+## What shipped, and where it diverged
+
+_Recorded 2026-10-12, on the branch for #125._ Model `stub` throughout, with zero
+`generateContent` calls. The unit and service tiers ran in process. The integration tier
+and the replay evaluation ran against throwaway Postgres and Neo4j containers on host
+ports 62432 and 62687, which were removed afterwards. The compose tier ran in CI.
+
+**Built as designed.** `runsSessionId` and a fresh `RUNS_SESSION_NAMESPACE` are in
+`src/auth/session-scope.ts`, with `uuidV5` moved beside them. `RunsController` scopes both
+routes with `principalOf(req) ?? OPEN_PRINCIPAL`, in open mode too. The response keeps the
+client's id, and `RunsService` is unchanged. ADR 0017 is written. STATUS row 33, the
+README, CTL-ACC-02's note and CTL-ACC-04 are updated.
+
+**Where it diverged, and why.**
+
+- **`session-id.ts` re-exports `uuidV5` as well as importing it.** The Design said it
+  imports it. `session-id.test.ts` imports `uuidV5` from `./session-id.js`, and the unit
+  criterion keeps that file unedited.
+- **The controller's body is typed `RunRequest`, not `unknown`.** The pipe already returned
+  the parsed body. The scope reads `sessionId` from it, so the type now says what the pipe
+  guarantees.
+- **The service tier checks more than the criterion asked.** The memory stub writes
+  nothing, so the 200s alone could not show which session a run used. The spec wraps
+  `RunsService.execute` and `stream` on the booted instance and reads the body each one
+  receives, for both principals, the stream route and open mode.
+- **Two more evidence anchors moved.** The audit-replay test's new title is cited by STATUS
+  row 27 and CTL-AUD-02, so both follow it. Row 27 also says that the record holds the body
+  after its surface derived the session, which is the ADR 0007 narrowing in that row's
+  words.
+
+**What the implementation found.**
+
+- **The stub extracts one sentence on every run, and `semantic_facts` keeps its first
+  writer's session.** A live-memory test that expects to retrieve its own fact therefore
+  passes or fails depending on which suite wrote that sentence first. In the integration
+  job, `audit-replay` and the ledger suite can write it before this file does. The tests
+  decorate `distill` through `RunsService.setModelDecorator`, so each one extracts unique
+  text. This is the Non-goals' per-principal fact identity seen from the test side. The
+  PRD's measurement did not hit it because it ran on fresh containers.
+  `.context/conventions.md`, Testing, now says so.
+- **The `audit` log line still names the client's id.** `AuditInterceptor` logs
+  `sessionId` from `req.body`, and that is the body as sent, so `run.complete` carries the
+  client's id beside the `runId`. The Design's reader table did not list it. Left as it is,
+  because it agrees with the response, and ADR 0017 states it among the costs.
+- **`boot.e2e-spec.ts`'s two-second bound failed once in CI, at 2156 ms.** The first `ci`
+  run on the pull request was on a runner busy with other branches' jobs. Locally the test
+  takes 830–900 ms, as P5-A recorded. A re-run of the job passed. This change does not
+  touch the boot path.
+
+**Residuals.** Every Non-goal stays unowned, as decided: console user login, TLS, OAuth,
+A2A tasks that outlive the process, isolation in open mode, who asked in the run record,
+per-principal fact identity, serializing `/runs` within one session, and server-minted ids.
+ADR 0017 lists the ones that bear on sessions.
 
 ## Risks and open questions
 
