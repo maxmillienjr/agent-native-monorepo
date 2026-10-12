@@ -446,9 +446,12 @@ Standing consumers, before any development spends a call:
 | `agent-eval.yml` `eval-live`, one trial each | about 8                   |
 | `agent-eval.yml` `eval-canary` (P1-E)        | 2–3                       |
 
-That leaves roughly 9–10 a day for recordings and live criteria. Both nightly jobs start
-at 03:00 UTC, which is the evening of the Pacific day (20:00 PDT, 19:00 PST), so a recording
-made earlier that day spends from the same pool the nightly will draw on afterwards. A PRD that needs live
+That leaves roughly 9–10 a day for recordings and live criteria. Both nightly jobs are
+scheduled for 03:00 UTC, but GitHub has started them between 08:50 and 10:15 UTC on every
+night from 2026-10-03 to 2026-10-12: after the quota resets at 07:00 UTC, not before it. So
+the nightly spends from the Pacific day that has just begun, and a recording made later that
+day spends what the nightly left. Start a recording after the day's nightly has finished; one
+started between 07:00 UTC and the nightly takes calls the nightly will need. A PRD that needs live
 calls states its count and how it splits across days; whoever schedules the run checks this
 table first and does not start a recording that the day's remainder cannot finish. A key
 from a separate project doubles the pool and is the owner's decision.
