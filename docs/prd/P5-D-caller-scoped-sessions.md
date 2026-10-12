@@ -2,11 +2,11 @@
 id: P5-D
 title: Scope POST /runs sessions to the authenticated caller
 tier: 5
-status: accepted
+status: in-progress
 size: S
 depends_on: [P5-A]
 blocks: []
-issue: null
+issue: 125
 superseded_by: null
 controls: [CTL-ACC-04]
 ---
