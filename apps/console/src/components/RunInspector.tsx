@@ -35,7 +35,8 @@ function MetadataRow({ label, value }: { label: string; value: string | number |
 
 export function RunInspector({ metadata }: RunInspectorProps) {
   return (
-    <div
+    <section
+      aria-label="Run Inspector"
       style={{
         background: '#12121a',
         border: '1px solid #2a2a3a',
@@ -68,6 +69,6 @@ export function RunInspector({ metadata }: RunInspectorProps) {
           </>
         )}
       </div>
-    </div>
+    </section>
   );
 }

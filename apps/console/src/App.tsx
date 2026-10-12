@@ -54,6 +54,7 @@ export function App() {
               const event = JSON.parse(line.slice(6)) as StreamEvent;
               setEvents((prev) => [...prev, event]);
 
+              // Only the terminal frame, `done` or `error`, carries `state`.
               if (event.state?.runId) {
                 setMetadata((prev) => ({
                   ...prev,

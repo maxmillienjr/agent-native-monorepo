@@ -55,6 +55,37 @@ test.describe('Console smoke test', () => {
     await expect(page.getByText('[done]')).toBeVisible({ timeout: 30_000 });
   });
 
+  test('the run inspector shows the finished run, under the session id the form sent', async ({
+    page,
+  }) => {
+    // It read `state` from frames that never carried one, and stayed at "No run
+    // data yet" after every run (#124). The session id must be the form's, not
+    // the one the service stores the run under (P5-D).
+    test.skip(
+      !process.env['E2E_BASE_URL'],
+      'needs the compose stack; the dev server has no backend',
+    );
+
+    await page.goto('/');
+    const sessionId = await page.locator('#session-id').inputValue();
+    await page.fill('#query', 'What is LangGraph?');
+    await page.click('button[type="submit"]');
+    await expect(page.getByText('[done]')).toBeVisible({ timeout: 30_000 });
+
+    const inspector = page.getByRole('region', { name: 'Run Inspector' });
+    const value = (label: string) =>
+      inspector.getByText(label, { exact: true }).locator('xpath=following-sibling::span');
+
+    await expect(inspector.getByText('No run data yet')).toHaveCount(0);
+    await expect(value('Run ID')).toHaveText(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+    );
+    await expect(value('Session ID')).toHaveText(sessionId);
+    await expect(value('Outcome')).toHaveText('success');
+    await expect(value('Prompt tokens')).toHaveText(/^\d+$/);
+    await expect(value('Completion tokens')).toHaveText(/^\d+$/);
+  });
+
   test('displays stream viewer and run inspector panels', async ({ page }) => {
     await page.goto('/');
 
