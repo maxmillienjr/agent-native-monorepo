@@ -19,6 +19,7 @@ import {
   replayModelDeps,
   tokenCountsFor,
 } from '../agent/model/decision-seam.js';
+import { CASE_BOARD_CHANNEL } from '../agent/tools/case-board.js';
 import { RE_RECORD_COMMAND, UPDATE_BASELINE_COMMAND } from './abort-cause.js';
 
 /**
@@ -28,8 +29,8 @@ import { RE_RECORD_COMMAND, UPDATE_BASELINE_COMMAND } from './abort-cause.js';
  * `replayModelDeps` — is the agent's, in `src/agent/model/decision-seam.ts`,
  * because every production run records through it too (P3-B). What is left
  * here is what only an evaluation needs: one cassette per trial, the set's
- * provenance, the replayed spans' usage, and the watcher that fails a replay
- * which reached the model host.
+ * provenance, the replayed spans' usage, and the watchers that fail a replay
+ * which reached the model host or a case board.
  *
  * `packages/agent-cassette` depends on `zod` and nothing else in this
  * repository; `RunsService` takes a `(ModelDeps) => ModelDeps` and never learns
@@ -41,7 +42,8 @@ import { RE_RECORD_COMMAND, UPDATE_BASELINE_COMMAND } from './abort-cause.js';
  *
  * The player calls this from inside `resolve`, so the active span is the
  * inference or embeddings span `replayModelDeps` opened — or, at the
- * `act.tool` seam, the `execute_tool` span `act` opened. Each is marked
+ * `act.tool` and `act.compensate` seams, the `execute_tool` span `act` or
+ * `compensate` opened. Each is marked
  * `agent_native.replayed`, and a reader summing usage across tiers filters on
  * it: no call happened, and the span's duration is replay speed.
  *
@@ -304,6 +306,26 @@ export function watchForModelRequests(onViolation: (target: string) => void): ()
     const target = `${origin}${String(request?.path ?? '')}`;
     violations.push(target);
     onViolation(target);
+  });
+
+  return () => violations;
+}
+
+/**
+ * Every operation any case board in the process performed, collected.
+ *
+ * The same claim as `watchForModelRequests`, for effects: a replayed run serves
+ * `act.tool` and `act.compensate` from its cassette, so it never opens or
+ * withdraws a request. The board publishes each operation, so this sees the
+ * Nest-provided board and any other, not only the one replay was wired with.
+ */
+export function watchForCaseBoardCalls(onViolation: (operation: string) => void): () => string[] {
+  const violations: string[] = [];
+
+  subscribe(CASE_BOARD_CHANNEL, (message) => {
+    const operation = String((message as { operation?: unknown }).operation ?? 'unknown');
+    violations.push(operation);
+    onViolation(operation);
   });
 
   return () => violations;

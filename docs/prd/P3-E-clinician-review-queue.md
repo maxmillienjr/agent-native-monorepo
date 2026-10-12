@@ -503,8 +503,12 @@ case store), the **ledger** axis (P3-C's `LEDGER_DATABASE_URL`) and the **auth**
 
 - [x] The new ADR exists, is indexed in `docs/adr/README.md`, cites ADR 0001's revisit
       clause, and names the revisit trigger for the case layer.
-- [x] `git grep -nE 'interrupt\(|new Command\(' apps/agent-service/src` matches nothing. The
-      prior-authorization graph's edges are P3-D's and end at `dispose`.
+- [x] `git grep -nE 'interrupt\(|new Command\(' apps/agent-service/src/agent/prior-auth`
+      matches nothing. The prior-authorization graph's edges are P3-D's and end at
+      `dispose`. _Narrowed 2026-10-12, when P4-C landed after this PRD:_ the grep covered
+      all of `apps/agent-service/src`, and P4-C's `approve` pauses the chat graph with
+      `interrupt()` before an irreversible tool call. The criterion's intent is that the
+      prior-authorization graph does not pause, which still holds.
 
 **Case store**
 

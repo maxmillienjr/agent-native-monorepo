@@ -52,8 +52,11 @@ case layer it anticipates.
 - **The case layer owns the queue, the clock, the overdue sweep and the determination.** It
   is the `prior_auth_cases` table in `packages/memory-core/src/cases/`, written through
   `CaseRepository`, and a sweep on an interval. It is not a workflow engine. No thread is
-  paused or resumed, and no code under `apps/agent-service/src` calls `interrupt()` or
-  constructs a `Command`.
+  paused or resumed, and no code under `apps/agent-service/src/agent/prior-auth` calls
+  `interrupt()` or constructs a `Command`. _(Scoped 2026-10-12: this said
+  `apps/agent-service/src`, which was true when it was accepted. P4-C's approval gate
+  pauses the chat graph before an irreversible tool call, which this record does not
+  decide.)_
 - **The four silent cases have explicit answers.** An unknown case is `404`. A decided case
   is `409`, or the stored response on a byte-identical retry. Concurrent determinations on
   one case give one success and conflicts, because `decide` locks the row
