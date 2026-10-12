@@ -2,7 +2,7 @@
 id: P5-D
 title: Scope POST /runs sessions to the authenticated caller
 tier: 5
-status: draft
+status: accepted
 size: S
 depends_on: [P5-A]
 blocks: []
@@ -341,6 +341,8 @@ Neo4j, as `e2e.yml`'s `e2e` job runs it with `REQUIRE_INTEGRATION_ENV` set.
    could still name. A2A derives in both modes. **Recommendation: derive in both modes.**
    Then the rule reads the same as A2A's, and "no route takes a storage id from a caller"
    has no exception.
+   **Decided at review, 2026-10-12: derive in both modes.** The README's quickstart says
+   that its id is the client's, not the storage key, in the same change.
 2. **The scoped body in the record, or the body as sent plus the principal?** The design
    records what the run loop received, which is A2A's behaviour today, and changes no
    schema. The alternative keeps ADR 0007's sentence literally true. It adds a `principal`
@@ -351,10 +353,13 @@ Neo4j, as `e2e.yml`'s `e2e` job runs it with `REQUIRE_INTEGRATION_ENV` set.
    **Recommendation: record the scoped body here, and leave "who asked" as the residual
    named in Non-goals.** If review wants the principal recorded, it should be its own PRD,
    because it concerns the record on both surfaces and not `/runs`.
+   **Decided at review, 2026-10-12: the scoped body.** "Who asked" stays an unowned
+   residual; it is a question about the record on both surfaces, not about `/runs`.
 3. **Extend ADR 0014, or supersede it?** The decision is unchanged and gains one surface.
    Superseding would mark the authentication decision itself as replaced, which it is not.
    **Recommendation: a new record that extends 0014 and narrows 0007**, following the
    0008/0003 and 0015/0010 precedent.
+   **Decided at review, 2026-10-12: extend and narrow**, numbered when written.
 4. **CTL-ACC-02's note is corrected in this draft, not at implementation.** The control
    stays `implemented`, because its title is about what an A2A caller reaches through
    A2A, and the probe did not falsify that. Its note said `/runs` "lets an authenticated
@@ -362,6 +367,7 @@ Neo4j, as `e2e.yml`'s `e2e` job runs it with `REQUIRE_INTEGRATION_ENV` set.
    sessions. That is the finding this PRD exists for. The note now says it.
    **Recommendation: keep the correction.** If review disagrees, it reverts with no other
    effect.
+   **Decided at review, 2026-10-12: keep it.**
 5. **The premise could be wrong if a client depends on the storage id equalling its own.**
    None in the repository does. The console reads no id back, the harness runs in
    process, and the gateway proxies without parsing. A client outside the repository that

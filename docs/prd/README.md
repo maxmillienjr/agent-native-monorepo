@@ -422,12 +422,12 @@ provider actually operates under. Uses synthetic data only.
 
 ## Tier 5 — Interoperability
 
-| ID                                     | Title                                            | Size | Status  |
-| -------------------------------------- | ------------------------------------------------ | ---- | ------- |
-| [P5-A](P5-A-a2a-server.md)             | Agent2Agent v1.0 server with a signed Agent Card | L    | shipped |
-| [P5-B](P5-B-adk-portability.md)        | Agent Development Kit portability appendix       | S    | shipped |
-| [P5-C](P5-C-langgraph-1x.md)           | Upgrade to LangGraph 1.x                         | S    | shipped |
-| [P5-D](P5-D-caller-scoped-sessions.md) | Caller-scoped sessions on `POST /runs`           | S    | draft   |
+| ID                                     | Title                                            | Size | Status   |
+| -------------------------------------- | ------------------------------------------------ | ---- | -------- |
+| [P5-A](P5-A-a2a-server.md)             | Agent2Agent v1.0 server with a signed Agent Card | L    | shipped  |
+| [P5-B](P5-B-adk-portability.md)        | Agent Development Kit portability appendix       | S    | shipped  |
+| [P5-C](P5-C-langgraph-1x.md)           | Upgrade to LangGraph 1.x                         | S    | shipped  |
+| [P5-D](P5-D-caller-scoped-sessions.md) | Caller-scoped sessions on `POST /runs`           | S    | accepted |
 
 ## Sequencing
 
