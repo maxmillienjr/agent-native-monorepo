@@ -550,7 +550,7 @@ controls:
       - { kind: symbol, file: apps/agent-service/src/audit/replay-run.ts, name: replayRun }
       - kind: test
         file: apps/agent-service/test/audit-replay.integration.test.ts
-        name: leaves one run_records row holding the body sent and every decision in order
+        name: leaves one run_records row holding the body sent, under its derived session, and every decision in order
         tier: integration
       - kind: test
         file: apps/agent-service/test/audit-replay.integration.test.ts
@@ -678,7 +678,7 @@ controls:
         name: gives two principals in one context two sessions
         tier: unit
       - { kind: ci, workflow: e2e.yml, job: browser-e2e }
-    note: Delivered by P5-A. Tasks live in the SDK's owner-scoped store keyed by the authenticated principal, so another principal's GetTask is -32001 and its ListTasks omits them. A context's session id is UUIDv5 over principal and context, so the same context id from two principals is two conversations; the compose job checks that against live memory. Not covered, and stated in ADR 0014 as a residual, is POST /runs, whose contract lets an authenticated caller name any session. That includes another principal's A2A session, because the namespace is a constant in source and a caller who knows a principal's name and one of its context ids can compute the session id and send it to /runs. P5-D measured that on 2026-10-12 (a turn written into the other principal's next prompt) and owns closing it, as CTL-ACC-04. In open mode every caller is one principal.
+    note: Delivered by P5-A. Tasks live in the SDK's owner-scoped store keyed by the authenticated principal, so another principal's GetTask is -32001 and its ListTasks omits them. A context's session id is UUIDv5 over principal and context, so the same context id from two principals is two conversations; the compose job checks that against live memory. The derived id is computable, because the namespace is a constant in source and a principal's name is not a secret, so until P5-D a caller could send another principal's A2A session id to POST /runs as its sessionId; P5-D measured that on 2026-10-12 (a turn written into the other principal's next prompt). Since P5-D, /runs derives its own session from the caller as well (CTL-ACC-04, ADR 0017), so that request lands in a session of the caller's own. In open mode every caller is one principal.
 
   - id: CTL-ACC-03
     title: Traffic to the service is encrypted in transit
@@ -689,9 +689,36 @@ controls:
 
   - id: CTL-ACC-04
     title: A /runs caller reads and writes only its own principal's sessions
-    status: planned
-    owner: P5-D
+    status: implemented
     maps:
       - { framework: hipaa-164.312, ref: (a)(1) }
       - { framework: owasp-asi-2026, ref: ASI03 }
       - { framework: owasp-asi-2026, ref: ASI06 }
+    evidence:
+      - { kind: symbol, file: apps/agent-service/src/auth/session-scope.ts, name: runsSessionId }
+      - kind: test
+        file: apps/agent-service/test/runs-session.integration.test.ts
+        name: does not let b read or write a's A2A session by naming its derived id
+        tier: integration
+      - kind: test
+        file: apps/agent-service/test/runs-session.integration.test.ts
+        name: gives two principals with one sessionId two sessions
+        tier: integration
+      - kind: test
+        file: apps/agent-service/test/runs-session.integration.test.ts
+        name: continues one principal’s conversation across two requests
+        tier: integration
+      - kind: test
+        file: apps/agent-service/test/runs-session.e2e-spec.ts
+        name: runs each principal's request in that principal's session
+        tier: service
+      - kind: test
+        file: apps/agent-service/src/auth/session-scope.test.ts
+        name: differs from the A2A session for the same principal and the same string
+        tier: unit
+      - {
+          kind: doc,
+          file: docs/adr/0017-every-surface-derives-its-session-from-the-caller.md,
+          heading: Decision,
+        }
+    note: Delivered by P5-D. RunsController runs POST /runs and POST /runs/stream in runsSessionId(principal, sessionId), a UUIDv5 in a namespace of its own, so two principals naming one sessionId get two sessions and a caller who names another principal's stored id, from either surface, is derived again into its own. The response keeps the client's id. RunsService derives nothing, so the evaluation harness keeps the session its task seeds. Open mode derives too, with every caller anonymous, so it separates no one. Facts stay keyed on their content hash with the first writer's session, a loss of recall P5-D leaves unowned, and who asked is not in the run record.
