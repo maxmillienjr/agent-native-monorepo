@@ -375,12 +375,43 @@ controls:
       - { framework: nist-ai-600-1, ref: MS-2.7-007 }
 
   - id: CTL-AGY-01
-    title: Every tool declares a reversibility tier, and irreversible calls are compensable
-    status: planned
-    owner: P4-C
+    # Retitled by P4-C. The planned title asked for irreversible calls to be
+    # compensable, which the tier's own definition rules out.
+    title: Every tool declares a reversibility tier; an aborted loop compensates its compensable effects, and an irreversible call waits for approval
+    status: implemented
     maps:
       - { framework: owasp-llm-2025, ref: 'LLM06:2025' }
       - { framework: owasp-asi-2026, ref: ASI02 }
+    evidence:
+      - { kind: symbol, file: apps/agent-service/src/agent/tools/types.ts, name: ToolDefinition }
+      - kind: test
+        file: apps/agent-service/src/agent/tools/registry.test.ts
+        name: repeats the tier rule at runtime, for a definition that arrived through a cast
+        tier: unit
+      - kind: test
+        file: apps/agent-service/src/agent/nodes/act.node.test.ts
+        name: records an input that fails the tool’s schema with the Zod issues, and never executes
+        tier: unit
+      - kind: test
+        file: apps/agent-service/src/agent/nodes/compensate.node.test.ts
+        name: compensates two applied effects in reverse order
+        tier: unit
+      - kind: test
+        file: apps/agent-service/src/agent/nodes/compensate.node.test.ts
+        name: withdraws the first request exactly once when a second names an unknown case
+        tier: unit
+      - kind: test
+        file: apps/agent-service/src/agent/nodes/approve.node.test.ts
+        name: pauses before an irreversible call, with execute called zero times
+        tier: unit
+      - kind: test
+        file: apps/agent-service/src/agent/nodes/approve.node.test.ts
+        name: refuses the call when compiled without a checkpointer, and executes nothing
+        tier: unit
+      - kind: test
+        file: apps/agent-service/test/approval.integration.test.ts
+        name: returns awaiting-approval, and the checkpoint under the runId holds the pending call
+        tier: integration
 
   - id: CTL-HUM-01
     title: The agent cannot make or emit an adverse determination, and none exists without a clinician's attestation
