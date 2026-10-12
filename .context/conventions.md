@@ -700,13 +700,20 @@ portfolio's, not counsel's.
   key without saying so. Re-key it to the range actually asked for. It is **stale** when the
   via clause shows the pinned value: the pin works, but it holds the tree on a version that
   is now vulnerable. Bump the value. Add a new resolution only when the dependent's range
-  excludes every fixed version. The commit body says which case it was.
+  excludes every fixed version. The commit body says which case it was. When another lock
+  entry already holds a fixed version inside the dependent's range, `yarn dedupe <pkg>`
+  folds onto it, where `yarn up -R` would add a newer copy beside it: the October wave
+  moved `@opentelemetry/core` that way, onto the 2.11.0 the SDK already used.
 - **An advisory with no fixed release is ignored by numeric ID in `.yarnrc.yml`, never
   silenced.** `npmAuditIgnoreAdvisories` holds one ID per entry, with the GHSA, the
   reason the package cannot reach this repository's input, and what removes the entry.
   Never use a package name, a glob, or a lowered `--severity`. A release above the
   advisory range does not count as a fix until its diff shows one: http-cache-semantics
   4.3.0 is outside the range of GHSA-ch52-4w7c-c8xp and leaves the flawed path unchanged.
+  An entry is only for an advisory that fails the gate. The job audits at
+  `--severity high`, so a moderate or low that nothing can move stays an open Dependabot
+  alert, and the pull request that left it says why. sprintf-js under js-yaml 3 and the
+  esbuild 0.18 that drizzle-kit pulls in were left that way in October.
 - **A root `scripts/` check may import a package only from the root `devDependencies`, and
   only one already in `yarn.lock`.** `scripts/lint-docs.mjs` once needed nothing installed.
   The controls check needs `yaml` to read workflows and the catalogue, and `zod` because a
