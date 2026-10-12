@@ -1,0 +1,98 @@
+{
+  "header": {
+    "formatVersion": 2,
+    "taskId": "pa-e0601-one-missing",
+    "trialIndex": 0,
+    "recordedAt": "2026-10-12T17:12:58.361Z",
+    "gitSha": "fba57635a195906a13aa663ad253439b319cd19e",
+    "axes": {
+      "model": "live",
+      "memory": "live"
+    },
+    "chatModel": "gemini-2.5-flash",
+    "embeddingModel": "gemini-embedding-001",
+    "embeddingDimensions": 768
+  },
+  "decisions": [
+    {
+      "seam": "assess.criteria",
+      "requestHash": "c531e3cd0780b4773a12ae2e7ffa968c9d8d2f2e5f390ed2921a25d909c7a436",
+      "request": {
+        "criteria": [
+          {
+            "id": "e0601-osa-diagnosis",
+            "title": "Obstructive sleep apnea is diagnosed",
+            "requirement": "The member has a diagnosis of obstructive sleep apnea, recorded as a condition or stated by the prescriber."
+          },
+          {
+            "id": "e0601-ahi-threshold",
+            "title": "Apnea-hypopnea index of 18 or more",
+            "requirement": "A sleep study dated within the 12 months before the request reports an apnea-hypopnea index (AHI) of at least 18 events per hour."
+          },
+          {
+            "id": "e0601-conservative-trial",
+            "title": "A conservative measure was tried first",
+            "requirement": "The record documents at least 21 days of positional therapy or a weight-management programme that did not resolve the symptoms."
+          },
+          {
+            "id": "e0601-prescriber-order",
+            "title": "Signed order with a pressure setting",
+            "requirement": "A signed prescriber order names the device and its pressure setting or pressure range."
+          }
+        ],
+        "evidence": [
+          {
+            "reference": "Condition/condition-e0601-one-missing-osa",
+            "text": "Condition: G47.33 Obstructive sleep apnea (adult) (pediatric). Onset 2026-07-02."
+          },
+          {
+            "reference": "DocumentReference/doc-e0601-one-missing-study",
+            "text": "Clinical note (Sleep study report, dated 2026-08-04T12:00:00Z):\nIn-lab polysomnography, 2026-08-04.\nTotal sleep time 6.1 hours. Apnea-hypopnea index (AHI) 31 events per hour.\nLowest oxygen saturation 82 percent.\nImpression: obstructive sleep apnea."
+          },
+          {
+            "reference": "DocumentReference/doc-e0601-one-missing-visit",
+            "text": "Clinical note (Prescriber follow-up note, dated 2026-09-11T12:00:00Z):\nFollow-up after the sleep study, which showed obstructive sleep apnea.\nHe wants treatment started before the winter.\nOrder: CPAP device, fixed pressure 10 cm H2O, full face mask.\nOrder signed electronically by the prescriber on 2026-09-11."
+          }
+        ]
+      },
+      "response": {
+        "kind": "value",
+        "value": [
+          {
+            "criterionId": "e0601-osa-diagnosis",
+            "status": "met",
+            "evidence": [
+              "Condition/condition-e0601-one-missing-osa",
+              "DocumentReference/doc-e0601-one-missing-study",
+              "DocumentReference/doc-e0601-one-missing-visit"
+            ],
+            "rationale": "The condition record explicitly states a diagnosis of G47.33 Obstructive sleep apnea. The sleep study report's impression also notes obstructive sleep apnea, and the prescriber's note acknowledges the diagnosis."
+          },
+          {
+            "criterionId": "e0601-ahi-threshold",
+            "status": "met",
+            "evidence": [
+              "DocumentReference/doc-e0601-one-missing-study"
+            ],
+            "rationale": "A sleep study dated 2026-08-04 (within 12 months) reports an AHI of 31 events per hour, which meets the requirement of at least 18 events per hour."
+          },
+          {
+            "criterionId": "e0601-conservative-trial",
+            "status": "insufficient",
+            "evidence": [],
+            "rationale": "The provided documents do not contain any information regarding a trial of positional therapy or a weight-management program, their duration, or their outcome."
+          },
+          {
+            "criterionId": "e0601-prescriber-order",
+            "status": "met",
+            "evidence": [
+              "DocumentReference/doc-e0601-one-missing-visit"
+            ],
+            "rationale": "The prescriber's follow-up note includes an order for a CPAP device with a fixed pressure of 10 cm H2O, signed electronically by the prescriber on 2026-09-11."
+          }
+        ]
+      },
+      "latencyMs": 5879
+    }
+  ]
+}

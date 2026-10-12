@@ -1,0 +1,94 @@
+{
+  "header": {
+    "formatVersion": 2,
+    "taskId": "pa-e0601-all-met-narrative",
+    "trialIndex": 0,
+    "recordedAt": "2026-10-12T17:12:32.647Z",
+    "gitSha": "fba57635a195906a13aa663ad253439b319cd19e",
+    "axes": {
+      "model": "live",
+      "memory": "live"
+    },
+    "chatModel": "gemini-2.5-flash",
+    "embeddingModel": "gemini-embedding-001",
+    "embeddingDimensions": 768
+  },
+  "decisions": [
+    {
+      "seam": "assess.criteria",
+      "requestHash": "e6250e4641e9da0f32ba08a59a1e068c4f2cbb127552e7f3d4ea37a8d0d4c5a8",
+      "request": {
+        "criteria": [
+          {
+            "id": "e0601-osa-diagnosis",
+            "title": "Obstructive sleep apnea is diagnosed",
+            "requirement": "The member has a diagnosis of obstructive sleep apnea, recorded as a condition or stated by the prescriber."
+          },
+          {
+            "id": "e0601-ahi-threshold",
+            "title": "Apnea-hypopnea index of 18 or more",
+            "requirement": "A sleep study dated within the 12 months before the request reports an apnea-hypopnea index (AHI) of at least 18 events per hour."
+          },
+          {
+            "id": "e0601-conservative-trial",
+            "title": "A conservative measure was tried first",
+            "requirement": "The record documents at least 21 days of positional therapy or a weight-management programme that did not resolve the symptoms."
+          },
+          {
+            "id": "e0601-prescriber-order",
+            "title": "Signed order with a pressure setting",
+            "requirement": "A signed prescriber order names the device and its pressure setting or pressure range."
+          }
+        ],
+        "evidence": [
+          {
+            "reference": "Condition/condition-e0601-all-met-narrative-obesity",
+            "text": "Condition: E66.01 Morbid (severe) obesity due to excess calories. Onset 2019-05-20."
+          },
+          {
+            "reference": "DocumentReference/doc-e0601-all-met-narrative-visit",
+            "text": "Clinical note (Prescriber visit note, dated 2026-09-12T12:00:00Z):\nHer husband says she stops breathing several times a night and she falls asleep at red lights.\nThe home sleep test she did on the second of August came back with twenty-four breathing\ninterruptions an hour, which together with the history puts her squarely in obstructive\nsleep apnea.\nSince the middle of July she has slept on her side with a foam wedge sewn into the back of\nher nightshirt, close to five weeks now, and the pauses have not let up.\nI am ordering a CPAP machine at a fixed pressure of 9 centimetres of water and have signed\nthe order today."
+          }
+        ]
+      },
+      "response": {
+        "kind": "value",
+        "value": [
+          {
+            "criterionId": "e0601-osa-diagnosis",
+            "status": "met",
+            "evidence": [
+              "DocumentReference/doc-e0601-all-met-narrative-visit"
+            ],
+            "rationale": "The prescriber's clinical note explicitly states that the member has a diagnosis of obstructive sleep apnea based on the home sleep test and history."
+          },
+          {
+            "criterionId": "e0601-ahi-threshold",
+            "status": "met",
+            "evidence": [
+              "DocumentReference/doc-e0601-all-met-narrative-visit"
+            ],
+            "rationale": "A home sleep test dated August 2nd (within 12 months of the September 12th visit) reported 24 breathing interruptions an hour, which exceeds the required AHI of 18 events per hour."
+          },
+          {
+            "criterionId": "e0601-conservative-trial",
+            "status": "met",
+            "evidence": [
+              "DocumentReference/doc-e0601-all-met-narrative-visit"
+            ],
+            "rationale": "The member has undergone positional therapy with a foam wedge since the middle of July (close to five weeks), which is more than 21 days, and the symptoms ('pauses have not let up') have not resolved."
+          },
+          {
+            "criterionId": "e0601-prescriber-order",
+            "status": "met",
+            "evidence": [
+              "DocumentReference/doc-e0601-all-met-narrative-visit"
+            ],
+            "rationale": "The prescriber's note confirms an order for a CPAP machine at a fixed pressure of 9 centimetres of water and states the order was signed."
+          }
+        ]
+      },
+      "latencyMs": 6750
+    }
+  ]
+}

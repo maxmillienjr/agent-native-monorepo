@@ -1,0 +1,17 @@
+{
+  "header": {
+    "formatVersion": 2,
+    "taskId": "pa-e0601-administrative",
+    "trialIndex": 0,
+    "recordedAt": "2026-10-12T17:12:32.592Z",
+    "gitSha": "fba57635a195906a13aa663ad253439b319cd19e",
+    "axes": {
+      "model": "live",
+      "memory": "live"
+    },
+    "chatModel": "gemini-2.5-flash",
+    "embeddingModel": "gemini-embedding-001",
+    "embeddingDimensions": 768
+  },
+  "decisions": []
+}
