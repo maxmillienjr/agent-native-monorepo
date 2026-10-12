@@ -655,7 +655,7 @@ controls:
         tier: service
       - kind: test
         file: apps/agent-service/test/boot.e2e-spec.ts
-        name: exits 1 within two seconds naming SERVICE_CREDENTIALS when it is malformed
+        name: exits 1 within two seconds of naming SERVICE_CREDENTIALS when it is malformed
         tier: service
       - { kind: ci, workflow: ci.yml, job: ci, run: yarn turbo test:service }
       - { kind: ci, workflow: e2e.yml, job: browser-e2e }

@@ -37,6 +37,8 @@ async function freePort(): Promise<number> {
 interface Boot {
   readonly child: ChildProcess;
   readonly output: () => string;
+  /** Milliseconds from spawn until `text` first appeared in the output, if it has. */
+  readonly seenAt: (text: string) => number | undefined;
   readonly exited: Promise<{ code: number | null; ms: number }>;
 }
 
@@ -47,12 +49,24 @@ function boot(cwd: string, env: Record<string, string>): Boot {
   const started = Date.now();
   const child = spawn(process.execPath, [MAIN], { cwd, env: childEnv });
   let output = '';
-  child.stdout?.on('data', (chunk: Buffer) => (output += chunk.toString()));
-  child.stderr?.on('data', (chunk: Buffer) => (output += chunk.toString()));
+  // When each chunk arrived, as the output's length after it, so `seenAt` can
+  // date any text in the output without the test naming it in advance.
+  const arrivals: { ms: number; length: number }[] = [];
+  const append = (chunk: Buffer) => {
+    output += chunk.toString();
+    arrivals.push({ ms: Date.now() - started, length: output.length });
+  };
+  child.stdout?.on('data', append);
+  child.stderr?.on('data', append);
+  const seenAt = (text: string) => {
+    const at = output.indexOf(text);
+    if (at === -1) return undefined;
+    return arrivals.find((arrival) => arrival.length >= at + text.length)?.ms;
+  };
   const exited = new Promise<{ code: number | null; ms: number }>((done) =>
     child.once('exit', (code) => done({ code, ms: Date.now() - started })),
   );
-  return { child, output: () => output, exited };
+  return { child, output: () => output, seenAt, exited };
 }
 
 async function waitFor(predicate: () => boolean, ms: number): Promise<void> {
@@ -110,14 +124,23 @@ describe('agent-service as a process', () => {
     }
   }, 30_000);
 
-  it('exits 1 within two seconds naming SERVICE_CREDENTIALS when it is malformed', async () => {
+  it('exits 1 within two seconds of naming SERVICE_CREDENTIALS when it is malformed', async () => {
     const service = boot(cwd, { PORT: String(await freePort()), SERVICE_CREDENTIALS: 'nocolon' });
 
     const { code, ms } = await service.exited;
+    const named = service.seenAt('SERVICE_CREDENTIALS');
 
     expect(code).toBe(1);
-    expect(ms).toBeLessThan(2_000);
-    expect(service.output()).toContain('SERVICE_CREDENTIALS');
+    expect(named).toBeDefined();
+    // Timed from the error, not from spawn. The defect this guards is the exit
+    // itself: a pino transport per logger deadlocked `process.exit`, so the
+    // service printed Nest's error naming the variable and then never exited
+    // (P5-A). Exiting takes about 200 ms after the error. From spawn it took
+    // about 900 ms locally, and once 2156 ms on a busy CI runner, because
+    // loading the compiled service is most of it and that slows with the
+    // machine. A hang never exits, so it fails here at any bound, or at the
+    // test's timeout if it hangs before the error is printed.
+    expect(ms - (named ?? 0)).toBeLessThan(2_000);
     expect(service.output()).not.toContain('nocolon');
-  }, 10_000);
+  }, 20_000);
 });
