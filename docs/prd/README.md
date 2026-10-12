@@ -422,11 +422,12 @@ provider actually operates under. Uses synthetic data only.
 
 ## Tier 5 — Interoperability
 
-| ID                              | Title                                            | Size | Status  |
-| ------------------------------- | ------------------------------------------------ | ---- | ------- |
-| [P5-A](P5-A-a2a-server.md)      | Agent2Agent v1.0 server with a signed Agent Card | L    | shipped |
-| [P5-B](P5-B-adk-portability.md) | Agent Development Kit portability appendix       | S    | shipped |
-| [P5-C](P5-C-langgraph-1x.md)    | Upgrade to LangGraph 1.x                         | S    | shipped |
+| ID                                     | Title                                            | Size | Status  |
+| -------------------------------------- | ------------------------------------------------ | ---- | ------- |
+| [P5-A](P5-A-a2a-server.md)             | Agent2Agent v1.0 server with a signed Agent Card | L    | shipped |
+| [P5-B](P5-B-adk-portability.md)        | Agent Development Kit portability appendix       | S    | shipped |
+| [P5-C](P5-C-langgraph-1x.md)           | Upgrade to LangGraph 1.x                         | S    | shipped |
+| [P5-D](P5-D-caller-scoped-sessions.md) | Caller-scoped sessions on `POST /runs`           | S    | draft   |
 
 ## Sequencing
 
@@ -446,7 +447,8 @@ P0-A ──▶ P2-A ──▶ P1-A ──┬──▶ P1-B ──┬──▶ P1
 P3-A ──┬──▶ P3-C
        └──▶ P3-D ──▶ P3-E ──▶ P3-F
 
-P5-A ──▶ P5-B
+P5-A ──┬──▶ P5-B
+       └──▶ P5-D
 ```
 
 P2-A, P1-A and P1-B are all shipped, so everything hanging off them is unblocked —
@@ -491,6 +493,10 @@ P5-B waited on P5-A. The appendix recommends integrating with an ADK estate over
 rather than porting, and the one trial step that checks that recommendation needed P5-A's
 server — its authentication and its v0.3 compatibility, which is what ADK for TypeScript
 speaks. Both have shipped.
+
+P5-D is drawn under P5-A, whose principal, middleware and A2A session derivation it
+extends to `POST /runs`. It reads P3-B's run record and the evaluation harness without
+changing either's format, and both are shipped, so neither is drawn as an edge.
 
 P3-C and P3-D wait on P3-A. The ledger records the attestation an adverse determination
 carries, and the prior-authorization surface emits its results through the determination

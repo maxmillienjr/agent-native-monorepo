@@ -5,7 +5,7 @@ tier: 5
 status: shipped
 size: L
 depends_on: []
-blocks: [P5-B]
+blocks: [P5-B, P5-D]
 issue: 107
 superseded_by: null
 controls: [CTL-ACC-01, CTL-ACC-02, CTL-ACC-03]
