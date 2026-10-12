@@ -403,6 +403,17 @@ replays the committed answer file and makes no request.
   `something` can close the first one's ephemeral listener, and the first fails with
   `ECONNREFUSED`. Compute the body first, then build the request. The ledger spec's
   determination request is the example.
+- **A live-memory test that reads a fact back extracts a sentence of its own.**
+  `semantic_facts` is keyed on the content hash and keeps its first writer's session, and
+  the stub model extracts the same sentence on every run. A test that expects retrieval to
+  find a fact under its own session therefore passes or fails by which suite wrote that
+  sentence first. Decorate `distill` through `RunsService.setModelDecorator` so each test
+  extracts unique text, as `runs-session.integration.test.ts` does (P5-D).
+- **`/runs` stores a session under a derived id, not the one the client sent.** A test
+  that reads `episodes`, `semantic_facts` or `run_records` after `POST /runs` looks up
+  `runsSessionId(principal, sessionId)`, with `anonymous` in open mode, or goes through the
+  response's `runId` (ADR 0017). `RunsService` called in process, as the evaluation harness
+  does, derives nothing.
 - **A recorded run's checkpoint history is read with `recordedHistory`.** `getStateHistory`
   is a method of a compiled graph, not of the saver, so reading a run's checkpoints means
   compiling its graph. `audit/replay-run.ts#recordedHistory` does that with nothing that
