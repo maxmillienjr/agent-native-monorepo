@@ -28,3 +28,4 @@ every branch has used: `git fetch origin && git log --all --format=%s -- 'docs/a
 | [0014](0014-service-authentication-bearer-at-the-service-open-when-unconfigured.md)   | Service authentication: bearer credentials at the service, open when unconfigured | accepted           |
 | [0015](0015-a-timer-whose-action-is-one-local-transaction-stays-in-the-case-layer.md) | A timer whose action is one local transaction stays in the case layer             | accepted           |
 | [0016](0016-langgraph-rather-than-adk-with-a2a-as-the-seam.md)                        | LangGraph rather than ADK, with A2A as the integration seam                       | accepted           |
+| [0017](0017-every-surface-derives-its-session-from-the-caller.md)                     | Every surface derives its session from the caller                                 | accepted           |
