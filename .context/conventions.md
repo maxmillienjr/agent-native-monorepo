@@ -441,6 +441,12 @@ replays the committed answer file and makes no request.
   `processor.forceFlush()` before reading, as `trace-context.e2e-spec.ts` does. The new
   `@opentelemetry/sdk-trace` takes `new SimpleSpanProcessor({ exporter })`, an options
   object, where `sdk-trace-base` takes the exporter alone.
+- **A time bound in a process test starts at the event it guards, not at spawn.** Loading
+  the compiled service is most of a boot, and it slows with the machine: the malformed
+  `SERVICE_CREDENTIALS` test took about 900 ms from spawn locally and 2156 ms once on a busy
+  runner, where the exit it guards takes about 200 ms. `boot.e2e-spec.ts` dates a line in
+  the output with `seenAt` and times the exit from there. A process that hangs fails at
+  the test's timeout whatever the bound.
 
 ### Live model quota
 
