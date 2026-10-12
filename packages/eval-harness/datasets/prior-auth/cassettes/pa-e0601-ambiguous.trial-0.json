@@ -1,0 +1,94 @@
+{
+  "header": {
+    "formatVersion": 2,
+    "taskId": "pa-e0601-ambiguous",
+    "trialIndex": 0,
+    "recordedAt": "2026-10-12T17:12:47.083Z",
+    "gitSha": "fba57635a195906a13aa663ad253439b319cd19e",
+    "axes": {
+      "model": "live",
+      "memory": "live"
+    },
+    "chatModel": "gemini-2.5-flash",
+    "embeddingModel": "gemini-embedding-001",
+    "embeddingDimensions": 768
+  },
+  "decisions": [
+    {
+      "seam": "assess.criteria",
+      "requestHash": "b4a2234c216621d614ffeefb57f0912d35cfbc70106f4368aed5bae0393375b8",
+      "request": {
+        "criteria": [
+          {
+            "id": "e0601-osa-diagnosis",
+            "title": "Obstructive sleep apnea is diagnosed",
+            "requirement": "The member has a diagnosis of obstructive sleep apnea, recorded as a condition or stated by the prescriber."
+          },
+          {
+            "id": "e0601-ahi-threshold",
+            "title": "Apnea-hypopnea index of 18 or more",
+            "requirement": "A sleep study dated within the 12 months before the request reports an apnea-hypopnea index (AHI) of at least 18 events per hour."
+          },
+          {
+            "id": "e0601-conservative-trial",
+            "title": "A conservative measure was tried first",
+            "requirement": "The record documents at least 21 days of positional therapy or a weight-management programme that did not resolve the symptoms."
+          },
+          {
+            "id": "e0601-prescriber-order",
+            "title": "Signed order with a pressure setting",
+            "requirement": "A signed prescriber order names the device and its pressure setting or pressure range."
+          }
+        ],
+        "evidence": [
+          {
+            "reference": "Condition/condition-e0601-ambiguous-osa",
+            "text": "Condition: G47.33 Obstructive sleep apnea (adult) (pediatric). Onset 2026-07-02."
+          },
+          {
+            "reference": "DocumentReference/doc-e0601-ambiguous-visit",
+            "text": "Clinical note (Prescriber visit note):\nReports loud snoring and morning headaches.\nHe says a sleep study at another clinic a few years back \"showed some apnea, maybe moderate\".\nThat report is not available to me and I could not confirm the number.\nPositional therapy with a positional belt for 30 days in August did not help.\nOrder: CPAP device, auto-titrating, pressure range 5 to 15 cm H2O.\nOrder signed electronically by the prescriber."
+          }
+        ]
+      },
+      "response": {
+        "kind": "value",
+        "value": [
+          {
+            "criterionId": "e0601-osa-diagnosis",
+            "status": "met",
+            "evidence": [
+              "Condition/condition-e0601-ambiguous-osa"
+            ],
+            "rationale": "The member has a recorded diagnosis of obstructive sleep apnea (G47.33)."
+          },
+          {
+            "criterionId": "e0601-ahi-threshold",
+            "status": "insufficient",
+            "evidence": [
+              "DocumentReference/doc-e0601-ambiguous-visit"
+            ],
+            "rationale": "The evidence mentions a past sleep study but does not provide an AHI value or confirm that the study was conducted within the last 12 months."
+          },
+          {
+            "criterionId": "e0601-conservative-trial",
+            "status": "met",
+            "evidence": [
+              "DocumentReference/doc-e0601-ambiguous-visit"
+            ],
+            "rationale": "The record documents 30 days of positional therapy that did not resolve the symptoms, exceeding the 21-day requirement."
+          },
+          {
+            "criterionId": "e0601-prescriber-order",
+            "status": "met",
+            "evidence": [
+              "DocumentReference/doc-e0601-ambiguous-visit"
+            ],
+            "rationale": "A signed prescriber order names the CPAP device and specifies a pressure range of 5 to 15 cm H2O."
+          }
+        ]
+      },
+      "latencyMs": 5515
+    }
+  ]
+}
