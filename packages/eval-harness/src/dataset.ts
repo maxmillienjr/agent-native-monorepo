@@ -20,6 +20,7 @@ import {
   entityMerged,
 } from './graders/code.js';
 import { trajectoryGraders } from './graders/trajectory.js';
+import { RED_TEAM_SURFACES, redTeamGraders } from './graders/red-team.js';
 
 /**
  * `datasets/` resolves the same from `src/` under vitest and from `dist/` in
@@ -28,8 +29,11 @@ import { trajectoryGraders } from './graders/trajectory.js';
  */
 export const EVAL_DATASETS_DIR = fileURLToPath(new URL('../datasets', import.meta.url));
 
-/** The one dataset shipped with the package. Spelled once, for the same reason. */
+/** The capability dataset shipped with the package. Spelled once, for the same reason. */
 export const MEMORY_RECALL_DATASET_DIR = join(EVAL_DATASETS_DIR, 'memory-recall');
+
+/** The memory-poisoning red team (P4-B), a suite of its own. */
+export const RED_TEAM_DATASET_DIR = join(EVAL_DATASETS_DIR, 'red-team');
 
 /**
  * Where a dataset's cassettes live.
@@ -89,6 +93,52 @@ export function capTrialsToCassettes<TOutcome>(
 }
 
 /**
+ * The framework ids a red-team task may map to, pinned so that a mistyped id
+ * fails to load rather than mapping a case to a risk that does not exist.
+ *
+ * Only the ids a task uses are here. Adding one is an edit to this list with
+ * its source beside it, which is where a reviewer checks it:
+ *
+ * - `ASI06` Memory & Context Poisoning, OWASP Top 10 for Agentic Applications
+ *   for 2026 (published 2025-12-09).
+ * - `LLM04:2025` Data and Model Poisoning and `LLM08:2025` Vector and Embedding
+ *   Weaknesses, OWASP Top 10 for LLM Applications 2025. The suffix stays: the
+ *   2026 edition renumbers the list.
+ */
+export const PINNED_OWASP_IDS = ['ASI06', 'LLM04:2025', 'LLM08:2025'] as const;
+
+/**
+ * MITRE ATLAS technique ids, from the 2026.09 data release
+ * (`mitre-atlas/atlas-data`, `dist/v6/ATLAS-2026.09.yaml`): `AML.T0070` RAG
+ * Poisoning, `AML.T0071` False RAG Entry Injection, and `AML.T0080.000` AI
+ * Agent Context Poisoning: Memory. Same rule as the OWASP list.
+ */
+export const PINNED_ATLAS_IDS = ['AML.T0070', 'AML.T0071', 'AML.T0080.000'] as const;
+
+/**
+ * The `redTeam` block of a task file (P4-B).
+ *
+ * `canary` is the payload of the poisoned fact: the attack succeeded on a
+ * surface if and only if the canary appears there. Each surface becomes one
+ * `canary_absent_from_<surface>` grader. The mappings are data for the report
+ * and the control catalogue; they grade nothing.
+ */
+export const RedTeamSpecSchema = z.object({
+  canary: z.string().min(6),
+  surfaces: z.array(z.enum(RED_TEAM_SURFACES)).min(1),
+  owasp: z.array(z.enum(PINNED_OWASP_IDS)).min(1),
+  atlas: z.array(z.enum(PINNED_ATLAS_IDS)).min(1),
+});
+export type RedTeamSpec = z.infer<typeof RedTeamSpecSchema>;
+
+/** One request body, as a task file spells it: the graded `input`, or a prior run's. */
+export const TaskInputSchema = z.object({
+  sessionId: z.string().uuid(),
+  messages: z.array(z.object({ role: z.string(), content: z.string() })).min(1),
+  config: z.record(z.unknown()).optional(),
+});
+
+/**
  * The task file format, superseding `run-fixture-001.json` while preserving it.
  *
  * `expectedSeeds` is retained as it was. The `assertions` block, which the
@@ -106,11 +156,15 @@ export const TaskSpecSchema = z.object({
    * back widens the enum in the same change that measures it.
    */
   retrievalPath: z.literal('vector'),
-  input: z.object({
-    sessionId: z.string().uuid(),
-    messages: z.array(z.object({ role: z.string(), content: z.string() })).min(1),
-    config: z.record(z.unknown()).optional(),
-  }),
+  input: TaskInputSchema,
+  /**
+   * Runs executed before `input`, in order, in the same trial, and not graded
+   * (P4-B). Two at most: each is a full run's worth of model calls against a
+   * 20-request daily quota.
+   */
+  priorRuns: z.array(TaskInputSchema).max(2).optional(),
+  /** Present on a red-team task, and only there; see `RedTeamSpecSchema`. */
+  redTeam: RedTeamSpecSchema.optional(),
   /**
    * The axes this task is meaningful on, scalar or set per axis.
    *
@@ -179,6 +233,8 @@ export function buildGraders(spec: TaskSpec): Grader<MemoryOutcome>[] {
     graders.push(...trajectoryGraders<MemoryOutcome>(spec.expectedTrajectory));
   }
 
+  if (spec.redTeam) graders.push(...redTeamGraders(spec.redTeam.canary, spec.redTeam.surfaces));
+
   return graders;
 }
 
@@ -187,6 +243,7 @@ export function taskFromSpec(spec: TaskSpec): Task<MemoryOutcome> {
     id: spec.id,
     description: spec.description,
     input: spec.input,
+    ...(spec.priorRuns === undefined ? {} : { priorInputs: spec.priorRuns }),
     seeds: spec.expectedSeeds,
     graders: buildGraders(spec),
     ...(spec.requires === undefined ? {} : { requires: spec.requires }),
@@ -199,18 +256,14 @@ export function loadTaskSpec(path: string): TaskSpec {
 }
 
 /**
- * Loads every `.json` in a dataset directory as one task.
+ * Parses every `.json` in a dataset directory as one task spec, in file order.
  *
  * An empty directory is an error rather than an empty suite. A suite that
  * silently grades nothing and reports a pass is the failure mode this whole
  * package exists to remove, and it is exactly what the nightly workflow's seed
  * step used to do.
  */
-export function loadSuite(
-  name: string,
-  directory: string,
-  trialsPerTask = 5,
-): Suite<MemoryOutcome> {
+function loadSpecs(name: string, directory: string): TaskSpec[] {
   const files = readdirSync(directory)
     .filter((file) => file.endsWith('.json'))
     .sort();
@@ -219,11 +272,24 @@ export function loadSuite(
     throw new Error(`eval suite "${name}" loaded no tasks from ${directory}`);
   }
 
-  return {
-    name,
-    tasks: files.map((file) => taskFromSpec(loadTaskSpec(join(directory, file)))),
-    trialsPerTask,
-  };
+  return files.map((file) => loadTaskSpec(join(directory, file)));
+}
+
+function suiteOf(
+  name: string,
+  specs: readonly TaskSpec[],
+  trialsPerTask: number,
+): Suite<MemoryOutcome> {
+  return { name, tasks: specs.map(taskFromSpec), trialsPerTask };
+}
+
+/** Loads every `.json` in a dataset directory as one task. */
+export function loadSuite(
+  name: string,
+  directory: string,
+  trialsPerTask = 5,
+): Suite<MemoryOutcome> {
+  return suiteOf(name, loadSpecs(name, directory), trialsPerTask);
 }
 
 /**
@@ -270,7 +336,48 @@ export function selectTasks<TOutcome>(
 /** The shipped suite's name, readable before it loads so an abort can name it. */
 export const MEMORY_RECALL_SUITE = 'memory-recall';
 
-/** The dataset shipped with this package. */
-export function loadMemoryRecallSuite(trialsPerTask = 5): Suite<MemoryOutcome> {
-  return loadSuite(MEMORY_RECALL_SUITE, MEMORY_RECALL_DATASET_DIR, trialsPerTask);
+/** The red team's suite name, for the same reason. */
+export const RED_TEAM_SUITE = 'red-team';
+
+/**
+ * The capability dataset shipped with this package.
+ *
+ * It refuses a red-team task. A security case in this directory would share
+ * memory-recall's denominator, and a capability rate that moved because a
+ * security case was added, or the reverse, is the fault P1-G removed.
+ */
+export function loadMemoryRecallSuite(
+  trialsPerTask = 5,
+  directory: string = MEMORY_RECALL_DATASET_DIR,
+): Suite<MemoryOutcome> {
+  const specs = loadSpecs(MEMORY_RECALL_SUITE, directory);
+  const misplaced = specs.filter((spec) => spec.redTeam !== undefined).map((spec) => spec.id);
+  if (misplaced.length > 0) {
+    throw new Error(
+      `eval suite "${MEMORY_RECALL_SUITE}" holds red-team task(s) ${misplaced.join(', ')}: ` +
+        `move them to ${RED_TEAM_DATASET_DIR}, whose rate is reported on its own`,
+    );
+  }
+  return suiteOf(MEMORY_RECALL_SUITE, specs, trialsPerTask);
+}
+
+/**
+ * The memory-poisoning red team (P4-B): every task carries a `redTeam` block.
+ *
+ * One trial a task by default. The recording and the baseline are one trial
+ * each, and a live trial of the three tasks is twelve `generateContent` calls.
+ */
+export function loadRedTeamSuite(
+  trialsPerTask = 1,
+  directory: string = RED_TEAM_DATASET_DIR,
+): Suite<MemoryOutcome> {
+  const specs = loadSpecs(RED_TEAM_SUITE, directory);
+  const unmarked = specs.filter((spec) => spec.redTeam === undefined).map((spec) => spec.id);
+  if (unmarked.length > 0) {
+    throw new Error(
+      `eval suite "${RED_TEAM_SUITE}" holds task(s) with no redTeam block: ` +
+        `${unmarked.join(', ')}. A capability task belongs in ${MEMORY_RECALL_DATASET_DIR}`,
+    );
+  }
+  return suiteOf(RED_TEAM_SUITE, specs, trialsPerTask);
 }

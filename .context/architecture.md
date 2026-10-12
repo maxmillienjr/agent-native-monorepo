@@ -78,8 +78,9 @@ path.
 
 - **pgvector Collection:** Dense embeddings, searched by exact cosine distance with the
   content hash as a tiebreaker. This is retrieval: `VectorRetrievalFacade` returns this
-  search, in the reader's order, to `plan`. Scoped to the requesting session unless the
-  query opts out. The column carries an HNSW index (`vector_cosine_ops`) that the tiebroken
+  search, in the reader's order, to `plan`. Scoped to the requesting session, and a query
+  that names no session is refused unless it sets `crossSession: true`, an explicit opt-out
+  that no caller outside the tests sets (P4-B). The column carries an HNSW index (`vector_cosine_ops`) that the tiebroken
   query cannot use — ADR 0006 records that trade.
 - **Neo4j Knowledge Graph:** Typed nodes (`:Concept`, `:Fact`) joined by `:MENTIONS`, plus
   `:RELATES_TO` between concepts. Written on every run and read by no request. It is kept
@@ -136,9 +137,12 @@ START → ingress → retrieve → plan → act ⟲ (loop) → distill → refle
   `toolOutputs`, and no prompt reads that channel: `plan` runs first, and its response is
   already the assistant's answer. `selectTool` sees the plan and the tool names, and not
   the previous call's output. P4-C owns both halves of that.
-- **distill** extracts from every message, including the assistant's own turn, so what
-  `reflect` promotes to semantic memory is mostly the model's plan restated. P4-B proposes
-  changing that.
+- **distill** extracts from the user's turns only (ADR 0011). The assistant's turn is
+  written to `episodes` as history and is not a source of facts, so nothing the model wrote
+  — a retrieved fact it repeated included — is promoted to semantic memory. Semantic memory
+  learns what a user said. P4-B's red team, `EVAL_SUITE=red-team`, is the regression suite
+  for this and for the session scope; `docs/STATUS.md` row 35 says which of its cases have
+  been measured.
 - **distill** makes the extraction model call and writes `extraction` into state. It exists
   so that **reflect** can be retried: a node is only safe to re-run when it is a function of
   its input state, and a `reflect` that extracted its own entities was not.

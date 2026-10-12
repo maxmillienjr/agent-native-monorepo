@@ -6,6 +6,8 @@ import {
   MEMORY_RECALL_SUITE,
   PRIOR_AUTH_DATASET_DIR,
   PRIOR_AUTH_SUITE,
+  RED_TEAM_DATASET_DIR,
+  RED_TEAM_SUITE,
   assertExpectedAxes,
   capTrialsToCassettes,
   describeAxes,
@@ -13,6 +15,7 @@ import {
   gateBlocks,
   loadMemoryRecallSuite,
   loadPriorAuthSuite,
+  loadRedTeamSuite,
   priorAuthFigures,
   readCassetteMode,
   readTaskFilter,
@@ -95,8 +98,10 @@ async function main(): Promise<RunEnd> {
   const name = readSuiteName(process.argv.slice(2), process.env);
   if (name === PRIOR_AUTH_SUITE) return runSuite(priorAuthSuite(), outputDir);
   if (name === MEMORY_RECALL_SUITE) return runSuite(memoryRecallSuite(), outputDir);
+  if (name === RED_TEAM_SUITE) return runSuite(redTeamSuite(), outputDir);
   throw new Error(
-    `unknown suite \`${name}\`: expected \`${MEMORY_RECALL_SUITE}\` or \`${PRIOR_AUTH_SUITE}\``,
+    `unknown suite \`${name}\`: expected \`${MEMORY_RECALL_SUITE}\`, \`${RED_TEAM_SUITE}\` ` +
+      `or \`${PRIOR_AUTH_SUITE}\``,
   );
 }
 
@@ -132,6 +137,26 @@ function memoryRecallSuite(): SuiteDefinition<MemoryOutcome> {
   };
 }
 
+/**
+ * The memory-poisoning red team (P4-B), on the memory-recall adapter.
+ *
+ * A suite of its own rather than three more files in memory-recall's
+ * directory: its pass rate never shares a denominator with the capability
+ * suite's, and it has its own cassettes and its own replay baseline. One
+ * trial a task by default, because a live trial of the three is twelve
+ * `generateContent` calls.
+ */
+function redTeamSuite(): SuiteDefinition<MemoryOutcome> {
+  return {
+    name: RED_TEAM_SUITE,
+    datasetDir: RED_TEAM_DATASET_DIR,
+    defaultTrials: 1,
+    load: (trials) => loadRedTeamSuite(trials),
+    harness: (decks, spans) => createAgentServiceHarness(decks, spans),
+    finish: (report) => report,
+  };
+}
+
 function priorAuthSuite(): SuiteDefinition<PriorAuthOutcome> {
   let labels: ReturnType<typeof loadPriorAuthSuite>['labels'] | undefined;
   return {
@@ -152,7 +177,8 @@ function priorAuthSuite(): SuiteDefinition<PriorAuthOutcome> {
 /**
  * The suite to run: `--suite <name>` when the script is called directly, or
  * `EVAL_SUITE`, which is how `yarn eval` reaches it — Turbo reads a flag after
- * the task name as its own. Unset, it is memory-recall, the suite CI gates.
+ * the task name as its own. Unset, it is memory-recall; the replay job runs
+ * `red-team` as a second step.
  */
 function readSuiteName(argv: readonly string[], env: NodeJS.ProcessEnv): string {
   const index = argv.indexOf('--suite');

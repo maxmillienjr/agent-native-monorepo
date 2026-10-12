@@ -2,7 +2,7 @@
 
 ## Where things stand
 
-_Last updated 2026-10-08. If this section is more than a few weeks stale, trust the code
+_Last updated 2026-10-12. If this section is more than a few weeks stale, trust the code
 over it and update it._
 
 **Nineteen PRDs are shipped and the system they describe is running.** The service answers
@@ -13,7 +13,7 @@ stores from an empty database: one run leaves episodic rows, `:Concept` and `:Fa
 `semantic_facts` rows and checkpoints under the runId its own response returned.
 
 **`docs/STATUS.md` is the authority on any capability sentence, including the ones above.**
-Thirty-four rows, each with a status and evidence cited by name — twenty-nine `implemented`,
+Thirty-five rows, each with a status and evidence cited by name — thirty `implemented`,
 one `planned`, three `stubbed`, one `removed`, none `broken`. The rule that keeps it true is in
 `.context/conventions.md`: a change that moves a row moves it there in the same pull
 request. `yarn lint:docs` fails CI when a PRD's status disagrees with its row below.
@@ -328,6 +328,28 @@ the four appeal kinds to the ledger and bound each signed action to the caller's
 Appeals of a decision not made in time stay out by decision. CTL-HUM-03 is `implemented`,
 and STATUS row 34 is new.
 
+**[P4-B](P4-B-memory-poisoning-red-team.md) is in progress**, tracked in
+[#96](https://github.com/maxmillienjr/agent-native-monorepo/issues/96), with one step left:
+the live recording. Both mitigations are in. Retrieval refuses a query that names no session
+unless it sets `crossSession: true` (M2). `distill` reads the user's turns only, so the agent
+never promotes its own answer, or a fact it retrieved and repeated, to semantic memory (M3,
+[ADR 0011](../adr/0011-the-agent-does-not-promote-its-own-output.md)). The red team is a
+suite of its own, `EVAL_SUITE=red-team`, with three canary cases mapped to OWASP ASI06 and
+MITRE ATLAS 2026.09, which joined the control registry. The replay job runs it as a second
+step. CTL-MEM-02 is `implemented`. On the stub model `rt-001` passed before and after the
+mitigations, as ADR 0009 predicted, and failed when the session scope was forced off.
+**`rt-002` and `rt-003` have not been measured.** M3 changed every extraction request, so
+the replay tier aborts at `distill` until the cassettes are re-recorded, and so do the two
+integration tests P3-B and P3-C added that replay `memory-recall-001`. The branch was
+rebased onto `main` on 2026-10-12: P2-D's M1 meant `rt-001`'s poisoned graph fact had to
+name the attacker's session, and no path added since writes memory around `reflect`. The
+recording is still 29 `generateContent` calls: the live baseline on `4c8a780`, the
+pre-mitigation commit, then the two positive controls and the red team on the branch head.
+At the 9 or so calls a day the scheduled jobs leave, that is four batches on four days, or
+two days if the owner pauses those jobs. P4-C re-records the same cassettes, and landing it
+first saves about nine calls. The PRD's "The recording" has the commands and the order, and
+STATUS row 35 says what is measured.
+
 **Where the detail lives.** Each PRD carries its own risks, its divergences from the design
 that was reviewed, and — where a shipped record turned out to be wrong — the correction that
 followed. P2-A is the one to read first: it shipped, was reopened the same day when two of
@@ -414,11 +436,11 @@ provider actually operates under. Uses synthetic data only.
 
 ## Tier 4 — Governance and agent security as code
 
-| ID                                        | Title                                                           | Size | Status   |
-| ----------------------------------------- | --------------------------------------------------------------- | ---- | -------- |
-| [P4-A](P4-A-controls-as-code.md)          | `governance/controls.yaml` and a CI check for unmapped controls | M    | shipped  |
-| [P4-B](P4-B-memory-poisoning-red-team.md) | Memory-poisoning red team mapped to OWASP Agentic Top 10        | M    | accepted |
-| [P4-C](P4-C-reversible-tool-registry.md)  | Reversibility-tiered tool registry with saga compensation       | M    | accepted |
+| ID                                        | Title                                                           | Size | Status      |
+| ----------------------------------------- | --------------------------------------------------------------- | ---- | ----------- |
+| [P4-A](P4-A-controls-as-code.md)          | `governance/controls.yaml` and a CI check for unmapped controls | M    | shipped     |
+| [P4-B](P4-B-memory-poisoning-red-team.md) | Memory-poisoning red team mapped to OWASP Agentic Top 10        | M    | in-progress |
+| [P4-C](P4-C-reversible-tool-registry.md)  | Reversibility-tiered tool registry with saga compensation       | M    | accepted    |
 
 ## Tier 5 — Interoperability
 
