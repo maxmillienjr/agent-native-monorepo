@@ -484,20 +484,23 @@ Standing consumers, before any development spends a call:
 
 | Consumer                                     | `generateContent` per day |
 | -------------------------------------------- | ------------------------- |
-| `agent-eval.yml` `eval-live`, one trial each | about 8                   |
+| `agent-eval.yml` `eval-live`, one trial each | about 11                  |
 | `agent-eval.yml` `eval-canary` (P1-E)        | 2–3                       |
 
-That leaves roughly 9–10 a day for recordings and live criteria. Both nightly jobs are
-scheduled for 03:00 UTC, but GitHub has started them between 07:30 and 10:15 UTC on every
-night since 2026-10-03: after the quota resets at 07:00 UTC, not before it. So the nightly
-spends from the Pacific day that has just begun, and a recording made later that day spends
-what the nightly left. Start a recording after the day's nightly has finished; one started
-between 07:00 UTC and the nightly takes calls the nightly will need. Anything else that uses
-the developer key spends the same pool: on 2026-10-15 the day's 20 were gone by 12:40 UTC
-with two of them spent by a recording. A PRD that needs live calls states its count and how
-it splits across days; whoever schedules the run checks this table first and does not start
-a recording that the day's remainder cannot finish. A project with billing on would leave
-the free tier (no 20-a-day cap, a charge per token), which is the owner's decision.
+That leaves roughly 6–7 a day for recordings and live criteria. `eval-live` runs every
+memory-recall task: 3 calls for `memory-recall-001`, about 4 for `tool-use-001` and about 4
+for P4-C's `tool-use-002`. It was about 8 before P4-C added the third task and removed
+`tool-use-001`'s repeats, which left 9–10 a day. Both nightly jobs are scheduled for 03:00
+UTC, but GitHub has started them between 07:30 and 10:15 UTC on every night since
+2026-10-03: after the quota resets at 07:00 UTC, not before it. So the nightly spends from
+the Pacific day that has just begun, and a recording made later that day spends what the
+nightly left. Start a recording after the day's nightly has finished; one started between
+07:00 UTC and the nightly takes calls the nightly will need. Anything else that uses the
+developer key spends the same pool: on 2026-10-15 the day's 20 were gone by 12:40 UTC with
+two of them spent by a recording. A PRD that needs live calls states its count and how it
+splits across days; whoever schedules the run checks this table first and does not start a
+recording that the day's remainder cannot finish. A project with billing on would leave the
+free tier (no 20-a-day cap, a charge per token), which is the owner's decision.
 
 ## Documentation
 
