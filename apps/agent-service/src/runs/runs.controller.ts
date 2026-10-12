@@ -67,7 +67,13 @@ export class RunsController {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
-    // No frame carries a session id, so there is nothing to map back.
-    await this.runsService.stream({ body: scoped(body, req), correlationId, res });
+    // The terminal frame carries a session id, and it is the client's, for the
+    // reason `createRun` maps it back.
+    await this.runsService.stream({
+      body: scoped(body, req),
+      correlationId,
+      res,
+      clientSessionId: body.sessionId,
+    });
   }
 }

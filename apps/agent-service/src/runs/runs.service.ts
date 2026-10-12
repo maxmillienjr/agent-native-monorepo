@@ -54,7 +54,8 @@ const logger = createLogger('runs-service');
  * and nothing about the path taken to produce them, which is right for a client
  * and useless for an evaluation: `packages/eval-harness` scores the node
  * sequence and the tool calls, and neither is reachable from the response or
- * from the SSE frames, which carry a node name and no state.
+ * from the SSE frames, which carry a node name and, on the terminal frame, the
+ * response's summary fields.
  *
  * `extraction` is here for the same reason. `reflect` writes what `distill`
  * produced, so the only way to ask "were the concepts this run extracted
@@ -396,8 +397,20 @@ export class RunsService {
     };
   }
 
-  async stream(params: RunParams & { res: Response }): Promise<void> {
+  /**
+   * `execute`, as server-sent events: one `{ node }` frame per node update,
+   * then a terminal frame that carries the run's summary in `state`.
+   *
+   * `clientSessionId` is the session id the frames carry, and the caller says
+   * what it is because the body's may not be the client's. `RunsController`
+   * scopes the body before it gets here (P5-D, ADR 0017), and a client that
+   * copied the stored id into its next request would be derived a second time,
+   * into a different session. Required, so that no caller can forget it and
+   * send the stored id by default.
+   */
+  async stream(params: RunParams & { res: Response; clientSessionId: string }): Promise<void> {
     const runId = params.runId ?? randomUUID();
+    const sessionId = params.clientSessionId;
 
     logger.info({ msg: 'run.stream.start', correlationId: params.correlationId, runId });
 
@@ -408,10 +421,13 @@ export class RunsService {
     try {
       // A record that cannot be opened ends the stream with an error frame
       // like any other failure, because it fails inside `run`.
-      await this.run({ ...params, runId }, (event) => {
+      const run = await this.run({ ...params, runId }, (event) => {
         if (event.kind === 'updated') sendEvent({ node: event.node });
       });
-      sendEvent({ node: 'done' });
+      // Read through `buildRunResponse`, so the summary is the one `POST /runs`
+      // would have returned for the same state, with the same defaults.
+      const { outcome, tokenCounts } = buildRunResponse(run.state);
+      sendEvent({ node: 'done', state: { runId, sessionId, outcome, tokenCounts } });
     } catch (error) {
       // The root span recorded the error as it left `run`. The response is
       // already committed — headers went out with the first frame — so
@@ -426,7 +442,14 @@ export class RunsService {
         runId,
         error: message,
       });
-      sendEvent({ node: 'error', error: { node: 'unknown', message } });
+      // The run id too: the run record is open under it, and it is how an
+      // operator finds a failed run. No token counts, which a failed run never
+      // folded into a final state.
+      sendEvent({
+        node: 'error',
+        error: { node: 'unknown', message },
+        state: { runId, sessionId, outcome: 'error' },
+      });
     } finally {
       params.res.end();
     }

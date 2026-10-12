@@ -47,6 +47,13 @@ export const StreamEventSchema = z.object({
    * discover.
    */
   error: z.object({ node: z.string(), message: z.string() }).optional(),
+  /**
+   * The run's summary, on the terminal frame only: `done` carries all four
+   * fields, `error` all but `tokenCounts`. A node frame carries none.
+   *
+   * `sessionId` is the id the client sent, as on `RunResponse`, and not the
+   * one the run is stored under (P5-D, ADR 0017).
+   */
   state: z
     .object({
       runId: UuidSchema.optional(),

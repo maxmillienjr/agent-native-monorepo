@@ -7,6 +7,14 @@ import { RunResponseSchema, StreamEventSchema } from '@repo/agent-contracts';
 import { configureApp } from '../src/configure-app.js';
 import { RunsService } from '../src/runs/runs.service.js';
 
+/** The frames of a `POST /runs/stream` response body, each parsed by the contract. */
+function framesOf(text: string) {
+  return text
+    .split('\n\n')
+    .filter((chunk) => chunk.startsWith('data: '))
+    .map((chunk) => StreamEventSchema.parse(JSON.parse(chunk.slice('data: '.length))));
+}
+
 describe('RunsController (e2e)', () => {
   let app: INestApplication;
   let savedApiKey: string | undefined;
@@ -108,6 +116,30 @@ describe('RunsController (e2e)', () => {
       expect(response.headers['content-type']).toContain('text/event-stream');
       expect(response.text).toContain('data:');
     });
+
+    it("ends with a done frame carrying the run's summary, the only frame with one", async () => {
+      // The console's Run Inspector is filled from `state` and nothing else, and
+      // it stayed at "No run data yet" while no frame set it (#124).
+      const response = await request(app.getHttpServer())
+        .post('/runs/stream')
+        .set('Content-Type', 'application/json')
+        .send({
+          sessionId: '550e8400-e29b-41d4-a716-446655440000',
+          messages: [{ role: 'user', content: 'What is LangGraph?' }],
+        });
+
+      const frames = framesOf(response.text);
+      const terminal = frames[frames.length - 1];
+      expect(terminal?.node).toBe('done');
+      expect(terminal?.state).toEqual({
+        runId: expect.stringMatching(/^[0-9a-f-]{36}$/),
+        sessionId: '550e8400-e29b-41d4-a716-446655440000',
+        outcome: 'success',
+        // The stub axis's `plan` reports these, and no other stub call reports any.
+        tokenCounts: { prompt: 150, completion: 45 },
+      });
+      expect(frames.slice(0, -1).every((frame) => frame.state === undefined)).toBe(true);
+    });
   });
 });
 
@@ -188,17 +220,20 @@ describe('POST /runs/stream when a node fails', () => {
         messages: [{ role: 'user', content: 'What is LangGraph?' }],
       });
 
-    const frames = response.text
-      .split('\n\n')
-      .filter((chunk) => chunk.startsWith('data: '))
-      .map((chunk) => StreamEventSchema.parse(JSON.parse(chunk.slice('data: '.length))));
+    const frames = framesOf(response.text);
 
     // Asserted from an observed response rather than from the schema: STATUS
-    // row 14 records `delta` and `state` as declared and emitted zero times,
-    // and a third never-emitted optional field would make that worse.
+    // row 14 records `delta` as declared and emitted zero times, and a second
+    // never-emitted optional field would make that worse.
     const terminal = frames[frames.length - 1];
     expect(terminal?.error).toBeDefined();
     expect(terminal?.error?.message).toContain('upstream model unavailable');
+    // The id the failed run's record is under, for whoever has to find it.
+    expect(terminal?.state).toEqual({
+      runId: expect.stringMatching(/^[0-9a-f-]{36}$/),
+      sessionId: '550e8400-e29b-41d4-a716-446655440000',
+      outcome: 'error',
+    });
     expect(frames.some((frame) => frame.node === 'done')).toBe(false);
   }, 20_000);
 });

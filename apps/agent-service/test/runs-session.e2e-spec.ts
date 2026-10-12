@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import request from 'supertest';
-import { RunResponseSchema, type RunRequest } from '@repo/agent-contracts';
+import { RunResponseSchema, StreamEventSchema, type RunRequest } from '@repo/agent-contracts';
 import { RunsService, type RunParams } from '../src/runs/runs.service.js';
 import { runsSessionId } from '../src/auth/session-scope.js';
 import { bootService, type ServiceApp } from './service-app.js';
@@ -89,6 +89,22 @@ describe('POST /runs sessions, two principals', () => {
     expect(response.status).toBe(200);
     expect(response.text).toContain('"node":"done"');
     expect(bodies.map((body) => body.sessionId)).toEqual([runsSessionId('b', SESSION)]);
+  });
+
+  it('streams the session id it was sent, and never the stored one', async () => {
+    const response = await request(service.app.getHttpServer())
+      .post('/runs/stream')
+      .set('Authorization', 'Bearer token-b')
+      .send(BODY);
+
+    const done = response.text
+      .split('\n\n')
+      .filter((chunk) => chunk.startsWith('data: '))
+      .map((chunk) => StreamEventSchema.parse(JSON.parse(chunk.slice('data: '.length))))
+      .find((frame) => frame.node === 'done');
+
+    expect(done?.state?.sessionId).toBe(SESSION);
+    expect(response.text).not.toContain(runsSessionId('b', SESSION));
   });
 });
 
