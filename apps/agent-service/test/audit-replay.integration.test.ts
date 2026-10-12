@@ -18,6 +18,8 @@ import { configureApp } from '../src/configure-app.js';
 import { NEO4J_DRIVER, PG_POOL } from '../src/memory/memory.tokens.js';
 import { RunsService } from '../src/runs/runs.service.js';
 import { codeIdentity } from '../src/audit/code-identity.js';
+import { OPEN_PRINCIPAL } from '../src/auth/credentials.js';
+import { runsSessionId } from '../src/auth/session-scope.js';
 import { replayRun, type ReplayReport } from '../src/audit/replay-run.js';
 import { createAgentServiceHarness } from '../src/eval/agent-harness.js';
 import { replayDecks, watchForModelRequests } from '../src/eval/cassette-deps.js';
@@ -93,7 +95,7 @@ describe.skipIf(SKIP)('audit:replay (integration)', () => {
     return rows.rows.map((row) => row.seam);
   }
 
-  it('leaves one run_records row holding the body sent and every decision in order', async () => {
+  it('leaves one run_records row holding the body sent, under its derived session, and every decision in order', async () => {
     const runId = await post();
 
     const rows = await pool.query<{ request: unknown; model_axis: string; outcome: string }>(
@@ -102,7 +104,11 @@ describe.skipIf(SKIP)('audit:replay (integration)', () => {
     );
 
     expect(rows.rows).toHaveLength(1);
-    expect(canonicalJson(rows.rows[0]!.request)).toBe(canonicalJson(BODY));
+    // The body the run loop received: `/runs` moves the client's session into
+    // the caller's namespace first (P5-D, ADR 0017). Open mode, so `anonymous`.
+    expect(canonicalJson(rows.rows[0]!.request)).toBe(
+      canonicalJson({ ...BODY, sessionId: runsSessionId(OPEN_PRINCIPAL, SESSION) }),
+    );
     expect(rows.rows[0]).toMatchObject({ model_axis: 'stub', outcome: 'success' });
     // The stub extracts one fact, so `reflect` embeds once.
     expect(await seams(runId)).toEqual([
