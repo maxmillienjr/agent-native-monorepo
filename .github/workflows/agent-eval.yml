@@ -353,13 +353,14 @@ jobs:
           fi
 
       # A moved alias is news about the next model and does not fail the run,
-      # so it has to be visible some other way than a colour.
+      # so it has to be visible some other way than a colour. So is an alias
+      # the provider could not serve (`unavailable`), with its 5xx as the text.
       - name: Floating-alias notice
         if: always()
         run: |
           report="$CANARY_OUTPUT_DIR/canary-report.json"
           [ -f "$report" ] || exit 0
-          jq -r '.results[] | select(.pinned == false and .verdict != "unchanged") | "\(.id) \(.verdict) \(.observed // "")"' "$report" |
+          jq -r '.results[] | select(.pinned == false and .verdict != "unchanged") | "\(.id) \(.verdict) \(.observed // .detail // "")"' "$report" |
             while read -r id verdict observed; do
               echo "::notice title=Floating alias $verdict::$id is $verdict ($observed). A migration input, not drift."
             done
