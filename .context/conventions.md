@@ -452,29 +452,31 @@ replays the committed answer file and makes no request.
 
 ### Live model quota
 
-One budget, shared by everything that calls the model live. The free tier allows **20
-`generateContent` requests per day and 5 per minute, per Google Cloud project and model**
-(`gemini-2.5-flash`); `embedContent` is a separate quota with its own per-minute limit. The
-day resets at midnight Pacific. The `GOOGLE_API_KEY` repository secret and the developer
-key in `.env` are, as of 2026-10-08, in the **same project**, so CI and local work draw on
-one pool.
+The free tier allows **20 `generateContent` requests per day and 5 per minute, per Google
+Cloud project and model** (`gemini-2.5-flash`); `embedContent` is a separate quota with its
+own per-minute limit. The day resets at midnight Pacific. Since 2026-10-15 there are **two
+pools**: the `GOOGLE_API_KEY` repository secret is a key in its own unbilled project, used
+by CI alone, and the developer key in `.env` is in another. Before that date both keys were
+in one project, and the nightly spent from the same 20 as every recording.
 
-Standing consumers, before any development spends a call:
+The CI pool's standing consumers:
 
 | Consumer                                     | `generateContent` per day |
 | -------------------------------------------- | ------------------------- |
 | `agent-eval.yml` `eval-live`, one trial each | about 8                   |
 | `agent-eval.yml` `eval-canary` (P1-E)        | 2–3                       |
 
-That leaves roughly 9–10 a day for recordings and live criteria. Both nightly jobs are
-scheduled for 03:00 UTC, but GitHub has started them between 08:50 and 10:15 UTC on every
-night from 2026-10-03 to 2026-10-12: after the quota resets at 07:00 UTC, not before it. So
-the nightly spends from the Pacific day that has just begun, and a recording made later that
-day spends what the nightly left. Start a recording after the day's nightly has finished; one
-started between 07:00 UTC and the nightly takes calls the nightly will need. A PRD that needs live
-calls states its count and how it splits across days; whoever schedules the run checks this
-table first and does not start a recording that the day's remainder cannot finish. A key
-from a separate project doubles the pool and is the owner's decision.
+A hand-started `agent-eval.yml` dispatch spends the same pool, so a dispatch on a day the
+nightly has run has about 9–10 calls left.
+
+The developer pool has no standing consumer, so a recording can use most of the 20, five a
+minute. The client waits out a per-minute 429, but a daily one ends the run, so a PRD that
+needs live calls states its count and how it splits across days, and whoever schedules the
+run does not start a batch that the day's remainder cannot finish. Anything else that uses
+the developer key spends the same pool: on 2026-10-15 the day's 20 were gone by 12:40 UTC
+with two of them spent by a recording. A project with billing on would leave the free tier
+(no 20-a-day cap, a charge per token). Both keys are in unbilled projects by the owner's
+choice.
 
 ## Documentation
 
