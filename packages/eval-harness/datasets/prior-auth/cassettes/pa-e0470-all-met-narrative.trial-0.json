@@ -1,0 +1,94 @@
+{
+  "header": {
+    "formatVersion": 2,
+    "taskId": "pa-e0470-all-met-narrative",
+    "trialIndex": 0,
+    "recordedAt": "2026-10-15T12:39:10.966Z",
+    "gitSha": "52f43adbb842dd762adc907def389fc307028335",
+    "axes": {
+      "model": "live",
+      "memory": "live"
+    },
+    "chatModel": "gemini-2.5-flash",
+    "embeddingModel": "gemini-embedding-001",
+    "embeddingDimensions": 768
+  },
+  "decisions": [
+    {
+      "seam": "assess.criteria",
+      "requestHash": "b737eceb37418f57eef13fdfaaf5ce45ad05d74fd35b3b320fedbc68bd3913f9",
+      "request": {
+        "criteria": [
+          {
+            "id": "e0470-osa-diagnosis",
+            "title": "Obstructive sleep apnea is diagnosed",
+            "requirement": "The member has a diagnosis of obstructive sleep apnea, recorded as a condition or stated by the prescriber."
+          },
+          {
+            "id": "e0470-cpap-failure",
+            "title": "Continuous pressure was tried and failed",
+            "requirement": "The record documents a trial of at least 21 days of continuous positive airway pressure, and the prescriber states that it was not tolerated or did not control the apnea."
+          },
+          {
+            "id": "e0470-ahi-threshold",
+            "title": "Apnea-hypopnea index of 18 or more",
+            "requirement": "A sleep study dated within the 12 months before the request reports an apnea-hypopnea index (AHI) of at least 18 events per hour."
+          },
+          {
+            "id": "e0470-bilevel-titration",
+            "title": "Bi-level settings were shown to work",
+            "requirement": "A titration study or the prescriber's note documents that bi-level pressure at the ordered settings controlled the apnea."
+          }
+        ],
+        "evidence": [
+          {
+            "reference": "Condition/condition-e0470-all-met-narrative-copd",
+            "text": "Condition: J44.9 Chronic obstructive pulmonary disease, unspecified. Onset 2018-03-11."
+          },
+          {
+            "reference": "DocumentReference/doc-e0470-all-met-narrative-visit",
+            "text": "Clinical note (Prescriber visit note, dated 2026-09-08T12:00:00Z):\nHis sleep study in March, done here on the eleventh, counted thirty-seven obstructive events\nan hour, so obstructive sleep apnea on top of his lung disease.\nHe put in a solid three months on CPAP from April through June and hated every night of it;\nhe pulls the mask off within the hour and his machine still logs over twenty events an hour.\nI do not think he can tolerate CPAP.\nLast week we tried bi-level pressure in the lab: at 15 over 9 the events dropped to a couple\nan hour and he slept through. I am ordering bi-level at those settings, no backup rate."
+          }
+        ]
+      },
+      "response": {
+        "kind": "value",
+        "value": [
+          {
+            "criterionId": "e0470-osa-diagnosis",
+            "status": "met",
+            "evidence": [
+              "DocumentReference/doc-e0470-all-met-narrative-visit"
+            ],
+            "rationale": "The prescriber's note explicitly states a diagnosis of obstructive sleep apnea."
+          },
+          {
+            "criterionId": "e0470-cpap-failure",
+            "status": "met",
+            "evidence": [
+              "DocumentReference/doc-e0470-all-met-narrative-visit"
+            ],
+            "rationale": "The prescriber's note documents a three-month CPAP trial from April through June, stating the member 'hated every night of it,' 'pulls the mask off within the hour,' and that the machine 'still logs over twenty events an hour,' indicating both non-tolerance and lack of control."
+          },
+          {
+            "criterionId": "e0470-ahi-threshold",
+            "status": "met",
+            "evidence": [
+              "DocumentReference/doc-e0470-all-met-narrative-visit"
+            ],
+            "rationale": "The prescriber's note, dated 2026-09-08, refers to a sleep study done in March (assumed to be March 2026, thus within 12 months of the request) that reported 37 obstructive events per hour, which is above the threshold of 18."
+          },
+          {
+            "criterionId": "e0470-bilevel-titration",
+            "status": "met",
+            "evidence": [
+              "DocumentReference/doc-e0470-all-met-narrative-visit"
+            ],
+            "rationale": "The prescriber's note documents a trial of bi-level pressure in the lab where, at the ordered settings of 15 over 9, the events dropped to 'a couple an hour,' indicating control of the apnea."
+          }
+        ]
+      },
+      "latencyMs": 8647
+    }
+  ]
+}
