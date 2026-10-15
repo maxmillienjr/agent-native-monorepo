@@ -1,0 +1,99 @@
+{
+  "header": {
+    "formatVersion": 2,
+    "taskId": "pa-e0601-all-met-structured",
+    "trialIndex": 0,
+    "recordedAt": "2026-10-12T17:12:39.419Z",
+    "gitSha": "fba57635a195906a13aa663ad253439b319cd19e",
+    "axes": {
+      "model": "live",
+      "memory": "live"
+    },
+    "chatModel": "gemini-2.5-flash",
+    "embeddingModel": "gemini-embedding-001",
+    "embeddingDimensions": 768
+  },
+  "decisions": [
+    {
+      "seam": "assess.criteria",
+      "requestHash": "fdef448c6aac464ef17883a3a2c22275bb635dccca4adc92fa93a1bbab81d0ad",
+      "request": {
+        "criteria": [
+          {
+            "id": "e0601-osa-diagnosis",
+            "title": "Obstructive sleep apnea is diagnosed",
+            "requirement": "The member has a diagnosis of obstructive sleep apnea, recorded as a condition or stated by the prescriber."
+          },
+          {
+            "id": "e0601-ahi-threshold",
+            "title": "Apnea-hypopnea index of 18 or more",
+            "requirement": "A sleep study dated within the 12 months before the request reports an apnea-hypopnea index (AHI) of at least 18 events per hour."
+          },
+          {
+            "id": "e0601-conservative-trial",
+            "title": "A conservative measure was tried first",
+            "requirement": "The record documents at least 21 days of positional therapy or a weight-management programme that did not resolve the symptoms."
+          },
+          {
+            "id": "e0601-prescriber-order",
+            "title": "Signed order with a pressure setting",
+            "requirement": "A signed prescriber order names the device and its pressure setting or pressure range."
+          }
+        ],
+        "evidence": [
+          {
+            "reference": "Condition/condition-e0601-all-met-structured-osa",
+            "text": "Condition: G47.33 Obstructive sleep apnea (adult) (pediatric). Onset 2026-07-02."
+          },
+          {
+            "reference": "DocumentReference/doc-e0601-all-met-structured-study",
+            "text": "Clinical note (Sleep study report, dated 2026-07-01T12:00:00Z):\nIn-lab polysomnography, 2026-07-01.\nTotal sleep time 6.1 hours. Apnea-hypopnea index (AHI) 31 events per hour.\nLowest oxygen saturation 82 percent.\nImpression: obstructive sleep apnea."
+          },
+          {
+            "reference": "DocumentReference/doc-e0601-all-met-structured-visit",
+            "text": "Clinical note (Prescriber follow-up note, dated 2026-09-10T12:00:00Z):\nFollow-up for obstructive sleep apnea.\nPositional therapy with a positional belt from 2026-07-10 to 2026-08-14, 35 days.\nSnoring and daytime sleepiness persisted; Epworth score 15.\nOrder: CPAP device, auto-titrating, pressure range 6 to 14 cm H2O, heated humidifier.\nOrder signed electronically by the prescriber on 2026-09-10."
+          }
+        ]
+      },
+      "response": {
+        "kind": "value",
+        "value": [
+          {
+            "criterionId": "e0601-osa-diagnosis",
+            "status": "met",
+            "evidence": [
+              "Condition/condition-e0601-all-met-structured-osa",
+              "DocumentReference/doc-e0601-all-met-structured-study"
+            ],
+            "rationale": "The member has a diagnosis of obstructive sleep apnea (G47.33) recorded as a condition and stated in the sleep study impression."
+          },
+          {
+            "criterionId": "e0601-ahi-threshold",
+            "status": "met",
+            "evidence": [
+              "DocumentReference/doc-e0601-all-met-structured-study"
+            ],
+            "rationale": "A sleep study dated 2026-07-01 reports an Apnea-Hypopnea Index (AHI) of 31 events per hour, which is at least 18 events per hour. Assuming the request is within 12 months of this date based on the follow-up note from 2026-09-10."
+          },
+          {
+            "criterionId": "e0601-conservative-trial",
+            "status": "met",
+            "evidence": [
+              "DocumentReference/doc-e0601-all-met-structured-visit"
+            ],
+            "rationale": "The record documents positional therapy with a positional belt from 2026-07-10 to 2026-08-14, totaling 35 days, which exceeds the required 21 days. The symptoms of snoring and daytime sleepiness persisted after this trial."
+          },
+          {
+            "criterionId": "e0601-prescriber-order",
+            "status": "met",
+            "evidence": [
+              "DocumentReference/doc-e0601-all-met-structured-visit"
+            ],
+            "rationale": "A prescriber order dated 2026-09-10, signed electronically, names a 'CPAP device, auto-titrating' and specifies a 'pressure range 6 to 14 cm H2O'."
+          }
+        ]
+      },
+      "latencyMs": 7637
+    }
+  ]
+}
