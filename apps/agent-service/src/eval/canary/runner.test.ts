@@ -221,6 +221,38 @@ describe('an abort', () => {
     );
   });
 
+  it('on a 503 from the pinned chat probe: names the provider, and the floating probe never runs', async () => {
+    const state = healthyState();
+    state.failWith = {
+      match: new RegExp(`/${PINNED}:generateContent$`),
+      status: 503,
+      body: HIGH_DEMAND_BODY,
+    };
+    const { end, api } = await run(state);
+
+    expect(end).toBe('aborted');
+    expect(existsSync(join(dir, 'canary-report.json'))).toBe(false);
+    expect(api.requests.filter((request) => request.endsWith(':generateContent'))).toEqual([
+      `POST /v1beta/models/${PINNED}:generateContent`,
+    ]);
+    const abort = JSON.parse(readFileSync(join(dir, 'canary-abort.json'), 'utf8')) as CanaryAbort;
+    expect(abort.cause?.code).toBe('provider-unavailable');
+    expect(abort.cause?.summary).toMatch(/^`generateContent` answered 503 \(UNAVAILABLE: /);
+    expect(abort.cause?.remedy).toContain("the provider's capacity");
+    expect(summary()).toContain('**Cause (`provider-unavailable`):**');
+  });
+
+  it('on a 503 from the embedding probe: aborts with the same cause', async () => {
+    const state = healthyState();
+    state.failWith = { match: /:embedContent$/, status: 503, body: HIGH_DEMAND_BODY };
+    const { end } = await run(state);
+
+    expect(end).toBe('aborted');
+    const abort = JSON.parse(readFileSync(join(dir, 'canary-abort.json'), 'utf8')) as CanaryAbort;
+    expect(abort.cause?.code).toBe('provider-unavailable');
+    expect(abort.cause?.summary).toMatch(/^`embedContent` answered 503/);
+  });
+
   it('on a 429 from the floating chat probe: still the rate-limit abort, not unavailable', async () => {
     const state = healthyState();
     state.failWith = {

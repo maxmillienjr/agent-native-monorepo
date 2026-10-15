@@ -166,7 +166,7 @@ function apiOf(error: unknown): string {
   return typeof api === 'string' ? api : 'the model API';
 }
 
-/** The cause of an abort, for the two a reader can act on specifically. */
+/** The cause of an abort, for the ones a reader can act on specifically. */
 export function explainCanaryAbort(error: unknown): AbortCause | undefined {
   if (error instanceof MissingKeyError) {
     return {
@@ -197,6 +197,22 @@ export function explainCanaryAbort(error: unknown): AbortCause | undefined {
       summary: `\`${apiOf(error)}\` answered 429, and the response did not name a per-day quota.`,
     };
   }
+  // Reached only from a probe that must answer: a floating chat 5xx is a result, not an abort.
+  const unavailable = providerUnavailable(error);
+  if (unavailable !== undefined) {
+    return {
+      code: 'provider-unavailable',
+      summary:
+        `\`${apiOf(error)}\` answered ${unavailable.status} (${unavailable.message}). The ` +
+        'provider could not serve a probe the canary needs, so whether anything behind a ' +
+        'pinned id changed was not checked. No retry was made.',
+      remedy:
+        "nothing in this repository is wrong: it is the provider's capacity. Re-dispatch the " +
+        '`Agent Eval` workflow later, or wait for the next scheduled run. A dispatch also runs ' +
+        'the live job; `CANARY_PROBES=chat-pinned yarn canary` with a key checks the pinned ' +
+        'chat id alone for one `generateContent`.',
+    };
+  }
   return undefined;
 }
 
@@ -204,7 +220,8 @@ export function explainCanaryAbort(error: unknown): AbortCause | undefined {
  * Runs the selected probes against the baseline and writes the outcome.
  *
  * A completed run writes `canary-report.json` and `canary-summary.md`. Anything
- * that stops it — no key, a 429, a malformed baseline — writes
+ * that stops it — no key, a 429, a 5xx on a probe that must answer, a malformed
+ * baseline — writes
  * `canary-abort.json` and `canary-summary.md` and no report, the contract
  * P1-C set for `eval-report.json`. The directory is cleared first, so read it,
  * not the exit code.
