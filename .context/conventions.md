@@ -360,7 +360,9 @@ replays the committed answer file and makes no request.
   chat id for `modelVersion`, and embeds the 21 baseline texts, comparing each vector bit for
   bit with `packages/eval-harness/datasets/canary/baseline.json`. It needs a key and no
   stores, refuses to run without `GOOGLE_API_KEY`, and exits 1 when a pinned id is
-  `changed`, `gone` or `unobserved`; a moved floating alias is a notice. Accepting a change
+  `changed`, `gone` or `unobserved`; a moved floating alias is a notice, and so is one the
+  provider answers with a 5xx (`unavailable`). A 5xx on any other probe aborts with cause
+  `provider-unavailable`: re-dispatch later, nothing in the repository is wrong. Accepting a change
   is `CANARY_BASELINE=update yarn canary` with a key and a committed baseline diff, never a
   re-run, and a pinned `changed` usually means a re-record as well. `CANARY_PROBES` runs a
   subset (`metadata,embedding` spends no `generateContent`), and the summary names what was

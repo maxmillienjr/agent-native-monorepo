@@ -219,7 +219,7 @@ the alias target's limit. It runs on `workflow_dispatch` only, never on the sche
 
 ```ts
 // apps/agent-service/src/eval/canary/probes.ts
-export type Verdict = 'unchanged' | 'changed' | 'gone' | 'moved' | 'unobserved';
+export type Verdict = 'unchanged' | 'changed' | 'gone' | 'moved' | 'unobserved' | 'unavailable';
 
 export interface ProbeResult {
   readonly probe: 'metadata' | 'chat-pinned' | 'chat-floating' | 'embedding';
@@ -258,18 +258,22 @@ contract P1-C sets for `eval-report.json`.
 
 ### Verdicts and exit
 
-| Probe          | `unchanged` | `changed` / `gone`       | `moved`        | `unobserved`         |
-| -------------- | ----------- | ------------------------ | -------------- | -------------------- |
-| metadata       | exit 0      | exit 1                   | —              | —                    |
-| chat, pinned   | exit 0      | exit 1                   | —              | exit 1: field absent |
-| chat, floating | exit 0      | —                        | exit 0, notice | notice               |
-| embedding      | exit 0      | exit 1, cosines reported | —              | —                    |
+| Probe          | `unchanged` | `changed` / `gone`       | `moved`        | `unobserved`         | provider 5xx                  |
+| -------------- | ----------- | ------------------------ | -------------- | -------------------- | ----------------------------- |
+| metadata       | exit 0      | exit 1                   | —              | —                    | abort, `provider-unavailable` |
+| chat, pinned   | exit 0      | exit 1                   | —              | exit 1: field absent | abort, `provider-unavailable` |
+| chat, floating | exit 0      | —                        | exit 0, notice | notice               | `unavailable`: exit 0, notice |
+| embedding      | exit 0      | exit 1, cosines reported | —              | —                    | abort, `provider-unavailable` |
 
 A pinned `changed` goes red because it falsifies the premise the replay tier and P2-B's
 recorded embeddings rest on. A floating `moved` is expected, and it is information about
 the next model, not a defect in this one. `unobserved` on the pinned probe goes red because
 a missing field is how a silent fallback starts. That is the lesson of P2-A's post-ship
-correction.
+correction. A provider 5xx is not a verdict on a probe that must answer: nothing was
+compared, so the run aborts with cause `provider-unavailable` and no retry. On the floating
+alias it is the verdict `unavailable`, a notice, and the alias keeps its baseline entry,
+because the alias's capacity says nothing about the pinned model. A 429 anywhere stays on
+P1-C's rate-limit path.
 
 The summary names the date of the last baseline that matched. "The embedding model has
 returned identical vectors since 2026-09-11" is the sentence a reader of a replayed or
@@ -561,6 +565,18 @@ Where the build is not what the Design section describes:
 - **The canary opens no spans.** It is a command, not a graph node, and it initialises no
   telemetry, so the embedder's inference span is a no-op there, and the span allowlist that
   `yarn eval` enforces has nothing to check.
+
+**Correction, 2026-10-15: a floating 503 aborted the whole canary.** The scheduled runs of
+2026-10-13, 14 and 15 went red with the same line: `generateContent gemini-flash-latest
+failed: 503`, `UNAVAILABLE`, "This model is currently experiencing high demand". The
+metadata reads and the pinned chat probe had answered, and the embeddings were never read.
+The verdict table said a floating probe never fails the run, but the build only handled
+answers: a thrown error from any probe went to the abort path. `eval-live` was green on all
+three nights, so the red was the canary's alone. The floating chat probe now records a
+provider 5xx as `unavailable`, with the status and the provider's message, redacted and
+clipped, and the run goes on. A 5xx on any other probe still aborts, now with the cause
+`provider-unavailable`. No retry was added: the 503 held on three consecutive nights, and a
+retry spends the free tier's 20 calls. The floating alias then pointed at `gemini-3.8-flash`.
 
 ## Risks and open questions
 
