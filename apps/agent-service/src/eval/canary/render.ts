@@ -78,6 +78,16 @@ export function renderCanarySummary(report: CanaryReport, baseline: CanaryBaseli
     (result) => !result.pinned && result.verdict !== 'unchanged',
   );
   for (const result of floating) {
+    if (result.verdict === 'unavailable') {
+      lines.push(
+        '',
+        `> **Notice:** the provider could not serve the floating alias \`${result.id}\`` +
+          (result.status === undefined ? '' : ` (HTTP ${result.status})`) +
+          ', so nothing about it was observed tonight and its baseline entry stands. This is ' +
+          "the provider's capacity, not drift in the pinned model, and it does not fail the run.",
+      );
+      continue;
+    }
     lines.push(
       '',
       `> **Notice:** the floating alias \`${result.id}\` is \`${result.verdict}\` on ${result.probe}` +

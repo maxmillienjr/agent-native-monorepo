@@ -180,6 +180,10 @@ describe('the verdict table', () => {
       embedContent: 21,
       other: 0,
     });
+    expect(summary()).toContain(
+      `the provider could not serve the floating alias \`${FLOATING}\` (HTTP 503)`,
+    );
+    expect(summary()).not.toContain('information about the next model');
   });
 
   it('embedding: one changed vector exits 1 and reports its cosine', async () => {
