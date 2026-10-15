@@ -161,3 +161,14 @@ export const DAILY_QUOTA_BODY = {
     ],
   },
 };
+
+/** The 503 the floating alias answered on 2026-10-13, 14 and 15, verbatim. */
+export const HIGH_DEMAND_BODY = {
+  error: {
+    code: 503,
+    message:
+      'This model is currently experiencing high demand. Spikes in demand are usually ' +
+      'temporary. Please try again later.',
+    status: 'UNAVAILABLE',
+  },
+};

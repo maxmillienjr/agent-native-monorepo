@@ -1,15 +1,24 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createGeminiEmbedder } from '../../agent/model/gemini-embedder.js';
 import {
+  DAILY_QUOTA_BODY,
   EMBEDDING,
   FLOATING,
+  HIGH_DEMAND_BODY,
   PINNED,
   fakeFetch,
   healthyState,
   rawVector,
   testBaseline,
 } from './fake-api.js';
-import { chatVerdict, metadataVerdict, probeChatVersion, probeEmbeddings } from './probes.js';
+import {
+  chatVerdict,
+  metadataVerdict,
+  probeChatVersion,
+  probeEmbeddings,
+  providerUnavailable,
+  unavailableVerdict,
+} from './probes.js';
 
 /** Stubbed transport: `fetch` is replaced and no request leaves the process. */
 
@@ -54,6 +63,63 @@ describe('probeChatVersion', () => {
     expect(chatVerdict(observed, true, 'gemini-2.5-flash-002').verdict).toBe('unchanged');
     // The first observation has nothing to match: red until a baseline is committed.
     expect(chatVerdict(observed, true, undefined).verdict).toBe('changed');
+  });
+});
+
+describe('providerUnavailable', () => {
+  it("reads a 503 from the chat probe as the status and the provider's short message", async () => {
+    const state = healthyState();
+    state.failWith = { match: /:generateContent$/, status: 503, body: HIGH_DEMAND_BODY };
+    vi.stubGlobal('fetch', fakeFetch(state).fetch);
+
+    const error = await probeChatVersion(FLOATING, 'fake-key').catch((caught: unknown) => caught);
+
+    expect(providerUnavailable(error)).toEqual({
+      status: 503,
+      message:
+        'UNAVAILABLE: This model is currently experiencing high demand. Spikes in demand are ' +
+        'usually temporary. Please try again later.',
+    });
+    const result = unavailableVerdict(FLOATING, 'gemini-3.5-flash', providerUnavailable(error)!);
+    expect(result).toMatchObject({
+      probe: 'chat-floating',
+      pinned: false,
+      verdict: 'unavailable',
+      baseline: 'gemini-3.5-flash',
+      observed: undefined,
+      status: 503,
+    });
+    expect(result.detail).toMatch(/^generateContent answered 503: UNAVAILABLE: This model is/);
+  });
+
+  it('reads a non-JSON 500 by its text, and redacts a key the body echoes', async () => {
+    const key = `AIza${'x'.repeat(35)}`;
+    const state = healthyState();
+    state.failWith = { match: /:generateContent$/, status: 500, body: `upstream ${key} reset` };
+    vi.stubGlobal('fetch', fakeFetch(state).fetch);
+
+    const error = await probeChatVersion(FLOATING, 'fake-key').catch((caught: unknown) => caught);
+    const unavailable = providerUnavailable(error);
+
+    expect(unavailable?.status).toBe(500);
+    expect(unavailable?.message).not.toContain(key);
+  });
+
+  it("leaves a 429, an error without a status and the embedder's own short-vector 502 alone", async () => {
+    const state = healthyState();
+    state.failWith = { match: /:generateContent$/, status: 429, body: DAILY_QUOTA_BODY };
+    vi.stubGlobal('fetch', fakeFetch(state).fetch);
+    const rateLimited = await probeChatVersion(PINNED, 'fake-key').catch(
+      (caught: unknown) => caught,
+    );
+
+    expect(providerUnavailable(rateLimited)).toBeUndefined();
+    expect(providerUnavailable(new Error('generateContent x failed: 503 {}'))).toBeUndefined();
+    const shortVector = Object.assign(new Error('embedContent returned 3 values, expected 768'), {
+      name: 'EmbeddingRequestError',
+      status: 502,
+    });
+    expect(providerUnavailable(shortVector)).toBeUndefined();
   });
 });
 

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { decodeFloat32Base64, encodeFloat32Base64 } from '@repo/agent-cassette';
+import { decodeFloat32Base64, encodeFloat32Base64, redactDeep } from '@repo/agent-cassette';
 import { GEMINI_MODELS_ENDPOINT, errorDetailsOf } from '../../agent/model/gemini-embedder.js';
 
 /**
@@ -23,8 +23,10 @@ import { GEMINI_MODELS_ENDPOINT, errorDetailsOf } from '../../agent/model/gemini
  *   gone        the id returns 404
  *   moved       the floating alias answers differently — expected, not drift
  *   unobserved  the response lacked the field the probe reads
+ *   unavailable the floating alias answered a provider-side 5xx, so nothing
+ *               was observed — a notice; on a pinned id a 5xx aborts instead
  */
-export type Verdict = 'unchanged' | 'changed' | 'gone' | 'moved' | 'unobserved';
+export type Verdict = 'unchanged' | 'changed' | 'gone' | 'moved' | 'unobserved' | 'unavailable';
 
 export type ProbeKind = 'metadata' | 'chat-pinned' | 'chat-floating' | 'embedding';
 
@@ -46,6 +48,8 @@ export interface ProbeResult {
   readonly observed: string | undefined;
   /** e.g. "3 of 21 vectors differ; min cosine 0.99871" */
   readonly detail?: string;
+  /** The HTTP status the provider answered with, on an `unavailable` result. */
+  readonly status?: number;
 }
 
 /**
@@ -251,6 +255,78 @@ export function chatVerdict(
     verdict: pinned ? 'changed' : 'moved',
     observed,
     ...(baseline === undefined ? { detail: 'no baseline to compare with' } : {}),
+  };
+}
+
+// --- a provider that cannot serve ------------------------------------------
+
+/** What a provider-side 5xx said, short enough for a table cell and a notice. */
+export interface ProviderUnavailable {
+  readonly status: number;
+  /** e.g. "UNAVAILABLE: This model is currently experiencing high demand. …", redacted. */
+  readonly message: string;
+}
+
+const PROVIDER_MESSAGE_LIMIT = 200;
+
+const ProviderErrorBodySchema = z.object({
+  error: z.object({ status: z.string().optional(), message: z.string().optional() }).passthrough(),
+});
+
+/**
+ * A provider-side 5xx from one of the direct model calls, or `undefined` for
+ * anything else — a 429 included, which stays with `classifyRateLimit`.
+ *
+ * Both direct-call errors carry the response body after `failed: <status> `
+ * (`ModelRequestError` here, `EmbeddingRequestError` in the embedder). The
+ * embedder's own 502 for a vector of the wrong width has no body, and is a
+ * response the provider did serve, so it is not read as one.
+ */
+export function providerUnavailable(error: unknown): ProviderUnavailable | undefined {
+  if (!(error instanceof Error)) return undefined;
+  const status = (error as { status?: unknown }).status;
+  if (typeof status !== 'number' || status < 500 || status > 599) return undefined;
+  const match = / failed: \d{3} ([\s\S]*)$/.exec(error.message);
+  if (match === null) return undefined;
+
+  const body = match[1] ?? '';
+  let text = body;
+  try {
+    const parsed = ProviderErrorBodySchema.safeParse(JSON.parse(body));
+    if (parsed.success) {
+      const { status: code, message } = parsed.data.error;
+      text = [code, message].filter((part) => part !== undefined && part !== '').join(': ');
+    }
+  } catch {
+    // Not JSON: a proxy's error page. Its text is still the provider's answer.
+  }
+  const short = text.replace(/\s+/g, ' ').trim();
+  const clipped =
+    short.length > PROVIDER_MESSAGE_LIMIT ? `${short.slice(0, PROVIDER_MESSAGE_LIMIT)}…` : short;
+  return { status, message: redactDeep(clipped === '' ? `HTTP ${status}` : clipped) as string };
+}
+
+/**
+ * The floating chat probe's result when the provider could not serve the
+ * alias. Nothing was observed, so the baseline entry is kept, and it is a
+ * notice: the alias is a migration input, and its capacity is not drift in
+ * the pinned model (P1-E, Verdicts and exit). No retry is made, for the
+ * reason the chat probe makes none.
+ */
+export function unavailableVerdict(
+  id: string,
+  baseline: string | undefined,
+  unavailable: ProviderUnavailable,
+): ProbeResult {
+  return {
+    probe: 'chat-floating',
+    id,
+    pinned: false,
+    verdict: 'unavailable',
+    baseline,
+    observed: undefined,
+    status: unavailable.status,
+    detail: `generateContent answered ${unavailable.status}: ${unavailable.message}`,
   };
 }
 
