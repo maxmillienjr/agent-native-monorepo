@@ -7,6 +7,7 @@ import {
   DAILY_QUOTA_BODY,
   EMBEDDING,
   FLOATING,
+  HIGH_DEMAND_BODY,
   PINNED,
   fakeFetch,
   healthyState,
@@ -153,6 +154,34 @@ describe('the verdict table', () => {
     expect(summary()).toContain('**Notice:**');
   });
 
+  it('chat, floating: a 503 is unavailable, a notice, and the embedding probe still runs', async () => {
+    const state = healthyState();
+    state.failWith = {
+      match: new RegExp(`/${FLOATING}:generateContent$`),
+      status: 503,
+      body: HIGH_DEMAND_BODY,
+    };
+    const { end } = await run(state);
+
+    expect(end).toBe('passed');
+    expect(existsSync(join(dir, 'canary-abort.json'))).toBe(false);
+    const floating = report().results.find((result) => result.probe === 'chat-floating');
+    expect(floating).toMatchObject({
+      id: FLOATING,
+      verdict: 'unavailable',
+      status: 503,
+      baseline: 'gemini-3.5-flash',
+    });
+    expect(floating?.detail).toContain('UNAVAILABLE: This model is currently experiencing high');
+    expect(verdictOf('embedding', EMBEDDING)).toBe('unchanged');
+    expect(report().requests).toEqual({
+      metadata: 3,
+      generateContent: 2,
+      embedContent: 21,
+      other: 0,
+    });
+  });
+
   it('embedding: one changed vector exits 1 and reports its cosine', async () => {
     const state = healthyState();
     const nudged = rawVector('probe text 17');
@@ -190,6 +219,26 @@ describe('an abort', () => {
     expect(summary()).toContain(
       'daily `generateContent` quota exhausted (`GenerateRequestsPerDayPerProjectPerModel-FreeTier`)',
     );
+  });
+
+  it('on a 429 from the floating chat probe: still the rate-limit abort, not unavailable', async () => {
+    const state = healthyState();
+    state.failWith = {
+      match: new RegExp(`/${FLOATING}:generateContent$`),
+      status: 429,
+      body: DAILY_QUOTA_BODY,
+    };
+    const { end } = await run(state);
+
+    expect(end).toBe('aborted');
+    const abort = JSON.parse(readFileSync(join(dir, 'canary-abort.json'), 'utf8')) as CanaryAbort;
+    expect(abort.cause?.code).toBe('daily-quota');
+    expect(abort.completed.map((result) => result.probe)).toEqual([
+      'metadata',
+      'metadata',
+      'metadata',
+      'chat-pinned',
+    ]);
   });
 
   it('without a key: names the variable and makes no request', async () => {
@@ -241,6 +290,23 @@ describe('CANARY_BASELINE=update', () => {
 
     expect(end).toBe('failed');
     expect(written?.chat[PINNED]?.modelVersion).toBe('gemini-2.5-flash');
+  });
+
+  it('keeps the floating entry when the alias was unavailable, and goes green', async () => {
+    const state = healthyState();
+    state.modelVersion[PINNED] = 'gemini-2.5-flash-002';
+    state.failWith = {
+      match: new RegExp(`/${FLOATING}:generateContent$`),
+      status: 503,
+      body: HIGH_DEMAND_BODY,
+    };
+    let written: CanaryBaseline | undefined;
+    const { end } = await run(state, { update: (baseline) => (written = baseline) });
+
+    expect(end).toBe('passed');
+    expect(written?.chat[FLOATING]).toEqual(testBaseline().chat[FLOATING]);
+    // The rest of the run is still accepted.
+    expect(written?.chat[PINNED]?.modelVersion).toBe('gemini-2.5-flash-002');
   });
 
   it('takes a first observation into an empty chat baseline', async () => {

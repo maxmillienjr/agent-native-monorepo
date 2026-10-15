@@ -15,7 +15,9 @@ import {
   metadataVerdict,
   probeChatVersion,
   probeEmbeddings,
+  providerUnavailable,
   readModelMetadata,
+  unavailableVerdict,
   type ChatUsage,
   type ChatVersionObservation,
   type EmbeddingProbeResult,
@@ -243,7 +245,18 @@ export async function runCanary(options: CanaryOptions): Promise<'passed' | 'fai
       ['chat-floating', FLOATING_CHAT_MODEL, false],
     ] as const) {
       if (!probes.includes(kind)) continue;
-      const observation = await probeChatVersion(id, apiKey);
+      let observation: ChatVersionObservation;
+      try {
+        observation = await probeChatVersion(id, apiKey);
+      } catch (error) {
+        // A floating alias the provider cannot serve is a notice and the run
+        // goes on (P1-E, Verdicts and exit). It is left out of `chat`, so an
+        // update keeps its baseline entry. A pinned 5xx still aborts.
+        const unavailable = pinned ? undefined : providerUnavailable(error);
+        if (unavailable === undefined) throw error;
+        results.push(unavailableVerdict(id, baseline.chat[id]?.modelVersion, unavailable));
+        continue;
+      }
       chat.set(id, observation);
       if (observation.usage !== undefined) usage[id] = observation.usage;
       results.push(chatVerdict(observation, pinned, baseline.chat[id]?.modelVersion));
