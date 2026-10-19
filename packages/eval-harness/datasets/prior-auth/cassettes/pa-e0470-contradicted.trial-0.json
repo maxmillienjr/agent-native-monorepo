@@ -1,0 +1,103 @@
+{
+  "header": {
+    "formatVersion": 2,
+    "taskId": "pa-e0470-contradicted",
+    "trialIndex": 0,
+    "recordedAt": "2026-10-19T21:22:38.266Z",
+    "gitSha": "112e745ee3a51728141b721343a195ac84eb61dc",
+    "axes": {
+      "model": "live",
+      "memory": "live"
+    },
+    "chatModel": "gemini-2.5-flash",
+    "embeddingModel": "gemini-embedding-001",
+    "embeddingDimensions": 768
+  },
+  "decisions": [
+    {
+      "seam": "assess.criteria",
+      "requestHash": "b35c5180282d6c1c4545311355e350e8c4965706c77e08410b35986d775d5a9b",
+      "request": {
+        "criteria": [
+          {
+            "id": "e0470-osa-diagnosis",
+            "title": "Obstructive sleep apnea is diagnosed",
+            "requirement": "The member has a diagnosis of obstructive sleep apnea, recorded as a condition or stated by the prescriber."
+          },
+          {
+            "id": "e0470-cpap-failure",
+            "title": "Continuous pressure was tried and failed",
+            "requirement": "The record documents a trial of at least 21 days of continuous positive airway pressure, and the prescriber states that it was not tolerated or did not control the apnea."
+          },
+          {
+            "id": "e0470-ahi-threshold",
+            "title": "Apnea-hypopnea index of 18 or more",
+            "requirement": "A sleep study dated within the 12 months before the request reports an apnea-hypopnea index (AHI) of at least 18 events per hour."
+          },
+          {
+            "id": "e0470-bilevel-titration",
+            "title": "Bi-level settings were shown to work",
+            "requirement": "A titration study or the prescriber's note documents that bi-level pressure at the ordered settings controlled the apnea."
+          }
+        ],
+        "evidence": [
+          {
+            "reference": "Condition/condition-e0470-contradicted-osa",
+            "text": "Condition: G47.33 Obstructive sleep apnea (adult) (pediatric). Onset 2026-04-15."
+          },
+          {
+            "reference": "DocumentReference/doc-e0470-contradicted-study",
+            "text": "Clinical note (Sleep study report, dated 2026-04-15T12:00:00Z):\nSplit-night polysomnography, 2026-04-15.\nDiagnostic portion: apnea-hypopnea index (AHI) 42 events per hour.\nImpression: severe obstructive sleep apnea."
+          },
+          {
+            "reference": "DocumentReference/doc-e0470-contradicted-trial",
+            "text": "Clinical note (Prescriber note on the CPAP trial, dated 2026-08-20T12:00:00Z):\nCPAP at 12 cm H2O used from 2026-08-06 to 2026-08-16, 10 days.\nHe found the mask uncomfortable and asks to move to bi-level now."
+          },
+          {
+            "reference": "DocumentReference/doc-e0470-contradicted-titration",
+            "text": "Clinical note (Bi-level titration study, dated 2026-09-03T12:00:00Z):\nBi-level titration, 2026-09-03.\nAt inspiratory 16 / expiratory 10 cm H2O the residual AHI was 3 events per hour with no\narousals from leak. Order: bi-level device without backup rate at 16/10 cm H2O."
+          }
+        ]
+      },
+      "response": {
+        "kind": "value",
+        "value": [
+          {
+            "criterionId": "e0470-osa-diagnosis",
+            "status": "met",
+            "evidence": [
+              "Condition/condition-e0470-contradicted-osa",
+              "DocumentReference/doc-e0470-contradicted-study"
+            ],
+            "rationale": "The member has a diagnosis of obstructive sleep apnea, as indicated by the condition record and confirmed in the sleep study report."
+          },
+          {
+            "criterionId": "e0470-cpap-failure",
+            "status": "not-met",
+            "evidence": [
+              "DocumentReference/doc-e0470-contradicted-trial"
+            ],
+            "rationale": "The continuous positive airway pressure (CPAP) trial lasted only 10 days (from 2026-08-06 to 2026-08-16), which does not meet the requirement of at least 21 days."
+          },
+          {
+            "criterionId": "e0470-ahi-threshold",
+            "status": "met",
+            "evidence": [
+              "DocumentReference/doc-e0470-contradicted-study"
+            ],
+            "rationale": "A sleep study dated 2026-04-15 reports an apnea-hypopnea index (AHI) of 42 events per hour, which is greater than the required threshold of 18 events per hour and is within 12 months of the current date."
+          },
+          {
+            "criterionId": "e0470-bilevel-titration",
+            "status": "met",
+            "evidence": [
+              "DocumentReference/doc-e0470-contradicted-titration"
+            ],
+            "rationale": "A bi-level titration study dated 2026-09-03 documents that at inspiratory 16 / expiratory 10 cm H2O, the residual AHI was 3 events per hour, indicating control of the apnea at the ordered settings."
+          }
+        ]
+      },
+      "latencyMs": 6970
+    }
+  ]
+}

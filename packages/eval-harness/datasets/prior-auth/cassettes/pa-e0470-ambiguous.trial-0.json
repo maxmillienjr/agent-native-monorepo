@@ -1,0 +1,103 @@
+{
+  "header": {
+    "formatVersion": 2,
+    "taskId": "pa-e0470-ambiguous",
+    "trialIndex": 0,
+    "recordedAt": "2026-10-19T21:22:29.235Z",
+    "gitSha": "112e745ee3a51728141b721343a195ac84eb61dc",
+    "axes": {
+      "model": "live",
+      "memory": "live"
+    },
+    "chatModel": "gemini-2.5-flash",
+    "embeddingModel": "gemini-embedding-001",
+    "embeddingDimensions": 768
+  },
+  "decisions": [
+    {
+      "seam": "assess.criteria",
+      "requestHash": "214e1dd93fcaaa1968456cb02dacf1c6c0cfb545cf2f4de869d2fe6229e8e4be",
+      "request": {
+        "criteria": [
+          {
+            "id": "e0470-osa-diagnosis",
+            "title": "Obstructive sleep apnea is diagnosed",
+            "requirement": "The member has a diagnosis of obstructive sleep apnea, recorded as a condition or stated by the prescriber."
+          },
+          {
+            "id": "e0470-cpap-failure",
+            "title": "Continuous pressure was tried and failed",
+            "requirement": "The record documents a trial of at least 21 days of continuous positive airway pressure, and the prescriber states that it was not tolerated or did not control the apnea."
+          },
+          {
+            "id": "e0470-ahi-threshold",
+            "title": "Apnea-hypopnea index of 18 or more",
+            "requirement": "A sleep study dated within the 12 months before the request reports an apnea-hypopnea index (AHI) of at least 18 events per hour."
+          },
+          {
+            "id": "e0470-bilevel-titration",
+            "title": "Bi-level settings were shown to work",
+            "requirement": "A titration study or the prescriber's note documents that bi-level pressure at the ordered settings controlled the apnea."
+          }
+        ],
+        "evidence": [
+          {
+            "reference": "Condition/condition-e0470-ambiguous-osa",
+            "text": "Condition: G47.33 Obstructive sleep apnea (adult) (pediatric). Onset 2026-04-15."
+          },
+          {
+            "reference": "DocumentReference/doc-e0470-ambiguous-study",
+            "text": "Clinical note (Sleep study report, dated 2026-04-15T12:00:00Z):\nSplit-night polysomnography, 2026-04-15.\nDiagnostic portion: apnea-hypopnea index (AHI) 42 events per hour.\nImpression: severe obstructive sleep apnea."
+          },
+          {
+            "reference": "DocumentReference/doc-e0470-ambiguous-trial",
+            "text": "Clinical note (Prescriber note on the CPAP trial):\nShe may have tried a CPAP machine for a while at some point; the family were not sure when\nor for how long, and no download is available. Possibly did not get on with it."
+          },
+          {
+            "reference": "DocumentReference/doc-e0470-ambiguous-titration",
+            "text": "Clinical note (Bi-level titration study, dated 2026-09-03T12:00:00Z):\nBi-level titration, 2026-09-03.\nAt inspiratory 16 / expiratory 10 cm H2O the residual AHI was 3 events per hour with no\narousals from leak. Order: bi-level device without backup rate at 16/10 cm H2O."
+          }
+        ]
+      },
+      "response": {
+        "kind": "value",
+        "value": [
+          {
+            "criterionId": "e0470-osa-diagnosis",
+            "status": "met",
+            "evidence": [
+              "Condition/condition-e0470-ambiguous-osa",
+              "DocumentReference/doc-e0470-ambiguous-study"
+            ],
+            "rationale": "The member has a diagnosis of obstructive sleep apnea, recorded as a condition with onset 2026-04-15, and confirmed in the sleep study impression."
+          },
+          {
+            "criterionId": "e0470-cpap-failure",
+            "status": "insufficient",
+            "evidence": [
+              "DocumentReference/doc-e0470-ambiguous-trial"
+            ],
+            "rationale": "The evidence vaguely states the member 'may have tried a CPAP machine for a while' and that the 'family were not sure when or for how long', which does not document a trial of at least 21 days. The prescriber's note that she 'Possibly did not get on with it' is not a definitive statement of non-toleration or failure by the prescriber."
+          },
+          {
+            "criterionId": "e0470-ahi-threshold",
+            "status": "met",
+            "evidence": [
+              "DocumentReference/doc-e0470-ambiguous-study"
+            ],
+            "rationale": "A sleep study dated 2026-04-15 reports an apnea-hypopnea index (AHI) of 42 events per hour, which is greater than the required 18 events per hour. This date is within 12 months of the latest documentation date provided (2026-09-03)."
+          },
+          {
+            "criterionId": "e0470-bilevel-titration",
+            "status": "met",
+            "evidence": [
+              "DocumentReference/doc-e0470-ambiguous-titration"
+            ],
+            "rationale": "A bi-level titration study dated 2026-09-03 documents that at the ordered settings of inspiratory 16 / expiratory 10 cm H2O, the residual AHI was 3 events per hour, indicating control of apnea."
+          }
+        ]
+      },
+      "latencyMs": 8928
+    }
+  ]
+}
