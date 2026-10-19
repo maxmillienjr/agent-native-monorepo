@@ -2,7 +2,7 @@
 id: P3-D
 title: Synthetic payer dataset and FHIR prior-authorization surface
 tier: 3
-status: in-progress
+status: shipped
 size: L
 depends_on: [P1-A, P1-B, P3-A]
 blocks: [P3-E]
@@ -633,9 +633,10 @@ Each criterion names the axis it is checked on where the model or the memory is 
 
 **Dataset and detector**
 
-- [ ] `packages/eval-harness/datasets/prior-auth/` holds 24 task files, 24 bundles under
+- [x] `packages/eval-harness/datasets/prior-auth/` holds 24 task files, 24 bundles under
       `bundles/`, and `bundles/labels.json`. The labels commit precedes the first cassette
-      commit in `git log`.
+      commit in `git log`. **Checked 2026-10-19:** 24 and 24; `labels.json` was added in
+      `667d7e8` (2026-10-08), an ancestor of `6fb5732`, the first cassette commit.
 - [x] `packages/prior-auth/data/policies/` holds four policies, one per HCPCS Level II code
       in the Design table, each with a `disclaimer` field.
 - [x] `yarn lint:docs` runs `lint-data.mjs`, and it passes on the tree at merge with an
@@ -695,12 +696,19 @@ Each criterion names the axis it is checked on where the model or the memory is 
 - [x] `SEAMS` includes `assess.criteria`. `EVAL_CASSETTE_MODE=replay yarn eval` on the
       memory-recall suite produces the same per-grader results as on `main`. Model
       `replay` / memory `live`.
-- [ ] One recorded trial of each of the 24 tasks exists, recorded on model `live` / memory
-      `live`, with the recording's git sha in each cassette header.
-- [ ] `EVAL_CASSETTE_MODE=replay yarn eval --suite prior-auth` reports every grader for
+- [x] One recorded trial of each of the 24 tasks exists, recorded on model `live` / memory
+      `live`, with the recording's git sha in each cassette header. **Recorded 2026-10-12,
+      10-15 and 10-19:** 24 cassettes, 24 trials passed, 20 `assess.criteria` calls and no
+      retry. See "The recording, as made".
+- [x] `EVAL_CASSETTE_MODE=replay yarn eval --suite prior-auth` reports every grader for
       every task, the wrongful approval count, the unnecessary referral rate, and the labels'
       sha256. Model `replay` / memory `live`. The wrongful approval count is 0. The recorded
       values of the other numbers are written into `docs/STATUS.md`, whatever they are.
+      **2026-10-19:** all four graders at 100% on all 24 tasks; wrongful approvals 0 of 16;
+      unnecessary referrals 0 of 8; labels sha256 `f6e44e9c…bb82`. `EVAL_GATE=update` wrote
+      `baselines/replay.json`, and a second run with `EVAL_GATE=replay` reported `match`.
+      STATUS row 26 carries the figures, and `agent-eval.yml`'s replay job runs the suite on
+      every pull request as a second step.
 - [x] On model `stub`, the prior-auth suite skips all 24 tasks and says so beside the rate
       (P1-G).
 
@@ -838,6 +846,31 @@ unmatched Claim profile. That agrees with the local run in a Java 17 container.
   These wait for the recording above. The replay path is built: on model `stub` all 24
   tasks are skipped and each figure says "not measured". With no cassettes, a replay aborts
   and names the first task that has none.
+
+### The recording, as made
+
+_Recorded 2026-10-19._ The plan was two batches of ten on two days. It took three days and
+four runs, because the free tier's day was shared with the nightly and with other use of the
+same key:
+
+| Date       | Tasks                                 | Calls | Header sha |
+| ---------- | ------------------------------------- | ----- | ---------- |
+| 2026-10-12 | E0601, all six                        | 5     | `fba5763`  |
+| 2026-10-15 | E0470 administrative and both all-met | 2     | `52f43ad`  |
+| 2026-10-19 | E0470's other three, K0823 all six    | 8     | `112e745`  |
+| 2026-10-19 | E0260, all six                        | 5     | `a29863a`  |
+
+The 10-15 run stopped on a daily-quota 429 after its second call: the day's 20 were gone
+before it started. The branch was rebased onto `main` between recordings, so `52f43ad` is on
+no branch; the tag `recording/p3d-e0470-2026-10-15` keeps it reachable, so every header sha
+resolves. Between recordings `main` changed only outside the prior-auth graph (caller-scoped
+sessions, the stream's terminal frame, the canary), and the replay of all 24 at the branch
+head matches the baseline, which is the check that matters.
+
+**What the numbers do and do not say.** One trial on each of 24 requests authored with
+their labels is a frozen sample of the pipeline, not an accuracy estimate. 0 wrongful
+approvals in 16 puts the one-sided 95% upper bound on the rate at about 17%. The replay gate
+makes the 24 decisions a regression test: a change that flips any of them is `regressed`.
 
 ## Risks and open questions
 

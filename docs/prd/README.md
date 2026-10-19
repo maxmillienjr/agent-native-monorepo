@@ -2,10 +2,10 @@
 
 ## Where things stand
 
-_Last updated 2026-10-12. If this section is more than a few weeks stale, trust the code
+_Last updated 2026-10-19. If this section is more than a few weeks stale, trust the code
 over it and update it._
 
-**Twenty PRDs are shipped and the system they describe is running.** The service answers
+**Twenty-one PRDs are shipped and the system they describe is running.** The service answers
 `POST /runs` and `POST /runs/stream`; `memory-core` is constructed by the app rather than
 sitting beside it; the graph compiles with a checkpointer and a retry policy on every node
 that performs I/O; and `packages/eval-harness` measures the result. Verified against live
@@ -216,9 +216,8 @@ this found that the `Node` alias misses an undeclared key returned beside a decl
 an explicit return type catches it. CTL-HUM-01 is `implemented`, with its title narrowed to
 what is enforced.
 
-**[P3-D](P3-D-payer-dataset-fhir-prior-auth.md) is in progress**, tracked in
-[#84](https://github.com/maxmillienjr/agent-native-monorepo/issues/84), with one step left:
-the live recording. The service answers `POST /fhir/Claim/$submit` and `GET /fhir/metadata`.
+**[P3-D](P3-D-payer-dataset-fhir-prior-auth.md) has shipped**, tracked in
+[#84](https://github.com/maxmillienjr/agent-native-monorepo/issues/84). The service answers `POST /fhir/Claim/$submit` and `GET /fhir/metadata`.
 It runs a second graph (intake, lookup, assess, dispose) inline and returns a
 `ClaimResponse`: `complete` for an automated approval, `queued` for a referral. The surface is
 shaped after PAS 2.2.1 and does not conform to it, because ADR 0008 keeps X12 code values out
@@ -233,9 +232,11 @@ and its unprovable half is a procedural CTL-DATA-02. The HL7 validator found two
 the design. US Core rejects an NPI that fails its check digit, so the data holds no NPI at
 all. And an unversioned profile resolved to US Core 7.0.0, so each profile names 6.1.0. After
 those fixes, every bundle and every captured response validates against US Core 6.1.0, and the
-only distance from PAS left is X12. The recording needs 20 `generateContent` calls, a full
-free-tier day, so it is planned as two batches on two days. Until it is made, the agent's
-accuracy on the labelled set is unmeasured, and STATUS row 26 says so.
+only distance from PAS left is X12. The 24 requests were recorded live, one trial each,
+between 2026-10-12 and 2026-10-19, and all 24 pass: 0 wrongful approvals of 16, 0
+unnecessary referrals of 8. That is a frozen sample and not an accuracy estimate, and STATUS
+row 26 says so. The replay job runs the suite on every pull request, so a change that flips
+one of the 24 decisions is `regressed`.
 
 **[P3-B](P3-B-audit-replay.md) has shipped**, tracked in
 [#97](https://github.com/maxmillienjr/agent-native-monorepo/issues/97). A checkpoint history
@@ -417,14 +418,14 @@ OpenTelemetry GenAI conventions.
 Optional vertical. Demonstrates that the chassis holds up under the constraints a payer or
 provider actually operates under. Uses synthetic data only.
 
-| ID                                            | Title                                                         | Size | Status      |
-| --------------------------------------------- | ------------------------------------------------------------- | ---- | ----------- |
-| [P3-A](P3-A-clinician-gate.md)                | Clinician-gate invariant enforced in the type system          | S    | shipped     |
-| [P3-B](P3-B-audit-replay.md)                  | Deterministic replay for audit reconstruction                 | L    | shipped     |
-| [P3-C](P3-C-decision-ledger.md)               | Hash-chained, tamper-evident decision ledger                  | L    | shipped     |
-| [P3-D](P3-D-payer-dataset-fhir-prior-auth.md) | Synthetic payer dataset and FHIR prior-authorization surface  | L    | in-progress |
-| [P3-E](P3-E-clinician-review-queue.md)        | Clinician review queue, `$inquire` and the decision clock     | M    | shipped     |
-| [P3-F](P3-F-appeals-reconsideration.md)       | Appeals: reconsideration lifecycle for adverse determinations | M    | shipped     |
+| ID                                            | Title                                                         | Size | Status  |
+| --------------------------------------------- | ------------------------------------------------------------- | ---- | ------- |
+| [P3-A](P3-A-clinician-gate.md)                | Clinician-gate invariant enforced in the type system          | S    | shipped |
+| [P3-B](P3-B-audit-replay.md)                  | Deterministic replay for audit reconstruction                 | L    | shipped |
+| [P3-C](P3-C-decision-ledger.md)               | Hash-chained, tamper-evident decision ledger                  | L    | shipped |
+| [P3-D](P3-D-payer-dataset-fhir-prior-auth.md) | Synthetic payer dataset and FHIR prior-authorization surface  | L    | shipped |
+| [P3-E](P3-E-clinician-review-queue.md)        | Clinician review queue, `$inquire` and the decision clock     | M    | shipped |
+| [P3-F](P3-F-appeals-reconsideration.md)       | Appeals: reconsideration lifecycle for adverse determinations | M    | shipped |
 
 ## Tier 4 — Governance and agent security as code
 
