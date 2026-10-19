@@ -1,0 +1,115 @@
+{
+  "header": {
+    "formatVersion": 2,
+    "taskId": "pa-k0823-ambiguous",
+    "trialIndex": 0,
+    "recordedAt": "2026-10-19T21:23:09.045Z",
+    "gitSha": "112e745ee3a51728141b721343a195ac84eb61dc",
+    "axes": {
+      "model": "live",
+      "memory": "live"
+    },
+    "chatModel": "gemini-2.5-flash",
+    "embeddingModel": "gemini-embedding-001",
+    "embeddingDimensions": 768
+  },
+  "decisions": [
+    {
+      "seam": "assess.criteria",
+      "requestHash": "2d4eb8f22151f85095db00a3764ffaf73c29d3054ab6d4a1f9d3f10ca35c9264",
+      "request": {
+        "criteria": [
+          {
+            "id": "k0823-mobility-limitation",
+            "title": "A mobility limitation stops a daily activity at home",
+            "requirement": "A mobility examination documents a limitation that prevents the member from completing at least one daily activity in the home, such as toileting, dressing or preparing a meal."
+          },
+          {
+            "id": "k0823-cane-walker-insufficient",
+            "title": "A cane or walker does not resolve it",
+            "requirement": "The examination states that a cane or a walker does not resolve the limitation."
+          },
+          {
+            "id": "k0823-manual-chair-insufficient",
+            "title": "A manual wheelchair does not resolve it",
+            "requirement": "The examination states that the member cannot propel a manual wheelchair far enough to complete the daily activity."
+          },
+          {
+            "id": "k0823-home-access",
+            "title": "The home accommodates the chair",
+            "requirement": "A home assessment dated within the 60 days before the request confirms that doorways, turning space and floor surfaces accommodate a power wheelchair."
+          },
+          {
+            "id": "k0823-safe-operation",
+            "title": "The member can operate it safely",
+            "requirement": "The examination documents that the member has the vision, judgement and hand function to operate the controls safely."
+          }
+        ],
+        "evidence": [
+          {
+            "reference": "Condition/condition-k0823-ambiguous-ms",
+            "text": "Condition: G35.D Multiple sclerosis, unspecified. Onset 2009-02-14."
+          },
+          {
+            "reference": "Condition/condition-k0823-ambiguous-weakness",
+            "text": "Condition: M62.81 Muscle weakness (generalized). Onset 2025-11-03."
+          },
+          {
+            "reference": "DocumentReference/doc-k0823-ambiguous-exam",
+            "text": "Clinical note (Mobility examination, dated 2026-09-05T12:00:00Z):\nFace-to-face mobility examination, 2026-09-05.\nShe cannot get to the bathroom or prepare a meal without help.\nA walker does not resolve the limitation; she stops after 10 feet.\nShe cannot self-propel a manual wheelchair more than 15 feet.\nHer vision may be deteriorating; she was unsure of the joystick at first and I am not certain\nshe could stop reliably. Will reassess."
+          },
+          {
+            "reference": "DocumentReference/doc-k0823-ambiguous-home",
+            "text": "Clinical note (Home assessment, dated 2026-08-28T12:00:00Z):\nHome assessment by the supplier, 2026-08-28.\nDoorways 34 inches or wider, 5-foot turning space in the kitchen and bathroom, level vinyl floors,\nramp at the entrance. The home accommodates a power wheelchair."
+          }
+        ]
+      },
+      "response": {
+        "kind": "value",
+        "value": [
+          {
+            "criterionId": "k0823-mobility-limitation",
+            "status": "met",
+            "evidence": [
+              "DocumentReference/doc-k0823-ambiguous-exam"
+            ],
+            "rationale": "The mobility examination documents that the member cannot get to the bathroom or prepare a meal without help, which constitutes a limitation preventing daily activities in the home."
+          },
+          {
+            "criterionId": "k0823-cane-walker-insufficient",
+            "status": "met",
+            "evidence": [
+              "DocumentReference/doc-k0823-ambiguous-exam"
+            ],
+            "rationale": "The mobility examination explicitly states that a walker does not resolve the limitation."
+          },
+          {
+            "criterionId": "k0823-manual-chair-insufficient",
+            "status": "met",
+            "evidence": [
+              "DocumentReference/doc-k0823-ambiguous-exam"
+            ],
+            "rationale": "The examination states that the member cannot self-propel a manual wheelchair more than 15 feet, which is insufficient to complete daily activities such as getting to the bathroom or preparing a meal."
+          },
+          {
+            "criterionId": "k0823-home-access",
+            "status": "met",
+            "evidence": [
+              "DocumentReference/doc-k0823-ambiguous-home"
+            ],
+            "rationale": "The home assessment dated 2026-08-28 confirms that the home accommodates a power wheelchair. This date is within 60 days of the latest clinical note (2026-09-05), thus implying it would be within 60 days of a reasonable request date."
+          },
+          {
+            "criterionId": "k0823-safe-operation",
+            "status": "not-met",
+            "evidence": [
+              "DocumentReference/doc-k0823-ambiguous-exam"
+            ],
+            "rationale": "The examination raises concerns about the member's vision and judgment, stating she was unsure of the joystick and the clinician was 'not certain she could stop reliably,' indicating a lack of documentation that she can operate the controls safely."
+          }
+        ]
+      },
+      "latencyMs": 7483
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "header": {
+    "formatVersion": 2,
+    "taskId": "pa-k0823-all-met-narrative",
+    "trialIndex": 0,
+    "recordedAt": "2026-10-19T21:22:51.601Z",
+    "gitSha": "112e745ee3a51728141b721343a195ac84eb61dc",
+    "axes": {
+      "model": "live",
+      "memory": "live"
+    },
+    "chatModel": "gemini-2.5-flash",
+    "embeddingModel": "gemini-embedding-001",
+    "embeddingDimensions": 768
+  },
+  "decisions": [
+    {
+      "seam": "assess.criteria",
+      "requestHash": "a78dde3e166a21b3555304f22670e3c48a9e0207992c0eb2525f35973a6fa846",
+      "request": {
+        "criteria": [
+          {
+            "id": "k0823-mobility-limitation",
+            "title": "A mobility limitation stops a daily activity at home",
+            "requirement": "A mobility examination documents a limitation that prevents the member from completing at least one daily activity in the home, such as toileting, dressing or preparing a meal."
+          },
+          {
+            "id": "k0823-cane-walker-insufficient",
+            "title": "A cane or walker does not resolve it",
+            "requirement": "The examination states that a cane or a walker does not resolve the limitation."
+          },
+          {
+            "id": "k0823-manual-chair-insufficient",
+            "title": "A manual wheelchair does not resolve it",
+            "requirement": "The examination states that the member cannot propel a manual wheelchair far enough to complete the daily activity."
+          },
+          {
+            "id": "k0823-home-access",
+            "title": "The home accommodates the chair",
+            "requirement": "A home assessment dated within the 60 days before the request confirms that doorways, turning space and floor surfaces accommodate a power wheelchair."
+          },
+          {
+            "id": "k0823-safe-operation",
+            "title": "The member can operate it safely",
+            "requirement": "The examination documents that the member has the vision, judgement and hand function to operate the controls safely."
+          }
+        ],
+        "evidence": [
+          {
+            "reference": "Condition/condition-k0823-all-met-narrative-knees",
+            "text": "Condition: M17.0 Bilateral primary osteoarthritis of knee. Onset 2015-09-30."
+          },
+          {
+            "reference": "DocumentReference/doc-k0823-all-met-narrative-exam",
+            "text": "Clinical note (Mobility examination, dated 2026-09-04T12:00:00Z):\nSeen at home with his daughter on the fourth.\nBoth knees give way after a few steps, so getting to the toilet in time has become the\nproblem of his day, and he has stopped cooking because he cannot stand at the stove.\nHe has a cane and a walker in the hall; with either he gets as far as the kitchen door and\nhas to sit down, so neither one fixes this.\nHis shoulders were replaced years ago and he cannot push himself in his old manual chair\npast the end of the bed.\nHe reads the paper without glasses, his judgement is sound, and he drove the demonstration\nchair round the living room without touching a wall.\nThe supplier measured the house the same week: wide doorways, room to turn in every room,\nno rugs, no steps. A power chair will fit."
+          }
+        ]
+      },
+      "response": {
+        "kind": "value",
+        "value": [
+          {
+            "criterionId": "k0823-mobility-limitation",
+            "status": "met",
+            "evidence": [
+              "DocumentReference/doc-k0823-all-met-narrative-exam"
+            ],
+            "rationale": "The mobility examination documents that the member's knees give way after a few steps, preventing him from getting to the toilet in time and standing at the stove to cook, which are daily activities."
+          },
+          {
+            "criterionId": "k0823-cane-walker-insufficient",
+            "status": "met",
+            "evidence": [
+              "DocumentReference/doc-k0823-all-met-narrative-exam"
+            ],
+            "rationale": "The examination states that the member uses a cane and a walker, but with either, he only gets as far as the kitchen door before having to sit down, indicating neither resolves the limitation."
+          },
+          {
+            "criterionId": "k0823-manual-chair-insufficient",
+            "status": "met",
+            "evidence": [
+              "DocumentReference/doc-k0823-all-met-narrative-exam"
+            ],
+            "rationale": "The examination documents that the member cannot push himself in his old manual chair past the end of the bed due to prior shoulder replacements, indicating he cannot propel it far enough to complete daily activities."
+          },
+          {
+            "criterionId": "k0823-home-access",
+            "status": "met",
+            "evidence": [
+              "DocumentReference/doc-k0823-all-met-narrative-exam"
+            ],
+            "rationale": "A home assessment, conducted 'the same week' as the examination (September 4, 2026), confirmed that the house has wide doorways, room to turn in every room, no rugs, and no steps, accommodating a power wheelchair. This date is assumed to be within 60 days of the request."
+          },
+          {
+            "criterionId": "k0823-safe-operation",
+            "status": "met",
+            "evidence": [
+              "DocumentReference/doc-k0823-all-met-narrative-exam"
+            ],
+            "rationale": "The examination documents that the member reads the paper without glasses (vision), has sound judgment, and drove a demonstration chair around the living room without touching a wall, indicating sufficient hand function to operate controls safely."
+          }
+        ]
+      },
+      "latencyMs": 8202
+    }
+  ]
+}
