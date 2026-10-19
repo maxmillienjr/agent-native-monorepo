@@ -1,0 +1,82 @@
+{
+  "header": {
+    "formatVersion": 2,
+    "taskId": "pa-e0260-all-met-structured",
+    "trialIndex": 0,
+    "recordedAt": "2026-10-19T21:24:06.843Z",
+    "gitSha": "a29863a4e6a9a705c8d45b233648b6c6884d9212",
+    "axes": {
+      "model": "live",
+      "memory": "live"
+    },
+    "chatModel": "gemini-2.5-flash",
+    "embeddingModel": "gemini-embedding-001",
+    "embeddingDimensions": 768
+  },
+  "decisions": [
+    {
+      "seam": "assess.criteria",
+      "requestHash": "7a1ce55df08bdb11a1bb270ab26c4bc31248ed7516eec66618c310a4792850ae",
+      "request": {
+        "criteria": [
+          {
+            "id": "e0260-positioning-need",
+            "title": "Positioning an ordinary bed cannot provide",
+            "requirement": "The prescriber documents that the member must be positioned with the head raised 35 degrees or more, or in another position an ordinary bed cannot hold."
+          },
+          {
+            "id": "e0260-linked-diagnosis",
+            "title": "A diagnosis the positioning need follows from",
+            "requirement": "The member has a recorded diagnosis that the prescriber links to the positioning need."
+          },
+          {
+            "id": "e0260-frequent-adjustment",
+            "title": "Position changes often enough to need a motor",
+            "requirement": "The prescriber's note states that the position must change several times a day or without delay, which a manual crank cannot do."
+          }
+        ],
+        "evidence": [
+          {
+            "reference": "Condition/condition-e0260-all-met-structured-chf",
+            "text": "Condition: I50.22 Chronic systolic (congestive) heart failure. Onset 2021-10-05."
+          },
+          {
+            "reference": "DocumentReference/doc-e0260-all-met-structured-visit",
+            "text": "Clinical note (Prescriber visit note, dated 2026-09-08T12:00:00Z):\nChronic systolic heart failure, ejection fraction 25 percent.\nOrthopnea: she must sleep with the head of the bed raised at 45 degrees to breathe; pillows slide\nand she wakes short of breath. The positioning need follows from her heart failure.\nShe needs the head raised and lowered several times a night, immediately, when she wakes\nbreathless; she cannot work a manual crank."
+          }
+        ]
+      },
+      "response": {
+        "kind": "value",
+        "value": [
+          {
+            "criterionId": "e0260-positioning-need",
+            "status": "met",
+            "evidence": [
+              "DocumentReference/doc-e0260-all-met-structured-visit"
+            ],
+            "rationale": "The prescriber's note states that the member \"must sleep with the head of the bed raised at 45 degrees to breathe\", which exceeds the 35 degrees requirement and implies an ordinary bed cannot hold (pillows slide)."
+          },
+          {
+            "criterionId": "e0260-linked-diagnosis",
+            "status": "met",
+            "evidence": [
+              "Condition/condition-e0260-all-met-structured-chf",
+              "DocumentReference/doc-e0260-all-met-structured-visit"
+            ],
+            "rationale": "The member has a diagnosis of \"Chronic systolic (congestive) heart failure,\" and the prescriber explicitly states, \"The positioning need follows from her heart failure.\""
+          },
+          {
+            "criterionId": "e0260-frequent-adjustment",
+            "status": "met",
+            "evidence": [
+              "DocumentReference/doc-e0260-all-met-structured-visit"
+            ],
+            "rationale": "The prescriber's note states, \"She needs the head raised and lowered several times a night, immediately, when she wakes breathless; she cannot work a manual crank.\" This meets the requirement for frequent and immediate adjustments that a manual crank cannot provide."
+          }
+        ]
+      },
+      "latencyMs": 4322
+    }
+  ]
+}

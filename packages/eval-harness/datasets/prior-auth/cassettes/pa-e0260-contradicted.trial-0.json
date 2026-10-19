@@ -1,0 +1,82 @@
+{
+  "header": {
+    "formatVersion": 2,
+    "taskId": "pa-e0260-contradicted",
+    "trialIndex": 0,
+    "recordedAt": "2026-10-19T21:24:16.156Z",
+    "gitSha": "a29863a4e6a9a705c8d45b233648b6c6884d9212",
+    "axes": {
+      "model": "live",
+      "memory": "live"
+    },
+    "chatModel": "gemini-2.5-flash",
+    "embeddingModel": "gemini-embedding-001",
+    "embeddingDimensions": 768
+  },
+  "decisions": [
+    {
+      "seam": "assess.criteria",
+      "requestHash": "6f1c99c94c186b404837372ba03d180a342d7ed062d822a01110ecc31459f928",
+      "request": {
+        "criteria": [
+          {
+            "id": "e0260-positioning-need",
+            "title": "Positioning an ordinary bed cannot provide",
+            "requirement": "The prescriber documents that the member must be positioned with the head raised 35 degrees or more, or in another position an ordinary bed cannot hold."
+          },
+          {
+            "id": "e0260-linked-diagnosis",
+            "title": "A diagnosis the positioning need follows from",
+            "requirement": "The member has a recorded diagnosis that the prescriber links to the positioning need."
+          },
+          {
+            "id": "e0260-frequent-adjustment",
+            "title": "Position changes often enough to need a motor",
+            "requirement": "The prescriber's note states that the position must change several times a day or without delay, which a manual crank cannot do."
+          }
+        ],
+        "evidence": [
+          {
+            "reference": "Condition/condition-e0260-contradicted-chf",
+            "text": "Condition: I50.22 Chronic systolic (congestive) heart failure. Onset 2021-10-05."
+          },
+          {
+            "reference": "DocumentReference/doc-e0260-contradicted-visit",
+            "text": "Clinical note (Prescriber visit note, dated 2026-09-10T12:00:00Z):\nChronic systolic heart failure, stable.\nHe sleeps comfortably with the head raised about 20 degrees on two pillows.\nThe positioning need follows from his heart failure.\nHe wants to be able to raise and lower the head several times a night without getting up,\nimmediately when he wakes; he cannot work a manual crank."
+          }
+        ]
+      },
+      "response": {
+        "kind": "value",
+        "value": [
+          {
+            "criterionId": "e0260-positioning-need",
+            "status": "not-met",
+            "evidence": [
+              "DocumentReference/doc-e0260-contradicted-visit"
+            ],
+            "rationale": "The prescriber documents that the member sleeps with the head raised about 20 degrees, which does not meet the requirement of 35 degrees or more. There is no documentation of another position an ordinary bed cannot hold."
+          },
+          {
+            "criterionId": "e0260-linked-diagnosis",
+            "status": "met",
+            "evidence": [
+              "Condition/condition-e0260-contradicted-chf",
+              "DocumentReference/doc-e0260-contradicted-visit"
+            ],
+            "rationale": "The member has a recorded diagnosis of chronic systolic heart failure, and the prescriber explicitly states that the positioning need follows from this heart failure."
+          },
+          {
+            "criterionId": "e0260-frequent-adjustment",
+            "status": "met",
+            "evidence": [
+              "DocumentReference/doc-e0260-contradicted-visit"
+            ],
+            "rationale": "The prescriber's note states the member wants to raise and lower the head several times a night without getting up, immediately when he wakes, and that he cannot work a manual crank."
+          }
+        ]
+      },
+      "latencyMs": 4892
+    }
+  ]
+}
