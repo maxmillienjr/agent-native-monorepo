@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, Optional } from '@nestjs/common';
 import type { Response } from 'express';
-import type { BaseCheckpointSaver } from '@langchain/langgraph';
+import { INTERRUPT, type BaseCheckpointSaver } from '@langchain/langgraph';
 import { RunRequestSchema, type RunResponse, type StreamEvent } from '@repo/agent-contracts';
 import type { Deck } from '@repo/agent-cassette';
 import { createLogger, withAgentSpan } from '@repo/telemetry';
@@ -32,12 +32,15 @@ import {
   RUN_RECORDS,
 } from '../memory/memory.tokens.js';
 import { NO_USAGE } from '../agent/model/usage.js';
-import { CHAT_MODEL, defaultTools, type ModelDeps } from '../agent/model/model-deps.js';
+import { CHAT_MODEL, type ModelDeps } from '../agent/model/model-deps.js';
 import { recordingGraphDeps } from '../agent/model/decision-seam.js';
 import { RunRecorder } from '../audit/run-recorder.js';
 import { RUN_LEDGER } from '../ledger/ledger.tokens.js';
 import type { RunLedger } from '../ledger/run-ledger.js';
-import type { ToolSelection } from '../agent/nodes/act.node.js';
+import { CASE_BOARD } from '../agent/agent.module.js';
+import { SyntheticCaseBoard, type CaseBoard } from '../agent/tools/case-board.js';
+import { defaultRegistry } from '../agent/tools/registry.js';
+import { SELECT_TOOL_PROMPT, parseSelection, selectionPrompt } from '../agent/tools/selection.js';
 import {
   ASSESS_PROMPT,
   assessmentPrompt,
@@ -147,10 +150,10 @@ function lazyModelDeps(create: () => ModelDeps): ModelDeps {
   return {
     plan: { callLlm: (system, user) => deps().plan.callLlm(system, user) },
     act: {
-      get tools() {
-        return deps().act.tools;
+      get registry() {
+        return deps().act.registry;
       },
-      selectTool: (plan, tools) => deps().act.selectTool(plan, tools),
+      selectTool: (request) => deps().act.selectTool(request),
     },
     distill: { extractEntities: (context) => deps().distill.extractEntities(context) },
     embed: (text) => deps().embed(text),
@@ -178,6 +181,12 @@ export class RunsService {
     @Inject(CHECKPOINTER) private readonly checkpointer: BaseCheckpointSaver | null,
     @Inject(RUN_RECORDS) runRecords: RunRecordRepository | null,
     @Inject(RUN_LEDGER) private readonly runLedger: RunLedger | null = null,
+    // Optional so a spec can construct the service with the memory arguments
+    // and get a board of its own; `AgentModule` provides the one a request
+    // uses.
+    @Optional()
+    @Inject(CASE_BOARD)
+    private readonly caseBoard: CaseBoard = new SyntheticCaseBoard(),
   ) {
     this.recorder = new RunRecorder(runRecords);
   }
@@ -291,22 +300,13 @@ export class RunsService {
     return {
       plan: { callLlm },
       act: {
-        tools: defaultTools(),
-        selectTool: async (plan, tools) => {
-          const toolNames = tools.map((t) => t.name).join(', ');
-          const response = await callSelect(
-            'You select the best tool for a task. Respond with JSON: {"toolName": "...", "input": ...} or null if no tool is needed.',
-            `Plan: ${plan}\nAvailable tools: ${toolNames}`,
-          );
-          // The call is paid for whether or not its answer parses, so the
-          // usage goes back either way.
-          let selection: ToolSelection | null;
-          try {
-            selection = JSON.parse(response.content) as ToolSelection | null;
-          } catch {
-            selection = null;
-          }
-          return { selection, tokenCounts: response.tokenCounts };
+        registry: defaultRegistry(this.caseBoard),
+        selectTool: async (request) => {
+          const response = await callSelect(SELECT_TOOL_PROMPT, selectionPrompt(request));
+          // A response that does not parse throws, and `IO_RETRY` pays for a
+          // second call; the inference span recorded the first one's usage,
+          // as it does for `distill`'s.
+          return { selection: parseSelection(response.content), tokenCounts: response.tokenCounts };
         },
       },
       distill: {
@@ -341,7 +341,7 @@ export class RunsService {
         }),
       },
       act: {
-        tools: defaultTools(),
+        registry: defaultRegistry(this.caseBoard),
         // Stub: no tool needed. No model was called, so nothing was used —
         // unlike `plan`'s canned figures, which predate P1-F and stay.
         selectTool: async () => ({ selection: null, tokenCounts: NO_USAGE }),
@@ -372,6 +372,27 @@ export class RunsService {
 
     const run = await this.run({ ...params, runId });
     return buildRunResponse(run.state);
+  }
+
+  /**
+   * The state to report, with `awaiting-approval` when the run is paused.
+   *
+   * A paused run ends its stream normally, with the state as of the pause and
+   * no `outcome`, because `egress` never ran — and `buildRunResponse` reads a
+   * missing outcome as `success`. The checkpointer is asked rather than the
+   * folded updates: it is the record a resume will read, so it is the
+   * one that says whether a task is waiting. Without a checkpointer nothing
+   * can pause, since `act` refuses an irreversible call there.
+   */
+  private async reportPause(
+    compiled: ReturnType<typeof buildAgentGraph>,
+    runId: string,
+    state: AgentState,
+  ): Promise<AgentState> {
+    if (this.checkpointer === null) return state;
+    const snapshot = await compiled.getState({ configurable: { thread_id: runId } });
+    const paused = snapshot.tasks.some((task) => task.interrupts.length > 0);
+    return paused ? { ...state, outcome: 'awaiting-approval' } : state;
   }
 
   /**
@@ -500,7 +521,7 @@ export class RunsService {
           next = await events.next();
         }
 
-        const state = next.value;
+        const state = await this.reportPause(compiled, runId, next.value);
         agent.setConversationId(state.sessionId);
         return { runId, state, nodeSequence, traceId: agent.traceId };
       }),
@@ -576,6 +597,9 @@ async function* runUpdates(
       continue;
     }
     for (const [node, update] of Object.entries(chunk as Record<string, Partial<AgentState>>)) {
+      // A pause arrives as an update under `__interrupt__`, which is not a
+      // node and is not state.
+      if (node === INTERRUPT) continue;
       Object.assign(state, update);
       yield { kind: 'updated', node, update };
     }

@@ -7,6 +7,7 @@ import * as jose from 'jose';
 import canonicalize from 'canonicalize';
 import { AgentCard, verifyAgentCardSignature } from '@a2a-js/sdk';
 import { RunsService } from '../src/runs/runs.service.js';
+import { defineRegistry } from '../src/agent/tools/registry.js';
 import { bootService, type ServiceApp } from './service-app.js';
 
 type Json = Record<string, unknown>;
@@ -176,7 +177,7 @@ describe('A2A, when reflect fails on every attempt', () => {
         callLlm: async () => ({ content: 'an answer', tokenCounts: { prompt: 1, completion: 1 } }),
       },
       act: {
-        tools: [],
+        registry: defineRegistry([]),
         selectTool: async () => ({ selection: null, tokenCounts: { prompt: 0, completion: 0 } }),
       },
       distill: {

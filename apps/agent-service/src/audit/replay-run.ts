@@ -464,8 +464,9 @@ function describeSteps(
  * Which node asked for each decision, without running anything: by the seams
  * each node owns, in order. Exact for these two graphs, which have one path
  * through every super-step and give each seam to one node — except `embed`,
- * which `retrieve` asks once before its read and `reflect` asks once per fact.
- * A full replay attributes by observation instead.
+ * which `retrieve` asks once before its read and `reflect` asks once per fact,
+ * and `act.tool`, which `act` asks after a selection and `approve` after a
+ * resume. A full replay attributes by observation instead.
  */
 function attributeBySeam(
   recorded: readonly Snapshot[],
@@ -475,6 +476,11 @@ function attributeBySeam(
     retrieve: { seams: ['embed', 'memory.retrieve'], endsAt: 'memory.retrieve' },
     plan: { seams: ['plan.callLlm'], endsAt: 'plan.callLlm' },
     act: { seams: ['act.selectTool', 'act.tool'] },
+    // P4-C: `approve` runs the call it was resumed to approve, and `compensate`
+    // undoes one applied effect per pass. A retried pass records the failure
+    // and then the success, so each ends at its first success.
+    approve: { seams: ['act.tool'], endsAt: 'act.tool' },
+    compensate: { seams: ['act.compensate'], endsAt: 'act.compensate' },
     distill: { seams: ['distill.extractEntities'], endsAt: 'distill.extractEntities' },
     reflect: { seams: ['embed'] },
     assess: { seams: ['assess.criteria'], endsAt: 'assess.criteria' },
