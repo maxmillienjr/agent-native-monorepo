@@ -227,7 +227,7 @@ controls:
         file: apps/agent-service/src/eval/canary/probes.test.ts
         name: reports one differing component of one vector as changed, with its cosine
         tier: unit
-    note: Delivered by P1-E. `yarn canary` reads models.get for the two pinned ids and the floating alias, modelVersion from one direct generateContent call per chat id, and 21 embeddings compared bit for bit with the vectors the committed cassettes recorded. A pinned changed, gone or unobserved exits 1, and the way back to green is a committed baseline update. The eval-canary job runs it nightly and on dispatch under the GOOGLE_API_KEY repository secret, added 2026-10-08, and is skipped where the secret is absent, as on a fork. Until its first scheduled run the live evidence is one local run of the metadata and embedding probes on 2026-10-08, and the chat baseline is empty, so that first run is red on the pinned chat probe until its modelVersion is committed.
+    note: Delivered by P1-E. `yarn canary` reads models.get for the two pinned ids and the floating alias, modelVersion from one direct generateContent call per chat id, and 21 embeddings compared bit for bit with the vectors the committed cassettes recorded. A pinned changed, gone or unobserved exits 1, and the way back to green is a committed baseline update. The eval-canary job runs it nightly and on dispatch under the GOOGLE_API_KEY repository secret, added 2026-10-08, and is skipped where the secret is absent, as on a fork. The chat baseline was committed on 2026-10-12, and every scheduled run from 2026-10-20 to 2026-10-26 was green on it, with every pinned entry unchanged and all 21 vectors bit-identical.
 
   - id: CTL-OUT-01
     title: Model output is schema-validated before it can reach memory
