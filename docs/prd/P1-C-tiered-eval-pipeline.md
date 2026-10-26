@@ -414,11 +414,14 @@ and no request leaves the process.
       `eval-replay` success with `HAS_KEY: false` and `EVENT: workflow_dispatch` in its
       summary step, the branch that writes "Live tier: did not run. There is no
       `GOOGLE_API_KEY` repository secret".
-- [ ] **With a secret configured but the run on any other axis**, the `live` job fails before
+- [x] **With a secret configured but the run on any other axis**, the `live` job fails before
       any trial with the axis-expectation message, and never goes green on the stub axis.
       Split from the criterion above, because it needs a repository secret, and there is
       none. The refusal itself is verified locally (the third criterion). **Passes to
-      P1-E**, which takes it by name.
+      P1-E**, which takes it by name. **Met through P1-E, recorded there on 2026-10-26:**
+      dispatch run 40318675957, from a throwaway branch whose live job set
+      `EVAL_CASSETTE_MODE: replay`, failed `eval-live` with "expected model=live
+      memory=live, detected model=replay memory=live" and `completedTrials: 0`.
 - [x] **Model `live` / memory `live`, in CI:** with the secret present, one nightly run
       runs both tasks, skips neither, and uploads the three reports and the recorded
       cassettes. This closes the criterion P1-G handed over (see below). It needs a

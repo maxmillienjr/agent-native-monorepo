@@ -404,9 +404,9 @@ used it yet, and each says which run verifies it. The implementation was cleared
       probes. **Met by scheduled run 40292608420 on 2026-10-26**, and by each of the six
       nights before it (2026-10-20 to 25): the `eval-canary` summary reads
       `**Requests:** 3 models.get, 2 generateContent, 21 embedContent`, and the artifact's
-      `canary-report.json` has `requests` `{metadata: 3, generateContent: 2, embedContent:
-      21, other: 0}`. The count holds on nights the floating probe answered 503, because the
-      request was still made.
+      `canary-report.json` has `requests` of 3 metadata, 2 `generateContent`, 21
+      `embedContent` and 0 other. The count holds on nights the floating probe answered 503,
+      because the request was still made.
 - [x] `GOOGLE_API_KEY= yarn canary` exits non-zero, names the variable, and makes no request.
       **No model axis, on purpose:** the refusal is what is being tested. Run on 2026-10-08:
       exit 1, a `canary.aborted` log line reading `GOOGLE_API_KEY is not set` with every
@@ -476,7 +476,24 @@ used it yet, and each says which run verifies it. The implementation was cleared
       calls on the alias target's limit. **Not run. Verified by a dispatch of
       `agent-eval.yml` with `chat_model: gemini-flash-latest` after merge (secret now
       present)**, which unsets the gate, pushes no tally and heads its summary as a
-      migration comparison.
+      migration comparison. **Dispatched 2026-10-26, run 40314499494: not met, because the
+      run did not finish.** The dispatch plumbing held: `EVAL_CHAT_MODEL` was
+      `gemini-flash-latest`, `EVAL_GATE` was empty, both `eval-history` steps were skipped,
+      and the summary was headed "Migration comparison on `gemini-flash-latest`". The suite
+      then ran into the job's 30-minute timeout and was cancelled, so no report was written
+      and nothing names the id but the cassette header. `memory-recall-001` finished its
+      trial: its cassette (`chatModel: gemini-flash-latest`) holds a plan, a `selectTool`
+      with no selection and a structured extraction, all answered, so the 2.3.2 client and
+      the alias's model work together on this path. Its three chat decisions took 555 s,
+      134 s and 234 s, where the pinned model's whole trial spent 32 s on model calls that
+      morning. `tool-use-001` wrote no cassette in the remaining 13 minutes. The recorded
+      latency is the seam's wall time and includes the LangChain client's default retries;
+      what it retried on is not in the log, because Turbo buffers the task's output and the
+      cancel discarded it. The run's own canary, two minutes before the first trial, got a
+      503 "high demand" from the same alias, as did the scheduled canary on five of the last
+      seven nights; its pinned probes all answered, with no 429. Whether the trials pass is
+      still unknown. Closing this needs a dispatch on a day the alias is serving, or a
+      longer `timeout-minutes` for a `chat_model` run.
 - [x] **Model `live`, in CI:** with the secret present, one scheduled run runs `canary` and
       `compare`. Both write to `$GITHUB_STEP_SUMMARY` and upload an artifact. `compare`
       reports no request to `generativelanguage.googleapis.com`. With no secret, `canary`
@@ -487,10 +504,11 @@ used it yet, and each says which run verifies it. The implementation was cleared
       `eval-canary` and `eval-compare`. Now that the secret exists, only a fork's scheduled
       run can show that half again. **Met by scheduled run 40292608420 on 2026-10-26**, and
       on every night from 2026-10-20: `eval-canary` and `eval-compare` both succeeded, both
-      wrote their summaries (`## Canary — unchanged`; `## Decisions — nightly live run
-      against the committed cassettes`), and both uploaded an artifact (`canary-report.json`
-      and `canary-summary.md`; `compare-report.json` and `compare-summary.md`). The compare
-      summary reads `**Requests to generativelanguage.googleapis.com:** 0` and its report has
+      wrote their summaries, headed `## Canary — unchanged` and
+      `## Decisions — nightly live run against the committed cassettes`, and both uploaded
+      an artifact (`canary-report.json` and `canary-summary.md`; `compare-report.json` and
+      `compare-summary.md`). The compare summary reads
+      `**Requests to generativelanguage.googleapis.com:** 0` and its report has
       `modelRequests: []`; it found 2/2 and 1/1 shared embeds identical, and the same
       `web-search` sequence as the committed `tool-use-001`. The no-secret half was not
       observed for these two jobs, which never ran without the secret; it rests on the
@@ -506,13 +524,21 @@ used it yet, and each says which run verifies it. The implementation was cleared
       `eval-gate.json`) with `cassettes/memory-recall-001.trial-0.json` and
       `cassettes/tool-use-001.trial-0.json`, each header `recordedAt` that night and axes
       live/live.
-- [ ] **Taken from P1-C, if P1-C ships without a secret:** with the secret configured but
+- [x] **Taken from P1-C, if P1-C ships without a secret:** with the secret configured but
       the run detected on any other axis, the live job fails before any trial with the
       axis-expectation message. This is the secret-present half of P1-C:374-381. Its
       no-secret half is checkable without a key and stays with P1-C. **A scheduled run
       cannot show it**, because it runs on the right axis. **Owner:** one dispatch from a
       throwaway branch whose live job sets `EVAL_CASSETTE_MODE: replay`. The runner refuses
-      that before the Nest context and before any model call, so it costs no quota.
+      that before the Nest context and before any model call, so it costs no quota. **Met
+      on 2026-10-26 by dispatch run 40318675957** from `tmp/p1-e-wrong-axis`, a one-line
+      change to `main`'s workflow, deleted after the run. `eval-live-gate` found the key,
+      `eval-live` failed, and the `yarn eval` step logged two lines of its own: `eval.aborted`
+      reading "eval refused to run: expected model=live memory=live, detected model=replay
+      memory=live", with `completedTrials: 0`, and `eval.gate` verdict `aborted`. No store or
+      Nest line came before them. The tally step published `nothing`, and `eval-history`'s
+      head is unchanged. `eval-compare` failed on the empty artifact, which is its rule. The
+      run's `eval-canary` spent its two `generateContent` calls and passed.
 - [x] **Taken from P1-D:** the nightly pushes its tally to `eval-history`, and after five
       nights in one epoch its summary reports the pooled 5×2 rate with the list of runs.
       This is P1-D's criterion unchanged. It passed here because no secret existed when
@@ -625,6 +651,17 @@ provider 5xx as `unavailable`, with the status and the provider's message, redac
 clipped, and the run goes on. A 5xx on any other probe still aborts, now with the cause
 `provider-unavailable`. No retry was added: the 503 held on three consecutive nights, and a
 retry spends the free tier's 20 calls. The floating alias then pointed at `gemini-3.8-flash`.
+
+**Where it stands, 2026-10-26: every criterion but one is met, so the status stays
+`in-progress`.** Seven scheduled runs in a row, 2026-10-20 to 26, were green on all five
+jobs, and they verify the CI criteria; one dispatch verified the wrong-axis refusal. The
+open criterion is the suite on the floating alias. Its dispatch (run 40314499494) ran out
+the live job's 30 minutes with one trial done, because each call on the alias took minutes,
+where the pinned model's calls take seconds. The alias has also been `unavailable` to the
+canary on most nights. Neither is drift, and neither is a defect in the canary, but the
+criterion asks for a report and there is none. The next dispatch should go on a day the
+nightly's floating probe answered, or with `timeout-minutes` raised for a `chat_model` run.
+That is a change to the workflow, which this close-out did not make.
 
 ## Risks and open questions
 
