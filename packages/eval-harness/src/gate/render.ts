@@ -211,8 +211,9 @@ function renderLive(
   lines.push('', renderPool(pool));
   lines.push(
     '',
-    '> Pooling nights assumes the model behind the alias did not change across them. Until ' +
-      "P1-E's canary exists, this comparison cannot tell a provider-side change from a code change.",
+    '> Pooling nights assumes the model behind the pinned id did not change across them. ' +
+      "This comparison cannot tell a provider-side change from a code change; P1-E's canary " +
+      '(`eval-canary`) checks the model each night, so read its verdict before this one.',
     '',
   );
   return lines.join('\n');
