@@ -403,6 +403,18 @@ shipped, checks each task's tokens and model calls beside the pass rate.
 | [P1-E](P1-E-model-drift-canary.md)     | Model-drift canary against pinned and floating model ids      | M    | in-progress |
 | [P1-F](P1-F-cost-and-step-budgets.md)  | Cost, latency, and step budgets as CI assertions              | M    | shipped     |
 | [P1-G](P1-G-task-axis-requirements.md) | Task-level axis requirements for the evaluation suite         | S    | shipped     |
+| P1-H                                   | Live coverage of the replay-only suites by nightly rotation   | M    | draft       |
+
+P1-H, a draft with no file yet, is a candidate raised on 2026-10-26 and not yet accepted.
+Once the recordings are made, prior-auth and the red team run only on replay at night: they
+show the code still makes the recorded decisions, never that the live model still would. A
+full live prior-auth run is twenty `generateContent` calls, a whole free-tier day, so the
+nightly runs memory-recall live and nothing else. P1-H would rotate a slice of each
+replay-only suite through the live job, three or four tasks a night, covering prior-auth's 24
+in about a week and pooling the nights the way P1-D pools memory-recall. The cost is the
+open question: on the shared key it takes the nightly to about 18 of the day's 20 and leaves
+development almost nothing, so it waits for the recording queue to clear and is more
+realistic with a paid key. It depends on P1-D (pooling across nights) and P3-D (the suite).
 
 ## Tier 2 — Make the architecture real
 
