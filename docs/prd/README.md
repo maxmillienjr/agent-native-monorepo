@@ -2,7 +2,7 @@
 
 ## Where things stand
 
-_Last updated 2026-10-19. If this section is more than a few weeks stale, trust the code
+_Last updated 2026-10-26. If this section is more than a few weeks stale, trust the code
 over it and update it._
 
 **Twenty-one PRDs are shipped and the system they describe is running.** The service answers
@@ -27,7 +27,8 @@ graded on making a tool call cannot pass there. On model `live` / memory `live`,
 `memory-recall-001` passed all eleven graders, and one trial of `tool-use-001` on 2026-09-10
 passed on three `web-search` selections with well-formed queries. One trial is not a pass
 rate, and a 5x2 live suite needs about forty `generateContent` calls against a 20-request
-free-tier quota, which is why it has not been run. **[P1-G](P1-G-task-axis-requirements.md)
+free-tier quota, which is why it has not been run in one go. The nightly pools one live
+trial of each task per night instead: 96% over 14 trials x 2 tasks by 2026-10-26. **[P1-G](P1-G-task-axis-requirements.md)
 has shipped**, so `tool-use-001` declares the axes it is meaningful on and the stub axis
 skips it rather than averaging the agent together with the fixture: the same command on the
 same axis now reports 100% over 5 trials x 1 task, re-measured 2026-09-10. That is a
@@ -74,7 +75,7 @@ daily-quota 429 is terminal on both model paths, so the chat client makes one re
 instead of seven, and the abort names it. The first dispatch with the secret proved that
 against a real free-tier 429 (run 37812971653): one request, `daily-quota`, `aborted`, the
 real `errorDetails` in the artifact. The two criteria that need a nightly run with the
-secret present pass to P1-E, by name.
+secret present passed to P1-E, by name, and both were met there by 2026-10-26.
 
 **[P1-D](P1-D-regression-gate.md) is in progress**, tracked in
 [#76](https://github.com/maxmillienjr/agent-native-monorepo/issues/76). `eval-replay` now
@@ -84,9 +85,10 @@ included, as does an abort. The probe that used to exit 0 at 100% (a task skippe
 assertion deleted) now names 11 `missing` cells, and a known failure can be committed.
 `EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval` accepts a change with no key. The
 nightly pools live tallies on an orphan `eval-history` branch against a committed reference
-at δ = 0.20, and will read `insufficient-evidence` for weeks. It has not run, because there
-is no secret. A local live run on 2026-10-08 did exercise it: `EVAL_GATE=live` exited 0 on
-verdict `incomparable` and wrote a tally that validates against `LiveTallySchema`.
+at δ = 0.20. It has pushed a tally on every night its live job finished since 2026-10-09,
+fourteen in one epoch by 2026-10-26, so the pooled 5×2 criterion it handed to P1-E is met.
+Its verdict is `incomparable` every night, because no `baselines/live.json` has been
+promoted to compare with.
 **Nothing blocks a merge until the owner applies
 `.github/rulesets/main.json`**, which requires `eval-replay`; `yarn lint:docs` keeps its
 check names equal to real jobs.
@@ -100,10 +102,15 @@ exits 1, and the way back to green is a committed baseline update. Measured loca
 2026-10-08, all 21 vectors were identical to the 2026-09-11 recording. The `eval-canary` and
 `eval-compare` jobs run nightly under the `GOOGLE_API_KEY` secret, which was added on
 2026-10-08. Every report now names its chat and embedding ids, and `EVAL_CHAT_MODEL` runs the
-suite on the alias as a dispatch-only migration comparison. **It stays in progress until a
-scheduled run proves the CI criteria.** That first run will be red on the pinned chat probe
-until the owner commits the two `modelVersion` strings, because no `generateContent` call
-was spent to fill that baseline.
+suite on the alias as a dispatch-only migration comparison. The chat baseline was committed
+on 2026-10-12: the pinned id answers with `modelVersion` `gemini-2.5-flash`, the id itself,
+and the alias answered `gemini-3.8-flash`. Seven scheduled runs in a row, 2026-10-20 to 26,
+were green on every job, with the pinned ids unchanged and all 21 vectors still identical,
+and a dispatch from a throwaway branch showed the live job refusing the wrong axis.
+**It stays in progress on one criterion: the suite on the floating alias.** Its dispatch on
+2026-10-26 ran into the live job's 30-minute timeout with one trial recorded, because each
+call on the alias took minutes, and the alias has answered the canary with a 503 on most
+nights. The next attempt goes on a day the alias is serving, or with a longer timeout.
 
 **[P1-F](P1-F-cost-and-step-budgets.md) has shipped**, tracked in
 [#85](https://github.com/maxmillienjr/agent-native-monorepo/issues/85). Each task file now
@@ -114,8 +121,8 @@ plan call's: 1730/6442 tokens against 58/1563 on one live `memory-recall-001` tr
 report prints usage and a list-price cost, and live latency, none of them asserted. That
 needed cassette format 2, and both tasks were re-recorded on 2026-10-08 for eight calls, with
 the replay baseline regenerated after ADR 0009 removed the third. Budgets are set on today's
-`act` loop, repeats included; P4-C's fix tightens them. The one open criterion, a live report
-showing every budget within, is the nightly's, which P1-E takes.
+`act` loop, repeats included; P4-C's fix tightens them. Its last open criterion, a live
+report showing every budget within, was met by the nightly on 2026-10-26.
 
 **[P2-B](P2-B-retrieval-ablation.md) has shipped**, tracked in
 [#57](https://github.com/maxmillienjr/agent-native-monorepo/issues/57), and the answer to
@@ -380,9 +387,9 @@ standing rule in `.context/conventions.md`, not a piece of work.
 ## Tier 1 — Evaluation in CI
 
 The repository's stated thesis. P1-A is shipped: `yarn eval` runs trials against the real
-application context and reports `pass@k` and `pass^k` per axis. P1-C, in progress, runs it
+application context and reports `pass@k` and `pass^k` per axis. P1-C, shipped, runs it
 from `.github/workflows/agent-eval.yml`: on replayed model decisions on every pull request,
-and on the live model nightly once a repository secret exists. P1-D, in progress, gates
+and on the live model nightly under the repository secret. P1-D, in progress, gates
 both on committed baselines. Nothing blocks a merge until the owner applies its ruleset.
 P1-E, in progress, watches whether the model behind the pinned ids has changed. P1-F,
 shipped, checks each task's tokens and model calls beside the pass rate.
