@@ -484,8 +484,14 @@ between 07:00 UTC and the nightly takes calls the nightly will need. Anything el
 the developer key spends the same pool: on 2026-10-15 the day's 20 were gone by 12:40 UTC
 with two of them spent by a recording. A PRD that needs live calls states its count and how
 it splits across days; whoever schedules the run checks this table first and does not start
-a recording that the day's remainder cannot finish. A project with billing on would leave
-the free tier (no 20-a-day cap, a charge per token), which is the owner's decision.
+a recording that the day's remainder cannot finish. A dispatch with `chat_model` spends
+about eight calls on the alias target's own limit, plus the canary's two on this pool. Check
+first that the night's floating chat probe answered: on 2026-10-26 the alias was answering
+the canary with a 503, and the dispatch's calls took minutes each, so the suite ran into
+the live job's 30-minute timeout with no report. Turbo buffers `yarn eval`'s output until
+the task ends, so a cancelled run's log is empty; its recorded cassettes are the evidence.
+A project with billing on would leave the free tier (no 20-a-day cap, a charge per token),
+which is the owner's decision.
 
 ## Documentation
 
