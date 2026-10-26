@@ -398,17 +398,22 @@ used it yet, and each says which run verifies it. The implementation was cleared
       generateContent and 21 embedContent requests, and prints the counts". The stand-in
       `fetch` publishes each request on the channel the way undici does, so the counts come
       from the runner's subscription and not from the stub's own list.
-- [ ] **Model `live`, in CI:** the summary of a full live run prints the same three counts,
+- [x] **Model `live`, in CI:** the summary of a full live run prints the same three counts,
       3, 2 and 21. Split from the criterion above. A local live run on 2026-10-08 printed
       `3 models.get, 0 generateContent, 21 embedContent`, because it ran without the two chat
-      probes. **Verified by the first scheduled run after merge (secret now present).**
+      probes. **Met by scheduled run 40292608420 on 2026-10-26**, and by each of the six
+      nights before it (2026-10-20 to 25): the `eval-canary` summary reads
+      `**Requests:** 3 models.get, 2 generateContent, 21 embedContent`, and the artifact's
+      `canary-report.json` has `requests` `{metadata: 3, generateContent: 2, embedContent:
+      21, other: 0}`. The count holds on nights the floating probe answered 503, because the
+      request was still made.
 - [x] `GOOGLE_API_KEY= yarn canary` exits non-zero, names the variable, and makes no request.
       **No model axis, on purpose:** the refusal is what is being tested. Run on 2026-10-08:
       exit 1, a `canary.aborted` log line reading `GOOGLE_API_KEY is not set` with every
       request count 0, and a summary headed `## Canary — aborted` with cause `no-key`. An
       empty ambient variable beats `.env`; that was checked with `process.loadEnvFile` before
       the run. `runner.test.ts` › "without a key: names the variable and makes no request".
-- [ ] **Model `live`:** the first canary run observes `modelVersion` for `gemini-2.5-flash`
+- [x] **Model `live`:** the first canary run observes `modelVersion` for `gemini-2.5-flash`
       and `gemini-flash-latest`, and writes both into `baseline.json` with the date. This
       PRD's Problem section is updated with the observed strings, because today it can only
       say that no run has seen them. **Not run:** it costs two `generateContent` calls, and
@@ -417,7 +422,14 @@ used it yet, and each says which run verifies it. The implementation was cleared
       after merge is red on `chat-pinned` by design**, and its `canary-report.json` artifact
       names both strings. **Owner:** the repository owner, who commits them with
       `CANARY_BASELINE=update CANARY_PROBES=chat-pinned,chat-floating yarn canary` and the
-      developer key (two calls), or by copying the two strings from that artifact.
+      developer key (two calls), or by copying the two strings from that artifact. **Met on
+      2026-10-12 by #119 (`cb4c7f1`)**, the first of those routes: two `generateContent`
+      calls, and `baseline.json`'s `chat` block now reads `gemini-2.5-flash` →
+      `gemini-2.5-flash` and `gemini-flash-latest` → `gemini-3.8-flash`, both
+      `observedAt: 2026-10-12`. Every scheduled canary from 2026-10-20 to 26 read the pinned
+      string back as `unchanged`; the floating probe read `gemini-3.8-flash` on 2026-10-20
+      and 23 and was `unavailable` (503) on the other five nights. The Problem section
+      records both strings.
 - [x] **Model `live`, local key:** the embedding probe reports `unchanged` for all 21
       baseline vectors. Run on 2026-10-08 at 16:55 UTC with
       `CANARY_PROBES=metadata,embedding yarn canary`: 3 `models.get` and 21 `embedContent`
@@ -438,12 +450,16 @@ used it yet, and each says which run verifies it. The implementation was cleared
       `chat_model` and `embedding_model` on both test suites, the summary prints a
       `**Models:**` line under the replay provenance, and the gate verdict is `match`.
       `cassette-deps.test.ts` › "names the chat and embedding ids the headers recorded".
-- [ ] **Model `live` / memory `live`:** the same, taken from the running configuration.
+- [x] **Model `live` / memory `live`:** the same, taken from the running configuration.
       Split from the criterion above. The live path sets the ids from `CHAT_MODEL` and
       `EMBEDDING_MODEL` (`run-eval.ts`), and the harness refuses a live or replayed run
       without them (`harness.test.ts` › "names the model ids on the live and replay axes,
-      and refuses them on stub"), but no live trial was run. **Verified by the first
-      scheduled run after merge (secret now present)**, whose `eval-live` reports name them.
+      and refuses them on stub"), but no live trial was run. **Met by scheduled run
+      40292608420 on 2026-10-26:** the `eval-live` artifact's `eval-report.json` holds
+      `{"chat":"gemini-2.5-flash","embedding":"gemini-embedding-001"}` beside axes
+      `{"model":"live","memory":"live"}`, the JUnit XML has `chat_model` and
+      `embedding_model` on both task suites, and the summary prints
+      `**Models:** chat gemini-2.5-flash, embedding gemini-embedding-001`.
 - [x] **Model `replay` / memory `live`:** `EVAL_CHAT_MODEL=gemini-flash-latest` with
       `EVAL_CASSETTE_MODE=replay` refuses with `CassetteIncompatibleError` naming both ids,
       before any store is reset. `EVAL_CHAT_MODEL` is declared on `turbo.json`'s `eval`
@@ -461,7 +477,7 @@ used it yet, and each says which run verifies it. The implementation was cleared
       `agent-eval.yml` with `chat_model: gemini-flash-latest` after merge (secret now
       present)**, which unsets the gate, pushes no tally and heads its summary as a
       migration comparison.
-- [ ] **Model `live`, in CI:** with the secret present, one scheduled run runs `canary` and
+- [x] **Model `live`, in CI:** with the secret present, one scheduled run runs `canary` and
       `compare`. Both write to `$GITHUB_STEP_SUMMARY` and upload an artifact. `compare`
       reports no request to `generativelanguage.googleapis.com`. With no secret, `canary`
       shows as skipped, and the replay job's summary says so. It never shows as passed.
@@ -469,12 +485,27 @@ used it yet, and each says which run verifies it. The implementation was cleared
       no-secret half uses the `needs.gate.outputs.has_key` condition P1-C verified for
       `eval-live` in run 36264269743, and the replay summary's no-secret line now names
       `eval-canary` and `eval-compare`. Now that the secret exists, only a fork's scheduled
-      run can show that half again.
-- [ ] **Taken from P1-C, if P1-C ships without a secret:** with the secret present, one
+      run can show that half again. **Met by scheduled run 40292608420 on 2026-10-26**, and
+      on every night from 2026-10-20: `eval-canary` and `eval-compare` both succeeded, both
+      wrote their summaries (`## Canary — unchanged`; `## Decisions — nightly live run
+      against the committed cassettes`), and both uploaded an artifact (`canary-report.json`
+      and `canary-summary.md`; `compare-report.json` and `compare-summary.md`). The compare
+      summary reads `**Requests to generativelanguage.googleapis.com:** 0` and its report has
+      `modelRequests: []`; it found 2/2 and 1/1 shared embeds identical, and the same
+      `web-search` sequence as the committed `tool-use-001`. The no-secret half was not
+      observed for these two jobs, which never ran without the secret; it rests on the
+      condition above. Every pull-request run shows both as skipped (run 40314371983), by the
+      event half of the same condition.
+- [x] **Taken from P1-C, if P1-C ships without a secret:** with the secret present, one
       nightly run runs both tasks on model `live` / memory `live`, skips neither, and
       uploads the three reports and the recorded cassettes. This is P1-C:382-387
-      unchanged. It closes P1-G:183 through P1-C. **Verified by the first scheduled run
-      after merge (secret now present).**
+      unchanged. It closes P1-G:183 through P1-C. **Met by scheduled run 40292608420 on
+      2026-10-26:** the summary heads `**Axes:** model live, memory live`, both tasks ran
+      one trial and passed it, `eval-report.json` has `skipped: []`, and the `eval-live`
+      artifact holds `eval-report.json`, `eval-report.xml`, `eval-summary.md` (and
+      `eval-gate.json`) with `cassettes/memory-recall-001.trial-0.json` and
+      `cassettes/tool-use-001.trial-0.json`, each header `recordedAt` that night and axes
+      live/live.
 - [ ] **Taken from P1-C, if P1-C ships without a secret:** with the secret configured but
       the run detected on any other axis, the live job fails before any trial with the
       axis-expectation message. This is the secret-present half of P1-C:374-381. Its
@@ -482,12 +513,20 @@ used it yet, and each says which run verifies it. The implementation was cleared
       cannot show it**, because it runs on the right axis. **Owner:** one dispatch from a
       throwaway branch whose live job sets `EVAL_CASSETTE_MODE: replay`. The runner refuses
       that before the Nest context and before any model call, so it costs no quota.
-- [ ] **Taken from P1-D:** the nightly pushes its tally to `eval-history`, and after five
+- [x] **Taken from P1-D:** the nightly pushes its tally to `eval-history`, and after five
       nights in one epoch its summary reports the pooled 5×2 rate with the list of runs.
       This is P1-D's criterion unchanged. It passed here because no secret existed when
       P1-D shipped, which was after this PRD was accepted, so it is added now. **Verified by
       the scheduled runs after merge (secret now present)**, five nights on one cassette set
-      at the earliest.
+      at the earliest. **Met.** `eval-history` holds one tally per night in epoch
+      `93302b4ff7e9`, fourteen of them: 2026-10-09 to 15 and 2026-10-20 to 26. The four
+      nights on the wrong-project key aborted and pushed nothing, as an abort should. The
+      fifth night, scheduled run 38380826954 on 2026-10-13, printed **"Pooled live pass
+      rate: 90% over 5 trials × 2 tasks"** from 5 runs, listing each with its date and
+      commit; the one failure is `tool-use-001` on 2026-10-12. Run 40292608420 on
+      2026-10-26 prints 96% over 14 trials × 2 tasks, with all fourteen runs. Its verdict is
+      `incomparable`, because no `baselines/live.json` is committed yet; that promotion is
+      P1-D's, not this criterion.
 - [x] Documentation the change makes false or incomplete is corrected in the same pull
       request. `.context/conventions.md:125-128` adds "the canary reports `changed`" to the
       re-record triggers. `docs/STATUS.md` gains a row for the canary. Row 18's "(P1-E)"
