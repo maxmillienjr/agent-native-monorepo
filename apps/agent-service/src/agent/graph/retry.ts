@@ -51,8 +51,11 @@ export const IO_RETRY: RetryPolicy = {
   initialInterval: 200,
   backoffFactor: 2,
   jitter: true,
+  // `z.core.$ZodError`, not `z.ZodError`: under zod 4 a parse made through the
+  // core API, as LangGraph's `responseSchema` does, throws the base class, and
+  // a schema failure is not transient whichever API threw it.
   retryOn: (error: unknown) =>
-    !(error instanceof z.ZodError) &&
+    !(error instanceof z.core.$ZodError) &&
     !isClientError(error) &&
     !isCassetteMiss(error) &&
     !isRecordWriteFailure(error),
