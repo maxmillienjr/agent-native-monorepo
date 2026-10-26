@@ -207,7 +207,10 @@ jobs:
     permissions:
       contents: write
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # A `chat_model` dispatch runs on the floating alias, whose free tier has
+    # answered single calls in 134-555 s under load (dispatch 40314499494, cut
+    # off at 30 minutes with one task done). The pinned nightly takes about 5.
+    timeout-minutes: ${{ inputs.chat_model && 90 || 30 }}
     services:
       postgres:
         image: pgvector/pgvector:pg16
