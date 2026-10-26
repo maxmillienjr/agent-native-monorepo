@@ -411,14 +411,18 @@ verifies a mapping or a rule, on neither model axis.
       on every `plan.callLlm`, `act.selectTool` and `distill.extractEntities` decision, and
       `reasoning` wherever the response reported `total_tokens`. Every reply reported a
       total, and all eight decisions carry `reasoning`. The two runs made eight calls and no 429.
-- [ ] **Model `live` / memory `live`:** a live report shows every budget `within`, with
+- [x] **Model `live` / memory `live`:** a live report shows every budget `within`, with
       source `measured`. Split from the criterion above, because the token budgets are
       derived from the recording and did not exist when it ran. The recording's reports
       showed `modelCalls` `within`, `measured` (3 of 7, 5 of 5); the token budgets were then
       checked against those reports' own transcripts with `checkBudgets`, all `within`,
       `measured`. That is the same function over the same spans, not the report the
       criterion names. The first nightly `eval-live` run after merge produces it; the
-      secret exists since 2026-10-08. Owner: **P1-E**, which takes the nightly.
+      secret exists since 2026-10-08. Owner: **P1-E**, which takes the nightly. **Met by
+      scheduled run 40292608420 on 2026-10-26**, recorded at P1-E's close-out: the
+      `eval-live` summary reads "Every declared budget is within its ceiling", and all six
+      rows are `within`, `measured`. `tool-use-001` used 5 of its 5 model calls and 7872 of
+      8500 output tokens.
 - [x] **Model `live` / memory `live`**, on the same run: for each trial,
       `RunResponse.tokenCounts.prompt` equals the sum of `gen_ai.usage.input_tokens` over its
       `generate_content` spans, and `completion` equals the sum of
