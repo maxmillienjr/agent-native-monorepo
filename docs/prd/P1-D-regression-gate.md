@@ -575,14 +575,18 @@ fakes; the live half verifies the integration on the live model._
       2026-10-08** at `f7991ed`, on the run P5-C records: exit 0, verdict `incomparable`
       because no `baselines/live.json` is committed, and one tally that `LiveTallySchema`
       parses. See "The local live check".
-- [ ] **Model `live` / memory `live`, in CI:** the nightly pushes its tally to
+- [x] **Model `live` / memory `live`, in CI:** the nightly pushes its tally to
       `eval-history`, and after five nights in one epoch its summary reports the pooled
       5×2 rate with the list of runs. This needs the repository secret. If none exists at
       ship time, the criterion stays unchecked and passes to **P1-E**, as P1-C's nightly
       criterion does. No secret exists, so it passes to **P1-E**. The pieces it needs are
       tested without one: the writer against a bare repository (`history.test.ts`), and the
       pooled line and run list (`render.test.ts` › "prints the pooled 5×2 rate with the five
-      runs").
+      runs"). **Met through P1-E, recorded there on 2026-10-26.** The fifth night in epoch
+      `93302b4ff7e9`, scheduled run 38380826954 on 2026-10-13, printed "Pooled live pass
+      rate: 90% over 5 trials × 2 tasks" with its five runs; `eval-history` holds one tally
+      per green night since. The live verdict is still `incomparable`, because no
+      `baselines/live.json` has been promoted.
 - [x] `scripts/lint-docs.mjs` fails when a ruleset `context` matches no job, or more than
       one, after matrix expansion. It is shown by renaming `eval-replay` in a scratch
       commit. **Pure.** A scratch commit renaming the job to `eval-replay-renamed` made

@@ -180,7 +180,7 @@ tasks that were not run and what each needed.
       equals `trialsPerTask` multiplied by the number of tasks not skipped.
 - [x] An unmet **grader** requirement still throws `AxisRequirementError` before the first
       trial. Existing behaviour, asserted by the existing test, unchanged.
-- [ ] On model `live` / memory `live`, both tasks run and neither is skipped. **Not
+- [x] On model `live` / memory `live`, both tasks run and neither is skipped. **Not
       verified by a run, and P1-C owns running it.** A 5 × 2 live suite costs roughly forty
       `generateContent` calls against a 20-request free-tier quota that was already part
       spent on the day this shipped, and the risks section below says the same thing about
@@ -188,7 +188,10 @@ tasks that were not run and what each needed.
       the decision the criterion is about: the skip is a function of the axes alone, and
       `dataset.test.ts` asserts that `skippedTasks` returns nothing for the shipped suite on
       model `live` / memory `live`. Whether both tasks then _pass_ there is a different
-      claim, and no criterion here makes it.
+      claim, and no criterion here makes it. **Met through P1-C and P1-E, recorded in P1-E
+      on 2026-10-26:** the nightly `eval-live` job (scheduled run 40292608420) ran both
+      tasks on model `live` / memory `live`, one trial each, and its report has
+      `skipped: []`.
 - [x] `docs/STATUS.md` row 17 states that the 5×2 stub-axis measurement included a task the
       stub axis cannot pass, and what the number is once that task is excluded.
 - [x] `.context/conventions.md` says a task declares the axes it is meaningful on, and that

@@ -419,12 +419,15 @@ and no request leaves the process.
       Split from the criterion above, because it needs a repository secret, and there is
       none. The refusal itself is verified locally (the third criterion). **Passes to
       P1-E**, which takes it by name.
-- [ ] **Model `live` / memory `live`, in CI:** with the secret present, one nightly run
+- [x] **Model `live` / memory `live`, in CI:** with the secret present, one nightly run
       runs both tasks, skips neither, and uploads the three reports and the recorded
       cassettes. This closes the criterion P1-G handed over (see below). It needs a
       repository secret, which only the owner can add (decision 1); if none exists when this
       ships, the criterion stays unchecked and passes to **P1-E**, whose canary needs the
-      same secret. **No secret exists; passes to P1-E.**
+      same secret. **No secret exists; passes to P1-E.** **Met through P1-E, recorded there
+      on 2026-10-26:** scheduled run 40292608420 ran both tasks on model `live` / memory
+      `live` with `skipped: []`, and its `eval-live` artifact holds the three reports and
+      both recorded cassettes.
 - [x] `memory-core`'s `test:eval` is gone. `grep -rn 'test:eval'` over `.github/`, every
       `package.json` and `turbo.json` returns nothing. `e2e.yml:39` sets
       `REQUIRE_INTEGRATION_ENV: '1'`, and its run on this pull request still reports
