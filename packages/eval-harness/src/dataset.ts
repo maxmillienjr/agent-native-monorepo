@@ -109,7 +109,7 @@ export const TaskSpecSchema = z.object({
   input: z.object({
     sessionId: z.string().uuid(),
     messages: z.array(z.object({ role: z.string(), content: z.string() })).min(1),
-    config: z.record(z.unknown()).optional(),
+    config: z.record(z.string(), z.unknown()).optional(),
   }),
   /**
    * The axes this task is meaningful on, scalar or set per axis.
@@ -149,7 +149,7 @@ export const TaskSpecSchema = z.object({
     .object({
       nodes: z.array(z.string()).optional(),
       toolCalls: z.array(z.string()).optional(),
-      thresholds: z.record(z.number().min(0).max(1)).default({}),
+      thresholds: z.record(z.string(), z.number().min(0).max(1)).default({}),
     })
     .optional(),
   notes: z.string().optional(),

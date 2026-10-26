@@ -108,13 +108,13 @@ const Framework = z
         note: z.string().min(1),
       })
       .strict(),
-    clauses: z.record(z.string().min(1)),
+    clauses: z.record(z.string(), z.string().min(1)),
   })
   .strict();
 
 const Catalogue = z
   .object({
-    frameworks: z.record(z.unknown()),
+    frameworks: z.record(z.string(), z.unknown()),
     controls: z.array(z.unknown()),
   })
   .strict();

@@ -48,13 +48,16 @@ export const PriorAuthLabelSchema = z
     stratum: z.string(),
     disposition: DISPOSITION_KIND,
     assessed: z.boolean(),
-    criteria: z.record(z.object({ status: STATUS, evidence: z.array(z.string()) }).strict()),
+    criteria: z.record(
+      z.string(),
+      z.object({ status: STATUS, evidence: z.array(z.string()) }).strict(),
+    ),
   })
   .strict();
 export type PriorAuthLabel = z.infer<typeof PriorAuthLabelSchema>;
 
 export const PriorAuthLabelsFileSchema = z
-  .object({ description: z.string(), labels: z.record(PriorAuthLabelSchema) })
+  .object({ description: z.string(), labels: z.record(z.string(), PriorAuthLabelSchema) })
   .strict();
 
 export interface PriorAuthLabels {

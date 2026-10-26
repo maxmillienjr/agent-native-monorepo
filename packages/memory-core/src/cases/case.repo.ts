@@ -34,7 +34,7 @@ export const InstantSchema = z
   .transform((value) => new Date(value.getTime()));
 
 /** A FHIR document as received or issued. The service parses it; this layer stores it. */
-export const DocumentSchema = z.record(z.unknown());
+export const DocumentSchema = z.record(z.string(), z.unknown());
 
 /**
  * What `$submit` writes, before it answers.

@@ -77,7 +77,7 @@ function main(argv: readonly string[]): void {
       JSON.parse(readFileSync(required(values, 'case'), 'utf8')),
     );
     const determination = z
-      .record(z.unknown())
+      .record(z.string(), z.unknown())
       .parse(JSON.parse(readFileSync(required(values, 'determination'), 'utf8')));
     const body = signDetermination({
       privateKeyPem: readFileSync(required(values, 'key'), 'utf8'),

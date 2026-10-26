@@ -82,7 +82,7 @@ export const FileAppealBodySchema = z
     enrolleeNotified: z.literal(true).optional(),
     noticeReceivedAt: z.string().optional(),
     statement: z.string(),
-    evidence: z.record(z.unknown()).optional(),
+    evidence: z.record(z.string(), z.unknown()).optional(),
   })
   .strict();
 

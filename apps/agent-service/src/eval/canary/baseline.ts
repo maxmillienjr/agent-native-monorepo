@@ -39,9 +39,9 @@ const ChatEntrySchema = z.object({
 export const CanaryBaselineSchema = z.object({
   formatVersion: z.literal(1),
   /** `models.get` per id. */
-  metadata: z.record(MetadataEntrySchema),
+  metadata: z.record(z.string(), MetadataEntrySchema),
   /** `modelVersion` per id. An id with no entry has never been observed. */
-  chat: z.record(ChatEntrySchema),
+  chat: z.record(z.string(), ChatEntrySchema),
   embedding: z.object({
     model: z.string(),
     dimensions: z.number().int().positive(),

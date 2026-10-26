@@ -262,7 +262,8 @@ export const LiveTallySchema = z.object({
   gitSha: z.string(),
   startedAt: z.string(),
   tasks: z.record(
-    z.object({ trials: z.array(z.boolean()), graders: z.record(z.array(z.boolean())) }),
+    z.string(),
+    z.object({ trials: z.array(z.boolean()), graders: z.record(z.string(), z.array(z.boolean())) }),
   ),
 });
 export type LiveTally = z.infer<typeof LiveTallySchema>;
@@ -278,7 +279,7 @@ export const LivePoolSchema = z.object({
   suite: z.string(),
   cassetteDigest: z.string(),
   runs: z.array(LiveRunSchema),
-  tasks: z.record(z.object({ trials: z.array(z.boolean()) })),
+  tasks: z.record(z.string(), z.object({ trials: z.array(z.boolean()) })),
 });
 export type LivePool = z.infer<typeof LivePoolSchema>;
 
