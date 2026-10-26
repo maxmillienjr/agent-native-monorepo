@@ -3,8 +3,8 @@
     "formatVersion": 2,
     "taskId": "tool-use-001",
     "trialIndex": 0,
-    "recordedAt": "2026-10-08T16:57:44.887Z",
-    "gitSha": "94efb6aebc9c392ce2823e1bff89cb9559d6d0de",
+    "recordedAt": "2026-10-26T11:18:31.988Z",
+    "gitSha": "8446e9f31c2a1661870e279db75c8e1d066f877d",
     "axes": {
       "model": "live",
       "memory": "live"
@@ -24,7 +24,7 @@
         "kind": "vector",
         "float32Base64": "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"
       },
-      "latencyMs": 386
+      "latencyMs": 313
     },
     {
       "seam": "plan.callLlm",
@@ -36,29 +36,87 @@
       "response": {
         "kind": "value",
         "value": {
-          "content": "Here's a plan to address your request:\n\n1.  **Identify the Official LangGraph Release Channels:**\n    *   Check the LangGraph GitHub repository (specifically the \"Releases\" or \"Tags\" section).\n    *   Look for an official LangGraph blog or documentation site that might announce releases.\n    *   Examine the LangChain/LangGraph changelog if available.\n\n2.  **Pinpoint the Most Recent Release:**\n    *   Determine the latest version number and its release date from the identified channels.\n\n3.  **Extract Key Changes from Release Notes:**\n    *   Review the release notes, changelog entries, or announcement post for that specific version.\n    *   Look for:\n        *   New features\n        *   Major improvements or enhancements\n        *   Bug fixes\n        *   Performance optimizations\n        *   Breaking changes (if any)\n        *   Specific mentions of agent capabilities, tool calling, memory management, or integrations (like vector stores, which might relate to `pgvector`).\n\n4.  **Synthesize and Summarize:**\n    *   Consolidate the extracted information into a concise summary.\n    *   Highlight the most significant changes, new capabilities, and any improvements that might align with the \"relevant context\" provided (e.g., agent behavior, tool calling, memory, integrations).",
+          "content": "Here's a plan to address your request:\n\n1.  **Identify the Most Recent LangGraph Release:**\n    *   Check the official LangGraph GitHub repository's \"Releases\" section.\n    *   Alternatively, consult the LangChain blog or documentation for recent announcements related to LangGraph.\n\n2.  **Extract Release Notes/Changelog:**\n    *   Once the most recent release is identified, locate its associated release notes, changelog, or announcement post.\n\n3.  **Summarize Key Changes:**\n    *   Read through the extracted information to identify major new features, improvements, bug fixes, and any breaking changes.\n    *   Pay particular attention to updates concerning agent behavior, tool calling, memory management, and state handling, as these align with the context you provided regarding agents and tools.\n\n4.  **Synthesize the Summary:**\n    *   Condense the findings into a clear and concise summary, highlighting the most significant changes for the user.",
           "tokenCounts": {
             "prompt": 68,
-            "completion": 675,
-            "reasoning": 389
+            "completion": 1050,
+            "reasoning": 844
           }
         }
       },
       "tokenCounts": {
         "prompt": 68,
-        "completion": 675,
-        "reasoning": 389
+        "completion": 1050,
+        "reasoning": 844
       },
-      "latencyMs": 3882
+      "latencyMs": 6110
     },
     {
       "seam": "act.selectTool",
-      "requestHash": "74eafe359390c869c59e20d4b338b6e54d9c99a2a377c0539ec9dc45ea27c8f4",
+      "requestHash": "b74f506feaf6f0bb373671d0ac8532463c19cea44c135ea4da7668a0608ecc05",
       "request": {
-        "plan": "Here's a plan to address your request:\n\n1.  **Identify the Official LangGraph Release Channels:**\n    *   Check the LangGraph GitHub repository (specifically the \"Releases\" or \"Tags\" section).\n    *   Look for an official LangGraph blog or documentation site that might announce releases.\n    *   Examine the LangChain/LangGraph changelog if available.\n\n2.  **Pinpoint the Most Recent Release:**\n    *   Determine the latest version number and its release date from the identified channels.\n\n3.  **Extract Key Changes from Release Notes:**\n    *   Review the release notes, changelog entries, or announcement post for that specific version.\n    *   Look for:\n        *   New features\n        *   Major improvements or enhancements\n        *   Bug fixes\n        *   Performance optimizations\n        *   Breaking changes (if any)\n        *   Specific mentions of agent capabilities, tool calling, memory management, or integrations (like vector stores, which might relate to `pgvector`).\n\n4.  **Synthesize and Summarize:**\n    *   Consolidate the extracted information into a concise summary.\n    *   Highlight the most significant changes, new capabilities, and any improvements that might align with the \"relevant context\" provided (e.g., agent behavior, tool calling, memory, integrations).",
-        "toolNames": [
-          "web-search"
-        ]
+        "plan": "Here's a plan to address your request:\n\n1.  **Identify the Most Recent LangGraph Release:**\n    *   Check the official LangGraph GitHub repository's \"Releases\" section.\n    *   Alternatively, consult the LangChain blog or documentation for recent announcements related to LangGraph.\n\n2.  **Extract Release Notes/Changelog:**\n    *   Once the most recent release is identified, locate its associated release notes, changelog, or announcement post.\n\n3.  **Summarize Key Changes:**\n    *   Read through the extracted information to identify major new features, improvements, bug fixes, and any breaking changes.\n    *   Pay particular attention to updates concerning agent behavior, tool calling, memory management, and state handling, as these align with the context you provided regarding agents and tools.\n\n4.  **Synthesize the Summary:**\n    *   Condense the findings into a clear and concise summary, highlighting the most significant changes for the user.",
+        "tools": [
+          {
+            "name": "web-search",
+            "description": "Searches the web for a query and returns result snippets. Use when the plan needs information that is not in the conversation or the retrieved context. Changes nothing.",
+            "tier": "read-only",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "query": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 500
+                }
+              },
+              "required": [
+                "query"
+              ],
+              "additionalProperties": false
+            }
+          },
+          {
+            "name": "request-records",
+            "description": "Asks the provider on a synthetic prior-authorization case to send missing documents by a due date. Use when a case lacks documents needed to review it. Creates an open request on the case; compensated by withdrawing that request.",
+            "tier": "compensable",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "caseId": {
+                  "type": "string",
+                  "pattern": "^PA-\\d{6}$"
+                },
+                "documents": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "clinical-notes",
+                      "imaging-report",
+                      "lab-results",
+                      "treatment-plan"
+                    ]
+                  },
+                  "minItems": 1,
+                  "maxItems": 4
+                },
+                "dueInDays": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 14
+                }
+              },
+              "required": [
+                "caseId",
+                "documents",
+                "dueInDays"
+              ],
+              "additionalProperties": false
+            }
+          }
+        ],
+        "previous": []
       },
       "response": {
         "kind": "value",
@@ -66,35 +124,35 @@
           "selection": {
             "toolName": "web-search",
             "input": {
-              "query": "LangGraph latest release features changelog"
+              "query": "LangGraph latest release"
             }
           },
           "tokenCounts": {
-            "prompt": 329,
-            "completion": 162,
-            "reasoning": 138
+            "prompt": 848,
+            "completion": 119,
+            "reasoning": 98
           }
         }
       },
       "tokenCounts": {
-        "prompt": 329,
-        "completion": 162,
-        "reasoning": 138
+        "prompt": 848,
+        "completion": 119,
+        "reasoning": 98
       },
-      "latencyMs": 1242
+      "latencyMs": 946
     },
     {
       "seam": "act.tool",
       "label": "web-search",
-      "requestHash": "5e1c64199a4dd1571f914690182c37cc6b8d916f18d80175d243dba9c57a33b5",
+      "requestHash": "338ef8495597630eef0202066969421b7fff02478b929872eefaf7031d823517",
       "request": {
-        "query": "LangGraph latest release features changelog"
+        "query": "LangGraph latest release"
       },
       "response": {
         "kind": "value",
         "value": {
           "results": [
-            "Result for: {\"query\":\"LangGraph latest release features changelog\"}"
+            "Result for: {\"query\":\"LangGraph latest release\"}"
           ]
         }
       },
@@ -102,11 +160,77 @@
     },
     {
       "seam": "act.selectTool",
-      "requestHash": "74eafe359390c869c59e20d4b338b6e54d9c99a2a377c0539ec9dc45ea27c8f4",
+      "requestHash": "334293b8cc357f7c48fafd59e89ec2a412f2e0c16a356668e0d4e657ca93e8d1",
       "request": {
-        "plan": "Here's a plan to address your request:\n\n1.  **Identify the Official LangGraph Release Channels:**\n    *   Check the LangGraph GitHub repository (specifically the \"Releases\" or \"Tags\" section).\n    *   Look for an official LangGraph blog or documentation site that might announce releases.\n    *   Examine the LangChain/LangGraph changelog if available.\n\n2.  **Pinpoint the Most Recent Release:**\n    *   Determine the latest version number and its release date from the identified channels.\n\n3.  **Extract Key Changes from Release Notes:**\n    *   Review the release notes, changelog entries, or announcement post for that specific version.\n    *   Look for:\n        *   New features\n        *   Major improvements or enhancements\n        *   Bug fixes\n        *   Performance optimizations\n        *   Breaking changes (if any)\n        *   Specific mentions of agent capabilities, tool calling, memory management, or integrations (like vector stores, which might relate to `pgvector`).\n\n4.  **Synthesize and Summarize:**\n    *   Consolidate the extracted information into a concise summary.\n    *   Highlight the most significant changes, new capabilities, and any improvements that might align with the \"relevant context\" provided (e.g., agent behavior, tool calling, memory, integrations).",
-        "toolNames": [
-          "web-search"
+        "plan": "Here's a plan to address your request:\n\n1.  **Identify the Most Recent LangGraph Release:**\n    *   Check the official LangGraph GitHub repository's \"Releases\" section.\n    *   Alternatively, consult the LangChain blog or documentation for recent announcements related to LangGraph.\n\n2.  **Extract Release Notes/Changelog:**\n    *   Once the most recent release is identified, locate its associated release notes, changelog, or announcement post.\n\n3.  **Summarize Key Changes:**\n    *   Read through the extracted information to identify major new features, improvements, bug fixes, and any breaking changes.\n    *   Pay particular attention to updates concerning agent behavior, tool calling, memory management, and state handling, as these align with the context you provided regarding agents and tools.\n\n4.  **Synthesize the Summary:**\n    *   Condense the findings into a clear and concise summary, highlighting the most significant changes for the user.",
+        "tools": [
+          {
+            "name": "web-search",
+            "description": "Searches the web for a query and returns result snippets. Use when the plan needs information that is not in the conversation or the retrieved context. Changes nothing.",
+            "tier": "read-only",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "query": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 500
+                }
+              },
+              "required": [
+                "query"
+              ],
+              "additionalProperties": false
+            }
+          },
+          {
+            "name": "request-records",
+            "description": "Asks the provider on a synthetic prior-authorization case to send missing documents by a due date. Use when a case lacks documents needed to review it. Creates an open request on the case; compensated by withdrawing that request.",
+            "tier": "compensable",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "caseId": {
+                  "type": "string",
+                  "pattern": "^PA-\\d{6}$"
+                },
+                "documents": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "clinical-notes",
+                      "imaging-report",
+                      "lab-results",
+                      "treatment-plan"
+                    ]
+                  },
+                  "minItems": 1,
+                  "maxItems": 4
+                },
+                "dueInDays": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 14
+                }
+              },
+              "required": [
+                "caseId",
+                "documents",
+                "dueInDays"
+              ],
+              "additionalProperties": false
+            }
+          }
+        ],
+        "previous": [
+          {
+            "toolName": "web-search",
+            "input": {
+              "query": "LangGraph latest release"
+            },
+            "output": "{\"results\":[\"Result for: {\\\"query\\\":\\\"LangGraph latest release\\\"}\"]}"
+          }
         ]
       },
       "response": {
@@ -119,18 +243,18 @@
             }
           },
           "tokenCounts": {
-            "prompt": 329,
-            "completion": 139,
-            "reasoning": 105
+            "prompt": 918,
+            "completion": 308,
+            "reasoning": 274
           }
         }
       },
       "tokenCounts": {
-        "prompt": 329,
-        "completion": 139,
-        "reasoning": 105
+        "prompt": 918,
+        "completion": 308,
+        "reasoning": 274
       },
-      "latencyMs": 986
+      "latencyMs": 1837
     },
     {
       "seam": "act.tool",
@@ -151,11 +275,84 @@
     },
     {
       "seam": "act.selectTool",
-      "requestHash": "74eafe359390c869c59e20d4b338b6e54d9c99a2a377c0539ec9dc45ea27c8f4",
+      "requestHash": "fab47f653a237fa3444ea4d1e6d6b7d582bd7bae21c70a3f2b05c7c555b23752",
       "request": {
-        "plan": "Here's a plan to address your request:\n\n1.  **Identify the Official LangGraph Release Channels:**\n    *   Check the LangGraph GitHub repository (specifically the \"Releases\" or \"Tags\" section).\n    *   Look for an official LangGraph blog or documentation site that might announce releases.\n    *   Examine the LangChain/LangGraph changelog if available.\n\n2.  **Pinpoint the Most Recent Release:**\n    *   Determine the latest version number and its release date from the identified channels.\n\n3.  **Extract Key Changes from Release Notes:**\n    *   Review the release notes, changelog entries, or announcement post for that specific version.\n    *   Look for:\n        *   New features\n        *   Major improvements or enhancements\n        *   Bug fixes\n        *   Performance optimizations\n        *   Breaking changes (if any)\n        *   Specific mentions of agent capabilities, tool calling, memory management, or integrations (like vector stores, which might relate to `pgvector`).\n\n4.  **Synthesize and Summarize:**\n    *   Consolidate the extracted information into a concise summary.\n    *   Highlight the most significant changes, new capabilities, and any improvements that might align with the \"relevant context\" provided (e.g., agent behavior, tool calling, memory, integrations).",
-        "toolNames": [
-          "web-search"
+        "plan": "Here's a plan to address your request:\n\n1.  **Identify the Most Recent LangGraph Release:**\n    *   Check the official LangGraph GitHub repository's \"Releases\" section.\n    *   Alternatively, consult the LangChain blog or documentation for recent announcements related to LangGraph.\n\n2.  **Extract Release Notes/Changelog:**\n    *   Once the most recent release is identified, locate its associated release notes, changelog, or announcement post.\n\n3.  **Summarize Key Changes:**\n    *   Read through the extracted information to identify major new features, improvements, bug fixes, and any breaking changes.\n    *   Pay particular attention to updates concerning agent behavior, tool calling, memory management, and state handling, as these align with the context you provided regarding agents and tools.\n\n4.  **Synthesize the Summary:**\n    *   Condense the findings into a clear and concise summary, highlighting the most significant changes for the user.",
+        "tools": [
+          {
+            "name": "web-search",
+            "description": "Searches the web for a query and returns result snippets. Use when the plan needs information that is not in the conversation or the retrieved context. Changes nothing.",
+            "tier": "read-only",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "query": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 500
+                }
+              },
+              "required": [
+                "query"
+              ],
+              "additionalProperties": false
+            }
+          },
+          {
+            "name": "request-records",
+            "description": "Asks the provider on a synthetic prior-authorization case to send missing documents by a due date. Use when a case lacks documents needed to review it. Creates an open request on the case; compensated by withdrawing that request.",
+            "tier": "compensable",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "caseId": {
+                  "type": "string",
+                  "pattern": "^PA-\\d{6}$"
+                },
+                "documents": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "clinical-notes",
+                      "imaging-report",
+                      "lab-results",
+                      "treatment-plan"
+                    ]
+                  },
+                  "minItems": 1,
+                  "maxItems": 4
+                },
+                "dueInDays": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 14
+                }
+              },
+              "required": [
+                "caseId",
+                "documents",
+                "dueInDays"
+              ],
+              "additionalProperties": false
+            }
+          }
+        ],
+        "previous": [
+          {
+            "toolName": "web-search",
+            "input": {
+              "query": "LangGraph latest release"
+            },
+            "output": "{\"results\":[\"Result for: {\\\"query\\\":\\\"LangGraph latest release\\\"}\"]}"
+          },
+          {
+            "toolName": "web-search",
+            "input": {
+              "query": "LangGraph GitHub releases"
+            },
+            "output": "{\"results\":[\"Result for: {\\\"query\\\":\\\"LangGraph GitHub releases\\\"}\"]}"
+          }
         ]
       },
       "response": {
@@ -164,35 +361,35 @@
           "selection": {
             "toolName": "web-search",
             "input": {
-              "query": "LangGraph GitHub repository releases latest version changes OR LangGraph official documentation release notes"
+              "query": "LangGraph release notes"
             }
           },
           "tokenCounts": {
-            "prompt": 329,
-            "completion": 169,
-            "reasoning": 137
+            "prompt": 986,
+            "completion": 423,
+            "reasoning": 402
           }
         }
       },
       "tokenCounts": {
-        "prompt": 329,
-        "completion": 169,
-        "reasoning": 137
+        "prompt": 986,
+        "completion": 423,
+        "reasoning": 402
       },
-      "latencyMs": 1187
+      "latencyMs": 2510
     },
     {
       "seam": "act.tool",
       "label": "web-search",
-      "requestHash": "1fc11e93bffe3fded2b5d64868bdc2466f7f614726e5d9c1ed047df7b450e031",
+      "requestHash": "3deb91b631c56d2a031eddd923665d7746b387fdf91157a301b29394b050f753",
       "request": {
-        "query": "LangGraph GitHub repository releases latest version changes OR LangGraph official documentation release notes"
+        "query": "LangGraph release notes"
       },
       "response": {
         "kind": "value",
         "value": {
           "results": [
-            "Result for: {\"query\":\"LangGraph GitHub repository releases latest version changes OR LangGraph official documentation release notes\"}"
+            "Result for: {\"query\":\"LangGraph release notes\"}"
           ]
         }
       },
@@ -200,9 +397,9 @@
     },
     {
       "seam": "distill.extractEntities",
-      "requestHash": "c5bc8b5d9f5474cda3ab68af80925e86349ee2e614181092bb2748378d6b17e3",
+      "requestHash": "c0cd82e2f4ad1155ded220f21758d93dd209f917330e7d37b7bb38d215a9a002",
       "request": {
-        "context": "user: Search for what changed in the most recent LangGraph release and summarize it.\nassistant: Here's a plan to address your request:\n\n1.  **Identify the Official LangGraph Release Channels:**\n    *   Check the LangGraph GitHub repository (specifically the \"Releases\" or \"Tags\" section).\n    *   Look for an official LangGraph blog or documentation site that might announce releases.\n    *   Examine the LangChain/LangGraph changelog if available.\n\n2.  **Pinpoint the Most Recent Release:**\n    *   Determine the latest version number and its release date from the identified channels.\n\n3.  **Extract Key Changes from Release Notes:**\n    *   Review the release notes, changelog entries, or announcement post for that specific version.\n    *   Look for:\n        *   New features\n        *   Major improvements or enhancements\n        *   Bug fixes\n        *   Performance optimizations\n        *   Breaking changes (if any)\n        *   Specific mentions of agent capabilities, tool calling, memory management, or integrations (like vector stores, which might relate to `pgvector`).\n\n4.  **Synthesize and Summarize:**\n    *   Consolidate the extracted information into a concise summary.\n    *   Highlight the most significant changes, new capabilities, and any improvements that might align with the \"relevant context\" provided (e.g., agent behavior, tool calling, memory, integrations)."
+        "context": "user: Search for what changed in the most recent LangGraph release and summarize it.\nassistant: Here's a plan to address your request:\n\n1.  **Identify the Most Recent LangGraph Release:**\n    *   Check the official LangGraph GitHub repository's \"Releases\" section.\n    *   Alternatively, consult the LangChain blog or documentation for recent announcements related to LangGraph.\n\n2.  **Extract Release Notes/Changelog:**\n    *   Once the most recent release is identified, locate its associated release notes, changelog, or announcement post.\n\n3.  **Summarize Key Changes:**\n    *   Read through the extracted information to identify major new features, improvements, bug fixes, and any breaking changes.\n    *   Pay particular attention to updates concerning agent behavior, tool calling, memory management, and state handling, as these align with the context you provided regarding agents and tools.\n\n4.  **Synthesize the Summary:**\n    *   Condense the findings into a clear and concise summary, highlighting the most significant changes for the user."
       },
       "response": {
         "kind": "value",
@@ -210,421 +407,363 @@
           "extraction": {
             "entities": [
               {
-                "id": "langgraph_project",
+                "id": "langgraph",
                 "label": "LangGraph",
-                "description": "A project or library for which release information is being sought."
+                "description": "A framework for building language agent systems."
               },
               {
                 "id": "github_repository",
-                "label": "GitHub repository",
-                "description": "An online code hosting service used for LangGraph's development and releases."
+                "label": "GitHub Repository",
+                "description": "An online platform for version control and collaboration."
               },
               {
                 "id": "releases_section",
-                "label": "Releases section",
-                "description": "A specific section within a GitHub repository dedicated to software releases."
+                "label": "Releases Section",
+                "description": "A part of a GitHub repository listing software releases."
               },
               {
-                "id": "tags_section",
-                "label": "Tags section",
-                "description": "A specific section within a GitHub repository listing version tags."
+                "id": "langchain_blog",
+                "label": "LangChain Blog",
+                "description": "An official blog for LangChain related announcements and updates."
               },
               {
-                "id": "langgraph_blog",
-                "label": "LangGraph blog",
-                "description": "An official blog for LangGraph announcements."
-              },
-              {
-                "id": "documentation_site",
-                "label": "documentation site",
-                "description": "An official website providing documentation for LangGraph."
-              },
-              {
-                "id": "langchain_project",
-                "label": "LangChain",
-                "description": "A related project or framework."
-              },
-              {
-                "id": "changelog",
-                "label": "changelog",
-                "description": "A file or document that lists all changes made to a software project."
-              },
-              {
-                "id": "release_version_number",
-                "label": "version number",
-                "description": "A numerical identifier for a software release."
-              },
-              {
-                "id": "release_date",
-                "label": "release date",
-                "description": "The date on which a software version was made available."
+                "id": "documentation",
+                "label": "Documentation",
+                "description": "Official written materials providing information about a product or system."
               },
               {
                 "id": "release_notes",
-                "label": "release notes",
-                "description": "Documents accompanying a software release, detailing new features, bug fixes, and other changes."
+                "label": "Release Notes",
+                "description": "Documents detailing changes in a software release."
+              },
+              {
+                "id": "changelog",
+                "label": "Changelog",
+                "description": "A record of all notable changes made to a project."
+              },
+              {
+                "id": "announcement_post",
+                "label": "Announcement Post",
+                "description": "A publication announcing a new release or update."
               },
               {
                 "id": "new_features",
-                "label": "New features",
-                "description": "New functionalities added in a software release."
+                "label": "New Features",
+                "description": "New functionalities added to a software product."
               },
               {
-                "id": "major_improvements",
-                "label": "Major improvements",
-                "description": "Significant enhancements to existing functionalities."
+                "id": "improvements",
+                "label": "Improvements",
+                "description": "Enhancements made to existing functionalities."
               },
               {
                 "id": "bug_fixes",
-                "label": "Bug fixes",
-                "description": "Corrections to errors or defects in the software."
-              },
-              {
-                "id": "performance_optimizations",
-                "label": "Performance optimizations",
-                "description": "Improvements made to increase the speed or efficiency of the software."
+                "label": "Bug Fixes",
+                "description": "Corrections to errors or defects in software."
               },
               {
                 "id": "breaking_changes",
-                "label": "Breaking changes",
-                "description": "Changes that might require users to modify their existing code."
+                "label": "Breaking Changes",
+                "description": "Updates that might require users to modify their existing code or configurations."
               },
               {
-                "id": "agent_capabilities",
-                "label": "agent capabilities",
-                "description": "Features related to the abilities of software agents."
+                "id": "agent_behavior",
+                "label": "Agent Behavior",
+                "description": "How intelligent agents operate and respond within a system."
               },
               {
                 "id": "tool_calling",
-                "label": "tool calling",
-                "description": "The ability of an agent to invoke external tools or functions."
+                "label": "Tool Calling",
+                "description": "The ability of agents to invoke external tools or functions."
               },
               {
                 "id": "memory_management",
-                "label": "memory management",
-                "description": "Features related to how an agent retains and recalls information."
+                "label": "Memory Management",
+                "description": "The processes and techniques for controlling and coordinating computer memory."
               },
               {
-                "id": "integrations",
-                "label": "integrations",
-                "description": "Connections or compatibility with other systems or services."
+                "id": "state_handling",
+                "label": "State Handling",
+                "description": "The process of managing the current condition or data of a system or component."
               },
               {
-                "id": "vector_stores",
-                "label": "vector stores",
-                "description": "A type of database optimized for storing and querying vector embeddings."
+                "id": "summary",
+                "label": "Summary",
+                "description": "A brief statement or account of the main points of something."
               },
               {
-                "id": "pgvector",
-                "label": "pgvector",
-                "description": "A specific vector store implementation, likely for PostgreSQL."
-              },
-              {
-                "id": "plan_to_summarize_release",
-                "label": "Plan to summarize release",
-                "description": "A detailed strategy to extract and summarize information about the latest LangGraph release."
+                "id": "recent_release",
+                "label": "Most Recent LangGraph Release",
+                "description": "The latest version of the LangGraph software."
               }
             ],
             "relationships": [
               {
-                "fromId": "plan_to_summarize_release",
+                "fromId": "langgraph",
                 "toId": "github_repository",
-                "type": "IDENTIFY_RESOURCE",
+                "type": "HAS_OFFICIAL",
                 "confidence": 0.9
               },
               {
                 "fromId": "github_repository",
                 "toId": "releases_section",
-                "type": "HAS_SECTION",
+                "type": "CONTAINS",
                 "confidence": 0.9
               },
               {
-                "fromId": "github_repository",
-                "toId": "tags_section",
-                "type": "HAS_SECTION",
+                "fromId": "langchain_blog",
+                "toId": "langgraph",
+                "type": "ANNOUNCES_ABOUT",
                 "confidence": 0.9
               },
               {
-                "fromId": "plan_to_summarize_release",
-                "toId": "langgraph_blog",
-                "type": "IDENTIFY_RESOURCE",
+                "fromId": "documentation",
+                "toId": "langgraph",
+                "type": "CONTAINS_INFO_ABOUT",
                 "confidence": 0.9
               },
               {
-                "fromId": "plan_to_summarize_release",
-                "toId": "documentation_site",
-                "type": "IDENTIFY_RESOURCE",
-                "confidence": 0.9
-              },
-              {
-                "fromId": "plan_to_summarize_release",
-                "toId": "langchain_project",
-                "type": "EXAMINE_RELATED_RESOURCE",
-                "confidence": 0.8
-              },
-              {
-                "fromId": "plan_to_summarize_release",
-                "toId": "changelog",
-                "type": "EXAMINE_RESOURCE",
-                "confidence": 0.9
-              },
-              {
-                "fromId": "plan_to_summarize_release",
-                "toId": "release_version_number",
-                "type": "PINPOINT_ATTRIBUTE",
-                "confidence": 0.9
-              },
-              {
-                "fromId": "plan_to_summarize_release",
-                "toId": "release_date",
-                "type": "PINPOINT_ATTRIBUTE",
-                "confidence": 0.9
-              },
-              {
-                "fromId": "plan_to_summarize_release",
+                "fromId": "recent_release",
                 "toId": "release_notes",
-                "type": "EXTRACT_FROM",
+                "type": "HAS_ASSOCIATED",
+                "confidence": 0.9
+              },
+              {
+                "fromId": "recent_release",
+                "toId": "changelog",
+                "type": "HAS_ASSOCIATED",
+                "confidence": 0.9
+              },
+              {
+                "fromId": "recent_release",
+                "toId": "announcement_post",
+                "type": "HAS_ASSOCIATED",
                 "confidence": 0.9
               },
               {
                 "fromId": "release_notes",
                 "toId": "new_features",
-                "type": "DETAIL",
+                "type": "IDENTIFIES",
                 "confidence": 0.9
               },
               {
                 "fromId": "release_notes",
-                "toId": "major_improvements",
-                "type": "DETAIL",
+                "toId": "improvements",
+                "type": "IDENTIFIES",
                 "confidence": 0.9
               },
               {
                 "fromId": "release_notes",
                 "toId": "bug_fixes",
-                "type": "DETAIL",
-                "confidence": 0.9
-              },
-              {
-                "fromId": "release_notes",
-                "toId": "performance_optimizations",
-                "type": "DETAIL",
+                "type": "IDENTIFIES",
                 "confidence": 0.9
               },
               {
                 "fromId": "release_notes",
                 "toId": "breaking_changes",
-                "type": "DETAIL",
+                "type": "IDENTIFIES",
                 "confidence": 0.9
               },
               {
-                "fromId": "release_notes",
-                "toId": "agent_capabilities",
-                "type": "MENTION_TOPIC",
-                "confidence": 0.8
-              },
-              {
-                "fromId": "release_notes",
+                "fromId": "agent_behavior",
                 "toId": "tool_calling",
-                "type": "MENTION_TOPIC",
-                "confidence": 0.8
+                "type": "RELATED_TO",
+                "confidence": 0.9
               },
               {
-                "fromId": "release_notes",
+                "fromId": "agent_behavior",
                 "toId": "memory_management",
-                "type": "MENTION_TOPIC",
-                "confidence": 0.8
-              },
-              {
-                "fromId": "release_notes",
-                "toId": "integrations",
-                "type": "MENTION_TOPIC",
-                "confidence": 0.8
-              },
-              {
-                "fromId": "integrations",
-                "toId": "vector_stores",
-                "type": "EXAMPLE",
+                "type": "RELATED_TO",
                 "confidence": 0.9
               },
               {
-                "fromId": "vector_stores",
-                "toId": "pgvector",
-                "type": "EXAMPLE",
-                "confidence": 0.9
-              },
-              {
-                "fromId": "plan_to_summarize_release",
-                "toId": "langgraph_project",
-                "type": "TARGETS",
+                "fromId": "agent_behavior",
+                "toId": "state_handling",
+                "type": "RELATED_TO",
                 "confidence": 0.9
               }
             ],
             "facts": [
               {
-                "text": "The plan aims to identify official LangGraph release channels."
+                "text": "The plan involves identifying the most recent LangGraph release."
               },
               {
-                "text": "The plan suggests checking the LangGraph GitHub repository, specifically the 'Releases' or 'Tags' section."
+                "text": "The plan suggests checking the official LangGraph GitHub repository's 'Releases' section."
               },
               {
-                "text": "The plan recommends looking for an official LangGraph blog or documentation site."
+                "text": "The plan suggests consulting the LangChain blog for recent announcements related to LangGraph."
               },
               {
-                "text": "The plan includes examining the LangChain/LangGraph changelog if available."
+                "text": "The plan suggests consulting LangGraph documentation for recent announcements."
               },
               {
-                "text": "The plan intends to pinpoint the most recent LangGraph version number and its release date."
+                "text": "The plan involves locating associated release notes, changelog, or announcement post once the most recent release is identified."
               },
               {
-                "text": "The plan involves reviewing release notes, changelog entries, or announcement posts for key changes."
+                "text": "The plan involves extracting release notes/changelog."
               },
               {
-                "text": "Key changes to look for include new features, major improvements or enhancements, bug fixes, performance optimizations, and breaking changes."
+                "text": "The plan involves summarizing key changes."
               },
               {
-                "text": "Specific areas of interest for changes include agent capabilities, tool calling, memory management, and integrations."
+                "text": "The plan involves reading the extracted information to identify major new features, improvements, bug fixes, and breaking changes."
               },
               {
-                "text": "The plan mentions vector stores, specifically 'pgvector', as an example of an integration."
+                "text": "The plan emphasizes paying particular attention to updates concerning agent behavior, tool calling, memory management, and state handling."
               },
               {
-                "text": "The final step of the plan is to synthesize and summarize the extracted information concisely."
+                "text": "The plan includes synthesizing the summary."
+              },
+              {
+                "text": "The plan aims to condense the findings into a clear and concise summary, highlighting the most significant changes for the user."
               }
             ]
           },
           "tokenCounts": {
-            "prompt": 380,
-            "completion": 3095,
-            "reasoning": 712
+            "prompt": 300,
+            "completion": 3065,
+            "reasoning": 1336
           }
         }
       },
       "tokenCounts": {
-        "prompt": 380,
-        "completion": 3095,
-        "reasoning": 712
+        "prompt": 300,
+        "completion": 3065,
+        "reasoning": 1336
       },
-      "latencyMs": 12791
+      "latencyMs": 12017
     },
     {
       "seam": "embed",
-      "requestHash": "20547794af49139c5361501648005807a9fdf80e68679ed76a2d2fabad8c4d0e",
+      "requestHash": "794261a20409c70723a864a98f8add5f3f065050dbe1ae38b607066bdf654cb0",
       "request": {
-        "text": "The plan aims to identify official LangGraph release channels."
+        "text": "The plan involves identifying the most recent LangGraph release."
       },
       "response": {
         "kind": "vector",
-        "float32Base64": "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"
+        "float32Base64": "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"
       },
-      "latencyMs": 215
+      "latencyMs": 209
     },
     {
       "seam": "embed",
-      "requestHash": "43299316e71c2c0efa21239568f7694793345689042f23c13c0baf4a15d683f1",
+      "requestHash": "2d79f40e19c2069c1f774b6615e6a1f40e74d2eda16f7d6b4b12b5a894f19b2a",
       "request": {
-        "text": "The plan suggests checking the LangGraph GitHub repository, specifically the 'Releases' or 'Tags' section."
+        "text": "The plan suggests checking the official LangGraph GitHub repository's 'Releases' section."
       },
       "response": {
         "kind": "vector",
-        "float32Base64": "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"
+        "float32Base64": "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"
       },
-      "latencyMs": 178
+      "latencyMs": 217
     },
     {
       "seam": "embed",
-      "requestHash": "87af6dca78ac8a59796f4ff706d550d46ff575294ba6c5d044e31806de27e7bb",
+      "requestHash": "ba51e00d29099fe31f0e218fc904028172e8ef8437ebca092bbfa0d869f7ef8e",
       "request": {
-        "text": "The plan recommends looking for an official LangGraph blog or documentation site."
+        "text": "The plan suggests consulting the LangChain blog for recent announcements related to LangGraph."
       },
       "response": {
         "kind": "vector",
-        "float32Base64": "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"
+        "float32Base64": "ChcVvWteYT1C8by8XA7kvaBPt7v5TEA9mSCxvNJGEz2jtsG8IAIbvUMpfLvp0BC9yXBnPEEbYbwLOlo+EngMvcePMDyHKY+6GJwQuvwlTbvbGLu8WoKhO4+DKT1tpAW9tUTMPGyZRzu/83o9j1V0PBtsOT3xvqM8aHzhu36mKTy/zO88nXdRPU70Oz3RW1A9SSNrvMUzurw2yi08RpHdPMhxwzth4Xw9hKXeO4qgAL1pkQe8CqwlPCWjT7zLhR69Z876vPFdKT3/Uhu9X0+ivO6ZML0oyYm+m4Wvu6H2+bwa9pu86GJtPIBpuTwWM3M7vAwbvTHVUjwkkz29Qz1BO+GhkzwFzCm9jnqaPOoys7zF+UY80WL+vArQ1zreIkS8/A+bvA4jNb244co7WrdtvTUfyztdhWs8fz0oPRWYIz1/UAu8JSVQvVV0GL31WJ27OdDRPECNNr3LZKo8Dxd7vD5Jl7yUF8g8eKAWvdC8HD29ehI9CbUzPV25qLtD8Hk8svDxu5dAFbyaDue8Bu6HPORYt7rTjDi8Yg0qvDFlvTzzlz08FQiOPAt9f7vGAim6zsbqvAeiEDkk5Ta9rw7Zu1+DGL1JDya9mbRgPPOSib5/G9K8WK1IOywAQ7wPV+G8naw9vHxTPzz7Rec88P6luwFhRL0shAi9nVcdO8EN6Ly/req82JD8u938K73c7+O8AyDWvCnGabs1yIC9TNJBvIiUML0nn5m8/GAhPIE0ybwl3rU8PdydPRHXXj0GT9O8Ce72vJNXabzqO5O9zeUmPLg2+jyYPOm8sXxtPYkG8ru4UII7BcnfPNGyJz0xRUe9V1uxvYkyU7xLggo7Bz8uPOftLLvqoMy72L7SPPJ+ybyk2ng7QUszPbc8rbxKrVU8HzEEvUfdeT3Wayc8QFAdvbtqkzyOroC8VjLrPPvJ4rnMi0Y887Tfu+AygLzZfD69ER+nvG36ejxu/J47vOEyPe3EjLyLIIA7j8GcvKNcB7y2p488UvPdPBmI2LypX1a9GULNPMCtvzvhvpq8PtbAvMrw2Lj5TO+8lQeJvH0gujz2nf88DM1BvWjJZjy4Fr+898yoPGsR1jzoJsq8fPaNPHB0RD1Ah1088PSaPAKlNzwRLzk8PBzXvFwrOT2Mgui7YGMQPJGZXLwUERC90ZMtvUQCTjyjfum8XGgOPXTtWz15pUu8CbGEPN28Azxx0rm8KxYgvY/g1TyLKuK89On5ukngpjysbhg7dmUjPaegKr06gsm8kMtFPahHJj2vDB08eQpUOhwGXzxCJ9+8owdJPWerVLyuqha9KM5Hu+Igjzy90Lq8NFQ5PdxZozo+thi5MEDMvFGsMLzwBfq7gu5HvSkpmLy+lo88FnG5PHv7KLw/9F08bg9XvLucyrwBrF68eKmxvCFP/TyTdj27W+aiukXjU7wqIh+7lr3rvAOSTrqe85U9Pd0avGAqDj1X2Y88t2mavVMn8jzuiS481BDcu5vN4rpeXP68Ajcyu4vGcjtraPe7xNTvvGaLlLwdUTO82zJVPJ/8MrzicAg9D9dnPaDThz2exJg8D3EfOpyqYL1mGPw8PLUevL6rd7xz5jY84TQkPW8lNrpKr5G7TLiRPWpQgLxqsIk8IuxxPOekYryL1di8SVazu7VwDjuglqg8JLuQvKe4f7xhDQK8PuIdPF4FPT0wvFa9DZuWuxv8hzsvk1I8+3f8vJWeG7353ss8kGA8ucRlyrxGfQM9j7OLPJpiojwtywO9yZxIO0O4ED12llk7Hd3ovGQCwTztvDI9ZgdNvTAsBzw9fjO8S4kxPaDCI7288XI8dZyVvAxV8bt7Qjm9Mp8+PUdMwLw58qM8gH9Zu/2aVbtOybM650+3PIJpjDxGV6C8tUg4vYw8n7qGk9s8Rtq8OxAXNj1K5Na8no1CPS0IZ70ifF+9ZkHUO21NNTwtx6K8JGXBOXLBiT1So6O82DdQO5petbzK9Us8V81jvEaOADwLTM87LtZ7vJEcz7yATAU8Ch8Ovc8RWD3zBF+82p1PPfvTbbzZsdO8R/6pPKlAADyIz+Y8dt2SvHLOMT0YwQY96psHvC+LKjvIAQ+9a2nOPHkFKb0o1nO8zhqwPD9xwbyMzFC9X44GPHY/sDywPkM99iRIvXSaVjwAGf087yLAPDvgTr2C5de8iKcgPMx60LxT6RG9YxU+PUgJ2DwDWRG8zAeVO1kFhjxPMtI7owMBvc4Ksjz9m5o8qoUwPZ73Pj0XKv+88hHZvO5oPruabAa9xGLsvHa4Db2huxu8J5zXuyzs6btvB5+8oC5yPJxELb0Qrh68eQBZvTnp6rzOGva8Oj2ROmyOobytbtS8bl13PHpCPryiFUM8pR46PTEvDL2QUHK9M8X+vGjx1r1xgnU9yRc1PcJWHzwHcwE9xdPXPGOgNT1Kwz0804iqO2C57zuZY4S9/rFlPFDp6bwWmBW9XZyBuw/ABD2+Hc68DmlDvY2ixLzpuP68sBBUvIPLdz1M2Zc92piourkYQj1FL507fJLGvAfyOrwLfIm8x5FtvMDXSj1J2W09WJBSu6zpx7yj02s9hJh+vK4wizyMhyA9sz9BvEEU+jx14SM9GN3yPIqWSTys9SA9YVrmvM+hN72Xr5u7pt7sPGkHMT2u71q7otPCvJVc8jxqHUa7BY0wPHIeEjw+QzM9WxIevJwgybqP9TI84n9fPQlqVD2ZN408VKu4vK8q7byfXm68ecqnvEWjML2N0+m739jbPFB2ODshCSy8NKmsOdEzF70OpKe8J6SIvbZTPzzF8oo8TYpOvSToQDuVqdA8533FPDzOQTzX4V29LhJWPUhmB7gux4w8PzEOPCxcOr0TxTs9QaAIu0gk0bt62Ou8Uk9hvehQaTuBsgq8cLs3vOqLRD3jRCy+U4ogPctSbTqqeuU7F0wRvb5V8bv2I9A8nEqXPNiLHTycHP+8jAL8u2qjxbwNvGc8GHC2PCbdBzuWmRi9aEZPvfdigLsB8OW7N84JvZweMD3Od7Q8Nw3APEgHnzwFz+68W5FPvA6e2Tyv+tE77F5zPNR81Lwju3Q8gpCdvC59tjxfvVc9E9seu4h1Qz22wBs92mjEPK/ggDwR/6i8XXlFOkVqa7v4r847ILLAvAzyRb0ebZu8AgFZvTSg1TuLDUM84ORZPAPTGr3hTra8YmzrvL/f3LzCclm87fn9vLJobb3PWHY91/FBvNWbkbyIVZy8SggyvfLKbDzbeug8MDMkvdR87zz98be7cOlGPbKqDL0Xjui8ojAzvEcaRL16r7280ZMnvFSwhr2ALME89Cm5u/3J6jzkA408wB+rvCqdJrwMXSk7vYvbvdVUhDyngqm8hagFvA6LOzy/WQq9vIzXuivBeb2CESk6a0g9vCabcrx5oyO9PrNyuiTkyrxKhZi88ZGOu/WzpLzIMpc7343FO2utATyY+ia7jp+Bu8ZfjTzaDb88+11ivSq4Vz3m/9a8/F4APYmN0zod+MW8rwdZvA8+Yr6uwwW8RgJCPIGETbxXiMu44J7+PIP7vrwBhj89BZQHPaP6a70Wnq88qoMOvUl24LwuFy+83r3PPHRGUT4Rlz88ttXOO9hVTzyBVCY8DwiBux/nkrxJQ0w8JBqKvaX+Jr2poka8joiOPQ5stLyTh2u7JZCSPc7MDjym1RQ9A3CvPObSz7xAxGg8M+3GuzhMwjul7M87+v4DvLKuCD0Wt788did0PaGa6bwEL847QwugvOHS7Lym4FK9Q5ELvTTJTDz42hO9h09vvXn5Cb4lNRs7+RWDvL1JxztXn1C8zOn5u7K2iD3BOYe6u0BwOydg3DworQY8YuJBPAhz6juGv887uRsJPEzuYz1dAZk83CQNPWIRfjyd98A8Yg7hPNV2E72l1Zo7ldHyvIo8zDwKQCo8iIc6PcsRDby5wcm8JoZAPb6AqLzYHbo8FV5uPEzjxTxqvN6766j3PFVMzzxdCEU72QX5O4A5xLzsNo85BSkVvO95dzxoaia8y8G+vAIIBT3fQDQ8m8xQvWWDlrxtpS+9QNpavRP5sTstB1C8W3dDvEHoaD3H1JY8xfIxvHBN4TwUY1S9"
       },
-      "latencyMs": 180
+      "latencyMs": 216
     },
     {
       "seam": "embed",
-      "requestHash": "a085f82827b4af3bbd216fa436439dd6d3a4c89a6ed72349195a66af6256225e",
+      "requestHash": "279226c8796393db76463af0607f2de3aa5524522d61f512f3683122faed8f3c",
       "request": {
-        "text": "The plan includes examining the LangChain/LangGraph changelog if available."
+        "text": "The plan suggests consulting LangGraph documentation for recent announcements."
       },
       "response": {
         "kind": "vector",
-        "float32Base64": "ZQL/vHofQj1+Wj28TsC/vSnG3Lu8MNU86c1FvNGgpTwcudq7XhYqvYH2K7ux0Za8MscQPcJTYjySaVk+Qe3YOxn7QjyVs/o8WirguVTsKrxKZZe8jOLzPCEz7DxaDUi96f68PNt33DtIY5I9Qix5PAD6eD2qOE88BInvOo4FtTwjlru6xSqgO8sOFDyjH1I9uLQIvcfsxLzLPAi9TDDzPIAOabz/NW49fFLnPHk0Ab3fbwe830RpuxGLPb0Y7Jy7suuQukKtCT2yYi+94XIIvEJVybxxaY2+k5TDPISG/LxJmGC9NpsrPKSUgz09Arg6d5aQvfPxjTvD0Um9sQmGPKcOx7xM9BG9bbTPPBJcp7yeZ4u8q9YsvY0MN7w0V5u8FLQSvTy9rLzJ1Ys7/TZpvXw/DjtWp708jpd/Pd+LFD2F/DC85uz0vGIfVrwUjWW8yPHdPPBIJb0KGhc9W55FuhFXzbx1ltg8Byk6O9Oa6zxFxRo9lkd7PF/rtDtiJh07z7szvF7qWzktCqE7Y0SiOr2sG7wQ1AG9ELF4vE+cdzwHVLQ8xuBwPArqkDoNAPE7JlrOvGOVDj3NLRG9AIpPPCCTwbwcEdK8UWAEOwU8kL4tQe+7ZhEEvX1RfryAMbm6uC1WvFBawjzllRA9rMizPLYosrxNA1a9wq4CvNfpAr2YUly8j5tsPFN1+rzDnsy8SiwRvZhPabxXRn69kXM3PE42vLw2GSU8VitZvKbDHLwvDhA9WeKVPXS6LD0Nod68sLXpvEI8BTzQ7Iy8xeOkPM+36ztGPmi9dFZOPOwSurtffCa8D8e0uZz8zDxIFDK9MiSGvU/N6rzOFXc8Prsguukn0TunlSu77/2TPPD4NjzWJYY8eS6ePECnNb37IcE8WW7yvCxrdT1rlIw6U7MIvdAFTzx5g0+8kfY3PAAG7zvXbqw8Op8VvBHxjLwfjna9A50/O+l70zv2mGq7PcD0PCW1A73C02E7gWuIOkLRPLwP9As92nysPGks4Dkp31K9KdmUPOQtSrukOb+7dAQQvBYi7btzrPu83FZMu52FCj2/NRQ9RbRivfZ7ArzFlWk8Rrr9PB5WHj1Lc488W+GLutkO1zy0ouQ7CaMXvKYgijwb0I+8xj+auc/QXj31obi8NvnrOxB8OLzggdW8DrTAvJ4dKDyl1oW7wagCvBmALz2hPBa9upgVPQLsrjzppiG9zoonvXHcST2TQjy8w3jYOFaCorwm7dG5GMo0PcMhrrxefxC9TsKQPXYGSz3RZaQ8l3Mmva7Ho7sb0Zq8mam1PL+MATvJUB29A7waPEMPujvvxU28vyqDPfjXtrz0Cr+74Dftu2vHFL0JZW88fd6bvA2f97wcy906qX0uPJ5qtLxeyZS6IiFAPM5jRb18SFO9SPSwu/s/DD2JOqQ8+6lHO9bADr0hOJG7BcrxvN+q1TykMRk9/hh8vMwFEz2VazI8VVm7vZ2PFD37YEC8abn2vBXGrzw1g4Q8kgL2PLJXXjxXt1Q8OmrVO7HMBL2C+kE8MgeYPJ+wL7zZev08Pc8kPTHWPT0M8DS8c5qjvK0neL3QqBw98BumvIhn/bzITHC7Htluu3g3yTv7KtE8OP+LPdY5Xjw5kp+7fDgMPRzQljzRm/W8X5cgvIfTdLx+iGc87va8O9qkx7yxOJq7YaL6ujrZFj312Wi9HrOzPN1zxDuJqRI8SYZWvN0+mLwjbEc7iQNvvDGPabvcXj88AUqEvAReOzzzQgy9ytCXu85Kbz3ZzdU8mlhKvZGo9zyweJc8KFUBvZNKVLxGVxq6ot6MPOXhEb2ri8E8Y5c5u2ccuzvhzJu8azYUPZFa2LpRtyM7Pr4gvIu0Qr3K/Hu74IebvLckhLx2wf68YlSIvUx77zuD8RU9Zy+MO4nrMj3k1Zi86FO8PIVvSr0p+Fq9jEgDvI2hkjsoHka934MrPcdVCT1j73S8tC+mPEWw17zgZM48MxIePF6my7vuzby6x/iDvK5qTjzBS6c6ViZCvTaS8Tyc14i8giQyusc38rxHnVk6MCuePP4yG7uQTxa8r2kVPPWuBT1Zyh28bEwPvTL0yzt7gI68j2JaPLryGDv2xku8CYkjPEmoVDs07xW9EhRZvOccvDs9WOs8UT9uvTCoOT2lX4k8T/78PPesX73QB668OiUPvbBq5by2q2C8hQtTPVdvD7t1OIw6z8lGPLe8gDx4SC69vGLsuyuVBD1eqhI9qL02PPW2MD2PNA292rBDvORFhTyZyis8TnLPvAcnEL36WM+8oalxvDHC0LxEtJy8+++0u9GBN71gXze7BH8+vauw9bxAUJ+8vV6avCJLTLxUWmo88BOdPLApY7xYXgA9NaQTPfm4YrwaTkC8pv6YvN8M5b3yPzU9fwmPPdl3tDv4UN48I6fYPJRu4zx6kjI86xB8vAWsBD17TIG90DsQPHCCgLwNK0y93jtQvP0h0jxlMEG8Nm6KvdF1CL3dwoi6nDNYOzHxHD3GjAI95RoEPFSH8jxKsZM7SU9XvP6hc7x4p8k8o0iDO6KMcz39pj48zmLVPCPwzbzxCT893QMRPIa8Ujx1T0k9X6x3vFbuAD0SCDU8BXTrPJxqxjseyDk9BXLLvP/0Mb0xBEG9KykHPQV7jzxYihw8X2QwvdiG+DzAkcA8b6uMvL/YCDsntgs9Ls/rvL89z7xKXLg8U/aKPbxlcz2a2+S8wvwyvDXyVryycsw8woEKPMNCu7zjKIG8tG4BO8r7JTtd4YS78q78PDU0R70Jt4O8xS5zvTUWrTxM2bO8AEVAvTGI/LyKxcg8R7fOPJU5LD3yqQ+9AY0iPQg95ryFsw88t+zVPHWoH70fVo89ScSVu+e7v7wJD0u7nAoavcC6mDx54wm8argNvVhXOj1HL0S+CB8YO5L1zzxsT7o8rGT9vJzSsDrsfno82hQxvEBsGLzKnhW9R3Zou+0gnryhU1s8D+EvPauCSjy4nC+84bJGvY/+pLz54SM8OlbHvLQ3vDwRFjE8Ez9BPPtw0ryw6B693c+9OyyK4DxSUco8S/+MOZrga7y5AjK8m0Wuu0pYgDxcEl49I8qPPM5dqTyKb6k8fs+/PICiE7zyR4A7LofLutwAWrxX1Mk8wcoGvQNhD73bvIM8infOuwQDjzx5ZtA7tEolPIbtM70Du9C8O0yLvGPYe704Dwq9LYNevaowDr1Xbyg9ntlVu03PDzuRgca7p9JAvVegmjyJlXU82ViGvbgNuzzCIUm90Ok3PQ2cPrxobl69umiIPBQQBr2fFK28/SKLPFTon71kkyo8A9jTvEfbIbxY6wC9sEEEvFSlQbzMv5O8i7f9vWbHSTzMSF28kA7jvPQ3hDxhj0q9ZeGpO1lYBL24kAM9Aj0Nva6INrwzLLC8da2Ru6qUUr1/6yi7zsovvDCHjrzzGFo8R3yVPD4DZrxyk4C81Svpu4ZSfz29Oqc7JhyNvVbkDj0ogiq91qUEPc6BqDwHLFy8vpQovAnKYr5e9MY8MDRFPYAOUDry2jw8ndDOPILWAL1QFko9qOtqPN2aMr2YnYs8A39zuyEkKLxKy2W7Dp9xO00IYz7bHMk800CvOmhISTyqyvo8e+bMvA92Pr1mR7a87/0oveAHPb3DzNO8sG0NPeU1z7zJJsu80MB5Pa2n6jsa80+7nWftO5Jx5rwx6h47vDiuu3QSYjzjvYy8tfpivAEXhzxU2gs7hoqUPf5ixbz7AIK8EJU8vZ7+1rztajG9HPM5vZxbAD0gCFi9a0ybvM8zBL6F0o87nt26vCneJD0PXTY8bBKAu0wXQz2xDPA8NcYXPXOfojxB/FA8lempu/PIJLs0Xgw8c/RmO4CDWj138bE8iyMLPJ5IJzvTl684LQeVPJEkZ7uCaO482oYPvcwDJT3lrYw7DAbOPEpzY7yT4Uy7Pe5OPYc+cTvi3K+82HIbPUGOhDytXOs757YIPXUfMj2LdFE4tccZPNRGprzzBuI8XTBIvSjVCrtWrdO8bJoeuxiwyTwvMLA8PUVdvV2y7DsI1le7+n9yvSGiOzxuvQK9CZUAvdi06jwaxtU8JsgwPLXa5Tx3gWu7"
+        "float32Base64": "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"
       },
-      "latencyMs": 204
+      "latencyMs": 199
     },
     {
       "seam": "embed",
-      "requestHash": "1e196532d43b449fa3574e1bbe653929694be42174d029d23e0c9223a0331d9e",
+      "requestHash": "1411bbbd51bcbbebc9ff869118eae6729dfe77a21e2d8db14ae7e62adb73d98c",
       "request": {
-        "text": "The plan intends to pinpoint the most recent LangGraph version number and its release date."
+        "text": "The plan involves locating associated release notes, changelog, or announcement post once the most recent release is identified."
       },
       "response": {
         "kind": "vector",
-        "float32Base64": "lPJgvXTLgj2qO169mR/fvRpikrzJSE89f+3puzwPNjzunMC8qqaqvA3EjbzQwgq93cXvPMZDCDy6UmQ+wFsDPOf/wLuXj4o8UJfOvIVs37t2WhC9NT74PJofobuoyjK9frCvO8RrYLxKmbE8qDsqPBB/kT1Ny1s8+P/dvNlGTDuikAK8mvhtOx6z9TxezT094/ItvSBuQ7wX+ME8k4F4vOyS8bymZ5A9bq6iPFpPPr3bXxM8etHtPLAZCb3dDxq9ZQwJvf+eHj3p9SW9rM9NvFvaPr2aUoK+RTcrPQ2lv73+/UO9vm8nPfA4Vj1Zx8C77rcGvRC0kLu4IEy9qUcNvattkDz6MLa7nEnMOyyHuLvaW9w823cDvYDCqLyDNPk82ZwWvSwksbvedWC8kqaDvSZTsDxK6B69SI2mPRPhiD2Dyum6M6nYvHxNyLyDFe+8i1n7O7oPwrvF0VI7qeZRvISth7zSmZk6+Z2buqJY1Tw9te4840Y0PH1zxjsm4+y7hqRTvD7/Hbu0kQC9JVeEPDY7BbyuBsO857ihu1fTBz2Jlk+8ZNSwvP7wH7u8N7U8DShHvGWrAT3+Hoa8iPYbPYmPjbzDPb87A5dTvIu2iL67xl483bvNu+jCRr2BKr67J8Izu0Pqmzu2Cyu9XvawPBtYdzyXS1G9QWzfvGJ6hrxLX3S8aZmTu7jMC71GzRG9t/XHvPxCtLwmrXS9ST1NvbJghDzDZ5087LwMOsKdkjyyTLs7OzQBPfrHeDzcZo289AgdvKWHN7yF/6+8sBa9vGk8szyrGxK9C0ADPTsjlrteLGW8vPj9u7oeRzyltyG9d0F/vcma6TtkvQ895hXBPAvvU7ucjZy8auxkPaqe57y3q1S8frQxPTMOCb3j8BA91aOhvIG1gD1VyD49P55pvebLjzr7/Aq8ZT7pu2XMBj3FnOG7Kn/+u+7+y7t3LYG9hJAvOyZYaD1abwg9/NuOO53afLwA4wG9DVWFvGbmeTzpm6g8sU+rOy4bAj1Z2C+9Pj3NPBjzlzs5YYK8XkqOvGwGGrz9QfE7V8YzvKFQkTyjz3g8wioevfGuhzz/fsM8Dj6vPPdQHT0HVSM9XCFmPIP0lTxYne+5J/ObvNahQLsNZTO8vy6NvN41Tj3xLo68wjyhPHbzQjtbqGY7LnyCvA6qIrtuAIy8RSstPMJYgT3p2oA63czvPIYJGL3MIb06I+pFvW8F9ztHRta78KvSPPv6ArzkaOc66v3yPLRDJbzkLdW82agZPRxpgz2W8EG8MAQCvVyAFD2zz6W8TkFAPZVa6TxSUQG96CDQu/ZD27zhoyg8443RPOn1HbnHXD086ZKUugrwabwj7AA85nm3vM+DV7wGAxw94257vEY9GTwfnUk8/gRVPFAuKb3wJVC81HrPPLC1AbzsJ808syvOu1lbBb0K+Z685JUfPPwBXj0o5TA8DDUnu3AobT06KF28M6oLvvWB5Dxgeoo8YTMuvVRQ/zzyj3m8UT1uOilq67xaOQC9nG6fPIgwgbwGXcy7TF9CO6o3y7x6Rd48JutfPFe+Tj2noEY8LvBTOre4Fr2fzqw7z3M+O24VEL20tAM9eq75Op/5KD1h8Zk7EVeMPT3ZTDzcfO+8/JHDPGROij2AClG9alM3PE5ke7wLbJg8luTPvH6wAr2ZT4e7rCviuotEAT2E54K92M2/u9yYUTwoJq07vTG7vMnHC71iiQi8FYZGvOdYPr2WZ7o8r1KDPNKC4Tzs0FK9khfbvMAImjwNzOs8BVqBvNCrqTynb6w8gwE0vY41J7zfeak7DFFBPF/mPL2UNms8f3ODvHeXEbzCFDU8Ln8HPTha5zpq/De7ItbkOm0ln7wpeLy7fD2+vO3PNz3Yniq9dNkBvXDqKjz8Nd87QDxYPCUDij0XqQS9uddTu+sLvLxHhCM6gAGrvAhxmTwwDAa8WT9lPX5kTTyoXYC8QLNbvAeC0ryzlDw8+Nw9PXY+lbu1+gO9CfhkvS4g07yEe/48PElFOvuhgj0ecRy933ULPQcpAL2ambK8rY/QPNw10jxyqLG8fg+6PEKoXTyLuSO9XwuVvIxqhzz9vh29U+B6PHc1Wrzu7QS6H/ZWPBeKA72a4EI9G1azvL/Aw7oOqIw85j0mvZoIMz2iqow9O5AaPRl6Db0h4Ry9QMP5PBD0Gr38VQW9UzdqPYPdZj1EWLm83KNWPKjoHbzRil06np35u+RhyTrph1k9CgyQu6um8DxwslW7DE6UvKIGlztqDME7zIo3vZTvF72dNR88j6mvu7LUlzwP3um8WFk+O343Rb3tv/68jfO2vL9LJb2vKVC95iS7PMORSTzp9e86bTBePKY+Br3FLwU8yphUOzMQ+LycXXa9rtFKvTdEq7288mc9jg9XPVAsJb1+pAM9sn19PI2h0TyBUJG8HdISvSX51TzE0A+9mDYlPT4KJ737nlG9Q2UNvaYoTLtjNAu63ww6vSMXybz9apa867UAu66g+jyuYJY75e2KPCSAIbwE43Y8ciT/vLt5DrzwBbU7cxxJPI2PkDxP3ZM8jqDsvM6ek7xwxAY9x6QtvCMf4zyh4Sc9sQsfPFGsWTw0RwU9eMqtvIrilztLMx89GpqUuvUnubxG7nq7S0CDPaCvWrsG4Qq8DbrqvGHidDyKvB49MYjSunIuGz09wAc93bFiu0Mhu7yL/ec8bIlFPJc9xjxU2nk7EynfO/a9z7olxYc8WDkMvUtJ+jwkRa67ZrhVu3fP/LvOh8U7gEyOPOBCj70QpAK9vTNfvfAAmDxJNhS8McmMPE86ZruZ79Q8fOkDPfWhC7ywHey8vhtOPd1PrrxSn767k3AAO+6U+7zVqHs98T7BO43e9rygmuy7IuMJvdUOI7xZD0G8q8yMveNQLj0ZKym+scqkPFoiFTwZhcQ8ThHDvO7VyryaSyQ8iqVgO+KDzrsVDFC9pncnvaTD/rw/q4E7jotbPcF9iDzb7Q+9/AsPOx5ZzLtT8Qg9rf/3u0cdKj1MhgE9zdzLu64afzymQsS8v9edPBP5Tj0OgUU8KSzKOszZfzxe5wa97L17vNQU3Ty1WBk9RySpPN5DLT1iQQ08AdyIPEoxgjxhzRG9PdV+PPHk7Dz0vtk8kdY9PDUnzryZlXy8XOnju+vElbvYUUO8WkntPFXu0LrsZoA8nu5cvcI8/bsZKtu8XoLGvPsB8bx73F481wfRu+Z1FzyPpUi83Pwive3D8LvKNCs8/AMxvQ0Ymzybhhm8bTWPPeTcU71Gqzu8+x/OPC3NIr0OWy+7uJA5PPDCY706xuc8YOVyu4K32TtHfa+6rgarvC9szLz2z/u8JB4RvpzIizyYC0u8xy5XO0xn1TrUkwO9vLZ6PB30p7tXSxI9uqvJvDE8tTvJP4M8QV5PPJmHaLz8v6W8dkJ7PK6iSb1h7Jo9LZHjPAfskrwCOBI7xx4BPPP5FzwJU/282xCBvVAyaj1BAYy9B5uBOhtu8LxtKTi9vzI+OwNRcr5yKCM9B8QQPa7+SLws24Q7F5C/vHg2krxFCto8CzkCO0JTRrwDTjw8K7/OvMtiNrwlyIG7gd1kvDSBUj5yVaI89wipPKX7UjwpweI7DSgBvEEnLr3y1oa8JnR6vMpqT7388fK7/Z0PPLeGnLy0o5k8JapHPaSW5DzahOE8dLfUPK6GYbvjnFs9jK8/PEF6Ob0QzCK8bxrPuzATBbzFgpC81C06PWVtQr0VjW+8AUEuvQlEwLwuiV+9+LM/veCJuzyqUW294uvkvKDf6b2iEmq8iJTYvDiaLrwsS1A8HDSXvLvkdzyCOuo8ku4JPZtdjzyCkI07MRglPQHu/Tsdj948PJStO5tJhT3KrlO8oOOsPG6Fhjz/bOs7RYALPTIXRzz/lu27T2FgvTM9VLmt4uU7od/gPCQe1Ly13Is65SltPeGq6jxLk168mrzxO5F/tjyrs1c8FBkxPCPNBDxCPWo8LwiCvCFNAL37oNg81e+LvLWQ4LyE4+y8xY+RvG0zFDyDToW8V40pvCzu2rwix7y7Q04wvaAVnTsLPQy9tQJMO0GWgT0gZ5A8QBn5OwEADj0SwnC8"
+        "float32Base64": "eyIkvVi1MD18ZW69V/mdvQDNTLscs+c8lUDRug2nabtFqF29YRsCvdGlpLwotsG763h9vMcGBj1Zx1c+/bnfPH3Z+TwyX7u8ts6pO1hN0bwCP0g85KYLPBPxczz3ZG+9FCD1u4fTVjygo2k9ow2KvCbG7Dy3g9O8XAIFPBXS0DzHF4I8OArgPGyOwjurKCs9QaZMumOhL7xDJQK9/qoFPYwlxjuF/qI9Qd/TPMApC72F8Vk820GHPEpn6Lw+KXG9My2lvBgTXD2+vAG9Ri1GvXACHr0en4W+Ks6XPNouI726+QC7RvCsPMBGrD0By9Q8nMUKvUPuKz3a2gG9iasZvI2zxLx1BHW9Frn5O8rg7rzIQow8sXNWvDsOKrzviZO85Y8jvQFd1bvVDiG9mkiWvcIfX7pPiQO9zqFPPQpWHj37DtY8QSLOvJUXprzjtLS6n4vnu1MTC717ct+8p2cWO+K6bL3wghq8YYUVPV5LIT13zws9wxYyPLOAy7vaHZe8VTGivDyHgbwShAm99EZhPM6fjbxvqOy8jnlWvSq7Drx9fM08B6iiuoFWhry70Ke8o+etvCujcbw/uhA8dC6aPOJO2rzzq7W8B/yZvPoRi77+/5i8hY4WvEoJVbzCEwe96EgFvER22Lx0FOa4JcGaO7AVLTypPDC8LeTfPKw1Xrs9UhO9nDYDvYChHb3t3MK815Jtuz1FybzyMQO9Zk21vPJogLiLJ4Q8yBSFO0fdgL3lW/48UKdiPdRkkjzVoQ+9gY/ivEiBmDuiHti84uoKPEoZpLtmJpu9OtsBuwreN7w1oha8aqMEvCDcAz2zSJm9rZOHvdGutzziFau65xMmvKGWJju9J4G8FZUuPaf6zbyBNR48opsWPS5hBD2aaQ+8lciMPOj53jywuZc8pHtevKVPKzxeR4u847w/u7bYAD1kx8o8+Gg4uxwQnDwrUe28+VXbvKLOyDw915k8cL7FPBe13jwkkA08ziB8ulN9yrzrDDo9K5xIPDt63zx99WS9j4gFPe+7RrsbMH88mdW0PBndZLzdzC+9bHgcPSAsSDzVpVU85T0AvY4TR7zBxoM7pcqEPFySjjxyfYe8cfoaO9CMZTySNRu9n6KuO0h18zy1TOo8LkxmvLo4BT1I+pe85WPiOjOvn7yTOCa7tZm8u+MEujx5V7O8wNMkvA+Isj3iTSM7seH2Oqio8znkDDO9Sz6+vOOymDzjZDS8+fyhPNeAmLzbnnw7Y1A4PG8tvLwGhrq8h+IxPWwRXT1G6ng90DWTvFJgeryspdq8A2TxPF+QYzwqroa9pdKevC+iKL1kgkk9Ngz/PBNxZTp6YQi7X3XZvA7YE7xXOz29wxyQvKFVw7xTChy9WBFnPJ6+ubxbP+G7wH6AO8DsyLyvxV+9cEZwumd76DxCay68GllROT7sI70q3vW8jO8mPdqMSTxmD7I8+HO9u9I9rzwU+cI8NBUgvln6ZLzqJmW8E7kCvatVIT2sz9u6y9GoOywskrxyoFc8PWQ3vF/6vbzkZ5C5Z8FuPSNJAb0w1f88e8sMPdFXbD0ufoC81c+lvKjG+bwHDxU6C4k5uoNbC702FSo9OkUUvPHhrDx/hCc8AQ+TPV3Xmbu9nOe8bJe0PJalTLxljpi8nGN5PHX/trnAWjS5TEdjvYvGwbw+fyI7UTEsvNVoTz33L6a8qcXqvL62Fj3BqwQ88VtjvI0FVTxrMNg8AH/DuXCm27sOQ108Mk2cPB6q9jzQpE29FB4MPcwYNz1gXzQ9yNBGvYewQT0y+fA7gIyKPGEU8zsBORu9PBUEPRLp97puTXE8C17bPEdYTTxPDre7stsZPBFAA72lyVi9n8/FO6VHML3rbG89zpnkPL8A5roNMSu913UIvUS7UjtD10m8UaDVO6batDsON6S7wzepu4W7NLz4rWK8PbciPKwtOrw9tgO9hEQfvW5EIT2YCOU7GA3wPLdLaDxOEYQ8pT8PPMr6WzujkJ889acAu4MIqzwooMc8+NKYvXaSMzxEGYa7wGF7PEF/hbxlAgO9yciSvAY1BDtcCBc8fTHkvP6NZzzwEQ69rPNDvX6VcDs9rzU7tK4kPLhCQr01/Ba8y2EJPdNoOL3GDHe8Q09yPEBwyLvaBiw9hbyEvN6hQD2Ba4Q8Pxs9vFe4qr1NSBy8DgNNvWLJBbz42re5NLiQPPGyLzxiB/w7YNMbvHIhPL30YuC7xEmXPHd9sDyOoCA9mIMqPNcV8zxhDxe9to5yOx/tCz3JdCK8/itXvSEMszli+r87jYr2O/0zUDvilmi7AQzDPHXnB734Nro7RmUdvVbRDL1YkZo80YisujD+NL0OrgC8mxusu1J3grw/J9g7YdobPRvCTbwog5C9wm2rvDR2j70Grm87wEYaPVoGarxefUc8dPwHvUWWdDyH17E8LD7VvGK6Mj10VWe9e4wfvPnwFLw1QIc6zWsAPAOSWryT0rI8HnxqvRhPgLuLNxu8FNJTu2cJpzwmsyM60MglPSyUnjzZjV6815gjvbGcPLygpFA7N0y2PM4eCz310Lk6uNfDPEBmwbry1eE851Q4vZGI37upUh89wjMWPFit4jyVE5s84YGmPHdB6DwavMM8CfC9vLuEnLjJeCi9KUtGPUmMxzsXSGe8TttFOnOigjxF/DI9jSbIvFacpzwgBzA8qsrSO99r6jvAO8O6GhYrPVMqDry6BVo9G5QEvU22G701wys8OhopPRgjvrszq/W8t0wZPfroeDyx3/s8uO9ePF4YJ70e41q8iSB8vGS+vDse0JQ8Ab7fvCBMv7v5jAK7u/0APImoRjyPxqq8+DEJPTem/LxdjdI8kQomvP5AbbzXibw8EQ9fOs4RT7ueXzG8lXryvI56BTwoV6C8wukEPD4tHD2Ng1a+7vEhveixCDtyMJY9T0nYvKy/I72zkdk85RPKvHRdKDwyoxK9uQPGvH3EhDwAk3w79SsnPcB+ojwq2aS8q+cKvDMZ5rk9chc9rbjJvEmePT1zJhQ75btQPfGwET3YXSK830wpve0aJz05fIE8O+MzPBzAdDz5BTS8NdaivHyzDj22iYI9wsFTPQtRjT0iz2U9XbizPNRcjztukx+8bM4pPXbzOby5KQo9S5V4PCz1N7pjixQ91a6yPA6bbTrCDIM8k7xPPFHBI73jmpa8bsAFvX9TQ73FrPq8QPJqvSq2HL3qnHs9xLo4PIwliztVVgG90G/JvOfXpLvq6mO85AsbvcPXrLqzizE7zAh9PcKz4bxpVcq8MGatPDX7mrwvR+w8lfQePTy4Sb2g5/o8DEEzvJ5yUDwTATq8krUUvT1+hLywaaM8XwzBvbk+O7wC5Fu8FD3BvJpm+jwLiX+8rjyKOzZMzjxrqyE9VgjcOteH4bxfxM28JFTZO2Qnnb3Fvju80fm4vBpZabyZvyc9S89APDNBLDy6uXQ7a2NTvEAFTzxT37o73LjOvDpIDD03K2K7O6kFPYgt67rwGSy9h6n5u4XOe776GQU9WABLO9iFdr22iHy8+azgu0F6nbxTMzs9iwCpvAjeG7xx5VY9cF1/vNRxXr0Pfou8kzwtO38Hbj7TeGA8WxOrPChfrLukl7S7dSZpvOl/Ur09GXS8OfCYvPE+J70nuoW8ksJCPblKL7s1Oi89kk4jPZNXjDytSXe7DH7ru8q6nrybuZ48AKWtvEj8p7zV9SC9mjaCPAuq2TxcODg8vGhJPbqugDvKWd07ffTIvGE2WbwxDgO60cr/vCWoUTxjYDE70eonvfQ4Bb6YStk8y2/ePNS1xDtl2Qs9gisMvcKtHzssd0g9YPbuPF2WvrwU9o47RffMO7PO8rr32SY8QBUavAXwiz2stgW9CwtzO6p6MLw3kIy8aup2PDl6D73m+be8JosfvdGmbjy+iim80lw8OyLWdLzUcZq8Ow2FPe0I5rtNpvE70pcXPIao+ry+l+C8n9SfPIXvjbtZVao8qSLEPFSZ27uGt9c8d2mCO48oJTzLB1461BSSPFLtjjyqG6g76kHtvA1MtjwusZW8LaopvSt4YDwBO4Y7gSqePA/5Kz06Oug7iIGRO6UJHD20cjg8"
       },
-      "latencyMs": 179
+      "latencyMs": 194
     },
     {
       "seam": "embed",
-      "requestHash": "9544af897d55866a8cbc18982e2aa6e6ac7039022abba555a252e379a745d889",
+      "requestHash": "df8a39eba876a4b24f9cc420d7d773e4d439c89eda3a0a72fb0207244f4b7735",
       "request": {
-        "text": "The plan involves reviewing release notes, changelog entries, or announcement posts for key changes."
+        "text": "The plan involves extracting release notes/changelog."
       },
       "response": {
         "kind": "vector",
-        "float32Base64": "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"
+        "float32Base64": "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"
       },
-      "latencyMs": 168
+      "latencyMs": 209
     },
     {
       "seam": "embed",
-      "requestHash": "2796ec16ecec18112c6064e683c2818087d94eb2a2f49e8f001f7f14d37a3ea1",
+      "requestHash": "b1e28bc1de96cbde38ba051263c42be0bab2ef1cb94c49265c0d14244b9592fd",
       "request": {
-        "text": "Key changes to look for include new features, major improvements or enhancements, bug fixes, performance optimizations, and breaking changes."
+        "text": "The plan involves summarizing key changes."
       },
       "response": {
         "kind": "vector",
-        "float32Base64": "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"
+        "float32Base64": "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"
       },
-      "latencyMs": 181
+      "latencyMs": 209
     },
     {
       "seam": "embed",
-      "requestHash": "b6ecafc680fe4f790247b7421b89465c2af869ca9eab898b7ac3ee1da606a9c9",
+      "requestHash": "c142de99fc7a3805245b787af99e62a8498044bf12ab234a2008235a6d2e1a97",
       "request": {
-        "text": "Specific areas of interest for changes include agent capabilities, tool calling, memory management, and integrations."
+        "text": "The plan involves reading the extracted information to identify major new features, improvements, bug fixes, and breaking changes."
       },
       "response": {
         "kind": "vector",
-        "float32Base64": "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"
+        "float32Base64": "KB2BPAc4WzthSe+8kwp0vUZx1rpPsa88xQ2RPFZQnTzCeju9gVKlOxFeLryDah68MvmdOmd2HT1ZL0k+/Tz9PJZvmjyXCB48iTuvvAaDBD1DYWA8fPoWPafd/DzDy6W9pFUEvKpWODyf4Iw99fxyPPNyeT10mUq8s8MGPGA1LT3y3F47jjj3PBx3/zz1FRU9rBnGu3yvhjwmNwu9uFwnPZfDiLxvL709YrgEPV0WEb1N8l27/YS6u7tqsbzjMuW8uz1jPLrNIjyia5u8p6A5vDI2PrxdwYW+X95APfoE0bxVBoe7VWu+vLgBWz1kc8E7uyM2vXLtxDz2xjK9V982vGLGOr3854K9VC+Su/BQhL0ZrMK8IKkJOtTCi7y6Xtu8soRBvc8sDr3PQ0K94vdvvQL+JD1Lgza8Jda5PE8+g7viW4C7+RRcvFomoTx1XgK93tYWPCVi4rtgWfG8/S6RupNOXb2lyDw8aXXDPPLw1TzLsyo9Ne0TvfGNFLvuFHk85RTlvMnJbTxrU1S7NDyKumYonjuaPSi9Y+AKvbpQnzsOmdc8elCdO6h/a7qjX+y8GuNvPFTo9jxIxQS9Jo6IPEUXdbz0BIi8ZKc4vXZCkL4xPg49D+rVvP3hRr0vMKi7aoBdvOsDTr2QhzG8onbzPLhFf7xLJFY685MWPWKXjTsdPyC943CxPA5n3bznBtm8Fu1cPFTwA7ysKgG93p1wvOa5FDuM9YK8tPkqPA5vKL1Cx7c7dW5kPfIcHDvN3zW9D2CjvInxFDoYVTa9+DFBPCTbhbzdvIK9W07BOxNB8roA4La70BZnvGWVUj0vCBy9MYR6vZWoB7xK8SO9XmpsPI7uiTzgqTW80dF/O2SmITwcN4g8S48xPVAaRzxmTO274w+uO8XaQzxNtSw8WtqvvBp/9TrsMXI7TJrVPGgiGj1lci89UmHrOjYY9Tw+1V69bGHeuLPQEz0fSD07iSM0PU33Bz2KsJk5kgDNvDukRLvVm0I8uZi5vLzREj3r9FG9682FPIwN1bxvtoS7dmCoO08JDrwcbAK9tRZHPcGWRD2/iF+7+MkdvGmcCjxOktG8AUEOPZddHj32kaW8rJQ0vKxpWjzT2q+61t9VO8ksiroMmdi88QyOvE9zCTxFmqW8LbBuPOb9Szzl+u+8VJUCvUj9m7y6D+i8R/aKu1cZeD2vxEW9cRjGPGXd0TzKGWe99AEFvMbP1DxY/ki7T/n+u3mog7yJqGQ7f6Znu1gLxTopc+Y8lRSmPMDiYD320vo8B8ivvGmF87xcXj+8fCf+PCmYhbqJO2+9liwrPHfcVrwxRkK7ZaMlPR3jKruBcAg8mCUdvK61grsdHmE7+ATMuzh04LpQB+a8cceIOgAhFLzH7Wm8GF03PPzgx7z0VZO9jQF9OyeUJztzesS8KuQiPAhyXbwhboa8n0JwvBxqqTxf80M9IIqNvFFMvzwFo448HNwuviEJUD1fdCw8w2knvTECFT2A2Aa8C4WevCQd67wcyaS7YaBYPIRcDb1rEv683lmePYILOrxuKMA8gsEAPb9oKz0TUrI8fvXdvN4p/bxVIZ48HYmLO5Pxojt33Ju8GjA0vOECsbzEmDo7WymcPYdAyjw6hYs7T6lGPaJxgDzN7jK8odFhvN3A4LzGTKw6hnWfvHVbEDwZu7M6mbB8vO8oej387aq84rU6O4CIQzw57287w1L6PNm3Uzxdjgs9aJW+vFldhDyYJjA9/aC5ugtmdzsIHjS9hCf8PAJtaD38c7q66G9mvWXOIj31TAY8SFE/PEV2pbwaOuW8cYG+PImQgryhBvQ8R5KwPLGmFjljbRK973VFPLt9prwceKe8YmIzPB5zw7zvX+88NPW+OyG9Y7yfUye8QCIcvQpwFTxT0no8TUkWOrMlPjyvI4a7UZNFvIn0CbwFZ1u8jiC8PJbKmbyFB/q89lQkPRMCEz2NvoA8VfEVPQWymjv3Em67ZK2TO72tpbscvfQ7lyLZPC9hCDuf6qI7c2lgvarYLTwBBB89yEO+PPClQbv2hzW9u6GnvG13bDxSu2K8wrMIveU3RjzE8tq8JTdfvd0GgTyb6eU7aVGVPCZburyPpT48pdgau0auJr27TIq9lcnCPLxYerzUcHY6JMIUvW2RNT3AjQ09BNkzPMy3j73kR2e8A+9gvZzJ07xZtaO8hycJvHTX4Dx1FIE7ibdyOxSAnbxeohO9X4r6Ol0zMD2wHsw8d1q2PNexCT1kZQE8xL+ZPLa0Hzwn3S65VH3KvFmTIb2v4mu7AXZjvAkkY7zL7qK7O9RxPDroGr0oNzy75JaavA51GL0UClc9aWhMuge9kry2FMC71HXgvBBBMLw75fo83TrEPFVXFzvb5Ru9uNhFvKJwjL0B3ww9g6MLPcPzDT0kc8k6eZYEPVPiYrwH0vM78JMSvNqkxjz3ms29ywDavAbb1zyB8K28qfoVPVwl1znEAEq8TJWPvaaVFzwaL428B0MVvVyJAj3hgIU8z/4dPTe1TzyFwoY8+n+2vJqqqTxNltM7k0IbPJgDLj2GIp272pIAPaDpfLtzjjs9quDSuzyNbzwvjio8XMubuqQBgzw1o0A8cgRNPVHZCD1M/Hs9F5TRO5B40zrNsDy9pvYwPOAIR73cbRe9c1VBPKmTvjwHXcE8kNxpvJZXXjyUZxM9AHDluYcD4LqleUG8xykLPTvVijwCDL87lpYOvR8oB71F8I88aIAnPR57JL18+qu8NX79OjgeSDz9KhI9u28TPULWsbxyxY28rZ11PMCWCD0hGFW9k/21vBs95LsEELo6LVdDPCrx7TzfXTC9xx0aPc5z9bw53QU6OrYvPfwZE73ZokU8xao/PPXYlTy2R+a89ag3vcqmujwjONm83M1bu2/4lDwS8kK+ZUqYvPMJdDwSkik9D1N8vV2/S7xcqjw9XPcGO/MAIzznyFK7r1T0u09FwLsz7cI8ZduWPf56sbsHKg2869zXvAIHFbzsi6O8uHE6vBwtZTxTN428gkiCPBCXRj2zqgy9LzowPKUxWD0Zq2c9rvsEPJSGrzw8mQu9ekwyvJkvGz36t289y9bOPDqvVj38DBw8ppYyPTxodjv15g87ATMwPFa6E7zabj48ByBEu2lw1TxlW1k84D5APYRpHLxR8L88eG/jPByoTr2wW8m8CyU3uyRejLyPfN68JiWhvSDNm7yKUY49u/AKvFjjcDyHUn47wwMHvCCg1rwAUVK8p27UvJD7drwDIpy8rJySPYkGOzxIQSs7JK0OPJ2JCLw1K4E8IxaHPQndOr1Pfb48hXrrvJIkJTwr3hq9EHbcu7xHV71Mxik7+2f4veWHgbsMz++8cBEAvX65Mj0McW68BeGRursg5zyHBMS67aeWvG8Y9bw9uD+7j4GdPBRfKr0r7z08WV2gu8MhPjlTcuM8mdGfPMEybTzf/RG8xXwovP6GyTyXmiW7OdAIva7Objt/FY274TSFPPfFDLx9eYa84StfvRjFab5ikis9/YPQO7SzO71/Cbg8/yJkvHZ1iLz1HNY7qaHFunilNL1eA2o8s4tjvewoML1iA7+8umRPPTwYdz7rKYo8Ire2vDDdvLoGPrg8pRAdveynhb1d0Nu8y3rdvDI5prx4GCK7hb4WPTj7ary/O1E9BmhcPJjdMj3KsKi8efUWO7M5drz71Ow5L0TtuzSnrLxOa6m8teR3PGA3HjsFEaw8USgjPUXfEjxU3ag7G59WvQoEYzqxzsI78EorvKS5Fj3BLwS97EgcvEfj+b0plG09HRvFOo3Iwzwqb0Y9ISTpvPtdAD2oYo88YcXtPJtrC70bqAE80neMu9hp6DwC3nK7xFouPINPdj3xOnU7LBqhPKBpmzt6zam8NPaVPDiu+Dv1ujw7pUYFvdS/RzwqfsS8U04EuvnVPryCqfW6HvhuPc/VOjtiSLg8h6pDPCwCKr0aYMC8qnUkPXSfPT3hMyA8bBNZPJpLTLtITi89sQ8JvF46aDyeTjY6Dw4mPeMcoTyOTWy8Hjy/vGS3LzsdiV282AIovfRgO7wjRSm7GwZWvDatRzycXeE8ulKlPIEdqT2S3Y68"
       },
-      "latencyMs": 185
+      "latencyMs": 233
     },
     {
       "seam": "embed",
-      "requestHash": "df3dfb71a18d5d25d6b674016dfb1d5c8ccebb131cea8ed2b6b2705af9e9be80",
+      "requestHash": "7066e1d582f5b7d9ae2489c10afff5e3928aeb076008e20949fbf4b7a4381019",
       "request": {
-        "text": "The plan mentions vector stores, specifically 'pgvector', as an example of an integration."
+        "text": "The plan emphasizes paying particular attention to updates concerning agent behavior, tool calling, memory management, and state handling."
       },
       "response": {
         "kind": "vector",
-        "float32Base64": "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"
+        "float32Base64": "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"
       },
-      "latencyMs": 169
+      "latencyMs": 198
     },
     {
       "seam": "embed",
-      "requestHash": "440a3b623196f5901737db7938e9a2e9f47bebe30eaaa376eb4ed425a22702d1",
+      "requestHash": "8625ecd5f0f63710045da17eca29e2801c4ba4ac25f7e70595850648836077f2",
       "request": {
-        "text": "The final step of the plan is to synthesize and summarize the extracted information concisely."
+        "text": "The plan includes synthesizing the summary."
       },
       "response": {
         "kind": "vector",
-        "float32Base64": "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"
+        "float32Base64": "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"
       },
-      "latencyMs": 167
+      "latencyMs": 198
+    },
+    {
+      "seam": "embed",
+      "requestHash": "5935ec1d1c114a5a816d6b43027a1ab295f8218a94346254365b8a5d6deed798",
+      "request": {
+        "text": "The plan aims to condense the findings into a clear and concise summary, highlighting the most significant changes for the user."
+      },
+      "response": {
+        "kind": "vector",
+        "float32Base64": "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"
+      },
+      "latencyMs": 188
     }
   ]
 }

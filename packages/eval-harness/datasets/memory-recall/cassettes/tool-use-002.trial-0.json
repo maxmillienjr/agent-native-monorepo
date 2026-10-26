@@ -1,0 +1,452 @@
+{
+  "header": {
+    "formatVersion": 2,
+    "taskId": "tool-use-002",
+    "trialIndex": 0,
+    "recordedAt": "2026-10-26T11:18:59.794Z",
+    "gitSha": "8446e9f31c2a1661870e279db75c8e1d066f877d",
+    "axes": {
+      "model": "live",
+      "memory": "live"
+    },
+    "chatModel": "gemini-2.5-flash",
+    "embeddingModel": "gemini-embedding-001",
+    "embeddingDimensions": 768
+  },
+  "decisions": [
+    {
+      "seam": "embed",
+      "requestHash": "ffb112e244168c67001050fe2f6cf10aca581be1545b7204219c56a16d1fdca5",
+      "request": {
+        "text": "Case PA-100002 is missing the clinical notes and the imaging report. Ask the provider to send both within 7 days."
+      },
+      "response": {
+        "kind": "vector",
+        "float32Base64": "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"
+      },
+      "latencyMs": 209
+    },
+    {
+      "seam": "plan.callLlm",
+      "requestHash": "2bbbac9e767713ba17a1310f14cf6f9c52982fb44c766154636b73c569df6d47",
+      "request": {
+        "systemPrompt": "You are a helpful research assistant.",
+        "userPrompt": "user: Case PA-100002 is missing the clinical notes and the imaging report. Ask the provider to send both within 7 days.\n\nRelevant context:\n- [pgvector] A reviewer may ask the provider for missing documents before deciding a case.\n\nBased on the above, create a plan to address the user's request."
+      },
+      "response": {
+        "kind": "value",
+        "value": {
+          "content": "Here's a plan to address the user's request for Case PA-100002:\n\n**Plan to Obtain Missing Documents for Case PA-100002**\n\n**Objective:** To request and obtain the missing clinical notes and imaging report for Case PA-100002 from the provider within 7 calendar days to ensure timely case review.\n\n**Action Steps:**\n\n1.  **Draft Communication to Provider:**\n    *   Prepare a clear and concise request to the provider.\n    *   **Subject Line:** Urgent Document Request - Case PA-100002\n    *   **Body:**\n        *   Polite greeting.\n        *   Reference Case PA-100002.\n        *   Clearly state the missing documents: \"We are currently missing the **clinical notes** and the **imaging report** for this case.\"\n        *   Explain the necessity: \"These documents are essential for our reviewer to proceed with the case decision.\"\n        *   State the deadline: \"Please provide these documents within **7 calendar days** from today's date.\"\n        *   Provide contact information for any questions or if assistance is needed.\n        *   Professional closing.\n\n2.  **Send Request to Provider:**\n    *   Transmit the drafted communication via the established secure communication channel (e.g., secure provider portal, encrypted email, or fax as per protocol).\n\n3.  **Document Request:**\n    *   Record the date and time the request was sent in the case management system or relevant tracking log for Case PA-100002.\n\n4.  **Set Follow-up Reminder:**\n    *   Schedule a reminder for **5 calendar days** from the initial request date. This allows for a timely check before the 7-day deadline.\n\n5.  **Follow-up (if necessary):**\n    *   If the documents have not been received by the 5-day mark, send a polite follow-up reminder to the provider, reiterating the urgency and the remaining time until the deadline.\n\n6.  **Receive and Process Documents:**\n    *   Upon receipt of the documents, promptly review them to ensure they are the correct ones for Case PA-100002 and are complete.\n    *   Attach the clinical notes and imaging report to Case PA-100002 in the appropriate system.\n    *   Update the case status to reflect that the missing documents have been received.\n\n7.  **Escalation (if necessary):**\n    *   If the documents are not received by the 7-day deadline, escalate the issue to the relevant internal stakeholder (e.g., case manager, supervisor, reviewer) for further action, as per established protocol.\n\n**Timeline:**\n\n*   **Day 0 (Today):** Draft and send the initial request. Document the action.\n*   **Day 5:** Reminder to check for documents. If not received, send follow-up.\n*   **Day 7:** Final deadline for document submission. If not received, escalate.",
+          "tokenCounts": {
+            "prompt": 82,
+            "completion": 1472,
+            "reasoning": 812
+          }
+        }
+      },
+      "tokenCounts": {
+        "prompt": 82,
+        "completion": 1472,
+        "reasoning": 812
+      },
+      "latencyMs": 6886
+    },
+    {
+      "seam": "act.selectTool",
+      "requestHash": "76898102e7f69ce176066f43a441ee6c64b38d83bd53dedce5eb577d1152b681",
+      "request": {
+        "plan": "Here's a plan to address the user's request for Case PA-100002:\n\n**Plan to Obtain Missing Documents for Case PA-100002**\n\n**Objective:** To request and obtain the missing clinical notes and imaging report for Case PA-100002 from the provider within 7 calendar days to ensure timely case review.\n\n**Action Steps:**\n\n1.  **Draft Communication to Provider:**\n    *   Prepare a clear and concise request to the provider.\n    *   **Subject Line:** Urgent Document Request - Case PA-100002\n    *   **Body:**\n        *   Polite greeting.\n        *   Reference Case PA-100002.\n        *   Clearly state the missing documents: \"We are currently missing the **clinical notes** and the **imaging report** for this case.\"\n        *   Explain the necessity: \"These documents are essential for our reviewer to proceed with the case decision.\"\n        *   State the deadline: \"Please provide these documents within **7 calendar days** from today's date.\"\n        *   Provide contact information for any questions or if assistance is needed.\n        *   Professional closing.\n\n2.  **Send Request to Provider:**\n    *   Transmit the drafted communication via the established secure communication channel (e.g., secure provider portal, encrypted email, or fax as per protocol).\n\n3.  **Document Request:**\n    *   Record the date and time the request was sent in the case management system or relevant tracking log for Case PA-100002.\n\n4.  **Set Follow-up Reminder:**\n    *   Schedule a reminder for **5 calendar days** from the initial request date. This allows for a timely check before the 7-day deadline.\n\n5.  **Follow-up (if necessary):**\n    *   If the documents have not been received by the 5-day mark, send a polite follow-up reminder to the provider, reiterating the urgency and the remaining time until the deadline.\n\n6.  **Receive and Process Documents:**\n    *   Upon receipt of the documents, promptly review them to ensure they are the correct ones for Case PA-100002 and are complete.\n    *   Attach the clinical notes and imaging report to Case PA-100002 in the appropriate system.\n    *   Update the case status to reflect that the missing documents have been received.\n\n7.  **Escalation (if necessary):**\n    *   If the documents are not received by the 7-day deadline, escalate the issue to the relevant internal stakeholder (e.g., case manager, supervisor, reviewer) for further action, as per established protocol.\n\n**Timeline:**\n\n*   **Day 0 (Today):** Draft and send the initial request. Document the action.\n*   **Day 5:** Reminder to check for documents. If not received, send follow-up.\n*   **Day 7:** Final deadline for document submission. If not received, escalate.",
+        "tools": [
+          {
+            "name": "web-search",
+            "description": "Searches the web for a query and returns result snippets. Use when the plan needs information that is not in the conversation or the retrieved context. Changes nothing.",
+            "tier": "read-only",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "query": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 500
+                }
+              },
+              "required": [
+                "query"
+              ],
+              "additionalProperties": false
+            }
+          },
+          {
+            "name": "request-records",
+            "description": "Asks the provider on a synthetic prior-authorization case to send missing documents by a due date. Use when a case lacks documents needed to review it. Creates an open request on the case; compensated by withdrawing that request.",
+            "tier": "compensable",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "caseId": {
+                  "type": "string",
+                  "pattern": "^PA-\\d{6}$"
+                },
+                "documents": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "clinical-notes",
+                      "imaging-report",
+                      "lab-results",
+                      "treatment-plan"
+                    ]
+                  },
+                  "minItems": 1,
+                  "maxItems": 4
+                },
+                "dueInDays": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 14
+                }
+              },
+              "required": [
+                "caseId",
+                "documents",
+                "dueInDays"
+              ],
+              "additionalProperties": false
+            }
+          }
+        ],
+        "previous": []
+      },
+      "response": {
+        "kind": "value",
+        "value": {
+          "selection": {
+            "toolName": "request-records",
+            "input": {
+              "caseId": "PA-100002",
+              "documents": [
+                "clinical-notes",
+                "imaging-report"
+              ],
+              "dueInDays": 7
+            }
+          },
+          "tokenCounts": {
+            "prompt": 1302,
+            "completion": 320,
+            "reasoning": 249
+          }
+        }
+      },
+      "tokenCounts": {
+        "prompt": 1302,
+        "completion": 320,
+        "reasoning": 249
+      },
+      "latencyMs": 1945
+    },
+    {
+      "seam": "act.tool",
+      "label": "request-records",
+      "requestHash": "9039e6e29a6a130ed0079e3b2981b6b5dffb3e385c13011978a197b714d30b3c",
+      "request": {
+        "caseId": "PA-100002",
+        "documents": [
+          "clinical-notes",
+          "imaging-report"
+        ],
+        "dueInDays": 7
+      },
+      "response": {
+        "kind": "value",
+        "value": {
+          "requestId": "RR-000001"
+        }
+      },
+      "latencyMs": 0
+    },
+    {
+      "seam": "act.selectTool",
+      "requestHash": "8c3de4e6b9fe9a2cf7d7fe043d4426747338d300bfcfec850ce406e8809cb7c5",
+      "request": {
+        "plan": "Here's a plan to address the user's request for Case PA-100002:\n\n**Plan to Obtain Missing Documents for Case PA-100002**\n\n**Objective:** To request and obtain the missing clinical notes and imaging report for Case PA-100002 from the provider within 7 calendar days to ensure timely case review.\n\n**Action Steps:**\n\n1.  **Draft Communication to Provider:**\n    *   Prepare a clear and concise request to the provider.\n    *   **Subject Line:** Urgent Document Request - Case PA-100002\n    *   **Body:**\n        *   Polite greeting.\n        *   Reference Case PA-100002.\n        *   Clearly state the missing documents: \"We are currently missing the **clinical notes** and the **imaging report** for this case.\"\n        *   Explain the necessity: \"These documents are essential for our reviewer to proceed with the case decision.\"\n        *   State the deadline: \"Please provide these documents within **7 calendar days** from today's date.\"\n        *   Provide contact information for any questions or if assistance is needed.\n        *   Professional closing.\n\n2.  **Send Request to Provider:**\n    *   Transmit the drafted communication via the established secure communication channel (e.g., secure provider portal, encrypted email, or fax as per protocol).\n\n3.  **Document Request:**\n    *   Record the date and time the request was sent in the case management system or relevant tracking log for Case PA-100002.\n\n4.  **Set Follow-up Reminder:**\n    *   Schedule a reminder for **5 calendar days** from the initial request date. This allows for a timely check before the 7-day deadline.\n\n5.  **Follow-up (if necessary):**\n    *   If the documents have not been received by the 5-day mark, send a polite follow-up reminder to the provider, reiterating the urgency and the remaining time until the deadline.\n\n6.  **Receive and Process Documents:**\n    *   Upon receipt of the documents, promptly review them to ensure they are the correct ones for Case PA-100002 and are complete.\n    *   Attach the clinical notes and imaging report to Case PA-100002 in the appropriate system.\n    *   Update the case status to reflect that the missing documents have been received.\n\n7.  **Escalation (if necessary):**\n    *   If the documents are not received by the 7-day deadline, escalate the issue to the relevant internal stakeholder (e.g., case manager, supervisor, reviewer) for further action, as per established protocol.\n\n**Timeline:**\n\n*   **Day 0 (Today):** Draft and send the initial request. Document the action.\n*   **Day 5:** Reminder to check for documents. If not received, send follow-up.\n*   **Day 7:** Final deadline for document submission. If not received, escalate.",
+        "tools": [
+          {
+            "name": "web-search",
+            "description": "Searches the web for a query and returns result snippets. Use when the plan needs information that is not in the conversation or the retrieved context. Changes nothing.",
+            "tier": "read-only",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "query": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 500
+                }
+              },
+              "required": [
+                "query"
+              ],
+              "additionalProperties": false
+            }
+          },
+          {
+            "name": "request-records",
+            "description": "Asks the provider on a synthetic prior-authorization case to send missing documents by a due date. Use when a case lacks documents needed to review it. Creates an open request on the case; compensated by withdrawing that request.",
+            "tier": "compensable",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "caseId": {
+                  "type": "string",
+                  "pattern": "^PA-\\d{6}$"
+                },
+                "documents": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "clinical-notes",
+                      "imaging-report",
+                      "lab-results",
+                      "treatment-plan"
+                    ]
+                  },
+                  "minItems": 1,
+                  "maxItems": 4
+                },
+                "dueInDays": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 14
+                }
+              },
+              "required": [
+                "caseId",
+                "documents",
+                "dueInDays"
+              ],
+              "additionalProperties": false
+            }
+          }
+        ],
+        "previous": [
+          {
+            "toolName": "request-records",
+            "input": {
+              "caseId": "PA-100002",
+              "documents": [
+                "clinical-notes",
+                "imaging-report"
+              ],
+              "dueInDays": 7
+            },
+            "output": "{\"requestId\":\"RR-000001\"}"
+          }
+        ]
+      },
+      "response": {
+        "kind": "value",
+        "value": {
+          "selection": null,
+          "tokenCounts": {
+            "prompt": 1397,
+            "completion": 321,
+            "reasoning": 320
+          }
+        }
+      },
+      "tokenCounts": {
+        "prompt": 1397,
+        "completion": 321,
+        "reasoning": 320
+      },
+      "latencyMs": 47411
+    },
+    {
+      "seam": "distill.extractEntities",
+      "requestHash": "2b4b84d8cc1c1cc3f106d10eed39dac7430ff2aa036a2a63b04152c8e24b4d70",
+      "request": {
+        "context": "user: Case PA-100002 is missing the clinical notes and the imaging report. Ask the provider to send both within 7 days.\nassistant: Here's a plan to address the user's request for Case PA-100002:\n\n**Plan to Obtain Missing Documents for Case PA-100002**\n\n**Objective:** To request and obtain the missing clinical notes and imaging report for Case PA-100002 from the provider within 7 calendar days to ensure timely case review.\n\n**Action Steps:**\n\n1.  **Draft Communication to Provider:**\n    *   Prepare a clear and concise request to the provider.\n    *   **Subject Line:** Urgent Document Request - Case PA-100002\n    *   **Body:**\n        *   Polite greeting.\n        *   Reference Case PA-100002.\n        *   Clearly state the missing documents: \"We are currently missing the **clinical notes** and the **imaging report** for this case.\"\n        *   Explain the necessity: \"These documents are essential for our reviewer to proceed with the case decision.\"\n        *   State the deadline: \"Please provide these documents within **7 calendar days** from today's date.\"\n        *   Provide contact information for any questions or if assistance is needed.\n        *   Professional closing.\n\n2.  **Send Request to Provider:**\n    *   Transmit the drafted communication via the established secure communication channel (e.g., secure provider portal, encrypted email, or fax as per protocol).\n\n3.  **Document Request:**\n    *   Record the date and time the request was sent in the case management system or relevant tracking log for Case PA-100002.\n\n4.  **Set Follow-up Reminder:**\n    *   Schedule a reminder for **5 calendar days** from the initial request date. This allows for a timely check before the 7-day deadline.\n\n5.  **Follow-up (if necessary):**\n    *   If the documents have not been received by the 5-day mark, send a polite follow-up reminder to the provider, reiterating the urgency and the remaining time until the deadline.\n\n6.  **Receive and Process Documents:**\n    *   Upon receipt of the documents, promptly review them to ensure they are the correct ones for Case PA-100002 and are complete.\n    *   Attach the clinical notes and imaging report to Case PA-100002 in the appropriate system.\n    *   Update the case status to reflect that the missing documents have been received.\n\n7.  **Escalation (if necessary):**\n    *   If the documents are not received by the 7-day deadline, escalate the issue to the relevant internal stakeholder (e.g., case manager, supervisor, reviewer) for further action, as per established protocol.\n\n**Timeline:**\n\n*   **Day 0 (Today):** Draft and send the initial request. Document the action.\n*   **Day 5:** Reminder to check for documents. If not received, send follow-up.\n*   **Day 7:** Final deadline for document submission. If not received, escalate."
+      },
+      "response": {
+        "kind": "value",
+        "value": {
+          "extraction": {
+            "entities": [
+              {
+                "id": "case_pa_100002",
+                "label": "Case PA-100002",
+                "description": "A specific medical case identified by the ID PA-100002"
+              },
+              {
+                "id": "clinical_notes",
+                "label": "clinical notes",
+                "description": "Medical documentation detailing a patient's health, treatment, and progress"
+              },
+              {
+                "id": "imaging_report",
+                "label": "imaging report",
+                "description": "A document describing the findings from medical imaging studies"
+              },
+              {
+                "id": "provider",
+                "label": "provider",
+                "description": "The healthcare professional or entity responsible for the case"
+              },
+              {
+                "id": "reviewer",
+                "label": "reviewer",
+                "description": "The person responsible for evaluating the case and making a decision"
+              },
+              {
+                "id": "7_days",
+                "label": "7 days",
+                "description": "A time frame of seven calendar days"
+              }
+            ],
+            "relationships": [
+              {
+                "fromId": "case_pa_100002",
+                "toId": "clinical_notes",
+                "type": "is_missing",
+                "confidence": 0.95
+              },
+              {
+                "fromId": "case_pa_100002",
+                "toId": "imaging_report",
+                "type": "is_missing",
+                "confidence": 0.95
+              },
+              {
+                "fromId": "provider",
+                "toId": "clinical_notes",
+                "type": "requested_to_send",
+                "confidence": 0.95
+              },
+              {
+                "fromId": "provider",
+                "toId": "imaging_report",
+                "type": "requested_to_send",
+                "confidence": 0.95
+              },
+              {
+                "fromId": "provider",
+                "toId": "7_days",
+                "type": "deadline_for_sending",
+                "confidence": 0.95
+              },
+              {
+                "fromId": "reviewer",
+                "toId": "clinical_notes",
+                "type": "requires",
+                "confidence": 0.9
+              },
+              {
+                "fromId": "reviewer",
+                "toId": "imaging_report",
+                "type": "requires",
+                "confidence": 0.9
+              },
+              {
+                "fromId": "reviewer",
+                "toId": "case_pa_100002",
+                "type": "to_make_decision_on",
+                "confidence": 0.9
+              }
+            ],
+            "facts": [
+              {
+                "text": "Case PA-100002 is missing the clinical notes."
+              },
+              {
+                "text": "Case PA-100002 is missing the imaging report."
+              },
+              {
+                "text": "The provider needs to send the clinical notes and imaging report within 7 days."
+              },
+              {
+                "text": "The objective is to obtain the missing clinical notes and imaging report for Case PA-100002 from the provider within 7 calendar days."
+              },
+              {
+                "text": "The missing documents are essential for the reviewer to proceed with the case decision."
+              }
+            ]
+          },
+          "tokenCounts": {
+            "prompt": 769,
+            "completion": 1089,
+            "reasoning": 246
+          }
+        }
+      },
+      "tokenCounts": {
+        "prompt": 769,
+        "completion": 1089,
+        "reasoning": 246
+      },
+      "latencyMs": 4655
+    },
+    {
+      "seam": "embed",
+      "requestHash": "d3a49a3435bd034062d183e05e413d65c1ffefccd519befb01182ba9d4863be2",
+      "request": {
+        "text": "Case PA-100002 is missing the clinical notes."
+      },
+      "response": {
+        "kind": "vector",
+        "float32Base64": "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"
+      },
+      "latencyMs": 238
+    },
+    {
+      "seam": "embed",
+      "requestHash": "da6d6baa3714b9473f9f507019e94f1f91e41f814b8ab9a9b563d1fdea8f7d4c",
+      "request": {
+        "text": "Case PA-100002 is missing the imaging report."
+      },
+      "response": {
+        "kind": "vector",
+        "float32Base64": "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"
+      },
+      "latencyMs": 217
+    },
+    {
+      "seam": "embed",
+      "requestHash": "fe2fe4d238cd777ae93edb672af9c907c326d2dc41cbfe99b4420990dbb74197",
+      "request": {
+        "text": "The provider needs to send the clinical notes and imaging report within 7 days."
+      },
+      "response": {
+        "kind": "vector",
+        "float32Base64": "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"
+      },
+      "latencyMs": 230
+    },
+    {
+      "seam": "embed",
+      "requestHash": "c9a6cc29c0874c983058663303de3bf55946da2f9ebf5b72ce58610d502fe119",
+      "request": {
+        "text": "The objective is to obtain the missing clinical notes and imaging report for Case PA-100002 from the provider within 7 calendar days."
+      },
+      "response": {
+        "kind": "vector",
+        "float32Base64": "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"
+      },
+      "latencyMs": 207
+    },
+    {
+      "seam": "embed",
+      "requestHash": "9f0f55926cd5ef068582b693d828bee1926263dab21977c50063decd4ec09b24",
+      "request": {
+        "text": "The missing documents are essential for the reviewer to proceed with the case decision."
+      },
+      "response": {
+        "kind": "vector",
+        "float32Base64": "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"
+      },
+      "latencyMs": 223
+    }
+  ]
+}
