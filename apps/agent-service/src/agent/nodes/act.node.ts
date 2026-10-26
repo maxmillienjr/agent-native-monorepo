@@ -204,8 +204,10 @@ function alreadySucceeded(
   );
 }
 
-function zodIssues(issues: readonly { path: (string | number)[]; message: string }[]): string {
-  return issues.map((issue) => `${issue.path.join('.') || '<root>'}: ${issue.message}`).join('; ');
+function zodIssues(issues: readonly { path: readonly PropertyKey[]; message: string }[]): string {
+  return issues
+    .map((issue) => `${issue.path.map(String).join('.') || '<root>'}: ${issue.message}`)
+    .join('; ');
 }
 
 /**

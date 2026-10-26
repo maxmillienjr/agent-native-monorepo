@@ -33,7 +33,7 @@ export interface ToolContext {
  * schema rather than coerced into one (a live `web-search` call did send its
  * query as a string).
  */
-export type ToolInput = z.AnyZodObject;
+export type ToolInput = z.ZodObject;
 
 /** A validated input, as any tool's `execute` takes one. */
 export type ToolArgs = z.infer<ToolInput>;
