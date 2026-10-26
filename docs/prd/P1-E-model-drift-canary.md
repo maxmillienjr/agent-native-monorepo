@@ -56,6 +56,13 @@ only the candidate's fields into `additional_kwargs` (`dist/utils/common.js:276-
 `grep -rn modelVersion` over its `dist` returns nothing. So the upgrade leaves the chat model's
 version out of reach of anything built on the LangChain client.
 
+**Observed since, 2026-10-12.** The canary's direct probe, which goes around that client,
+read the string for the first time when the chat baseline was committed (#119, `cb4c7f1`).
+`gemini-2.5-flash` answers with `modelVersion` `gemini-2.5-flash`: the requested id, and
+nothing more specific. `gemini-flash-latest` answered `gemini-3.8-flash`, so the alias had
+moved again since the changelog's last entry. The cassettes and the LangChain path still do
+not carry the field.
+
 **The embedding path has no version field at all.** Both `embedContent` responses on
 2026-09-26 had exactly one top-level key, `embedding`, whose only key is `values`. No response
 header named a model. The embedder reads `body.embedding?.values` and nothing else
@@ -175,7 +182,9 @@ Each probe answers a different question, and none substitutes for another:
   `gone`. It cannot see a silent change, because `version` is `001` and stays `001`.
 - **Chat `modelVersion`** is the only place the API names the model that answered. It is a
   string the provider controls, so an unchanged string is not proof that the weights are
-  unchanged. A changed string is proof that something changed.
+  unchanged. A changed string is proof that something changed. _Observed 2026-10-12:_ on
+  the pinned id the string is the id itself, so this probe sees retirement or a renamed
+  model there, not an update behind the name. On the alias it names the target.
 - **Embedding identity** is the one deterministic signal. It was measured as bit-identical
   across fifteen days (Problem). Any vector that differs means the model or its serving
   changed. It also answers P2-B's question directly: every vector set recorded on or after
@@ -618,7 +627,8 @@ retry spends the free tier's 20 calls. The floating alias then pointed at `gemin
   an alias move. Embedding identity has no such limit, and the chat model has no
   deterministic equivalent under sampling. The first live criterion finds out what the
   string looks like. If it is only the id, the Design says so, and the chat side relies on
-  the decision comparison until P1-D.
+  the decision comparison until P1-D. _It is only the id_ (Problem, 2026-10-12), and the
+  Design says so.
 - **Bit-identity may be too strict.** It held three times over fifteen days for one text.
   If serving nondeterminism appears (a different accelerator, a different batch), the rule
   changes at review to a cosine floor measured from the observed noise. It is not tuned
