@@ -151,7 +151,7 @@ export const ReconsiderationAttestedPayloadSchema = z
     caseId: z.string().uuid(),
     appealSeq: SeqSchema,
     determinationSeq: SeqSchema,
-    reconsideration: ReconsiderationRecordSchema.innerType(),
+    reconsideration: z.strictObject(ReconsiderationRecordSchema.shape),
     reviewerKeyId: z.string().min(1),
     signature: Ed25519SignatureSchema,
   })

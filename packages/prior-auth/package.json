@@ -17,7 +17,7 @@
     "@repo/determination": "workspace:*",
     "@repo/telemetry": "workspace:*",
     "@types/fhir": "^0.0.44",
-    "zod": "^3.24.0"
+    "zod": "^4.6.6"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

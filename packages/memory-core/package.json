@@ -22,7 +22,7 @@
     "neo4j-driver": "^5.28.0",
     "pg": "^8.23.1",
     "pgvector": "^0.3.0",
-    "zod": "^3.24.0"
+    "zod": "^4.6.6"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

@@ -140,10 +140,8 @@ export const BudgetsSchema = z
       modelCalls: ceiling.optional(),
     },
     {
-      errorMap: (issue, ctx) =>
-        issue.code === 'unrecognized_keys'
-          ? { message: unknownBudgetMessage(issue.keys) }
-          : { message: ctx.defaultError },
+      error: (issue) =>
+        issue.code === 'unrecognized_keys' ? unknownBudgetMessage(issue.keys) : undefined,
     },
   )
   .strict();

@@ -129,7 +129,7 @@ export const TaskSpecSchema = z.object({
    * the assertions it rides with. Checked beside the graders, never among them.
    */
   budgets: BudgetsSchema.optional(),
-  expectedSeeds: TaskSeedsSchema.default({}),
+  expectedSeeds: TaskSeedsSchema.prefault({}),
   expectedOutcome: OutcomeSchema,
   assertions: z.object({
     retrievedContextMinLength: z.number().int().nonnegative().optional(),
