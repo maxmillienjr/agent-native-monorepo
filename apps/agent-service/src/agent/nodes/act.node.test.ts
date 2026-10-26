@@ -87,7 +87,7 @@ describe('a selection act refuses', () => {
     expect(executed).toHaveLength(0);
     expect(state.toolOutputs).toHaveLength(1);
     expect(state.toolOutputs[0]!.error).toMatch(
-      /^input rejected by the web-search schema: <root>: Expected object, received string$/,
+      /^input rejected by the web-search schema: <root>: Invalid input: expected object, received string$/,
     );
     expect(state.aborted).toBe(true);
     expect(state.outcome).toBe('partial');

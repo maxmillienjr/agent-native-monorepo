@@ -113,7 +113,7 @@ describe('the approval gate', () => {
 
     // `approved: 'yes'` and no approver: LangGraph 1.4's `responseSchema`
     // parses the resume value and throws before the node reads it.
-    await expect(resume(deps, checkpointer, { approved: 'yes' })).rejects.toThrow(z.ZodError);
+    await expect(resume(deps, checkpointer, { approved: 'yes' })).rejects.toThrow(z.core.$ZodError);
 
     expect(execute).not.toHaveBeenCalled();
     expect((await graph(deps, checkpointer).getState(config)).next).toEqual(['approve']);
