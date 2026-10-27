@@ -2,7 +2,7 @@
 id: P4-C
 title: Reversibility-tiered tool registry with saga compensation
 tier: 4
-status: in-progress
+status: shipped
 size: M
 depends_on: [P1-A, P1-B, P2-A]
 blocks: []
@@ -394,11 +394,17 @@ choices. The agent's choices are checked only on the live and replay axes.
 - [x] **Memory live (service test).** `RunsService.execute` with the irreversible fixture
       registered returns `outcome: 'awaiting-approval'`, and the `PostgresSaver` holds a
       checkpoint for that `runId`.
-- [ ] **Model live / memory live (recording run).** `tool-use-001` makes at most 4
+- [x] **Model live / memory live (recording run).** `tool-use-001` makes at most 4
       `generateContent` calls, calls `web-search` once, and scores
       `tool_trajectory_precision` 1. `tool-use-002` calls `request-records` with
       schema-valid input and passes `tool_trajectory_recall` 1.
-- [ ] **Replay.** `EVAL_CASSETTE_MODE=replay yarn eval` passes every task, makes no request
+      _Correction, 2026-10-27:_ `tool-use-002` met its half. `tool-use-001` did not meet the
+      letter of its own: 5 calls, three `web-search` calls, precision 1/3. The defect the
+      half was written against is gone. No selection request repeated, the three queries
+      differ, and the duplicate guard did not fire. The fixture's `web-search` echoes its
+      query and answers nothing, so the model searched again until `maxSteps`. See "The
+      recording, as made".
+- [x] **Replay.** `EVAL_CASSETTE_MODE=replay yarn eval` passes every task, makes no request
       to `generativelanguage.googleapis.com`, and never calls `SyntheticCaseBoard`
       (asserted with a spy). Two consecutive replays give identical reports.
 - [x] `.context/architecture.md` shows `approve` and `compensate` in the topology.
@@ -407,7 +413,7 @@ choices. The agent's choices are checked only on the live and replay axes.
       does not reach the answer.
 - [x] CTL-AGY-01 carries the retitle and the `test` anchors, either in
       `governance/controls.yaml` or in P4-A's initial catalogue.
-- [ ] If P1-F has shipped, the task files' budgets are re-derived from this recording by
+- [x] If P1-F has shipped, the task files' budgets are re-derived from this recording by
       P1-F's rule.
 - [x] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
       pass.
@@ -459,7 +465,8 @@ P3-E's probe ran on 0.4.10, so a throwaway Vitest file repeated P3-E's probe on 
 - **The type test is `types.test-d.ts`.** `.context/conventions.md` names that suffix for
   type tests, which `tsc` checks and Vitest never runs. The criterion's text was updated to
   match.
-- **An input is a strict Zod object, by type.** `ToolInput` is `z.AnyZodObject`, so a schema
+- **An input is a strict Zod object, by type.** `ToolInput` is `z.ZodObject` (`z.AnyZodObject`
+  before zod 4, #132), so a schema
   like `z.string()` does not compile. Every tool declares `.strict()`, so the JSON Schema
   says `additionalProperties: false` and the parse enforces it.
 - **`compensate` undoes one effect per pass and loops.** The design had one node walk every
@@ -606,11 +613,41 @@ is written when the trial completes, and step 4 re-derives the budgets from it.
 That closes the recording, replay and budget criteria, and P4-C then ships.
 
 **After it merges, the daily pool shrinks.** The nightly `eval-live` runs every task, so
-`tool-use-002` adds about 4 calls a night, less the repeat the fix removes from
-`tool-use-001`. That is about 11 instead of 8, which leaves about 6–7 a day for recordings
-instead of 9–10. The quota table in `.context/conventions.md` says so. P4-B (#101) then
+`tool-use-002` adds about 4 calls a night. The fix did not shorten `tool-use-001` on this
+fixture (see "The recording, as made"). That is about 12 instead of 8, which leaves about
+5–6 a day for recordings instead of 9–10. The quota table in `.context/conventions.md` says so. P4-B (#101) then
 re-records all three of these cassettes, because M3 changes `distill`'s request. Its batch
 2 becomes 11 calls, and its 9-call batches no longer fit in one day.
+
+### The recording, as made
+
+_2026-10-26 and 2026-10-27._ Two batches, one trial per task on model `live` / memory
+`live`, 11 `generateContent` calls and no 429. The rebase onto `main` at `67d4077` came
+between them, so the set names two commits. The tag `recording/p4c-batch1-2026-10-26`
+keeps batch 1's commit reachable.
+
+| Task                | Commit    | Calls | Input | Output | Thinking | Tools                                   | Budgets (input / output / calls) |
+| ------------------- | --------- | ----- | ----- | ------ | -------- | --------------------------------------- | -------------------------------- |
+| `tool-use-001`      | `8446e9f` | 5     | 3120  | 4965   | 2954     | `web-search` ×3, three distinct queries | 4700 / 10000 / 5                 |
+| `tool-use-002`      | `8446e9f` | 4     | 3550  | 3202   | 1627     | `request-records` once, schema-valid    | 5400 / 6500 / 5                  |
+| `memory-recall-001` | `ed24ffe` | 3     | 1622  | 5722   | 2628     | none                                    | 2500 / 11500 / 7                 |
+
+Every task passes on replay, twice, with identical reports. The regenerated baseline adds
+`tool-use-002`'s ten cells, and the prior-authorization suite still matches its own. The
+integration tests pass 42/42 against the stores with no key.
+
+**`tool-use-001` searches three times, and that is the fixture.** The queries were
+"LangGraph latest release", "LangGraph GitHub releases" and "LangGraph release notes".
+Each selection saw the previous output, which is what the fix was for. That output is
+`Result for: {"query":…}`, which answers nothing, so a model that wants an answer searches
+again until `maxSteps`. The criterion assumed one search would satisfy it. The old defect,
+one byte-identical request on all three steps, would show as the guard firing on the
+second step, and it did not. A fixture that returns content would let the trial end on its
+own. P4-B re-records this cassette anyway, so the change belongs with that recording or
+with row 36 of `docs/STATUS.md`, not here.
+
+**The nightly now spends about 12 calls, not 11.** `tool-use-001` costs 5, not 4.
+`.context/conventions.md` says so.
 
 ## Risks and open questions
 

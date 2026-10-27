@@ -2,10 +2,10 @@
 
 ## Where things stand
 
-_Last updated 2026-10-26. If this section is more than a few weeks stale, trust the code
+_Last updated 2026-10-27. If this section is more than a few weeks stale, trust the code
 over it and update it._
 
-**Twenty-one PRDs are shipped and the system they describe is running.** The service answers
+**Twenty-two PRDs are shipped and the system they describe is running.** The service answers
 `POST /runs` and `POST /runs/stream`; `memory-core` is constructed by the app rather than
 sitting beside it; the graph compiles with a checkpointer and a retry policy on every node
 that performs I/O; and `packages/eval-harness` measures the result. Verified against live
@@ -120,8 +120,9 @@ trial's spans beside the graders: a breach fails the run and leaves the pass rat
 plan call's: 1730/6442 tokens against 58/1563 on one live `memory-recall-001` trial. Every
 report prints usage and a list-price cost, and live latency, none of them asserted. That
 needed cassette format 2, and both tasks were re-recorded on 2026-10-08 for eight calls, with
-the replay baseline regenerated after ADR 0009 removed the third. Budgets are set on today's
-`act` loop, repeats included; P4-C's fix tightens them. Its last open criterion, a live
+the replay baseline regenerated after ADR 0009 removed the third. P4-C re-derived the budgets
+from its recording on 2026-10-27, and they rose on input: every selection request now
+carries each tool's description, tier and schema. Its last open criterion, a live
 report showing every budget within, was met by the nightly on 2026-10-26.
 
 **[P2-B](P2-B-retrieval-ablation.md) has shipped**, tracked in
@@ -336,9 +337,8 @@ the four appeal kinds to the ledger and bound each signed action to the caller's
 Appeals of a decision not made in time stay out by decision. CTL-HUM-03 is `implemented`,
 and STATUS row 34 is new.
 
-**[P4-C](P4-C-reversible-tool-registry.md) is in progress**, tracked in
-[#102](https://github.com/maxmillienjr/agent-native-monorepo/issues/102), with one step
-left: the live recording. A tool now declares a description, a Zod input and a
+**[P4-C](P4-C-reversible-tool-registry.md) has shipped**, tracked in
+[#102](https://github.com/maxmillienjr/agent-native-monorepo/issues/102). A tool now declares a description, a Zod input and a
 reversibility tier, and a `compensable` tool without a `compensate` does not compile. The
 registry holds `web-search` and `request-records`, a compensable records request on an
 in-process synthetic case board. The `act` loop fix P1-F handed over is in: `selectTool` is
@@ -359,11 +359,12 @@ P3-B moved now records the selection, every tool call and every compensation int
 record as well as a cassette. A full `audit:replay` of a compensated run matches, and its
 `--read-only` view now attributes the undo. A2A ends a paused run's task `FAILED` rather
 than `COMPLETED`. P3-E's no-interrupt grep is narrowed to the prior-authorization graph,
-and P3-D's E0601 cassettes on #120 still replay 6/6. Replay misses on every recorded
-selection until the re-record: 11 `generateContent` calls in two batches, the two tool
-tasks then `memory-recall-001`, on the head #106 names. Until then `eval-replay` and two
-`e2e` integration tests are red, and nothing else. Once it merges, the nightly spends about
-11 calls instead of 8, so about 6–7 a day are left for recordings.
+and P3-D's E0601 cassettes on #120 still replay 6/6. All three memory-recall tasks were
+re-recorded on 2026-10-26 and 2026-10-27 for 11 calls, the budgets re-derived and the replay
+baseline regenerated. No selection request repeats now. `tool-use-001` still searches three
+times, with three different queries, because the fixture's `web-search` answers nothing, so
+its recording criterion carries a dated correction. The nightly now spends about 12 calls
+instead of 8, which leaves about 5–6 a day for recordings.
 
 **[P5-D](P5-D-caller-scoped-sessions.md) has shipped**, tracked in
 [#125](https://github.com/maxmillienjr/agent-native-monorepo/issues/125). On 2026-10-12 a
@@ -477,11 +478,11 @@ provider actually operates under. Uses synthetic data only.
 
 ## Tier 4 — Governance and agent security as code
 
-| ID                                        | Title                                                           | Size | Status      |
-| ----------------------------------------- | --------------------------------------------------------------- | ---- | ----------- |
-| [P4-A](P4-A-controls-as-code.md)          | `governance/controls.yaml` and a CI check for unmapped controls | M    | shipped     |
-| [P4-B](P4-B-memory-poisoning-red-team.md) | Memory-poisoning red team mapped to OWASP Agentic Top 10        | M    | accepted    |
-| [P4-C](P4-C-reversible-tool-registry.md)  | Reversibility-tiered tool registry with saga compensation       | M    | in-progress |
+| ID                                        | Title                                                           | Size | Status   |
+| ----------------------------------------- | --------------------------------------------------------------- | ---- | -------- |
+| [P4-A](P4-A-controls-as-code.md)          | `governance/controls.yaml` and a CI check for unmapped controls | M    | shipped  |
+| [P4-B](P4-B-memory-poisoning-red-team.md) | Memory-poisoning red team mapped to OWASP Agentic Top 10        | M    | accepted |
+| [P4-C](P4-C-reversible-tool-registry.md)  | Reversibility-tiered tool registry with saga compensation       | M    | shipped  |
 
 ## Tier 5 — Interoperability
 
