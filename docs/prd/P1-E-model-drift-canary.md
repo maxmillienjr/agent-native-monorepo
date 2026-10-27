@@ -493,7 +493,18 @@ used it yet, and each says which run verifies it. The implementation was cleared
       503 "high demand" from the same alias, as did the scheduled canary on five of the last
       seven nights; its pinned probes all answered, with no 429. Whether the trials pass is
       still unknown. Closing this needs a dispatch on a day the alias is serving, or a
-      longer `timeout-minutes` for a `chat_model` run.
+      longer `timeout-minutes` for a `chat_model` run. **Dispatched again 2026-10-26, run
+      40321010682, with the 90-minute limit: not met.** It ended on a 429 from the alias
+      target's own daily quota. **Dispatched 2026-10-27, run 40509513773: not met, on
+      availability again.** The night's canary had the alias serving at 08:43 UTC. By the
+      dispatch at 13:10 its own canary got a 503 "high demand", and the suite spent 36
+      minutes on 503s before a 429 on
+      `GenerateRequestsPerDayPerProjectPerModel-FreeTier` (20) aborted it with no trial
+      complete (`eval-abort.json`, cause `daily-quota`). The client retries a 503, and each
+      retry counts against that 20, so a dispatch inside a 503 window spends the alias
+      target's whole day. The pinned probes all answered. The next attempt is right after
+      the 07:00 UTC reset. If that fails too, this criterion moves to the PRD that migrates
+      off `gemini-2.5-flash`, where the same comparison is its first measurement.
 - [x] **Model `live`, in CI:** with the secret present, one scheduled run runs `canary` and
       `compare`. Both write to `$GITHUB_STEP_SUMMARY` and upload an artifact. `compare`
       reports no request to `generativelanguage.googleapis.com`. With no secret, `canary`
