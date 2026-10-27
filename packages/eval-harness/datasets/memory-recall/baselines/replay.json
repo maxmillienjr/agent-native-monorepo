@@ -1,9 +1,9 @@
 {
   "kind": "replay",
   "suite": "memory-recall",
-  "cassetteDigest": "93302b4ff7e90b89dfd8e56349a4c603c01efa918c0e35a85615388fbf23d62a",
-  "recordedAt": "2026-10-08T16:56:47.064Z",
-  "gitSha": "94efb6aebc9c392ce2823e1bff89cb9559d6d0de",
+  "cassetteDigest": "f09c17f5db0eef3f5aee0965275323b712e94a4920aa3b62f380e6bedd5101ce",
+  "recordedAt": "2026-10-26T11:18:31.988Z",
+  "gitSha": "8446e9f31c2a1661870e279db75c8e1d066f877d, ed24ffe28b0b5e7da06785ed4f8e2f649a9355af",
   "semconvCommit": "e57c543b4889619eb2a05702471937db5119165d",
   "cells": [
     {"task":"memory-recall-001","trial":0,"grader":"entity_merged","label":"pass","value":1},
@@ -26,6 +26,16 @@
     {"task":"tool-use-001","trial":0,"grader":"tool_trajectory_recall","label":"pass","value":1},
     {"task":"tool-use-001","trial":0,"grader":"trajectory_in_order_match","label":"pass","value":1},
     {"task":"tool-use-001","trial":0,"grader":"trajectory_precision","label":"pass","value":0.7777777777777778},
-    {"task":"tool-use-001","trial":0,"grader":"trajectory_recall","label":"pass","value":1}
+    {"task":"tool-use-001","trial":0,"grader":"trajectory_recall","label":"pass","value":1},
+    {"task":"tool-use-002","trial":0,"grader":"entity_merged","label":"pass","value":1},
+    {"task":"tool-use-002","trial":0,"grader":"episodic_row_written","label":"pass","value":1},
+    {"task":"tool-use-002","trial":0,"grader":"outcome_must_be","label":"pass","value":1},
+    {"task":"tool-use-002","trial":0,"grader":"retrieved_context_min_length","label":"pass","value":1},
+    {"task":"tool-use-002","trial":0,"grader":"token_counts_positive","label":"pass","value":1},
+    {"task":"tool-use-002","trial":0,"grader":"tool_trajectory_precision","label":"pass","value":1},
+    {"task":"tool-use-002","trial":0,"grader":"tool_trajectory_recall","label":"pass","value":1},
+    {"task":"tool-use-002","trial":0,"grader":"trajectory_in_order_match","label":"pass","value":1},
+    {"task":"tool-use-002","trial":0,"grader":"trajectory_precision","label":"pass","value":0.875},
+    {"task":"tool-use-002","trial":0,"grader":"trajectory_recall","label":"pass","value":1}
   ]
 }
