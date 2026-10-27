@@ -3,8 +3,8 @@
     "formatVersion": 2,
     "taskId": "memory-recall-001",
     "trialIndex": 0,
-    "recordedAt": "2026-10-08T16:56:47.064Z",
-    "gitSha": "94efb6aebc9c392ce2823e1bff89cb9559d6d0de",
+    "recordedAt": "2026-10-27T13:01:29.403Z",
+    "gitSha": "ed24ffe28b0b5e7da06785ed4f8e2f649a9355af",
     "axes": {
       "model": "live",
       "memory": "live"
@@ -24,7 +24,7 @@
         "kind": "vector",
         "float32Base64": "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"
       },
-      "latencyMs": 267
+      "latencyMs": 303
     },
     {
       "seam": "plan.callLlm",
@@ -36,53 +36,111 @@
       "response": {
         "kind": "value",
         "value": {
-          "content": "Here's a plan to address your request regarding the key components of a stateful agent system:\n\n**Plan:**\n\n1.  **Introduction to Stateful Agents:**\n    *   Start by reiterating the definition from the context: \"Stateful agents maintain context across multiple interactions.\"\n    *   Explain *why* this is crucial (e.g., coherent conversations, personalized experiences, sequential task execution).\n\n2.  **Identify and Describe Key Components:**\n    *   For each component, explain its role and how it contributes to maintaining and utilizing state.\n\n    *   **a. Memory / Context Store:**\n        *   **Purpose:** The repository where past interactions, observations, internal thoughts, and other relevant information are stored. This is the core of \"state.\"\n        *   **Types:**\n            *   **Short-term memory:** Often handled within the LLM's context window (e.g., recent chat turns).\n            *   **Long-term memory:** For enduring knowledge, past experiences, and learned behaviors. Mention `pgvector` as an example for storing and retrieving vector embeddings of past interactions or knowledge fragments.\n        *   **Content:** Chat history, user preferences, past tool outputs, environmental observations, internal monologue/scratchpad.\n\n    *   **b. Retrieval Mechanism:**\n        *   **Purpose:** The intelligent system responsible for querying the Memory/Context Store to fetch relevant information for the current interaction.\n        *   **How it works:** Often uses embedding similarity search (like with `pgvector` for vector memory) to find past data semantically similar to the current input or task.\n\n    *   **c. Cognitive Core / Reasoning Engine (LLM):**\n        *   **Purpose:** The \"brain\" of the agent, typically a Large Language Model (LLM), which processes the current input, the retrieved context from memory, and its own internal logic to understand, reason, plan, and generate responses or actions.\n        *   **Role in state:** Utilizes the retrieved state to inform its current decision-making.\n\n    *   **d. Orchestration / Control Flow:**\n        *   **Purpose:** The logic that manages the overall flow of the agent's operation. It dictates *when* to retrieve memory, *when* to consult the LLM, *when* to use tools, and *how* to update memory after an interaction.\n        *   **Example:** A \"think-act-observe\" loop, or a chain of prompts that guides the agent through its process.\n\n    *   **e. Tooling / Action Executors:**\n        *   **Purpose:** The interfaces or functions that allow the agent to interact with the external world (e.g., search the web, run code, access databases, send emails, call APIs).\n        *   **Role in state:** The outcomes of tool actions often become new state information that needs to be stored in memory for future reference.\n\n    *   **f. State Representation / Schema:**\n        *   **Purpose:** Defines the structure and format of the information stored in memory. How is an \"interaction\" or a \"thought\" represented?\n        *   **Importance:** A well-defined schema makes it easier to store, retrieve, and interpret state data consistently.\n\n3.  **Illustrate Interplay:**\n    *   Briefly explain how these components work in a cycle (e.g., user input -> retrieve memory -> LLM reasons/plans -> uses tools -> updates memory -> responds to user).\n\n4.  **Conclusion:**\n    *   Summarize the critical role each component plays in enabling a truly intelligent and persistent agent experience.",
+          "content": "Here's a plan to address the request regarding the key components of a stateful agent system:\n\n**Plan:**\n\n1.  **Define \"Stateful Agent System\":** Briefly reiterate the core concept that stateful agents maintain context across multiple interactions, setting the stage for why these components are necessary.\n\n2.  **Identify Core Components:** Break down the system into its essential architectural blocks, focusing on how each contributes to maintaining and utilizing state.\n\n    *   **Agent Core (Decision Logic / LLM Orchestration):** The \"brain\" that interprets inputs, makes decisions, and generates outputs, *leveraging* the state.\n    *   **State/Context Store:** The actual repository where all persistent information (the \"state\" or \"memory\") is stored.\n        *   Mention types of state (e.g., conversation history, user profiles, long-term knowledge).\n        *   Mention storage mechanisms (e.g., databases, vector stores like `pgvector`, in-memory).\n    *   **Memory Management / Context Retrieval Mechanism:** The intelligent layer responsible for accessing, filtering, and updating the state.\n        *   Explain retrieval (e.g., semantic search using `pgvector`, chronological recall).\n        *   Mention context window management (for LLMs).\n        *   Discuss state update/persistence.\n    *   **Perception / Input Processing:** How the system receives and interprets new information to inform decision-making and potentially update the state.\n    *   **Action / Output Generation:** How the system uses its state and decisions to formulate responses or perform actions that are coherent and context-aware.\n\n3.  **Elaborate on Interconnections:** Briefly explain how these components interact to achieve statefulness, emphasizing the flow of information.\n\nBy following this plan, I will provide a comprehensive overview of a stateful agent system's key components, explaining their roles and how they work together, and integrating the provided context about `pgvector` where relevant.",
           "tokenCounts": {
             "prompt": 58,
-            "completion": 1563,
-            "reasoning": 794
+            "completion": 1338,
+            "reasoning": 923
           }
         }
       },
       "tokenCounts": {
         "prompt": 58,
-        "completion": 1563,
-        "reasoning": 794
+        "completion": 1338,
+        "reasoning": 923
       },
-      "latencyMs": 8118
+      "latencyMs": 7641
     },
     {
       "seam": "act.selectTool",
-      "requestHash": "b8007d604cce9db408ee01ac44598aeb1ec12b3ffb47dd26a9bc47d2429165ca",
+      "requestHash": "f4102ece3bac98dcf9c7f4ca9f41ad3b202ed69d0da8a19448f042244501b8f2",
       "request": {
-        "plan": "Here's a plan to address your request regarding the key components of a stateful agent system:\n\n**Plan:**\n\n1.  **Introduction to Stateful Agents:**\n    *   Start by reiterating the definition from the context: \"Stateful agents maintain context across multiple interactions.\"\n    *   Explain *why* this is crucial (e.g., coherent conversations, personalized experiences, sequential task execution).\n\n2.  **Identify and Describe Key Components:**\n    *   For each component, explain its role and how it contributes to maintaining and utilizing state.\n\n    *   **a. Memory / Context Store:**\n        *   **Purpose:** The repository where past interactions, observations, internal thoughts, and other relevant information are stored. This is the core of \"state.\"\n        *   **Types:**\n            *   **Short-term memory:** Often handled within the LLM's context window (e.g., recent chat turns).\n            *   **Long-term memory:** For enduring knowledge, past experiences, and learned behaviors. Mention `pgvector` as an example for storing and retrieving vector embeddings of past interactions or knowledge fragments.\n        *   **Content:** Chat history, user preferences, past tool outputs, environmental observations, internal monologue/scratchpad.\n\n    *   **b. Retrieval Mechanism:**\n        *   **Purpose:** The intelligent system responsible for querying the Memory/Context Store to fetch relevant information for the current interaction.\n        *   **How it works:** Often uses embedding similarity search (like with `pgvector` for vector memory) to find past data semantically similar to the current input or task.\n\n    *   **c. Cognitive Core / Reasoning Engine (LLM):**\n        *   **Purpose:** The \"brain\" of the agent, typically a Large Language Model (LLM), which processes the current input, the retrieved context from memory, and its own internal logic to understand, reason, plan, and generate responses or actions.\n        *   **Role in state:** Utilizes the retrieved state to inform its current decision-making.\n\n    *   **d. Orchestration / Control Flow:**\n        *   **Purpose:** The logic that manages the overall flow of the agent's operation. It dictates *when* to retrieve memory, *when* to consult the LLM, *when* to use tools, and *how* to update memory after an interaction.\n        *   **Example:** A \"think-act-observe\" loop, or a chain of prompts that guides the agent through its process.\n\n    *   **e. Tooling / Action Executors:**\n        *   **Purpose:** The interfaces or functions that allow the agent to interact with the external world (e.g., search the web, run code, access databases, send emails, call APIs).\n        *   **Role in state:** The outcomes of tool actions often become new state information that needs to be stored in memory for future reference.\n\n    *   **f. State Representation / Schema:**\n        *   **Purpose:** Defines the structure and format of the information stored in memory. How is an \"interaction\" or a \"thought\" represented?\n        *   **Importance:** A well-defined schema makes it easier to store, retrieve, and interpret state data consistently.\n\n3.  **Illustrate Interplay:**\n    *   Briefly explain how these components work in a cycle (e.g., user input -> retrieve memory -> LLM reasons/plans -> uses tools -> updates memory -> responds to user).\n\n4.  **Conclusion:**\n    *   Summarize the critical role each component plays in enabling a truly intelligent and persistent agent experience.",
-        "toolNames": [
-          "web-search"
-        ]
+        "plan": "Here's a plan to address the request regarding the key components of a stateful agent system:\n\n**Plan:**\n\n1.  **Define \"Stateful Agent System\":** Briefly reiterate the core concept that stateful agents maintain context across multiple interactions, setting the stage for why these components are necessary.\n\n2.  **Identify Core Components:** Break down the system into its essential architectural blocks, focusing on how each contributes to maintaining and utilizing state.\n\n    *   **Agent Core (Decision Logic / LLM Orchestration):** The \"brain\" that interprets inputs, makes decisions, and generates outputs, *leveraging* the state.\n    *   **State/Context Store:** The actual repository where all persistent information (the \"state\" or \"memory\") is stored.\n        *   Mention types of state (e.g., conversation history, user profiles, long-term knowledge).\n        *   Mention storage mechanisms (e.g., databases, vector stores like `pgvector`, in-memory).\n    *   **Memory Management / Context Retrieval Mechanism:** The intelligent layer responsible for accessing, filtering, and updating the state.\n        *   Explain retrieval (e.g., semantic search using `pgvector`, chronological recall).\n        *   Mention context window management (for LLMs).\n        *   Discuss state update/persistence.\n    *   **Perception / Input Processing:** How the system receives and interprets new information to inform decision-making and potentially update the state.\n    *   **Action / Output Generation:** How the system uses its state and decisions to formulate responses or perform actions that are coherent and context-aware.\n\n3.  **Elaborate on Interconnections:** Briefly explain how these components interact to achieve statefulness, emphasizing the flow of information.\n\nBy following this plan, I will provide a comprehensive overview of a stateful agent system's key components, explaining their roles and how they work together, and integrating the provided context about `pgvector` where relevant.",
+        "tools": [
+          {
+            "name": "web-search",
+            "description": "Searches the web for a query and returns result snippets. Use when the plan needs information that is not in the conversation or the retrieved context. Changes nothing.",
+            "tier": "read-only",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "query": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 500
+                }
+              },
+              "required": [
+                "query"
+              ],
+              "additionalProperties": false
+            }
+          },
+          {
+            "name": "request-records",
+            "description": "Asks the provider on a synthetic prior-authorization case to send missing documents by a due date. Use when a case lacks documents needed to review it. Creates an open request on the case; compensated by withdrawing that request.",
+            "tier": "compensable",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "caseId": {
+                  "type": "string",
+                  "pattern": "^PA-\\d{6}$"
+                },
+                "documents": {
+                  "minItems": 1,
+                  "maxItems": 4,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "clinical-notes",
+                      "imaging-report",
+                      "lab-results",
+                      "treatment-plan"
+                    ]
+                  }
+                },
+                "dueInDays": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 14
+                }
+              },
+              "required": [
+                "caseId",
+                "documents",
+                "dueInDays"
+              ],
+              "additionalProperties": false
+            }
+          }
+        ],
+        "previous": []
       },
       "response": {
         "kind": "value",
         "value": {
           "selection": null,
           "tokenCounts": {
-            "prompt": 812,
-            "completion": 115,
-            "reasoning": 114
+            "prompt": 1058,
+            "completion": 1120,
+            "reasoning": 1119
           }
         }
       },
       "tokenCounts": {
-        "prompt": 812,
-        "completion": 115,
-        "reasoning": 114
+        "prompt": 1058,
+        "completion": 1120,
+        "reasoning": 1119
       },
-      "latencyMs": 1495
+      "latencyMs": 9187
     },
     {
       "seam": "distill.extractEntities",
-      "requestHash": "05f98e0bc505483f94cfa408c7370102448070c447def43b2bbb7747d70855bb",
+      "requestHash": "c550fbf627f3af1ccf3f7f6d3f2f6c8627fbf07973fdccd2b9d2f29b8910831c",
       "request": {
-        "context": "user: What are the key components of a stateful agent system?\nassistant: Here's a plan to address your request regarding the key components of a stateful agent system:\n\n**Plan:**\n\n1.  **Introduction to Stateful Agents:**\n    *   Start by reiterating the definition from the context: \"Stateful agents maintain context across multiple interactions.\"\n    *   Explain *why* this is crucial (e.g., coherent conversations, personalized experiences, sequential task execution).\n\n2.  **Identify and Describe Key Components:**\n    *   For each component, explain its role and how it contributes to maintaining and utilizing state.\n\n    *   **a. Memory / Context Store:**\n        *   **Purpose:** The repository where past interactions, observations, internal thoughts, and other relevant information are stored. This is the core of \"state.\"\n        *   **Types:**\n            *   **Short-term memory:** Often handled within the LLM's context window (e.g., recent chat turns).\n            *   **Long-term memory:** For enduring knowledge, past experiences, and learned behaviors. Mention `pgvector` as an example for storing and retrieving vector embeddings of past interactions or knowledge fragments.\n        *   **Content:** Chat history, user preferences, past tool outputs, environmental observations, internal monologue/scratchpad.\n\n    *   **b. Retrieval Mechanism:**\n        *   **Purpose:** The intelligent system responsible for querying the Memory/Context Store to fetch relevant information for the current interaction.\n        *   **How it works:** Often uses embedding similarity search (like with `pgvector` for vector memory) to find past data semantically similar to the current input or task.\n\n    *   **c. Cognitive Core / Reasoning Engine (LLM):**\n        *   **Purpose:** The \"brain\" of the agent, typically a Large Language Model (LLM), which processes the current input, the retrieved context from memory, and its own internal logic to understand, reason, plan, and generate responses or actions.\n        *   **Role in state:** Utilizes the retrieved state to inform its current decision-making.\n\n    *   **d. Orchestration / Control Flow:**\n        *   **Purpose:** The logic that manages the overall flow of the agent's operation. It dictates *when* to retrieve memory, *when* to consult the LLM, *when* to use tools, and *how* to update memory after an interaction.\n        *   **Example:** A \"think-act-observe\" loop, or a chain of prompts that guides the agent through its process.\n\n    *   **e. Tooling / Action Executors:**\n        *   **Purpose:** The interfaces or functions that allow the agent to interact with the external world (e.g., search the web, run code, access databases, send emails, call APIs).\n        *   **Role in state:** The outcomes of tool actions often become new state information that needs to be stored in memory for future reference.\n\n    *   **f. State Representation / Schema:**\n        *   **Purpose:** Defines the structure and format of the information stored in memory. How is an \"interaction\" or a \"thought\" represented?\n        *   **Importance:** A well-defined schema makes it easier to store, retrieve, and interpret state data consistently.\n\n3.  **Illustrate Interplay:**\n    *   Briefly explain how these components work in a cycle (e.g., user input -> retrieve memory -> LLM reasons/plans -> uses tools -> updates memory -> responds to user).\n\n4.  **Conclusion:**\n    *   Summarize the critical role each component plays in enabling a truly intelligent and persistent agent experience."
+        "context": "user: What are the key components of a stateful agent system?\nassistant: Here's a plan to address the request regarding the key components of a stateful agent system:\n\n**Plan:**\n\n1.  **Define \"Stateful Agent System\":** Briefly reiterate the core concept that stateful agents maintain context across multiple interactions, setting the stage for why these components are necessary.\n\n2.  **Identify Core Components:** Break down the system into its essential architectural blocks, focusing on how each contributes to maintaining and utilizing state.\n\n    *   **Agent Core (Decision Logic / LLM Orchestration):** The \"brain\" that interprets inputs, makes decisions, and generates outputs, *leveraging* the state.\n    *   **State/Context Store:** The actual repository where all persistent information (the \"state\" or \"memory\") is stored.\n        *   Mention types of state (e.g., conversation history, user profiles, long-term knowledge).\n        *   Mention storage mechanisms (e.g., databases, vector stores like `pgvector`, in-memory).\n    *   **Memory Management / Context Retrieval Mechanism:** The intelligent layer responsible for accessing, filtering, and updating the state.\n        *   Explain retrieval (e.g., semantic search using `pgvector`, chronological recall).\n        *   Mention context window management (for LLMs).\n        *   Discuss state update/persistence.\n    *   **Perception / Input Processing:** How the system receives and interprets new information to inform decision-making and potentially update the state.\n    *   **Action / Output Generation:** How the system uses its state and decisions to formulate responses or perform actions that are coherent and context-aware.\n\n3.  **Elaborate on Interconnections:** Briefly explain how these components interact to achieve statefulness, emphasizing the flow of information.\n\nBy following this plan, I will provide a comprehensive overview of a stateful agent system's key components, explaining their roles and how they work together, and integrating the provided context about `pgvector` where relevant."
       },
       "response": {
         "kind": "value",
@@ -90,172 +148,289 @@
           "extraction": {
             "entities": [
               {
-                "id": "Stateful_Agent_System",
+                "id": "stateful_agent_system",
                 "label": "Stateful Agent System",
-                "description": "A system that enables agents to maintain context across multiple interactions."
+                "description": "A system where agents maintain context across multiple interactions."
               },
               {
-                "id": "Stateful_Agent",
-                "label": "Stateful Agent",
-                "description": "An agent that maintains context across multiple interactions."
+                "id": "agent_core",
+                "label": "Agent Core",
+                "description": "The 'brain' of the system that interprets inputs, makes decisions, and generates outputs."
               },
               {
-                "id": "Memory_Context_Store",
-                "label": "Memory / Context Store",
-                "description": "The repository where past interactions, observations, internal thoughts, and other relevant information are stored, forming the core of an agent's state."
+                "id": "decision_logic",
+                "label": "Decision Logic",
+                "description": "The component responsible for making decisions within the agent."
               },
               {
-                "id": "Short_Term_Memory",
-                "label": "Short-term memory",
-                "description": "A type of memory often handled within an LLM's context window for recent interactions."
+                "id": "llm_orchestration",
+                "label": "LLM Orchestration",
+                "description": "The management and coordination of Large Language Models within the agent."
               },
               {
-                "id": "Long_Term_Memory",
-                "label": "Long-term memory",
-                "description": "A type of memory for enduring knowledge, past experiences, and learned behaviors."
+                "id": "state_context_store",
+                "label": "State/Context Store",
+                "description": "The repository where all persistent information (state or memory) is stored."
+              },
+              {
+                "id": "state",
+                "label": "State",
+                "description": "Persistent information maintained by the agent."
+              },
+              {
+                "id": "memory",
+                "label": "Memory",
+                "description": "Persistent information maintained by the agent, synonymous with state in this context."
+              },
+              {
+                "id": "conversation_history",
+                "label": "Conversation History",
+                "description": "A type of state/memory containing past interactions."
+              },
+              {
+                "id": "user_profiles",
+                "label": "User Profiles",
+                "description": "A type of state/memory containing information about users."
+              },
+              {
+                "id": "long_term_knowledge",
+                "label": "Long-term Knowledge",
+                "description": "A type of state/memory containing enduring information."
+              },
+              {
+                "id": "databases",
+                "label": "Databases",
+                "description": "A mechanism for storing state."
+              },
+              {
+                "id": "vector_stores",
+                "label": "Vector Stores",
+                "description": "A type of storage mechanism, often used for semantic search."
               },
               {
                 "id": "pgvector",
                 "label": "pgvector",
-                "description": "An example technology for storing and retrieving vector embeddings of past interactions or knowledge fragments."
+                "description": "A specific example of a vector store."
               },
               {
-                "id": "Retrieval_Mechanism",
-                "label": "Retrieval Mechanism",
-                "description": "The intelligent system responsible for querying the Memory/Context Store to fetch relevant information for the current interaction."
+                "id": "in_memory_storage",
+                "label": "In-memory storage",
+                "description": "A temporary and fast mechanism for storing state."
               },
               {
-                "id": "Cognitive_Core_Reasoning_Engine",
-                "label": "Cognitive Core / Reasoning Engine",
-                "description": "The 'brain' of the agent, typically a Large Language Model (LLM), which processes input, context, and logic to reason, plan, and generate responses."
+                "id": "memory_management_context_retrieval_mechanism",
+                "label": "Memory Management / Context Retrieval Mechanism",
+                "description": "The intelligent layer responsible for accessing, filtering, and updating the state."
               },
               {
-                "id": "LLM",
-                "label": "Large Language Model",
-                "description": "A model used as the cognitive core/reasoning engine in stateful agent systems."
+                "id": "semantic_search",
+                "label": "Semantic Search",
+                "description": "A method of retrieval using meaning rather than keywords."
               },
               {
-                "id": "Orchestration_Control_Flow",
-                "label": "Orchestration / Control Flow",
-                "description": "The logic that manages the overall flow of the agent's operation, dictating when to retrieve memory, consult LLM, use tools, and update memory."
+                "id": "chronological_recall",
+                "label": "Chronological Recall",
+                "description": "A method of retrieving information based on time order."
               },
               {
-                "id": "Tooling_Action_Executors",
-                "label": "Tooling / Action Executors",
-                "description": "Interfaces or functions that allow the agent to interact with the external world (e.g., search, run code, access databases)."
+                "id": "context_window_management",
+                "label": "Context Window Management",
+                "description": "Management of the input context length for LLMs."
               },
               {
-                "id": "State_Representation_Schema",
-                "label": "State Representation / Schema",
-                "description": "Defines the structure and format of the information stored in memory for consistent storage, retrieval, and interpretation."
+                "id": "llms",
+                "label": "LLMs",
+                "description": "Large Language Models."
               },
               {
-                "id": "Embedding_Similarity_Search",
-                "label": "Embedding Similarity Search",
-                "description": "A method often used by retrieval mechanisms to find past data semantically similar to current input."
+                "id": "state_update_persistence",
+                "label": "State Update/Persistence",
+                "description": "The process of updating and permanently storing the agent's state."
+              },
+              {
+                "id": "perception_input_processing",
+                "label": "Perception / Input Processing",
+                "description": "How the system receives and interprets new information."
+              },
+              {
+                "id": "action_output_generation",
+                "label": "Action / Output Generation",
+                "description": "How the system formulates responses or performs actions based on state and decisions."
               }
             ],
             "relationships": [
               {
-                "fromId": "Stateful_Agent_System",
-                "toId": "Memory_Context_Store",
+                "fromId": "stateful_agent_system",
+                "toId": "agent_core",
                 "type": "HAS_COMPONENT",
                 "confidence": 0.9
               },
               {
-                "fromId": "Stateful_Agent_System",
-                "toId": "Retrieval_Mechanism",
+                "fromId": "stateful_agent_system",
+                "toId": "state_context_store",
                 "type": "HAS_COMPONENT",
                 "confidence": 0.9
               },
               {
-                "fromId": "Stateful_Agent_System",
-                "toId": "Cognitive_Core_Reasoning_Engine",
+                "fromId": "stateful_agent_system",
+                "toId": "memory_management_context_retrieval_mechanism",
                 "type": "HAS_COMPONENT",
                 "confidence": 0.9
               },
               {
-                "fromId": "Stateful_Agent_System",
-                "toId": "Orchestration_Control_Flow",
+                "fromId": "stateful_agent_system",
+                "toId": "perception_input_processing",
                 "type": "HAS_COMPONENT",
                 "confidence": 0.9
               },
               {
-                "fromId": "Stateful_Agent_System",
-                "toId": "Tooling_Action_Executors",
+                "fromId": "stateful_agent_system",
+                "toId": "action_output_generation",
                 "type": "HAS_COMPONENT",
                 "confidence": 0.9
               },
               {
-                "fromId": "Stateful_Agent_System",
-                "toId": "State_Representation_Schema",
-                "type": "HAS_COMPONENT",
-                "confidence": 0.9
-              },
-              {
-                "fromId": "Short_Term_Memory",
-                "toId": "Memory_Context_Store",
+                "fromId": "agent_core",
+                "toId": "decision_logic",
                 "type": "IS_A_TYPE_OF",
-                "confidence": 0.9
+                "confidence": 0.8
               },
               {
-                "fromId": "Long_Term_Memory",
-                "toId": "Memory_Context_Store",
+                "fromId": "agent_core",
+                "toId": "llm_orchestration",
                 "type": "IS_A_TYPE_OF",
+                "confidence": 0.8
+              },
+              {
+                "fromId": "agent_core",
+                "toId": "state",
+                "type": "LEVERAGES",
                 "confidence": 0.9
               },
               {
-                "fromId": "Long_Term_Memory",
+                "fromId": "agent_core",
+                "toId": "memory",
+                "type": "LEVERAGES",
+                "confidence": 0.9
+              },
+              {
+                "fromId": "state_context_store",
+                "toId": "state",
+                "type": "STORES",
+                "confidence": 0.9
+              },
+              {
+                "fromId": "state_context_store",
+                "toId": "memory",
+                "type": "STORES",
+                "confidence": 0.9
+              },
+              {
+                "fromId": "state",
+                "toId": "conversation_history",
+                "type": "CAN_BE",
+                "confidence": 0.8
+              },
+              {
+                "fromId": "state",
+                "toId": "user_profiles",
+                "type": "CAN_BE",
+                "confidence": 0.8
+              },
+              {
+                "fromId": "state",
+                "toId": "long_term_knowledge",
+                "type": "CAN_BE",
+                "confidence": 0.8
+              },
+              {
+                "fromId": "state_context_store",
+                "toId": "databases",
+                "type": "USES_MECHANISM",
+                "confidence": 0.8
+              },
+              {
+                "fromId": "state_context_store",
+                "toId": "vector_stores",
+                "type": "USES_MECHANISM",
+                "confidence": 0.8
+              },
+              {
+                "fromId": "vector_stores",
+                "toId": "pgvector",
+                "type": "EXAMPLE_OF",
+                "confidence": 0.9
+              },
+              {
+                "fromId": "state_context_store",
+                "toId": "in_memory_storage",
+                "type": "USES_MECHANISM",
+                "confidence": 0.8
+              },
+              {
+                "fromId": "memory_management_context_retrieval_mechanism",
+                "toId": "state",
+                "type": "ACCESSES_AND_UPDATES",
+                "confidence": 0.9
+              },
+              {
+                "fromId": "memory_management_context_retrieval_mechanism",
+                "toId": "semantic_search",
+                "type": "PERFORMS",
+                "confidence": 0.9
+              },
+              {
+                "fromId": "memory_management_context_retrieval_mechanism",
+                "toId": "chronological_recall",
+                "type": "PERFORMS",
+                "confidence": 0.9
+              },
+              {
+                "fromId": "memory_management_context_retrieval_mechanism",
+                "toId": "context_window_management",
+                "type": "PERFORMS",
+                "confidence": 0.9
+              },
+              {
+                "fromId": "context_window_management",
+                "toId": "llms",
+                "type": "FOR_USE_WITH",
+                "confidence": 0.9
+              },
+              {
+                "fromId": "memory_management_context_retrieval_mechanism",
+                "toId": "state_update_persistence",
+                "type": "RESPONSIBLE_FOR",
+                "confidence": 0.9
+              },
+              {
+                "fromId": "perception_input_processing",
+                "toId": "decision_logic",
+                "type": "INFORMS",
+                "confidence": 0.8
+              },
+              {
+                "fromId": "perception_input_processing",
+                "toId": "state",
+                "type": "CAN_UPDATE",
+                "confidence": 0.8
+              },
+              {
+                "fromId": "action_output_generation",
+                "toId": "state",
+                "type": "USES",
+                "confidence": 0.9
+              },
+              {
+                "fromId": "action_output_generation",
+                "toId": "decision_logic",
+                "type": "USES",
+                "confidence": 0.9
+              },
+              {
+                "fromId": "semantic_search",
                 "toId": "pgvector",
                 "type": "CAN_USE",
-                "confidence": 0.9
-              },
-              {
-                "fromId": "Retrieval_Mechanism",
-                "toId": "Memory_Context_Store",
-                "type": "QUERIES",
-                "confidence": 0.9
-              },
-              {
-                "fromId": "Retrieval_Mechanism",
-                "toId": "Embedding_Similarity_Search",
-                "type": "OFTEN_USES",
-                "confidence": 0.9
-              },
-              {
-                "fromId": "Embedding_Similarity_Search",
-                "toId": "pgvector",
-                "type": "CAN_USE_FOR_VECTOR_MEMORY",
-                "confidence": 0.9
-              },
-              {
-                "fromId": "Cognitive_Core_Reasoning_Engine",
-                "toId": "LLM",
-                "type": "TYPICALLY_IS",
-                "confidence": 0.9
-              },
-              {
-                "fromId": "Cognitive_Core_Reasoning_Engine",
-                "toId": "Memory_Context_Store",
-                "type": "UTILIZES_RETRIEVED_CONTEXT_FROM",
-                "confidence": 0.9
-              },
-              {
-                "fromId": "Orchestration_Control_Flow",
-                "toId": "Stateful_Agent_System",
-                "type": "MANAGES_OPERATION_OF",
-                "confidence": 0.9
-              },
-              {
-                "fromId": "Tooling_Action_Executors",
-                "toId": "Memory_Context_Store",
-                "type": "OUTCOMES_UPDATE",
-                "confidence": 0.9
-              },
-              {
-                "fromId": "State_Representation_Schema",
-                "toId": "Memory_Context_Store",
-                "type": "DEFINES_STRUCTURE_FOR",
                 "confidence": 0.9
               }
             ],
@@ -264,62 +439,41 @@
                 "text": "Stateful agents maintain context across multiple interactions."
               },
               {
-                "text": "Maintaining context is crucial for coherent conversations, personalized experiences, and sequential task execution."
+                "text": "The Agent Core is the 'brain' that interprets inputs, makes decisions, and generates outputs."
               },
               {
-                "text": "The Memory / Context Store is the repository where past interactions, observations, internal thoughts, and other relevant information are stored."
+                "text": "The State/Context Store is the actual repository where all persistent information (the 'state' or 'memory') is stored."
               },
               {
-                "text": "Short-term memory is often handled within the LLM's context window."
+                "text": "Memory Management / Context Retrieval Mechanism is the intelligent layer responsible for accessing, filtering, and updating the state."
               },
               {
-                "text": "Long-term memory is used for enduring knowledge, past experiences, and learned behaviors."
+                "text": "Perception / Input Processing describes how the system receives and interprets new information to inform decision-making and potentially update the state."
               },
               {
-                "text": "Memory content can include chat history, user preferences, past tool outputs, environmental observations, and internal monologue/scratchpad."
+                "text": "Action / Output Generation describes how the system uses its state and decisions to formulate responses or perform actions that are coherent and context-aware."
               },
               {
-                "text": "The Retrieval Mechanism's purpose is to fetch relevant information from the Memory/Context Store."
+                "text": "pgvector is a vector store."
               },
               {
-                "text": "The Retrieval Mechanism often uses embedding similarity search to find semantically similar data."
-              },
-              {
-                "text": "The Cognitive Core / Reasoning Engine is the 'brain' of the agent and processes current input, retrieved context, and internal logic."
-              },
-              {
-                "text": "The Orchestration / Control Flow dictates when to retrieve memory, consult the LLM, use tools, and update memory."
-              },
-              {
-                "text": "An example of orchestration is a 'think-act-observe' loop or a chain of prompts."
-              },
-              {
-                "text": "Tooling / Action Executors allow the agent to interact with the external world via functions like web search, code execution, or API calls."
-              },
-              {
-                "text": "Outcomes of tool actions typically become new state information to be stored in memory."
-              },
-              {
-                "text": "A well-defined State Representation / Schema improves storing, retrieving, and interpreting state data consistently."
-              },
-              {
-                "text": "The components work in a cycle: user input -> retrieve memory -> LLM reasons/plans -> uses tools -> updates memory -> responds to user."
+                "text": "Semantic search can be performed using pgvector."
               }
             ]
           },
           "tokenCounts": {
-            "prompt": 860,
-            "completion": 4764,
-            "reasoning": 2616
+            "prompt": 506,
+            "completion": 3264,
+            "reasoning": 586
           }
         }
       },
       "tokenCounts": {
-        "prompt": 860,
-        "completion": 4764,
-        "reasoning": 2616
+        "prompt": 506,
+        "completion": 3264,
+        "reasoning": 586
       },
-      "latencyMs": 19668
+      "latencyMs": 16495
     },
     {
       "seam": "embed",
@@ -331,175 +485,91 @@
         "kind": "vector",
         "float32Base64": "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"
       },
-      "latencyMs": 360
+      "latencyMs": 247
     },
     {
       "seam": "embed",
-      "requestHash": "86912a0287216911cc2513f48970685cb238657a83123838128a6fba6595dab0",
+      "requestHash": "62fef8203cf45140258387d8f91dff20004561ce784d17bfd290271cbd38ece6",
       "request": {
-        "text": "Maintaining context is crucial for coherent conversations, personalized experiences, and sequential task execution."
+        "text": "The Agent Core is the 'brain' that interprets inputs, makes decisions, and generates outputs."
       },
       "response": {
         "kind": "vector",
-        "float32Base64": "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"
+        "float32Base64": "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"
       },
-      "latencyMs": 283
+      "latencyMs": 217
     },
     {
       "seam": "embed",
-      "requestHash": "16781392c19d98a89af266959a90237bafeb01a669d3c926b3bf2b14696eba78",
+      "requestHash": "c24379a0d1489e27237984a0ffaa1ba76ca1be018559a24351cbd4eebc1e90b4",
       "request": {
-        "text": "The Memory / Context Store is the repository where past interactions, observations, internal thoughts, and other relevant information are stored."
+        "text": "The State/Context Store is the actual repository where all persistent information (the 'state' or 'memory') is stored."
       },
       "response": {
         "kind": "vector",
-        "float32Base64": "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"
+        "float32Base64": "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"
       },
-      "latencyMs": 357
+      "latencyMs": 210
     },
     {
       "seam": "embed",
-      "requestHash": "3b999c493e7386e982a7fb9bddfb1ca70d9396fd3ea0689f5ded830d30e87a75",
+      "requestHash": "42f8b5d4d6e8ac6b6414dd8e6e6a2a942c2511471d03887db3276ed3fda5bcd4",
       "request": {
-        "text": "Short-term memory is often handled within the LLM's context window."
+        "text": "Memory Management / Context Retrieval Mechanism is the intelligent layer responsible for accessing, filtering, and updating the state."
       },
       "response": {
         "kind": "vector",
-        "float32Base64": "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"
+        "float32Base64": "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"
       },
-      "latencyMs": 296
+      "latencyMs": 193
     },
     {
       "seam": "embed",
-      "requestHash": "116d64329a1ffac49cc93c5cf615d45905760ea2cbd18bb8c337f8045d13e6d7",
+      "requestHash": "acce9a5e935b7193833a7219788e007517f995d7dca734dc9c1752a470d435b4",
       "request": {
-        "text": "Long-term memory is used for enduring knowledge, past experiences, and learned behaviors."
+        "text": "Perception / Input Processing describes how the system receives and interprets new information to inform decision-making and potentially update the state."
       },
       "response": {
         "kind": "vector",
-        "float32Base64": "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"
+        "float32Base64": "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"
       },
-      "latencyMs": 388
+      "latencyMs": 200
     },
     {
       "seam": "embed",
-      "requestHash": "1b2d1d0a8bfe8f06cd3a7a88196a056a7b710e36bdd33ac9b441aa16d7595948",
+      "requestHash": "dcc82e3f488f19ea44d77d09fe641916a42700a3a2372cfb36e9a7d1bd8deac3",
       "request": {
-        "text": "Memory content can include chat history, user preferences, past tool outputs, environmental observations, and internal monologue/scratchpad."
+        "text": "Action / Output Generation describes how the system uses its state and decisions to formulate responses or perform actions that are coherent and context-aware."
       },
       "response": {
         "kind": "vector",
-        "float32Base64": "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"
+        "float32Base64": "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"
       },
-      "latencyMs": 309
+      "latencyMs": 194
     },
     {
       "seam": "embed",
-      "requestHash": "3ca90b7601d910b993b1d5210dd0dfafe9af72f2b7a1fae70d6151647111c640",
+      "requestHash": "577bc7d7499bdfdfbec4e31fcd00ffbc398732a5ae1b9628f57de88515ce8d8f",
       "request": {
-        "text": "The Retrieval Mechanism's purpose is to fetch relevant information from the Memory/Context Store."
+        "text": "pgvector is a vector store."
       },
       "response": {
         "kind": "vector",
-        "float32Base64": "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"
+        "float32Base64": "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"
       },
-      "latencyMs": 221
+      "latencyMs": 213
     },
     {
       "seam": "embed",
-      "requestHash": "8dd89542f3d8309eaa40a9624cc3ec4725d52f1f52ecd833740e16f0bf3019c4",
+      "requestHash": "754e9b342e07152bceb6d12ed753ccc0af067aa115e9459ef69ac998bff0f1c8",
       "request": {
-        "text": "The Retrieval Mechanism often uses embedding similarity search to find semantically similar data."
+        "text": "Semantic search can be performed using pgvector."
       },
       "response": {
         "kind": "vector",
-        "float32Base64": "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"
+        "float32Base64": "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"
       },
-      "latencyMs": 335
-    },
-    {
-      "seam": "embed",
-      "requestHash": "aaf23f04b9b67841b568fbcd33ff2689665e866c1780f50a5028d81b7b7b9b29",
-      "request": {
-        "text": "The Cognitive Core / Reasoning Engine is the 'brain' of the agent and processes current input, retrieved context, and internal logic."
-      },
-      "response": {
-        "kind": "vector",
-        "float32Base64": "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"
-      },
-      "latencyMs": 336
-    },
-    {
-      "seam": "embed",
-      "requestHash": "ec6da3ac83d14811f8e88aaf5fe2736039c7f1ebf6fb0d47d861c380b6477db8",
-      "request": {
-        "text": "The Orchestration / Control Flow dictates when to retrieve memory, consult the LLM, use tools, and update memory."
-      },
-      "response": {
-        "kind": "vector",
-        "float32Base64": "YYXavP/XHD1DYJA8KxYPvsKOP72WQsy7o4gmvbq1xTwKAPE8i4IvO8hXEr1L0868Ln9pvN3VJrsPW2o+gMl3PLRSojyISWG8YXj0PP55Wb1C0nu909IZPddFEb1knEm9/C8mvEyonTyYdnM8Huxguwkioj3Exz48alCVvPVxz7vSsOG8jDhhPBk4Mzzb/TM9ikzLO9ceZr1WDT460uoMPbJibjwYpXm9azmPO+kNRjsKKA69pRQYPTD4yru3i2G8MhpbvMRsgz0RnDG9cm38PBKm+jwIv4W+EpIpvGZF0buydE08CN9DvT57nDzu4j25MNjyu0oPojwKRWu8KOxNvAnzWbwRAtK8J8mJPdFWCb2jPCC97ZAgvOU/97yiFYO7EMUOvD7MqLykR4e70Mkgvce1YbwXSom8r16NPE9UoDwFJi89IAstvb7pWDwo5Jw75XkUOZtz9LyGSHE8DB/7vNcn2Tylfza8FFa4OzSVFr0Gqk09Rg7gPEZeVjzUJ2s7v2WCvUtxkDx9ANU8C+TKvMR74LxbwcC8MVORPL8zTz0hGZU8yUDqOyfhCT0MlFw7wA1nPBLhuzvGDuY8JGH/vGy4k7w6/R68cvhsu7EJZr6dYpI8SbIYvZO2Ab1yL5w8AI0EvcDV+Dx4+dS6hvPGPLhh6jzqeKu8Mde8PK0PCL2fe667i7qdPPyZM73ZfOC8xX5fvRc5JrrmbNU8KfGpPArSJDzRhXi8kw0yvDgab7wexos8Jw9TPR15tTs9I7G7QUVUvZV3m7zAbD69lEYUPTLM2DzzRPm8i2+/PJXpG7wXC+m8DLDLvNdhsD23lzO87sfgu8wfvLwGbqI8pZWOOkhwIr3Jvli99LWDPOzMMD1XoZO8UHoAPQLmAz1WqUC8wN6Mu2u+KD0HF4k80ZadvARuBr3mrQ69oTUgPJ1ChbuZ9bC6XZ+CvaTlFD0ElWy9QvfDusk4RT1IMZm97HMvPZiYBD2T8bq87uUxvDY9MLwx2/E7/R41uzgmDzs6Yxy6L+xKva3kHTuasG08YBo8vdXCA72DeqA7mBA8O7KfjzzRVpS8RINkvXqY8DxJBEC9Rr84PEONn7u0ETW7IbFFvf7VVbzHjBm8pGhWvPpGCj0znK47PQcOPUp18juOsOc7CUtEvEJ1mDyQyv08mKLhOmuGUj28DI88e/w5PZPi6ju2LBq9mfUZPWIkabxRYGc8AoEkuqGQjTwtLls5bcDwu8O6hryiL7+6rLc6POO2hDwluny8QahVPfkw7zxzvnk9ICTdu4AwDzxw1JW8VrAiPCNk5DuQeBC9kP0tvJ1sQbztUWw85x2PPK8nDr14HCc9Sgn7PGGfZDy3/GG7dSCtvJo1zzwwEQa9vO+bvAioIrsiTNe8RXWqPN7nF71IyUu8hEjhPNg1e7z94SA9I1WDPLDM8bzOur+8Bn86PIpTdj0Tl2G8W9rHPADZujwDDlU9Y7bSvXpbgj38IGk8lR9OvC39g7y6Uru8hvtfPUG7yzr6zv88yA65PPawcL1gU2q838KYu9FEqrxuSB89DLZAPfCE0bvu1BG7NCoZPbePKL1spfg8V7P9PKT17jwXOTE82z8sPOEE67seOyk8pj1/PR2b4jt/URm99ZAlvPAMMj0ap8W8/zMJvQBg0bvLW3y6jZErPCpYar3H5pw8xKDXPKW4Pzug05C9cjQvu/GS0LxWRUE96P1zvF0lrbsFJII8QV0Evb1CQ73q3pq7aYHavJ5XnbuRDS69uRB1PMaONj3q4Tg9lgcovUGtl7sOCyq8rly4u5bVoDsxYGC76CfpPAU0Db1ON7W8uH8uvcgGBb1SySu9gyhGPd4jXD1AMp881fCLumDXKr0MWOo8anoAvVZCDD2MPQq9neBfvdUIWD2AIUq8qh3KvIakAD25HMs8COoLPGG1+bs8z0+9PO2mPGOlFT0/5C29JC2Mu7iVyDzTrZW8ahu6PWE8QzwXZLm8SUTTu4afN7tA1Km8/6crPdyrHLyQ0Yc805+yvOUyjzzY50G9QLRQPXUh+7xA82U8kAD9vA0JtjwTTCo8QAZnO4L+5zvFfQ89FbvKvP402DzxdDa9osrYvFx8BD28DFq9/MWPOwIeZj1Cajs7nJPKPFwagjs1dCU9B7yevI5+FTwP5RY9ki+IvMbgYztq8U48e2ifvGdPAzvS2uW8tBktPXH8hDxf6pc8DyaXu4HCEbx2jtS8WhxRPC7xurw9Vfc7I/Kju1g3MT0YSiK94gPYPOuYg7ymQqq8up9YvUwsKr3vazS9lkHkvD9habwb44q8UqrSOuyEQ71ZTY67j46MvTEMXDzn+BS8RmC5vGFc97xjtUm8laPwPNBHPbu6I5s52SFZvfKtrLlDp3i8IQrNObWT2rzzHjY8RU5RPWe1CD0rWhw9OtNNvahKZzliI7q8MRY8O/bFJj08x4G88cuVO/WPrbztl0M8rvDIPGdcnjz69Ng6O/MIvUPmLL3oZV880+e8uxZCWD1Hm968pRgbPbahHz16fcm88ruku6Hj5Dxgp+W8DOjKO3I9lzxwWkM89z5EPGvhy7x7s8g8VZrZvCRv77yNAQc9O1mavCC9oTyx5+68hFfwvGHWbj33HmY8LrzPvESBEr21ayg8I6HYvDODhbwIzm47KjD0O/5iR7yK6LE81cU/vLYDZzx/qIs8fTm2OmUcv7yiUkS944XdOzOjXzveCkg8XhaZvLeurTyybYs8GnQFPD9xZb0FwVu8M/JNPL5JiLzSBgu8Ogg7PaRCUzzZS0y7FbP8vK3tMT1jkRo7RmUqvd1sHjvupiI7/tMdPCibSz1/nYU83hjoPEWmSLydB3K9VugpPfTks7z1rJM9xGiSPefpmLx3Tuc8JvLpvL2JjTyGrB+9bZqlPL+/Cz1TFDe+/UJDPSvdUrznikw6ZvHsubzRAzvSujs84uEJvZ+GQr1mYUk7mcCfPDbIdbzFU4Y9ytqSPBr8JDtb60Y6tRyKvPxYuryxXtg8EYZIvfjubz0nyow8X5KSPDhk2LxePSe8ZcRYvBk0Jzw56ZC8FFdBPSNx17y0rj29lPkFvU0AdjsKL8U7r0vRPLQv0rsTVYQ95Yk2PM28azv/1KU8h82nvP20MbyvpGg8bmr1u4Ci+rw231E8Y1FQPHqQwDu7j5c8cHFqPILmEb2EXcq8Lz+MvOgahjsb88G8fNO0vEBGOL2+7h69/aPfvO0IqDz0GYa8MfTvvHcxnTz59II8BWnZvPftujyO5rI7nRjouo3LhrycjLG8zaVEvBHtTL1wqbU8UBWEPX+STb3u+5U8rnkovZDbGDyMNTy7X40KuhiKCr0mZRY8e30PvvZ+pLwIOv48CbfkOojXlzzvgHi7lP8/PLkVKb0sogE8P4tAvdmRYbqGFL+8jom0vAIekbyUcDa8Usq9PI3qAD1Zw5e8h+UDPfqBzL1+DHG82BSLu2xsmz2U9pe9a0U2OwyG2zqEJF68B3PMPEHZk7wCgS691vuuPBhwbr4ITiS9HwvDu6bsTD3AvsY8mjJmvAoBvrxJ0gs9RnsLPUwyX72glCI9KyUyvcWY2Lx7kd68wJQ/vA13ND4XS7O79Ce1PO0/gbzzTYy8pQasuxGKprwMUGC9kRfPu79hCLylp1o8qg2SPWqN17t4KiS8j2O+Pa2vVDybOuo8lO5lPFssXDuWFYE8F8mSPA9x8jzp8DK9PrsgvRqvEzxI2rc81iIBPXWxMzzqA068yesOPf9wFzvCpQi9IsXGvDl9CbxxNem8sUEXPGi16b3+qfs7LNkQvXZlaTwk60c8v4rjvNKKWj2oWJi8PTUBPSa0ajwf5ua8qjq4OqONbTxb6py8lturvLhowz0E2K88EM4FO6ZY3zwTrDc84JIyPSZuRryqwoy8HeNqvGLh/LsanC093pJTPAq0Fj3vh728nYzzPG69wruOlOw6BknavA6Rnby/4ae7XPrlO1fWtryb6Va7/EFMOzB0Ib2TZZE7kGuNvF2qDryjPwU9fQd3PCRK5LzYpxA9glrCvM66lzz4bLq8Swd0vUaQo7u8fUy9pN8WvBQN7DwsZTS7PQJCOTWgGj07zse7"
-      },
-      "latencyMs": 292
-    },
-    {
-      "seam": "embed",
-      "requestHash": "67f328ff6bbc94bbf6596b8580583daed5f4fde93c8a4516e3b06fe55e23aa29",
-      "request": {
-        "text": "An example of orchestration is a 'think-act-observe' loop or a chain of prompts."
-      },
-      "response": {
-        "kind": "vector",
-        "float32Base64": "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"
-      },
-      "latencyMs": 297
-    },
-    {
-      "seam": "embed",
-      "requestHash": "24bdf6f4d9b9863f1f8b7ad260974345363f1ca9f7f292a0a4f0e8777db52471",
-      "request": {
-        "text": "Tooling / Action Executors allow the agent to interact with the external world via functions like web search, code execution, or API calls."
-      },
-      "response": {
-        "kind": "vector",
-        "float32Base64": "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"
-      },
-      "latencyMs": 303
-    },
-    {
-      "seam": "embed",
-      "requestHash": "c9d0ac70c1aa67968e597c7ac419234f54c36d66896e260167bb53dfd3b30b61",
-      "request": {
-        "text": "Outcomes of tool actions typically become new state information to be stored in memory."
-      },
-      "response": {
-        "kind": "vector",
-        "float32Base64": "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"
-      },
-      "latencyMs": 224
-    },
-    {
-      "seam": "embed",
-      "requestHash": "a1db5ce114cc9a78a5a95c35628ba9fe76fe3c18302c3490a2abe983f60da2b3",
-      "request": {
-        "text": "A well-defined State Representation / Schema improves storing, retrieving, and interpreting state data consistently."
-      },
-      "response": {
-        "kind": "vector",
-        "float32Base64": "S+SFvZYljLy+4RQ9Ta7PvSgYcLzv2g69h+8LvVq2ubzPAlE9zhyFO0HAEr3x2k088y/ju6a2mj2dMUQ+ppyLPHS8zTuGCI07JrJOvOmp9jrnQgg9qwCjPLgtDTwuZw+94/1eOK3Sxry9zFY8HfHgvBExhD2LXvo4KREGvRvw47tmPAU9SsGvNxwNrryMYU28cGLSvLbSKLwy3os7nuACPSUFE7zxP7Q8iJ0KO+l9Crz0BFg83BopPWYmEz3ySzY6WuCSvJDPUD27dAE93vAsPB3UvjwUK4C+jAM1PeY+fr3PqzO8UhPpO8j4qrzn44U9EAXZvNjMbzxX9W68XfCvvIGzkrsMHsu8kHjYO2Rcdr3K6Ce9ivIyvfW4cLsYY+m8LwmtvGv9eLzvmHE9TVgwvQtqTjxK/2C7nN67vJhYKbtvKnI8GpUZvF6RC72QUpc8Ret3PNCaejtr31S8MS8bvZyjuTzAAna8hY6MPdCNGb17dOM8a+5LvJu4VD00OmC8H2nmu/LyITvtEWE89U1+vV4Q8DxX+SO82kvVvBN7Yz2uEkw8cQbKvDx7IrzcSu+8On1KvDzVkz1atvU86JtFve2X0LzWuOk7/LCiPIfKjL5c+oo8cgOyvMHjfry5WX49l737vBz9E7zywcy8V/e7PCMc4TsLKFi8K/gFPU0HPjy33f88zJPGu0OvUL3lTBm9K7KHvFP4ZTzSpeU7QI+Xu85uVzx/YBa954SVPEsoib2z94Q7hhLSPIjopDwPRnk8H5ukvPIPPTvdzJi9qqGMPaKPAruOMN+8mvMKvEkES7zo9aS8BZF6PGNeej06B0u7gHg5PF2CVDuFgxW9Cg+WPEYxHL3/q9a8YTY8PUPfLzz7CgU9jaNJPSRGIz2KAMm86wzAPEab7Ts8fAW8PKH3vIuZIr0EMUO8GviIPTu0AzyEryU98/pUvRfdDryU9wG9Lwslu2KVXzvikly8FZLLPPgA6byXGs48WZ+UvBWiuby5GlQ9T1yGvOi4FT071Y29J0SovOlrQzzuw4o84c/Gu/dFsjtOg++8oButPMKibT1qMRi8zpjCu3iQUbwjdFA8Wu3PvPcbRLwVu4o81Zj1vGMUZbz7oSw9TW9gvWkB6Tn2GwY9bHw2Pf8Awjz0IkK9K0mUvJWRqDzBrde7nJpsvYiHtTwOAwK9AEhCPYB5tDlwTf68mPsVPHtIorx7/CG9fi8VvYRntrz89DA8CGmxPDsTkTtdhMe8V8IaPCGW/jz3i2y8q+sivT91HT3Qw3E9NpH8uzbLGbvWZwe9SLHPPCXmzzzA+fk6Gy6TvLE5rTvaOQI9BulbPd1XV727g588ORoYvdi1H70CNyw7w3c+vceT6rsl9zM8GgLUvG2NKL2yzZS8i6+aPIDuETs5T7y8iy6LvB0J5jyl7nG7llv8O7uE3bx8xru8WxN/PVp01jyebpQ8hmgaO/LcgDxi4yw9T6YCvjnLKj2D1Bo7/JD7vFfa/zyFnp26u9tcPX1y3zsWEaW7lSjEPdZVRL1gyjA8wleUvP3UajzuKQk9J/bFuGxndrrBQAw8SjGGPVLbD71TCHm9LJsuu6Z/ajwx0RQ9HMLmPC72Ez1usuo5MMP0PCr3cLw7czS9ShQHu1pdyDzioA0966WVvbgg4DwnJvy8grBtO040DL36P6e8hkTVPPAQ+zu8E967T8OZuGh7DzwucKO82yZNPV3dj7wvC4w7LgrtvGkDnDsGeey861toPD01zrstOvC8jXgQvXEtkDzgKkQ8L4oBPMFg9zzU/KO8Ely/u+p4/jwCEde8PAc8vfdOubxtLIU7YD0Pvfba4ziBJJu7NwU9PAxzuTyEwfi8HsgGuvVcXTzi99g8bB1HPVWX0DxjScm7jaQivX0EMzxt5WK8chkYPD7mLD3VEh89hAgGvIeBADthdFc8vqACvf89Nj2LYh69lIrMPOKQET1r7rW8QUIfPRITeTuNI4C8iCbuu9x46rui3aO8mwDQu5BBnbvycrK8zlinvEyjhLzETXW8GNQ8vD/Dbr12ixm8/BVGvVeFfT0d3Ca9yPV6PTYgH7wRqYg6SywovGr9wzyJGJS7IjhWPDpvljwJhBK97no7vCzfnrwroRS86iT5vKWMHb1btFC9Tw7ZvMvAFD3wrDg9W/k5PQSQ27zzcN67xvWgu6+WfLxY5zG8YvXcvF0cdD1A4Nq8P0WdPI2YnzyRzYq8HwmIOwiBirzW4w47QQjLPMf7VjxGPTo79xDEO043Jj0hASa9AQDCvabRKb2SdYq9wFllvaCUHr3ZFvc7u5XjvHiByjw85m+8NYkfvagddroXXBa7aDQevdi+ET3bJpM73J2+O6omhjx4Lw49l0iHPBpeI7uuuCO9jq+0u/zKtbymbAY8NvkEu2Yd7TxMKy47HB37O4IICb1XsrK6Bf5UvPVR8Dw9lvy8yVJeO7h22DxBfWa8vGqBPE0rijzzVNK8nq+PvQNx+LwSaRi839psvdm0TL3bl+E8gbSTPSNKCT2geFO8AmHcPO+loj3u3Cu9KNQbuxc9G7srZlu794UXvFCSzrxfsPa88zg0vRA+AzxxcvQ8wxHbOza0hDzFLJo8vz6IvLt5hT1/8Y49/ZzOvNEu1zv8x5O9Em/fvCph3jwoiCy8TBaFPWeNfjwGXdu8qd3OvB9TDzyy+Lm8vIhuPEsTWDx/2S28gJzUvJAiIb0Mfh68AhMvvfLSRbsEpPA84FglvGvBUrzwefw7mBT8ux6nibxG3oA89VMRvE9yizyGKNq7g/ZGPH4oeD0xhRi91rlpvcwmtztJF1O86eC7PBbgKD37nTw9O0X4O4mYazwutG+8v4K0uvGaZ7y3/wk71NcrPF/8OLwfYy08CDISvDJxVb1C+nm7I6niuxI3ljwlQjW+di5KOyDz97xGjZK8HwCHPGL6DT3ajxI76+QJvRDl/juxYEC8l58YvHBntzyPJVu8re+MOy6A8DtnuQI7mziRPILPWjwhtdU88RupvInpIjwoi/U8eG8TPDQaPjwv8lo7j4vzPFA8Fz3wuRI9/welO0oeK7vD5w28eVE8vT1enjqaKgI9VdhGPE8b7DxumQo9opzlu1dNgLwb06o8/W/Fu/iUhjpuWsa8Ip1Mve+zLDznk2k7TGtcvHfl4Lw4ph68DpaIPFBRfbxcXJU8FEuGvDLSX7xpSTu9H5IYvdksZryPlsK88GeyPAfZdz1GIBO9XU7fvGdOhry/EB09NsT8vJwDgbzuct+8z+8DPKh0Lj09Q1I9IFduvCyx5rzRaqA7iaPvPGJ4Drxocgo9Rw8TvasikLkaq1y9plhHPYligrwgNSw6GBYKvkujgrwVZPc8CGkOvTLGlDwNYdC7tHhqPMCHxzzdMeY8O/LIvHM47rs7c3K8uykKvcF5NL3AgoW9OXVMPJ7x4Dzu0EC7mtQMvf0gN71kyXa8bM+YPDBpNDuRFjs7WQaUu4I/Zbw+1TM8AWOcPLVh+TzWiUC93FO7PKqNWb5F37w8tux8vBvUgTxMuHw8Ohc3vMGCizv1Mdm8//tiPZJCBr0ep9M8t5oovGhtKbydVJK9amrsPKjDcj63ewW6LEViueOeTrvwFg+8F39CvPq717zV5sC8uzIXvAZ8BbyFbk+8zBtLPM+omrtcvim6ID1cPB98mDwnTLC8bNPtu8GzqLrAHLm87DKOPFC3eTyoRbO8Vi+qvA/oaLxhcmq8V/20PDt0Kry1dUs8qiHtPHnIhD3ymzU9R/sjvF2TBb3OPic71czQO+lZxb0ldR49UocjPNHeODzlJI48td17u2oJ9zzjnzq8J2ZLPTSPJ7z/Hf075eE0PRy/Iz3+NKW8BnhLvC7FcD2o0qg8PZSpPCkHBz16bQO9+nDsPIYvwLsElte7WEdlvcIVgr2GHfa7BriNvPCruzyKqkA8dxu1u4viuTlXqH28VuLrO6DdSr27osK8tawcPUj0Yz0owS08wmJFPOYwbDxuCTg90xEpPQ/aiTxhseK8xNYfPYIaQDtCbmq8EDioPGPefLwRmFq6rnXdvPqwZLwA4zO9VijvvN4jizxw9Qc9GldqPdJrBz0B1UU8"
-      },
-      "latencyMs": 172
-    },
-    {
-      "seam": "embed",
-      "requestHash": "3eebfa498012dc8d9a86bdd35f9f9ccffea95946653f2bf3270012a5cf64d8d3",
-      "request": {
-        "text": "The components work in a cycle: user input -> retrieve memory -> LLM reasons/plans -> uses tools -> updates memory -> responds to user."
-      },
-      "response": {
-        "kind": "vector",
-        "float32Base64": "mDnAvBHSlD2+jhI9pBL/veTkl7yRmWe62eA/vIufLzzTukA9bpklPK1eMr3gsrq8AawevS4PWTz7FXQ+JB16PR71tTxhJOk7KJwGO2j1kL3gZAm9UnVTPTWJszvZmbS8QoCnvNqzAD2by548bM1Hu6cFfz2bzZ08aMpCuwPa9zykbCm9SUtHOjW1XD0eg1e843pYPH7OAb1kon68OeGmOy7reDy8Urq8MJ1qPKGHmryj3UG9SytDPN4qAbtg/e28yZzjvK2VpTyD1Ba9QRwTPU/MdTx9tI++i3cpPE91H73s3xI8+nssvVi1RzkKPL47uGjLvFMBKjvPQ4u6tmztvKeivLz+ijS9GxljPcR/ibwAwBS978yIvAKYozzgNj28tcfGO/XrG73jmeq5Tr15vYTftjkSQ4w8AZqRPHtuCz3kp+U8Zgb4u5nBbzw5y+Y8zQ5EPMCYirwHexU8gtoCOy7+eLtAhzO8aqA4PLzD7zui+i89tuXDOzx6rzwtx2O7vYk2vbAchruezrE8HPymvFz5Dby45PK70VFyPAhHYj2zIVo99bPWuwPj4jzyjmE8kMGFPK/C9zvoXdE8NfZ6urVBOTyMtw080NPwvOnEW76qcLg8uNVFunDqpbx+HW28MARZvaetNT2HVUI8+VxOPetJxzywP7e8YyTgPB6zb73lTog82FIEPDxzX72/+hi8ypSIvNe+lTx+O388i3pQPV7tbb26DY07doT4PCjy7zyg2/Y8zqx8PavNhD0JcDQ8YLXuvJA1nzpEgoW99uJSPdbhpzwsV2G9PCzaPKYW0jxhrh685sITOfj/Cz34DHa9oEDRu1QY77zrKGk89gnPPAhA1LwjeIS82ah7u88CMD0jz+o6LBtYPY3fNzxpzzS9Xh+7PIck5jw4Lta71KeqvHlAbr22f6e89WQ3PfrgjLZRR7U7Mdepvcl9bjxFuFi9JX+uOzbnNT3pG7i8sVbVPAmOTj3zMXG8/yDJvLE8UrxRu688VKjqvPWTrDr4DV28ezJwvLVuQ7z5cc88sCsTvfTwP73Da628c+8LPU1mND3WIyC85AjvvPtfPTySG9q8gWlMOwB4ejyIYnq8U5j6O5ejvTw02Wy8Mp/bvJ1oDb0bhNs81A6qPGfED7xpkxM5QhzjvIuoxLun3+28KAskPF/pBz2rsrQ8dN0APT8TQTw1LAS8cGHTPNl/yLw7uLK6dZFfvEhGH7y2dOu52W0SvE3l0LwwjMS56L1OPXiBmjxgxde7Vh8XPTD7RLtoMAw9T4mlOid0/zpvZLC85f8svIlAazyyHfG8TmHiO5N4mrwL81O8elVVO9w/QL3HKJa4E/tZO6JsTz0iKMW8yKlUvBB/fTxNrS69FzXSujnMPrx+Emq8Rhpvu2zRjbwV2pa8ZltNueuR6rmTUAQ9J3hBPBIeB72Y4x29OCsrPH8VCj1zmka8X/8zPfORQz2BwVs9TLqcvQpDKT0gMKE89q9+uu1foLzoPfM8KNqfPAioCDsJiOA8AZ/DPGvz17y0Kta8MvR3PGTqAjuJAFc9Gm0ZPRBRFDwE7eC3WDOYO/qPv71MsiI8MebAPOQgDDy8zXI9yoTJPBxOnbw8pLC8UsOaPahBUb2LhuC81YLLOhd+Fz3a3au8c3MXvZm8eLy14OA8yBBMPaoHYr2n42c8nUEoPR9jZrxP40m9fLAlO0bBVL3oB0a6a6BCvJ8v97oDss08gddgvVYKm71shlM6kFVRPICjgTzcH5i9MjiXPBl+eT0yK5s92upDvdlJpbzAepQ8pxKAu4BBtrwVzmS8Kf+1PK3q47vwc+i89JLPvNJCbLzlAI48AmOTPUeu6Twmw9G76oo7vKRHFb2oSL48JctRvJ7Objyc6dq8r8lnvZYsiz2/uli7F4R/un7ekD3X6VE87matOzxgCzxNqqm86knmuyVx8zwB4RC9zx8jPTg3zzxeP6O85cagPfDGKjzAegS9++67O64mmLwQ/ni7fERsuzVgC71AowM6bucyvZqpzjwb3yG95H7gPA+porw4BV+8ioURvfk8nzwl3I88mexgvMGkkjzz+Tw9pEFqvakjSzxJN3C9MWTBuyhM1zxmUjW9ZUxDPG4ChTzRttm8e6hPO4ZTKbw86ZA8ArJHvHdea7xNJXc8p8WeuyTnVTwThf685HLPPPp6Db1BbYy8S99APey1ljxSxCw59AsXvFWq1jy4CgS9BIE3PPaBwbsBWfu77GrEPH+GID0KZIS8gVcMPHitTLySHeK8AbYJvbaNorwbcMG8PhnkvAZFnLvB9mE7uUWSvFC8A70TEME7ihn9vBBZA70/XMo6OxxpPJwRsLx1w3o890LDuwLmc7wueFU8dJhGvAhEEz2z6NC8jzTBvDdOsrxe14k7yWF2PWX7ZD2onSA7cF8tvXmY1jyCqi285xGYu7iBbjxdNP+8rWfDO7sQQbyWLys99/sCPUcyHzwcDVE7EPSUvHFLtbmtmRM9DiQMPXYnjT0cPIW8KvhjvNyYRT3GeCm9UkunO1sxZzxbOYW9QOMvPeV0Jzzx+4w8cj8HPU0XQr1wWDE9YVIPvfEvTjoFbPA8ZT/mvNyUhLtYPTm9zv1ku6tKNT1tRX07LKfjvIbDR73kCVS8uRoOvR4rFj1smK28OnNlvGxAXrz/QAo7Wt27ORUQ7bxLlc67ZGGJumy2B7sxNWS9FBk6vMgy1jxsU3w7H9UrvVMhgDzBzIo8XWpCPWW4Tb1230O7b/0aPECt5Ly5jhM8QWHuPIg3B7zEayG8x5rCvGsIQzzh2I688eACveapT7zbWuW7gu2cui9/0Ty/G6E85gKvPN+sorz0xm29xj+GPPGpp7sriRQ9d8MjPeJHeDusdZY8tjssvb1Ziry6+VK9vJIouxGzaj23UCq+ECOSPE15ebpQ3WQ6AuTpvI1rkbr4Kq07iWbsvBGLuLzGnZ47+UeyO+uzkrzqM8A9DPyOPMTABLxt3Gw8RWXkvLqWFLx3Gws9GokWveLfxjwIEuQ8hwcnvCh8uzubHkM6ryokvVdAaTyBmTW8NycQPUHWLTx/bXO9EUq1vOOpLLvFKr66EXm1PLYKTTstVV89yAMsvMhdu7uPaa48+sM1vF5WCLpomA48l0cavUjsk7yvI1A9SZjyOzwxz7q0msw8DgehvDbSr7144cK8fqMYvZx4HbwL/pw8gPgIPAhppbweMI289K5IvZsnrDzcnyA8CwhuPIQp1zuS2yI9lZtqvE2MtTv9a6I7wPzHvLqTirw5Us+8etGWO9PJgLzK/dQ7HxeMPTw9OLwr7LK78yoNvTnx8zyxQwW8A9lUO0XiC73cHcy8OvgZvuKYn7zhlDY9WfwQvF1k1jzgSji8D33guXkBH7ytaeC8ij/qvJWkIrszoUy8FaklvYSDCL32USU8/I0FOnYs1LthWci7agLdPI0cBb0tGhW9QUpLvGfdij25oy+9Jxy+POHoz7yPJRm9NTAsPVJkhLz4m+S8phkEPMwGZb5/qt47ivdQvO9OAj1wvII86dkmune8R72PPkw96ZqgO4R9m7yASwc9rqoBvZaCLr1trUu9oJqrPN/yRj7Oql27sZ8cvFyunLytBZC8a+ofPIzCtbxLRTe9cOcNvDYp5btm5Ei9Oo1vPUUvS7yrSPi4pzeZPUK81jwT+ic94T2Vu77tb7vOIBI9XqylunWv8zsIK8G9tw2xPIcfiTwbosY8jyEwPQcvbbyZ4IG8x5/YvKQYSD3kxTK9IjSFvCcQhbxH6KK871WDPDTc8r25ybq8clm/vKZv9TzemBc98P+juznHPzzgH8S7fXLOPBNiSzyuCuQ8xiJtvPGFzDwtf+q8y05bvE99vT2+1XY8Ey1tvOod0jxOUBo8BL+LPKrDrrtH4fk6DnaavObOn7sM2uA8FBO/PETvjzxom868K5ASPTbJADxIuMy8hQrKvL3DPLkla4+81katvE5Ft7xAaeA8E2iyO74xwrsRRBA9OAULPPFpRjxHG3Q8paePPOoGfby9FJg8+o17vN60dzyZIeO8/MqWvdQBLzslXiS9rJ3Gu5EJuDx2fFO8XAOzPHBDcz1SMou6"
-      },
-      "latencyMs": 248
+      "latencyMs": 204
     }
   ]
 }
