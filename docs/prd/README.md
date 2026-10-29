@@ -391,10 +391,11 @@ MITRE ATLAS 2026.09, which joined the control registry. The replay job runs it a
 step. CTL-MEM-02 is `implemented`. On the stub model `rt-001` passed before and after the
 mitigations, as ADR 0009 predicted, and failed when the session scope was forced off.
 **`rt-002` and `rt-003` have not been measured.** M3 changed every extraction request, so
-the replay tier aborts at `distill` until the cassettes are re-recorded. The recording is
-29 `generateContent` calls over two days: the live baseline on the parent commit, then
-`memory-recall-001`, then the red team and `tool-use-001`. The PRD's "The recording" has the
-commands, and STATUS row 37 says what is measured.
+the replay tier aborts at `distill` until the cassettes are re-recorded. It was rebased
+onto `main` after P4-C on 2026-10-29. The recording is 33 `generateContent` calls on six
+days at about six a day: the live baseline on `4c8a780`, the pre-mitigation commit, then
+the red team and the three positive controls on the branch head. The PRD's "The recording"
+has the batches, and STATUS row 37 says what is measured.
 
 **Where the detail lives.** Each PRD carries its own risks, its divergences from the design
 that was reviewed, and — where a shipped record turned out to be wrong — the correction that
