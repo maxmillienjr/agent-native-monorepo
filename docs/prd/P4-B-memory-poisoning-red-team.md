@@ -456,9 +456,10 @@ decides otherwise, the step's `EVAL_GATE` is the one line to change.
 
 - **The ADR is 0011, not 0007.** 0007 and 0010 were taken by P3-B and P3-E, which were
   being written at the same time.
-- **No new STATUS row was moved.** No row covered retrieval scope on its own. Row 35 is
+- **No new STATUS row was moved.** No row covered retrieval scope on its own. Row 37 is
   new, and row 19's control counts, stale since P3-D, were corrected beside it. It was row
-  27 until the rebase of 2026-10-12, when `main` already held rows 27 to 34.
+  27 until the rebase of 2026-10-12, when `main` already held rows 27 to 34, and row 35
+  until the rebase of 2026-10-29, after P4-C took rows 35 and 36.
 - **The PRD's quotation of AML.M0031 is not in the 2026.09 release.** The data file
   (`dist/v6/ATLAS-2026.09.yaml`, modified 2026-07-31) describes Memory Hardening as a
   lifecycle list: access control within session scope, integrity and update limits,
@@ -516,6 +517,31 @@ graded one`). Checked against live stores: the poisoned `:Fact` carries `…c1a`
   memory-recall replay matched all 21 baseline cells.
 
 ### The recording
+
+_Re-planned 2026-10-29, after P4-C shipped and this branch was rebased onto `d10611c`._
+This replaces the batches below where they differ. P4-C landed first, so its three
+memory-recall cassettes are on `main`. M3 changes `distill`'s request, which all three
+hold, so they are recorded again here with the red team's three. The nightly now spends
+about 12 calls and its canary about 1, so a day has about 6 left for recordings
+(`.context/conventions.md`, "Live model quota"), and no batch is larger than that.
+
+| Day | Batch                                  | Commit                                        | Calls | Writes a cassette |
+| --- | -------------------------------------- | --------------------------------------------- | ----- | ----------------- |
+| 1   | live baseline, `rt-003`                | `4c8a780` (tag `baseline/p4b-pre-mitigation`) | 6     | no                |
+| 2   | live baseline, `rt-002`; then `rt-001` | `4c8a780`; the branch head                    | 3 + 3 | `rt-001` only     |
+| 3   | `rt-003`                               | the branch head                               | 6     | yes               |
+| 4   | `rt-002`, `memory-recall-001`          | the branch head                               | 3 + 3 | yes               |
+| 5   | `tool-use-001`                         | the branch head                               | 5     | yes               |
+| 6   | `tool-use-002`                         | the branch head                               | 4     | yes               |
+
+That is 33 calls: 9 for the baseline, 12 for the red team and 12 for the three positive
+controls. The commands are the ones below with `EVAL_TASKS` narrowed to the day's tasks,
+and `EVAL_SUITE=red-team` for the `rt-` tasks. The rebase onto `d10611c` left `4c8a780`
+outside every branch, so the tag keeps it. The baseline still runs there and nowhere else:
+it is the pre-mitigation system plus the instrument. If the owner pauses the scheduled
+jobs, a day holds 20 and the six days become two. Until day 6, `eval-replay` and the two
+`e2e` integration tests that replay `memory-recall-001` are red on this branch, and nothing
+else is.
 
 _Re-planned 2026-10-12, after the rebase._ Twenty-nine `generateContent` calls, the same
 count as before: nothing `main` gained adds a model call to a run. Each red-team task sets
