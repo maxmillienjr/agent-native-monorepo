@@ -503,8 +503,13 @@ recording that the day's remainder cannot finish. A dispatch with `chat_model` s
 eight calls on the alias target's own limit, plus the canary's two on this pool. Check first
 that the night's floating chat probe answered: on 2026-10-26 the alias was answering the
 canary with a 503, and the dispatch's calls took minutes each, so the suite ran into the
-live job's 30-minute timeout with no report. Turbo buffers `yarn eval`'s output until the
-task ends, so a cancelled run's log is empty; its recorded cassettes are the evidence. A
+live job's 30-minute timeout with no report. A recording longer than a few days can have
+the whole pool instead: `gh variable set EVAL_SCHEDULE_PAUSED --body true` skips the
+scheduled `eval-live` and `eval-canary` jobs (replay and dispatch still run), and
+`gh variable delete EVAL_SCHEDULE_PAUSED` brings them back. The nights it was set are
+nights with no tally on `eval-history`, so the PRD that set it says which. Turbo buffers
+`yarn eval`'s output until the task ends, so a cancelled run's log is empty; its recorded
+cassettes are the evidence. A
 project with billing on would leave the free tier (no 20-a-day cap, a charge per token),
 which is the owner's decision.
 
