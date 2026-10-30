@@ -26,6 +26,10 @@ name: Agent Eval
 #   compare after the live job. The night's recorded decisions against the
 #           committed cassettes, read from the live artifact. No model call.
 #
+# The repository variable EVAL_SCHEDULE_PAUSED=true skips the scheduled live and
+# canary jobs and leaves dispatch alone, so a day's twenty calls can go to a
+# recording. Replay still runs nightly: it makes no model call.
+#
 # What goes red is the regression gate's verdict (P1-D), not "a trial failed":
 #
 #   replay  EVAL_GATE=replay compares every (task, trial, grader) cell with the
@@ -195,7 +199,8 @@ jobs:
     # nothing is the failure REQUIRE_INTEGRATION_ENV was written to stop.
     if: >-
       needs.gate.outputs.has_key == 'true' &&
-      (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+      (github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'schedule' && vars.EVAL_SCHEDULE_PAUSED != 'true'))
     # One run at a time: two overlapping runs on one daily quota make it
     # impossible to tell which of them exhausted it.
     concurrency:
@@ -341,7 +346,8 @@ jobs:
     needs: gate
     if: >-
       needs.gate.outputs.has_key == 'true' &&
-      (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+      (github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'schedule' && vars.EVAL_SCHEDULE_PAUSED != 'true'))
     # The live job's group: the same daily quota, and two runs on it at once
     # make it impossible to tell which exhausted it.
     concurrency:
