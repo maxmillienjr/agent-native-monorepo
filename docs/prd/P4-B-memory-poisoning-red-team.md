@@ -543,6 +543,22 @@ jobs, a day holds 20 and the six days become two. Until day 6, `eval-replay` and
 `e2e` integration tests that replay `memory-recall-001` are red on this branch, and nothing
 else is.
 
+_Compressed 2026-10-30._ Day 1 ran on 2026-10-29 and made 7 calls, not 6. The owner then
+paused the scheduled jobs: #136 added `EVAL_SCHEDULE_PAUSED`, set from 2026-10-30 00:43
+UTC, so the nightly `eval-live` and `eval-canary` skip and leave the whole pool. Days 2 to
+6 become two days. The first also carries P1-E's floating-alias dispatch, whose canary
+spends 2 calls on this pool.
+
+| Day | Date       | Batch                                                                   | Calls      |
+| --- | ---------- | ----------------------------------------------------------------------- | ---------- |
+| 2   | 2026-10-30 | P1-E dispatch's canary; baseline `rt-002`; `rt-001`, `rt-003`, `rt-002` | 2 + 3 + 12 |
+| 3   | 2026-10-31 | `memory-recall-001`, `tool-use-001`, `tool-use-002`                     | 12         |
+
+The variable is deleted once day 3's cassettes are committed. No `eval-history` tally is
+pushed for the nights between. The P1-D gate pools whatever tallies an epoch's directory
+holds (`packages/eval-harness/src/gate/baseline.ts`), so a missing night is a missing
+sample, not a failure.
+
 _Re-planned 2026-10-12, after the rebase._ Twenty-nine `generateContent` calls, the same
 count as before: nothing `main` gained adds a model call to a run. Each red-team task sets
 `maxSteps: 1`, so a run is one `plan`, one `selectTool` and one `distill` call, and its
