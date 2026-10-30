@@ -29,4 +29,15 @@ export interface MemoryOutcome {
   readonly extractedConceptIds: readonly string[];
   /** Of those, the ones a `(:Concept)` node exists for after the run. */
   readonly mergedConceptIds: readonly string[];
+  /**
+   * The fact texts `distill` produced on this run: what `reflect` was handed
+   * to promote to semantic memory (P4-B).
+   *
+   * The extraction rather than the rows written, because a text extracted word
+   * for word a second time lands on the row that already holds it — the
+   * pgvector upsert keys on the content hash — so a row count keyed on the run
+   * reads zero while the text was in fact extracted. A red-team grader asking
+   * "did the canary reach memory" has to ask the extraction.
+   */
+  readonly extractedFactTexts: readonly string[];
 }
