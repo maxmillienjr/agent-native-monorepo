@@ -13,15 +13,15 @@
     "test:unit": "vitest run"
   },
   "dependencies": {
-    "@opentelemetry/api": "^1.9.0",
-    "@opentelemetry/api-logs": "^0.222.0",
+    "@opentelemetry/api": "^1.10.0",
+    "@opentelemetry/api-logs": "^0.223.0",
     "@repo/memory-core": "workspace:*",
     "@repo/shared-types": "workspace:*",
     "@repo/telemetry": "workspace:*",
     "zod": "^4.6.6"
   },
   "devDependencies": {
-    "@opentelemetry/sdk-logs": "^0.222.0",
+    "@opentelemetry/sdk-logs": "^0.223.0",
     "@repo/eslint-config": "workspace:*",
     "@repo/tsconfig": "workspace:*",
     "@types/node": "^22.20.4",
