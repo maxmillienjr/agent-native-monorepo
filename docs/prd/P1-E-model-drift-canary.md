@@ -2,7 +2,7 @@
 id: P1-E
 title: Model-drift canary against pinned and floating model ids
 tier: 1
-status: in-progress
+status: shipped
 size: M
 depends_on: [P1-A, P1-B, P1-C]
 blocks: []
@@ -157,9 +157,9 @@ cost that fits in the free tier.
 - **Migrating off `gemini-2.5-flash` or `gemini-embedding-001`.** A migration re-records
   every cassette and changes `EMBEDDING_DIMENSIONS`'s justification
   (`embedding.ts:1-19`). The canary reports what the floating alias resolves to and
-  whether one trial passes on it. That is an input to a migration, and no PRD owns the
-  migration yet because no shutdown date forces one before 2028-05-14. When a date does,
-  the migration is a new PRD, and the canary's floating result is its first evidence.
+  whether one trial passes on it. That is an input to a migration, which is P1-I, a draft
+  with no file yet: no shutdown date forces it before 2028-05-14, but a new GCP project
+  can no longer use the pinned id. The canary's floating result is its first evidence.
 - **Re-recording cassettes when the canary fires.** Re-recording stays a deliberate local
   command (`.context/conventions.md:133`). P1-C rejected it in CI for secret-exposure
   reasons. The canary summary prints the command.
@@ -504,7 +504,11 @@ used it yet, and each says which run verifies it. The implementation was cleared
       retry counts against that 20, so a dispatch inside a 503 window spends the alias
       target's whole day. The pinned probes all answered. The next attempt is right after
       the 07:00 UTC reset. If that fails too, this criterion moves to the PRD that migrates
-      off `gemini-2.5-flash`, where the same comparison is its first measurement.
+      off `gemini-2.5-flash`, where the same comparison is its first measurement. **Moved to P1-I on 2026-11-03, unmet.** The next probe of the alias, at 15:22 UTC
+      that day, got a 503 "high demand" after 224 s, so no dispatch was made: the three
+      dispatches and this probe all ran into the alias's availability, not this PRD's code.
+      P1-I, the migration off `gemini-2.5-flash`, owns the comparison as its first
+      measurement.
 - [x] **Model `live`, in CI:** with the secret present, one scheduled run runs `canary` and
       `compare`. Both write to `$GITHUB_STEP_SUMMARY` and upload an artifact. `compare`
       reports no request to `generativelanguage.googleapis.com`. With no secret, `canary`
