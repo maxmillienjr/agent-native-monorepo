@@ -2,10 +2,10 @@
 
 ## Where things stand
 
-_Last updated 2026-10-27. If this section is more than a few weeks stale, trust the code
+_Last updated 2026-11-03. If this section is more than a few weeks stale, trust the code
 over it and update it._
 
-**Twenty-two PRDs are shipped and the system they describe is running.** The service answers
+**Twenty-three PRDs are shipped and the system they describe is running.** The service answers
 `POST /runs` and `POST /runs/stream`; `memory-core` is constructed by the app rather than
 sitting beside it; the graph compiles with a checkpointer and a retry policy on every node
 that performs I/O; and `packages/eval-harness` measures the result. Verified against live
@@ -93,7 +93,7 @@ promoted to compare with.
 `.github/rulesets/main.json`**, which requires `eval-replay`; `yarn lint:docs` keeps its
 check names equal to real jobs.
 
-**[P1-E](P1-E-model-drift-canary.md) is in progress**, tracked in
+**[P1-E](P1-E-model-drift-canary.md) has shipped**, tracked in
 [#86](https://github.com/maxmillienjr/agent-native-monorepo/issues/86). `yarn canary` asks
 the API what serves the pinned ids and the floating alias: `models.get` on all three, one
 direct `generateContent` per chat id for the `modelVersion` the LangChain client drops, and
@@ -107,10 +107,13 @@ on 2026-10-12: the pinned id answers with `modelVersion` `gemini-2.5-flash`, the
 and the alias answered `gemini-3.8-flash`. Seven scheduled runs in a row, 2026-10-20 to 26,
 were green on every job, with the pinned ids unchanged and all 21 vectors still identical,
 and a dispatch from a throwaway branch showed the live job refusing the wrong axis.
-**It stays in progress on one criterion: the suite on the floating alias.** Its dispatch on
-2026-10-26 ran into the live job's 30-minute timeout with one trial recorded, because each
-call on the alias took minutes, and the alias has answered the canary with a 503 on most
-nights. The next attempt goes on a day the alias is serving, or with a longer timeout.
+**It shipped with one criterion unmet and moved to P1-I:** the suite on the floating alias.
+Three dispatches on 2026-10-26 and 27 ran into the alias's 503s, the job's timeout and
+the alias target's own daily quota, and on 2026-11-03 a probe got a 503 after 224 s. The
+client's retries on a 503 count against that quota. The one trial that finished,
+`memory-recall-001`, was answered on every decision. Since 2026-10-30 the repository
+variable `EVAL_SCHEDULE_PAUSED` skips the scheduled `eval-live` and `eval-canary` jobs
+while P4-B records, so neither reports until it is deleted.
 
 **[P1-F](P1-F-cost-and-step-budgets.md) has shipped**, tracked in
 [#85](https://github.com/maxmillienjr/agent-native-monorepo/issues/85). Each task file now
@@ -421,7 +424,7 @@ application context and reports `pass@k` and `pass^k` per axis. P1-C, shipped, r
 from `.github/workflows/agent-eval.yml`: on replayed model decisions on every pull request,
 and on the live model nightly under the repository secret. P1-D, in progress, gates
 both on committed baselines. Nothing blocks a merge until the owner applies its ruleset.
-P1-E, in progress, watches whether the model behind the pinned ids has changed. P1-F,
+P1-E, shipped, watches whether the model behind the pinned ids has changed. P1-F,
 shipped, checks each task's tokens and model calls beside the pass rate.
 
 | ID                                     | Title                                                         | Size | Status      |
@@ -430,10 +433,11 @@ shipped, checks each task's tokens and model calls beside the pass rate.
 | [P1-B](P1-B-agent-cassette.md)         | `packages/agent-cassette` — decision-level record and replay  | L    | shipped     |
 | [P1-C](P1-C-tiered-eval-pipeline.md)   | Tiered evaluation pipeline replacing the nightly stub         | M    | shipped     |
 | [P1-D](P1-D-regression-gate.md)        | Statistical regression gate against committed baselines       | L    | in-progress |
-| [P1-E](P1-E-model-drift-canary.md)     | Model-drift canary against pinned and floating model ids      | M    | in-progress |
+| [P1-E](P1-E-model-drift-canary.md)     | Model-drift canary against pinned and floating model ids      | M    | shipped     |
 | [P1-F](P1-F-cost-and-step-budgets.md)  | Cost, latency, and step budgets as CI assertions              | M    | shipped     |
 | [P1-G](P1-G-task-axis-requirements.md) | Task-level axis requirements for the evaluation suite         | S    | shipped     |
 | P1-H                                   | Live coverage of the replay-only suites by nightly rotation   | M    | draft       |
+| P1-I                                   | Migrate off `gemini-2.5-flash`                                | L    | draft       |
 
 P1-H, a draft with no file yet, is a candidate raised on 2026-10-26 and not yet accepted.
 Once the recordings are made, prior-auth and the red team run only on replay at night: they
@@ -445,6 +449,14 @@ in about a week and pooling the nights the way P1-D pools memory-recall. The cos
 open question: on the shared key it takes the nightly to about 18 of the day's 20 and leaves
 development almost nothing, so it waits for the recording queue to clear and is more
 realistic with a paid key. It depends on P1-D (pooling across nights) and P3-D (the suite).
+
+P1-I, a draft with no file yet, moves the chat model off `gemini-2.5-flash`. No shutdown
+date forces it before 2028-05-14, but a key from a new GCP project already gets a 404 on the
+pinned id, so the repository cannot be run from a fresh clone on its own key. It re-records
+every cassette suite on the new id and re-derives the budgets, so it costs well over a
+free-tier day. It owns P1-E's one unmet criterion, the suite on the floating alias, as its
+first measurement; three dispatches and a probe from 2026-10-26 to 2026-11-03 ran into the
+alias's 503s and its own daily quota.
 
 ## Tier 2 — Make the architecture real
 
