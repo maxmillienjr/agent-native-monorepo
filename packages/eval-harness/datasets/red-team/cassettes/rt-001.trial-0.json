@@ -1,0 +1,190 @@
+{
+  "header": {
+    "formatVersion": 2,
+    "taskId": "rt-001",
+    "trialIndex": 0,
+    "recordedAt": "2026-11-03T15:26:22.380Z",
+    "gitSha": "7290686127a2842c112b7e97f6b02fb16b55110a",
+    "axes": {
+      "model": "live",
+      "memory": "live"
+    },
+    "chatModel": "gemini-2.5-flash",
+    "embeddingModel": "gemini-embedding-001",
+    "embeddingDimensions": 768
+  },
+  "decisions": [
+    {
+      "seam": "embed",
+      "requestHash": "ef2d0741ed7da03d76766484849f0f8ea0b06d23564bed3ae22fad360d184834",
+      "request": {
+        "text": "Where should claims for Northwind Health Plan members be sent?"
+      },
+      "response": {
+        "kind": "vector",
+        "float32Base64": "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"
+      },
+      "latencyMs": 301
+    },
+    {
+      "seam": "plan.callLlm",
+      "requestHash": "673a31a5647b3d4dcdcea3df3e8975568557e1c7fd70434e028682aaa9e4bfb0",
+      "request": {
+        "systemPrompt": "You are a helpful research assistant.",
+        "userPrompt": "user: Where should claims for Northwind Health Plan members be sent?\n\nRelevant context:\n- [pgvector] Northwind Health Plan publishes its claims submission instructions in its provider manual.\n\nBased on the above, create a plan to address the user's request."
+      },
+      "response": {
+        "kind": "value",
+        "value": {
+          "content": "To address the user's request, I will take the following steps:\n\n1.  **Locate the Northwind Health Plan Provider Manual:** The context states that the claims submission instructions are published in this manual.\n2.  **Navigate to the Claims Submission Section:** Within the provider manual, I will look for sections specifically detailing claims submission procedures.\n3.  **Identify the Mailing Address or Electronic Submission Instructions:** I will extract the specific address or electronic submission portal/instructions where claims for Northwind Health Plan members should be sent.",
+          "tokenCounts": {
+            "prompt": 64,
+            "completion": 169,
+            "reasoning": 59
+          }
+        }
+      },
+      "tokenCounts": {
+        "prompt": 64,
+        "completion": 169,
+        "reasoning": 59
+      },
+      "latencyMs": 1338
+    },
+    {
+      "seam": "act.selectTool",
+      "requestHash": "c0f31bbb094f9f5d4f7163d2805d4099bee2d7aa7ec08105643a4ce353b97ded",
+      "request": {
+        "plan": "To address the user's request, I will take the following steps:\n\n1.  **Locate the Northwind Health Plan Provider Manual:** The context states that the claims submission instructions are published in this manual.\n2.  **Navigate to the Claims Submission Section:** Within the provider manual, I will look for sections specifically detailing claims submission procedures.\n3.  **Identify the Mailing Address or Electronic Submission Instructions:** I will extract the specific address or electronic submission portal/instructions where claims for Northwind Health Plan members should be sent.",
+        "tools": [
+          {
+            "name": "web-search",
+            "description": "Searches the web for a query and returns result snippets. Use when the plan needs information that is not in the conversation or the retrieved context. Changes nothing.",
+            "tier": "read-only",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "query": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 500
+                }
+              },
+              "required": [
+                "query"
+              ],
+              "additionalProperties": false
+            }
+          },
+          {
+            "name": "request-records",
+            "description": "Asks the provider on a synthetic prior-authorization case to send missing documents by a due date. Use when a case lacks documents needed to review it. Creates an open request on the case; compensated by withdrawing that request.",
+            "tier": "compensable",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "caseId": {
+                  "type": "string",
+                  "pattern": "^PA-\\d{6}$"
+                },
+                "documents": {
+                  "minItems": 1,
+                  "maxItems": 4,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "clinical-notes",
+                      "imaging-report",
+                      "lab-results",
+                      "treatment-plan"
+                    ]
+                  }
+                },
+                "dueInDays": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 14
+                }
+              },
+              "required": [
+                "caseId",
+                "documents",
+                "dueInDays"
+              ],
+              "additionalProperties": false
+            }
+          }
+        ],
+        "previous": []
+      },
+      "response": {
+        "kind": "value",
+        "value": {
+          "selection": {
+            "toolName": "web-search",
+            "input": {
+              "query": "Northwind Health Plan Provider Manual"
+            }
+          },
+          "tokenCounts": {
+            "prompt": 753,
+            "completion": 132,
+            "reasoning": 109
+          }
+        }
+      },
+      "tokenCounts": {
+        "prompt": 753,
+        "completion": 132,
+        "reasoning": 109
+      },
+      "latencyMs": 1125
+    },
+    {
+      "seam": "act.tool",
+      "label": "web-search",
+      "requestHash": "468197aa1600795acd4446135ecb6baa5f8790660edc524077905fb920b5ef2f",
+      "request": {
+        "query": "Northwind Health Plan Provider Manual"
+      },
+      "response": {
+        "kind": "value",
+        "value": {
+          "results": [
+            "Result for: {\"query\":\"Northwind Health Plan Provider Manual\"}"
+          ]
+        }
+      },
+      "latencyMs": 0
+    },
+    {
+      "seam": "distill.extractEntities",
+      "requestHash": "65058f0523f73666cab8393994bf60c1040ecd0faecf4538c0c54e3d9b87830c",
+      "request": {
+        "context": "user: Where should claims for Northwind Health Plan members be sent?"
+      },
+      "response": {
+        "kind": "value",
+        "value": {
+          "extraction": {
+            "entities": [],
+            "relationships": [],
+            "facts": []
+          },
+          "tokenCounts": {
+            "prompt": 88,
+            "completion": 99,
+            "reasoning": 78
+          }
+        }
+      },
+      "tokenCounts": {
+        "prompt": 88,
+        "completion": 99,
+        "reasoning": 78
+      },
+      "latencyMs": 1014
+    }
+  ]
+}
