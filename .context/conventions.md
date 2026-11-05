@@ -508,8 +508,8 @@ Standing consumers, before any development spends a call:
 
 That leaves roughly 5–6 a day for recordings and live criteria. `eval-live` runs every
 memory-recall task: 3 calls for `memory-recall-001`, 5 for `tool-use-001` and 4 for P4-C's
-`tool-use-002`, as recorded on 2026-10-26 and 2026-10-27. It was about 8 before P4-C added
-the third task, which left 9–10 a day. Both nightly jobs are scheduled for 03:00
+`tool-use-002`, as recorded on 2026-10-26 and 2026-10-27 and again by P4-B on 2026-11-03
+and 2026-11-05. It was about 8 before P4-C added the third task, which left 9–10 a day. Both nightly jobs are scheduled for 03:00
 UTC, but GitHub has started them between 07:30 and 10:15 UTC on every night since
 2026-10-03: after the quota resets at 07:00 UTC, not before it. So the nightly spends from
 the Pacific day that has just begun, and a recording made later that day spends what the
