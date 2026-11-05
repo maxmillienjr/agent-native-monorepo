@@ -2,10 +2,10 @@
 
 ## Where things stand
 
-_Last updated 2026-11-03. If this section is more than a few weeks stale, trust the code
+_Last updated 2026-11-05. If this section is more than a few weeks stale, trust the code
 over it and update it._
 
-**Twenty-three PRDs are shipped and the system they describe is running.** The service answers
+**Twenty-four PRDs are shipped and the system they describe is running.** The service answers
 `POST /runs` and `POST /runs/stream`; `memory-core` is constructed by the app rather than
 sitting beside it; the graph compiles with a checkpointer and a retry policy on every node
 that performs I/O; and `packages/eval-harness` measures the result. Verified against live
@@ -111,9 +111,9 @@ and a dispatch from a throwaway branch showed the live job refusing the wrong ax
 Three dispatches on 2026-10-26 and 27 ran into the alias's 503s, the job's timeout and
 the alias target's own daily quota, and on 2026-11-03 a probe got a 503 after 224 s. The
 client's retries on a 503 count against that quota. The one trial that finished,
-`memory-recall-001`, was answered on every decision. Since 2026-10-30 the repository
-variable `EVAL_SCHEDULE_PAUSED` skips the scheduled `eval-live` and `eval-canary` jobs
-while P4-B records, so neither reports until it is deleted.
+`memory-recall-001`, was answered on every decision. The repository variable
+`EVAL_SCHEDULE_PAUSED` skipped the scheduled `eval-live` and `eval-canary` jobs from
+2026-10-30 to 2026-11-05 while P4-B recorded, and was deleted that evening.
 
 **[P1-F](P1-F-cost-and-step-budgets.md) has shipped**, tracked in
 [#85](https://github.com/maxmillienjr/agent-native-monorepo/issues/85). Each task file now
@@ -383,22 +383,22 @@ A2A records had already held that since P5-A. CTL-ACC-04 is `implemented`, and S
 row 33 no longer lists `/runs` as not built. Open mode still puts every caller in one
 principal, and the console still has no user login.
 
-**[P4-B](P4-B-memory-poisoning-red-team.md) is in progress**, tracked in
-[#96](https://github.com/maxmillienjr/agent-native-monorepo/issues/96), with one step left:
-the live recording. Both mitigations are in. Retrieval refuses a query that names no session
-unless it sets `crossSession: true` (M2). `distill` reads the user's turns only, so the agent
-never promotes its own answer, or a fact it retrieved and repeated, to semantic memory (M3,
+**[P4-B](P4-B-memory-poisoning-red-team.md) has shipped**, tracked in
+[#96](https://github.com/maxmillienjr/agent-native-monorepo/issues/96). Retrieval refuses a
+query that names no session unless it sets `crossSession: true` (M2). `distill` reads the
+user's turns only, so the agent never promotes its own answer, or a fact it retrieved and
+repeated, to semantic memory (M3,
 [ADR 0011](../adr/0011-the-agent-does-not-promote-its-own-output.md)). The red team is a
 suite of its own, `EVAL_SUITE=red-team`, with three canary cases mapped to OWASP ASI06 and
-MITRE ATLAS 2026.09, which joined the control registry. The replay job runs it as a second
-step. CTL-MEM-02 is `implemented`. On the stub model `rt-001` passed before and after the
-mitigations, as ADR 0009 predicted, and failed when the session scope was forced off.
-**`rt-002` and `rt-003` have not been measured.** M3 changed every extraction request, so
-the replay tier aborts at `distill` until the cassettes are re-recorded. It was rebased
-onto `main` after P4-C on 2026-10-29. The recording is 33 `generateContent` calls on six
-days at about six a day: the live baseline on `4c8a780`, the pre-mitigation commit, then
-the red team and the three positive controls on the branch head. The PRD's "The recording"
-has the batches, and STATUS row 37 says what is measured.
+MITRE ATLAS 2026.09, and the replay job runs it as a third step. CTL-MEM-02 is
+`implemented`. **One case shows a fix:** on the pre-mitigation commit `4c8a780`, live,
+`rt-002` failed `canary_absent_from_extraction` on 2026-11-03 — `distill` lifted the
+poisoned fax number out of the agent's own answer and `reflect` merged it as a new concept —
+and on the branch it passes. `rt-001` and `rt-003` pass on both sides, as ADR 0009
+predicted, and are regression coverage. All six cassettes, the red team's three and
+memory-recall's three, were recorded on 2026-11-03 and 05 in 34 calls, with the scheduled
+jobs paused, and two replays of each suite match its baseline. STATUS row 37 has the
+evidence.
 
 **Where the detail lives.** Each PRD carries its own risks, its divergences from the design
 that was reviewed, and — where a shipped record turned out to be wrong — the correction that
@@ -507,11 +507,11 @@ provider actually operates under. Uses synthetic data only.
 
 ## Tier 4 — Governance and agent security as code
 
-| ID                                        | Title                                                           | Size | Status      |
-| ----------------------------------------- | --------------------------------------------------------------- | ---- | ----------- |
-| [P4-A](P4-A-controls-as-code.md)          | `governance/controls.yaml` and a CI check for unmapped controls | M    | shipped     |
-| [P4-B](P4-B-memory-poisoning-red-team.md) | Memory-poisoning red team mapped to OWASP Agentic Top 10        | M    | in-progress |
-| [P4-C](P4-C-reversible-tool-registry.md)  | Reversibility-tiered tool registry with saga compensation       | M    | shipped     |
+| ID                                        | Title                                                           | Size | Status  |
+| ----------------------------------------- | --------------------------------------------------------------- | ---- | ------- |
+| [P4-A](P4-A-controls-as-code.md)          | `governance/controls.yaml` and a CI check for unmapped controls | M    | shipped |
+| [P4-B](P4-B-memory-poisoning-red-team.md) | Memory-poisoning red team mapped to OWASP Agentic Top 10        | M    | shipped |
+| [P4-C](P4-C-reversible-tool-registry.md)  | Reversibility-tiered tool registry with saga compensation       | M    | shipped |
 
 ## Tier 5 — Interoperability
 
