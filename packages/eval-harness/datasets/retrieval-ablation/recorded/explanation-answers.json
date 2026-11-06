@@ -302,6 +302,198 @@
         },
         "latencyMs": 1541
       }
+    },
+    "relational-011/with": {
+      "queryId": "relational-011",
+      "condition": "with",
+      "recordedAt": "2026-11-06T15:05:58.598Z",
+      "gitSha": "72546d8fcb4ba368e61d3e95631611c7ee71dc04",
+      "invocation": 2,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "c104f87eeb5e8d0f12eff585af8d717cdc34da442a3fd8248067e7b70c6caca7",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How fast is a directory error fixed for Brightwater Basic HMO doctors once it is reported?\n\nRelevant context:\n- [pgvector] Bayline Provider Network publishes directory corrections within 48 hours of a report.\n- [pgvector] Brightwater Basic HMO members use the Bayline Provider Network.\n- [pgvector] Brightwater Basic HMO allows members to change their primary care physician once a quarter.\n- [pgvector] Brightwater Basic HMO does not cover out-of-network care except emergencies and urgent care while traveling.\n- [pgvector] Brightwater Basic HMO resolves a standard appeal within 30 days of receipt.\n- [pgvector] Brightwater Basic HMO has no deductible for in-network services.\n- [pgvector] Brightwater Basic HMO requires a referral from the primary care physician for every specialist visit.\n- [pgvector] Brightwater Basic HMO charges a 30 dollar specialist copay once a referral is on file.\n- [pgvector] Brightwater Basic HMO charges a 10 dollar primary care copay.\n- [pgvector] Brightwater Basic HMO offers the Breathe Easy asthma program.\n\nConnections in memory:\n- context 1: plan_brightwater_basic_hmo -[USES_NETWORK]- network_bayline; plan_brightwater_basic_hmo -[USES_NETWORK]- network_bayline -[COVERS]- region_coastal_north\n- context 2: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n- context 3: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[OFFERS]- payer_brightwater\n- context 4: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[OFFERS]- payer_brightwater\n- context 5: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[OFFERS]- payer_brightwater\n- context 6: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n- context 7: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n- context 8: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n- context 9: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n- context 10: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "A directory error for Brightwater Basic HMO doctors is fixed within 48 hours of being reported, as Brightwater Basic HMO members use the Bayline Provider Network, and the Bayline Provider Network publishes directory corrections within 48 hours.",
+            "tokenCounts": {
+              "prompt": 815,
+              "completion": 209,
+              "reasoning": 161
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 815,
+          "completion": 209,
+          "reasoning": 161
+        },
+        "latencyMs": 1555
+      }
+    },
+    "relational-011/without": {
+      "queryId": "relational-011",
+      "condition": "without",
+      "recordedAt": "2026-11-06T15:05:44.040Z",
+      "gitSha": "72546d8fcb4ba368e61d3e95631611c7ee71dc04",
+      "invocation": 2,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "79079fc37f08bad4179303beaa7539b137582cf15b1ef5bccc7b804ea5c0352a",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How fast is a directory error fixed for Brightwater Basic HMO doctors once it is reported?\n\nRelevant context:\n- [pgvector] Bayline Provider Network publishes directory corrections within 48 hours of a report.\n- [pgvector] Brightwater Basic HMO members use the Bayline Provider Network.\n- [pgvector] Brightwater Basic HMO allows members to change their primary care physician once a quarter.\n- [pgvector] Brightwater Basic HMO does not cover out-of-network care except emergencies and urgent care while traveling.\n- [pgvector] Brightwater Basic HMO resolves a standard appeal within 30 days of receipt.\n- [pgvector] Brightwater Basic HMO has no deductible for in-network services.\n- [pgvector] Brightwater Basic HMO requires a referral from the primary care physician for every specialist visit.\n- [pgvector] Brightwater Basic HMO charges a 30 dollar specialist copay once a referral is on file.\n- [pgvector] Brightwater Basic HMO charges a 10 dollar primary care copay.\n- [pgvector] Brightwater Basic HMO offers the Breathe Easy asthma program.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "Brightwater Basic HMO doctors' directory errors are fixed within **48 hours** of being reported because Brightwater Basic HMO members use the Bayline Provider Network, which publishes directory corrections within that timeframe.",
+            "tokenCounts": {
+              "prompt": 267,
+              "completion": 231,
+              "reasoning": 191
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 267,
+          "completion": 231,
+          "reasoning": 191
+        },
+        "latencyMs": 2088
+      }
+    },
+    "relational-012/with": {
+      "queryId": "relational-012",
+      "condition": "with",
+      "recordedAt": "2026-11-06T15:06:32.676Z",
+      "gitSha": "72546d8fcb4ba368e61d3e95631611c7ee71dc04",
+      "invocation": 2,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "a5d784e9b62053806703c6f793107cb3b3188bc40b38d0bd86d3d369f05fb5e1",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How late must urgent care centers stay open for Harbor Mutual Bronze Flex members?\n\nRelevant context:\n- [pgvector] Harbor Mutual Bronze Flex charges a 350 dollar copay for an emergency room visit after the deductible.\n- [pgvector] Harbor Mutual Bronze Flex covers two telehealth visits per year at no cost before the deductible.\n- [pgvector] Harbor Mutual Bronze Flex caps annual out-of-pocket costs at 7,500 dollars.\n- [pgvector] Bayline Provider Network requires its urgent care centers to stay open until at least 9 p.m.\n- [pgvector] Harbor Mutual Bronze Flex uses the same Bayline Provider Network as the Silver plan.\n- [pgvector] Harbor Mutual Bronze Flex covers preventive screenings before the deductible.\n- [pgvector] Harbor Mutual Bronze Flex pairs with a health savings account and applies most copays only after the deductible is met.\n- [pgvector] Harbor Mutual Silver covers out-of-network care only for emergencies.\n- [pgvector] Harbor Mutual Bronze Flex has an individual deductible of 4,200 dollars per plan year.\n- [pgvector] Harbor Mutual Bronze Flex routes prior authorization reviews to Kestrel Review Services.\n\nConnections in memory:\n- context 1: plan_harbor_mutual_bronze_flex; plan_harbor_mutual_bronze_flex -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_bronze_flex -[OFFERS]- payer_harbor_mutual\n- context 2: plan_harbor_mutual_bronze_flex; plan_harbor_mutual_bronze_flex -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_bronze_flex -[OFFERS]- payer_harbor_mutual\n- context 3: plan_harbor_mutual_bronze_flex; plan_harbor_mutual_bronze_flex -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_bronze_flex -[OFFERS]- payer_harbor_mutual\n- context 4: plan_harbor_mutual_bronze_flex -[USES_NETWORK]- network_bayline; plan_harbor_mutual_bronze_flex -[USES_NETWORK]- network_bayline -[COVERS]- region_coastal_north\n- context 5: plan_harbor_mutual_bronze_flex; plan_harbor_mutual_bronze_flex -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_bronze_flex -[OFFERS]- payer_harbor_mutual\n- context 6: plan_harbor_mutual_bronze_flex; plan_harbor_mutual_bronze_flex -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_bronze_flex -[OFFERS]- payer_harbor_mutual\n- context 7: plan_harbor_mutual_bronze_flex; plan_harbor_mutual_bronze_flex -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_bronze_flex -[OFFERS]- payer_harbor_mutual\n- context 8: plan_harbor_mutual_bronze_flex -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_bronze_flex -[OFFERS]- payer_harbor_mutual; plan_harbor_mutual_bronze_flex -[USES_NETWORK]- network_bayline\n- context 9: plan_harbor_mutual_bronze_flex; plan_harbor_mutual_bronze_flex -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_bronze_flex -[OFFERS]- payer_harbor_mutual\n- context 10: plan_harbor_mutual_bronze_flex; plan_harbor_mutual_bronze_flex -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_bronze_flex -[OFFERS]- payer_harbor_mutual\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "To address the user's request, I will perform the following steps:\n\n1.  **Identify the network used by Harbor Mutual Bronze Flex:** Locate information linking Harbor Mutual Bronze Flex to a specific provider network.\n2.  **Find the operating hour requirements for urgent care centers within that network:** Search for details regarding how late urgent care centers in the identified network must remain open.\n3.  **Synthesize the information:** Combine the network affiliation with the network's urgent care operating hour requirements to answer the question.\n\n**Relevant Contexts:**\n*   \"Bayline Provider Network requires its urgent care centers to stay open until at least 9 p.m.\" (Context 4)\n*   \"Harbor Mutual Bronze Flex uses the same Bayline Provider Network as the Silver plan.\" (Context 5)\n\n**Execution:**\n*   Context 5 explicitly states that \"Harbor Mutual Bronze Flex uses the same Bayline Provider Network.\"\n*   Context 4 specifies that the \"Bayline Provider Network requires its urgent care centers to stay open until at least 9 p.m.\"\n\n**Answer:**\nUrgent care centers for Harbor Mutual Bronze Flex members must stay open until at least 9 p.m. because Harbor Mutual Bronze Flex uses the Bayline Provider Network, which has this requirement.",
+            "tokenCounts": {
+              "prompt": 973,
+              "completion": 485,
+              "reasoning": 214
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 973,
+          "completion": 485,
+          "reasoning": 214
+        },
+        "latencyMs": 2813
+      }
+    },
+    "relational-012/without": {
+      "queryId": "relational-012",
+      "condition": "without",
+      "recordedAt": "2026-11-06T15:06:16.860Z",
+      "gitSha": "72546d8fcb4ba368e61d3e95631611c7ee71dc04",
+      "invocation": 2,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "5b3e415a537d9ee6c51afc5f6cbd02f26f34a8d540b52ea653d0ce743aab31e3",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How late must urgent care centers stay open for Harbor Mutual Bronze Flex members?\n\nRelevant context:\n- [pgvector] Harbor Mutual Bronze Flex charges a 350 dollar copay for an emergency room visit after the deductible.\n- [pgvector] Harbor Mutual Bronze Flex covers two telehealth visits per year at no cost before the deductible.\n- [pgvector] Harbor Mutual Bronze Flex caps annual out-of-pocket costs at 7,500 dollars.\n- [pgvector] Bayline Provider Network requires its urgent care centers to stay open until at least 9 p.m.\n- [pgvector] Harbor Mutual Bronze Flex uses the same Bayline Provider Network as the Silver plan.\n- [pgvector] Harbor Mutual Bronze Flex covers preventive screenings before the deductible.\n- [pgvector] Harbor Mutual Bronze Flex pairs with a health savings account and applies most copays only after the deductible is met.\n- [pgvector] Harbor Mutual Silver covers out-of-network care only for emergencies.\n- [pgvector] Harbor Mutual Bronze Flex has an individual deductible of 4,200 dollars per plan year.\n- [pgvector] Harbor Mutual Bronze Flex routes prior authorization reviews to Kestrel Review Services.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "Based on the provided context, here's a plan to address the user's request:\n\n1.  **Identify the relevant information regarding urgent care hours:**\n    *   \"Bayline Provider Network requires its urgent care centers to stay open until at least 9 p.m.\"\n\n2.  **Connect this requirement to Harbor Mutual Bronze Flex members:**\n    *   \"Harbor Mutual Bronze Flex uses the same Bayline Provider Network as the Silver plan.\"\n\n3.  **Formulate the answer:** Combine these two pieces of information to state that urgent care centers for Harbor Mutual Bronze Flex members, because they use the Bayline Provider Network, must stay open until at least 9 p.m.",
+            "tokenCounts": {
+              "prompt": 285,
+              "completion": 695,
+              "reasoning": 549
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 285,
+          "completion": 695,
+          "reasoning": 549
+        },
+        "latencyMs": 5250
+      }
+    },
+    "relational-013/with": {
+      "queryId": "relational-013",
+      "condition": "with",
+      "recordedAt": "2026-11-06T15:07:01.632Z",
+      "gitSha": "72546d8fcb4ba368e61d3e95631611c7ee71dc04",
+      "invocation": 2,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "4d236f26f90230a9cb0d681ee64dcfab21564972140394f9f7289a74864c3f98",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How long does it take a new doctor to get credentialed into the network Brightwater Basic HMO uses?\n\nRelevant context:\n- [pgvector] Brightwater Basic HMO members use the Bayline Provider Network.\n- [pgvector] Brightwater Basic HMO requires a referral from the primary care physician for every specialist visit.\n- [pgvector] Brightwater Basic HMO allows members to change their primary care physician once a quarter.\n- [pgvector] Brightwater Basic HMO does not cover out-of-network care except emergencies and urgent care while traveling.\n- [pgvector] Brightwater Basic HMO charges a 30 dollar specialist copay once a referral is on file.\n- [pgvector] Brightwater Basic HMO has no deductible for in-network services.\n- [pgvector] Bayline Provider Network credentialing takes about 60 days from a complete application.\n- [pgvector] Brightwater Basic HMO sends imaging authorizations to Sablefield Imaging Benefits.\n- [pgvector] Brightwater Basic HMO charges a 10 dollar primary care copay.\n- [pgvector] Brightwater Basic HMO covers a yearly eye exam.\n\nConnections in memory:\n- context 1: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n- context 2: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n- context 3: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[OFFERS]- payer_brightwater\n- context 4: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[OFFERS]- payer_brightwater\n- context 5: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n- context 6: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n- context 7: plan_brightwater_basic_hmo -[USES_NETWORK]- network_bayline; plan_brightwater_basic_hmo -[USES_NETWORK]- network_bayline -[COVERS]- region_coastal_north\n- context 8: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n- context 9: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n- context 10: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[OFFERS]- payer_brightwater\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "To answer the user's request, I will perform the following steps:\n\n1.  **Identify the provider network used by Brightwater Basic HMO:** Look for information within the provided context that specifies which network Brightwater Basic HMO members use.\n2.  **Determine the credentialing duration for that specific network:** Once the network is identified, search the context for details regarding the time it takes for a new doctor to get credentialed into that network.\n3.  **Formulate the answer:** Combine the identified network and its credentialing timeline to directly answer the user's question.",
+            "tokenCounts": {
+              "prompt": 815,
+              "completion": 243,
+              "reasoning": 123
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 815,
+          "completion": 243,
+          "reasoning": 123
+        },
+        "latencyMs": 1582
+      }
+    },
+    "relational-013/without": {
+      "queryId": "relational-013",
+      "condition": "without",
+      "recordedAt": "2026-11-06T15:06:47.041Z",
+      "gitSha": "72546d8fcb4ba368e61d3e95631611c7ee71dc04",
+      "invocation": 2,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "027efc212b8f66a27253966ed18ba4ce3ababebd18f8e6ce42f1ab1af89d50b5",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How long does it take a new doctor to get credentialed into the network Brightwater Basic HMO uses?\n\nRelevant context:\n- [pgvector] Brightwater Basic HMO members use the Bayline Provider Network.\n- [pgvector] Brightwater Basic HMO requires a referral from the primary care physician for every specialist visit.\n- [pgvector] Brightwater Basic HMO allows members to change their primary care physician once a quarter.\n- [pgvector] Brightwater Basic HMO does not cover out-of-network care except emergencies and urgent care while traveling.\n- [pgvector] Brightwater Basic HMO charges a 30 dollar specialist copay once a referral is on file.\n- [pgvector] Brightwater Basic HMO has no deductible for in-network services.\n- [pgvector] Bayline Provider Network credentialing takes about 60 days from a complete application.\n- [pgvector] Brightwater Basic HMO sends imaging authorizations to Sablefield Imaging Benefits.\n- [pgvector] Brightwater Basic HMO charges a 10 dollar primary care copay.\n- [pgvector] Brightwater Basic HMO covers a yearly eye exam.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "Brightwater Basic HMO members use the Bayline Provider Network. Credentialing for the Bayline Provider Network takes about **60 days** from a complete application.",
+            "tokenCounts": {
+              "prompt": 267,
+              "completion": 187,
+              "reasoning": 154
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 267,
+          "completion": 187,
+          "reasoning": 154
+        },
+        "latencyMs": 1355
+      }
     }
   }
 }
