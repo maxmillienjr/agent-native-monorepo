@@ -1,0 +1,499 @@
+{
+  "header": {
+    "formatVersion": 1,
+    "decisionFormatVersion": 2,
+    "chatModel": "gemini-2.5-flash",
+    "datasetSha256": "46e6f4b5bdbee3641de2bc9f04169e5f1dd77452e4700e019d7b53fe64617bdc",
+    "labelsSha256": "582b43de6e0e9a9508ae4387cd5ee51a4b1a48d5c4c450d16da3c93ed7252334",
+    "queries": [
+      "relational-003",
+      "relational-005",
+      "relational-009",
+      "relational-010",
+      "relational-011",
+      "relational-012",
+      "relational-013",
+      "relational-014",
+      "relational-015",
+      "relational-016",
+      "relational-018",
+      "relational-020",
+      "relational-021",
+      "relational-022",
+      "relational-023",
+      "relational-024",
+      "relational-025",
+      "relational-026",
+      "relational-027",
+      "relational-028",
+      "relational-029",
+      "relational-030",
+      "relational-031",
+      "relational-032",
+      "relational-033",
+      "relational-034",
+      "relational-035",
+      "relational-036",
+      "relational-038",
+      "relational-039",
+      "relational-040",
+      "relational-041",
+      "relational-042",
+      "relational-046",
+      "relational-047",
+      "relational-048",
+      "relational-049",
+      "relational-050"
+    ]
+  },
+  "answers": {
+    "relational-003/with": {
+      "queryId": "relational-003",
+      "condition": "with",
+      "recordedAt": "2026-11-05T20:32:22.884Z",
+      "gitSha": "90d9c9de1fe277d90aa8fe4c822755a87c0bd0d8",
+      "invocation": 1,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "da7b97325092b303493050752f00f4beed2febaf0a4135bacbe9e59b06b54196",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How quickly are urgent prior authorization requests decided for Orrin Valley Premier?\n\nRelevant context:\n- [pgvector] Orrin Valley Premier resolves an urgent appeal within 24 hours.\n- [pgvector] Orrin Valley Premier sends prior authorization reviews to Kestrel Review Services.\n- [pgvector] Kestrel Review Services decides urgent prior authorization requests within 24 hours.\n- [pgvector] Orrin Valley Premier requires claims within 90 days of the date of service.\n- [pgvector] Orrin Valley Health Plan pays clean claims within 15 days.\n- [pgvector] Harbor Mutual Silver must decide an urgent pre-service appeal within 72 hours of receiving it.\n- [pgvector] Cedarline Gold Access decides standard prior authorization requests within seven calendar days.\n- [pgvector] Orrin Valley Community Plan requires claims within 120 days of the date of service.\n- [pgvector] Orrin Valley Premier includes emergency coverage worldwide.\n- [pgvector] Kestrel Review Services issues standard prior authorization decisions within five business days of a complete request.\n\nConnections in memory:\n- context 1: plan_orrin_valley_premier; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley -[CLAIMS_ROUTED_THROUGH]- vendor_corvane_claims\n- context 2: plan_orrin_valley_premier; plan_orrin_valley_premier -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley\n- context 3: plan_orrin_valley_premier -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_orrin_valley_premier -[DELEGATES_REVIEW_TO]- vendor_kestrel_review -[OPERATED_BY]- system_authtrack; plan_orrin_valley_premier -[DELEGATES_REVIEW_TO]- vendor_kestrel_review -[SUBMITTED_TO]- form_pa_7\n- context 4: plan_orrin_valley_premier; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley -[CLAIMS_ROUTED_THROUGH]- vendor_corvane_claims\n- context 5: plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley -[SERVES]- region_inland_valley\n- context 6: plan_orrin_valley_premier -[DELEGATES_REVIEW_TO]- vendor_kestrel_review -[DELEGATES_REVIEW_TO]- plan_harbor_mutual_silver\n- context 7: plan_orrin_valley_premier -[USES_NETWORK]- network_summit_crest -[USES_NETWORK]- plan_cedarline_gold_access\n- context 8: plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley -[OFFERS]- plan_orrin_valley_community\n- context 9: plan_orrin_valley_premier; plan_orrin_valley_premier -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley\n- context 10: plan_orrin_valley_premier -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_orrin_valley_premier -[DELEGATES_REVIEW_TO]- vendor_kestrel_review -[OPERATED_BY]- system_authtrack; plan_orrin_valley_premier -[DELEGATES_REVIEW_TO]- vendor_kestrel_review -[SUBMITTED_TO]- form_pa_7\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "1. **Identify the entity responsible for urgent prior authorization reviews for Orrin Valley Premier:** According to the provided context, \"Orrin Valley Premier sends prior authorization reviews to Kestrel Review Services.\" (pgvector) and \"plan_orrin_valley_premier -[DELEGATES_REVIEW_TO]- vendor_kestrel_review\" (Connections in memory, context 2, 3, 9).\n2. **Determine the decision timeframe for urgent prior authorization requests by Kestrel Review Services:** The context states, \"Kestrel Review Services decides urgent prior authorization requests within 24 hours.\" (pgvector).\n3. **Combine the information to answer the user's request:** Since Orrin Valley Premier delegates its prior authorization reviews to Kestrel Review Services, the decision timeframe for urgent prior authorization requests for Orrin Valley Premier will be the same as Kestrel Review Services.",
+            "tokenCounts": {
+              "prompt": 945,
+              "completion": 694,
+              "reasoning": 512
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 945,
+          "completion": 694,
+          "reasoning": 512
+        },
+        "latencyMs": 3738
+      }
+    },
+    "relational-003/without": {
+      "queryId": "relational-003",
+      "condition": "without",
+      "recordedAt": "2026-11-05T20:32:06.144Z",
+      "gitSha": "90d9c9de1fe277d90aa8fe4c822755a87c0bd0d8",
+      "invocation": 1,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "e86e73db9cf83e388d317f9f7793cbe36bb7058284fb86f28ebb304b6c4cbdc0",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How quickly are urgent prior authorization requests decided for Orrin Valley Premier?\n\nRelevant context:\n- [pgvector] Orrin Valley Premier resolves an urgent appeal within 24 hours.\n- [pgvector] Orrin Valley Premier sends prior authorization reviews to Kestrel Review Services.\n- [pgvector] Kestrel Review Services decides urgent prior authorization requests within 24 hours.\n- [pgvector] Orrin Valley Premier requires claims within 90 days of the date of service.\n- [pgvector] Orrin Valley Health Plan pays clean claims within 15 days.\n- [pgvector] Harbor Mutual Silver must decide an urgent pre-service appeal within 72 hours of receiving it.\n- [pgvector] Cedarline Gold Access decides standard prior authorization requests within seven calendar days.\n- [pgvector] Orrin Valley Community Plan requires claims within 120 days of the date of service.\n- [pgvector] Orrin Valley Premier includes emergency coverage worldwide.\n- [pgvector] Kestrel Review Services issues standard prior authorization decisions within five business days of a complete request.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "Here's a plan to address the user's request:\n\n1.  **Identify the responsible entity for prior authorization:**\n    *   The context states: \"Orrin Valley Premier sends prior authorization reviews to Kestrel Review Services.\" This establishes that Kestrel Review Services handles prior authorizations for Orrin Valley Premier.\n\n2.  **Locate the decision timeframe for urgent prior authorization requests from the responsible entity:**\n    *   The context states: \"Kestrel Review Services decides urgent prior authorization requests within 24 hours.\"\n\n3.  **Synthesize the information:**\n    *   Combine these two pieces of information to directly answer the user's question.\n\n**Answer:** Urgent prior authorization requests for Orrin Valley Premier are decided within 24 hours by Kestrel Review Services.",
+            "tokenCounts": {
+              "prompt": 260,
+              "completion": 497,
+              "reasoning": 333
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 260,
+          "completion": 497,
+          "reasoning": 333
+        },
+        "latencyMs": 2868
+      }
+    },
+    "relational-005/with": {
+      "queryId": "relational-005",
+      "condition": "with",
+      "recordedAt": "2026-11-05T20:32:52.839Z",
+      "gitSha": "90d9c9de1fe277d90aa8fe4c822755a87c0bd0d8",
+      "invocation": 1,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "fba6f02bc146ae87d99b3c17663017bacefcd4b62ec921cfa45943ef81096705",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How many business days does Harbor Mutual Silver's review vendor wait for requested clinical notes before closing a request?\n\nRelevant context:\n- [pgvector] Harbor Mutual Silver resolves standard pre-service appeals within 30 calendar days.\n- [pgvector] Harbor Mutual requires in-network providers to file claims within 90 days of the date of service.\n- [pgvector] Harbor Mutual Silver sends prior authorization clinical reviews to Kestrel Review Services under a delegated agreement.\n- [pgvector] A Harbor Mutual Silver member has 180 days from a denial notice to file an internal appeal.\n- [pgvector] Harbor Mutual Silver must decide an urgent pre-service appeal within 72 hours of receiving it.\n- [pgvector] Harbor Mutual Silver members may request an external review once the internal appeal is exhausted.\n- [pgvector] Kestrel Review Services closes a request as incomplete when requested clinical notes are not received within three business days.\n- [pgvector] Harbor Mutual Provider Relations acknowledges a provider appeal in writing within five business days.\n- [pgvector] Harbor Mutual sends an explanation of benefits within ten days of processing a claim.\n- [pgvector] Harbor Mutual Provider Relations answers provider email within two business days.\n\nConnections in memory:\n- context 1: plan_harbor_mutual_silver; plan_harbor_mutual_silver -[OFFERS]- payer_harbor_mutual; plan_harbor_mutual_silver -[OFFERS]- payer_harbor_mutual -[BELONGS_TO]- dept_harbor_provider_relations\n- context 2: plan_harbor_mutual_silver; plan_harbor_mutual_silver -[OFFERS]- payer_harbor_mutual; plan_harbor_mutual_silver -[DELEGATES_REVIEW_TO]- vendor_kestrel_review -[DELEGATES_REVIEW_TO]- plan_harbor_mutual_bronze_flex\n- context 3: plan_harbor_mutual_silver; plan_harbor_mutual_silver -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_silver -[OFFERS]- payer_harbor_mutual\n- context 4: plan_harbor_mutual_silver; plan_harbor_mutual_silver -[OFFERS]- payer_harbor_mutual; plan_harbor_mutual_silver -[OFFERS]- payer_harbor_mutual -[BELONGS_TO]- dept_harbor_provider_relations\n- context 5: plan_harbor_mutual_silver; plan_harbor_mutual_silver -[OFFERS]- payer_harbor_mutual; plan_harbor_mutual_silver -[OFFERS]- payer_harbor_mutual -[BELONGS_TO]- dept_harbor_provider_relations\n- context 6: plan_harbor_mutual_silver; plan_harbor_mutual_silver -[OFFERS]- payer_harbor_mutual; plan_harbor_mutual_silver -[OFFERS]- payer_harbor_mutual -[BELONGS_TO]- dept_harbor_provider_relations\n- context 7: plan_harbor_mutual_silver -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_silver -[DELEGATES_REVIEW_TO]- vendor_kestrel_review -[OPERATED_BY]- system_authtrack; plan_harbor_mutual_silver -[DELEGATES_REVIEW_TO]- vendor_kestrel_review -[SUBMITTED_TO]- form_pa_7\n- context 8: plan_harbor_mutual_silver; plan_harbor_mutual_silver -[OFFERS]- payer_harbor_mutual; plan_harbor_mutual_silver -[OFFERS]- payer_harbor_mutual -[BELONGS_TO]- dept_harbor_provider_relations\n- context 9: plan_harbor_mutual_silver -[OFFERS]- payer_harbor_mutual\n- context 10: plan_harbor_mutual_silver -[OFFERS]- payer_harbor_mutual; plan_harbor_mutual_silver -[OFFERS]- payer_harbor_mutual -[BELONGS_TO]- dept_harbor_provider_relations; plan_harbor_mutual_silver -[OFFERS]- payer_harbor_mutual -[HAS_DEPARTMENT]- dept_harbor_provider_relations\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "1. **Identify the review vendor for Harbor Mutual Silver:**\n    * From the context: \"Harbor Mutual Silver sends prior authorization clinical reviews to Kestrel Review Services under a delegated agreement.\" This identifies Kestrel Review Services as the relevant review vendor.\n\n2. **Locate information regarding Kestrel Review Services closing requests due to missing clinical notes:**\n    * From the context: \"Kestrel Review Services closes a request as incomplete when requested clinical notes are not received within three business days.\"\n\n3. **Extract the specific number of business days:**\n    * The context explicitly states \"three business days\".\n\n4. **Formulate the answer:** State that Harbor Mutual Silver's review vendor (Kestrel Review Services) waits for three business days for requested clinical notes before closing a request.",
+            "tokenCounts": {
+              "prompt": 1009,
+              "completion": 383,
+              "reasoning": 221
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 1009,
+          "completion": 383,
+          "reasoning": 221
+        },
+        "latencyMs": 2312
+      }
+    },
+    "relational-005/without": {
+      "queryId": "relational-005",
+      "condition": "without",
+      "recordedAt": "2026-11-05T20:32:37.523Z",
+      "gitSha": "90d9c9de1fe277d90aa8fe4c822755a87c0bd0d8",
+      "invocation": 1,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "3b034b52bf8295845ac748f8ec4f160ac5a34a621d523c53b1b5aa2a1daad297",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How many business days does Harbor Mutual Silver's review vendor wait for requested clinical notes before closing a request?\n\nRelevant context:\n- [pgvector] Harbor Mutual Silver resolves standard pre-service appeals within 30 calendar days.\n- [pgvector] Harbor Mutual requires in-network providers to file claims within 90 days of the date of service.\n- [pgvector] Harbor Mutual Silver sends prior authorization clinical reviews to Kestrel Review Services under a delegated agreement.\n- [pgvector] A Harbor Mutual Silver member has 180 days from a denial notice to file an internal appeal.\n- [pgvector] Harbor Mutual Silver must decide an urgent pre-service appeal within 72 hours of receiving it.\n- [pgvector] Harbor Mutual Silver members may request an external review once the internal appeal is exhausted.\n- [pgvector] Kestrel Review Services closes a request as incomplete when requested clinical notes are not received within three business days.\n- [pgvector] Harbor Mutual Provider Relations acknowledges a provider appeal in writing within five business days.\n- [pgvector] Harbor Mutual sends an explanation of benefits within ten days of processing a claim.\n- [pgvector] Harbor Mutual Provider Relations answers provider email within two business days.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "*   **Identify the review vendor:** The context states, \"Harbor Mutual Silver sends prior authorization clinical reviews to Kestrel Review Services under a delegated agreement.\" This identifies Kestrel Review Services as Harbor Mutual Silver's review vendor.\n*   **Locate the specific waiting period for clinical notes:** The context provides, \"Kestrel Review Services closes a request as incomplete when requested clinical notes are not received within three business days.\"\n*   **Formulate the answer:** Combine the identified vendor and the waiting period to directly answer the user's question.",
+            "tokenCounts": {
+              "prompt": 289,
+              "completion": 232,
+              "reasoning": 119
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 289,
+          "completion": 232,
+          "reasoning": 119
+        },
+        "latencyMs": 1626
+      }
+    },
+    "relational-009/with": {
+      "queryId": "relational-009",
+      "condition": "with",
+      "recordedAt": "2026-11-05T20:33:24.032Z",
+      "gitSha": "90d9c9de1fe277d90aa8fe4c822755a87c0bd0d8",
+      "invocation": 1,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "280645a6b31b95a9dccb03f67411a0f2acf5fca4a0bf0717021b9dbf745fdabf",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: Who is allowed to request a peer-to-peer call on an Orrin Valley Premier denial?\n\nRelevant context:\n- [pgvector] Orrin Valley Premier resolves an urgent appeal within 24 hours.\n- [pgvector] Orrin Valley Premier sends prior authorization reviews to Kestrel Review Services.\n- [pgvector] Orrin Valley Premier requires claims within 90 days of the date of service.\n- [pgvector] Orrin Valley Premier members use the Summit Crest Network.\n- [pgvector] Orrin Valley Premier has an individual deductible of 500 dollars.\n- [pgvector] Orrin Valley Premier caps annual out-of-pocket costs at 4,000 dollars.\n- [pgvector] Orrin Valley Premier includes emergency coverage worldwide.\n- [pgvector] Orrin Valley Premier covers a private hospital room when one is available, at no extra cost.\n- [pgvector] Orrin Valley Premier charges a 15 dollar copay for primary care.\n- [pgvector] A peer-to-peer request to Kestrel Review Services must come from the ordering clinician rather than office staff.\n\nConnections in memory:\n- context 1: plan_orrin_valley_premier; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley -[CLAIMS_ROUTED_THROUGH]- vendor_corvane_claims\n- context 2: plan_orrin_valley_premier; plan_orrin_valley_premier -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley\n- context 3: plan_orrin_valley_premier; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley -[CLAIMS_ROUTED_THROUGH]- vendor_corvane_claims\n- context 4: plan_orrin_valley_premier; plan_orrin_valley_premier -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley\n- context 5: plan_orrin_valley_premier; plan_orrin_valley_premier -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley\n- context 6: plan_orrin_valley_premier; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley -[CLAIMS_ROUTED_THROUGH]- vendor_corvane_claims\n- context 7: plan_orrin_valley_premier; plan_orrin_valley_premier -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley\n- context 8: plan_orrin_valley_premier; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley -[CLAIMS_ROUTED_THROUGH]- vendor_corvane_claims\n- context 9: plan_orrin_valley_premier; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley -[CLAIMS_ROUTED_THROUGH]- vendor_corvane_claims\n- context 10: plan_orrin_valley_premier -[DELEGATES_REVIEW_TO]- vendor_kestrel_review\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "To address the user's request, I will perform the following steps:\n\n1.  **Identify the entity responsible for reviews for Orrin Valley Premier:** Look for context that indicates which vendor handles reviews or prior authorizations for Orrin Valley Premier.\n2.  **Locate rules regarding peer-to-peer requests:** Find any context that explicitly states who is allowed to make a peer-to-peer request, especially if it's directed to the review entity identified in step 1.\n3.  **Synthesize the information:** Combine the identified review entity with the rules for peer-to-peer requests to determine who can request a peer-to-peer call for an Orrin Valley Premier denial.",
+            "tokenCounts": {
+              "prompt": 913,
+              "completion": 380,
+              "reasoning": 234
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 913,
+          "completion": 380,
+          "reasoning": 234
+        },
+        "latencyMs": 2337
+      }
+    },
+    "relational-009/without": {
+      "queryId": "relational-009",
+      "condition": "without",
+      "recordedAt": "2026-11-05T20:33:08.684Z",
+      "gitSha": "90d9c9de1fe277d90aa8fe4c822755a87c0bd0d8",
+      "invocation": 1,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "4e09fa4b9b0cae1d6c3c3d1d4af3308b742b3800d8c796ab5e40d353519c32aa",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: Who is allowed to request a peer-to-peer call on an Orrin Valley Premier denial?\n\nRelevant context:\n- [pgvector] Orrin Valley Premier resolves an urgent appeal within 24 hours.\n- [pgvector] Orrin Valley Premier sends prior authorization reviews to Kestrel Review Services.\n- [pgvector] Orrin Valley Premier requires claims within 90 days of the date of service.\n- [pgvector] Orrin Valley Premier members use the Summit Crest Network.\n- [pgvector] Orrin Valley Premier has an individual deductible of 500 dollars.\n- [pgvector] Orrin Valley Premier caps annual out-of-pocket costs at 4,000 dollars.\n- [pgvector] Orrin Valley Premier includes emergency coverage worldwide.\n- [pgvector] Orrin Valley Premier covers a private hospital room when one is available, at no extra cost.\n- [pgvector] Orrin Valley Premier charges a 15 dollar copay for primary care.\n- [pgvector] A peer-to-peer request to Kestrel Review Services must come from the ordering clinician rather than office staff.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "Here's a plan to address the user's request:\n\n1.  **Identify the relevant information:** Scan the provided context for terms like \"peer-to-peer,\" \"request,\" \"denial,\" and any associated entities.\n2.  **Locate the specific rule:** The statement \"A peer-to-peer request to Kestrel Review Services must come from the ordering clinician rather than office staff\" is directly relevant.\n3.  **Connect to Orrin Valley Premier:** Note that \"Orrin Valley Premier sends prior authorization reviews to Kestrel Review Services.\" This establishes the link between Orrin Valley Premier denials (which may stem from prior authorization reviews) and Kestrel Review Services, where the peer-to-peer request rule applies.\n4.  **Formulate the answer:** State clearly that an \"ordering clinician\" is allowed to request a peer-to-peer call, as such requests for Orrin Valley Premier (via Kestrel Review Services) must come from them, not office staff.",
+            "tokenCounts": {
+              "prompt": 271,
+              "completion": 496,
+              "reasoning": 287
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 271,
+          "completion": 496,
+          "reasoning": 287
+        },
+        "latencyMs": 2835
+      }
+    },
+    "relational-010/with": {
+      "queryId": "relational-010",
+      "condition": "with",
+      "recordedAt": "2026-11-05T20:33:55.578Z",
+      "gitSha": "90d9c9de1fe277d90aa8fe4c822755a87c0bd0d8",
+      "invocation": 1,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "1add7bfe22fb5d07b3e6f562a8a19ceae8c961ef7cfdcf335c385bedec75e4ec",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: Can Harbor Mutual Silver members see an OB-GYN without a referral?\n\nRelevant context:\n- [pgvector] Harbor Mutual Silver covers out-of-network care only for emergencies.\n- [pgvector] Harbor Mutual Silver charges a 45 dollar copay for a specialist office visit.\n- [pgvector] Harbor Mutual Silver members see in-network providers through the Bayline Provider Network.\n- [pgvector] Harbor Mutual sells the Silver plan on both the individual and small-group markets.\n- [pgvector] Bayline Provider Network lets members self-refer to in-network OB-GYNs.\n- [pgvector] Harbor Mutual Silver members may request an external review once the internal appeal is exhausted.\n- [pgvector] Harbor Mutual Silver covers generic prescriptions at a 15 dollar copay.\n- [pgvector] Harbor Mutual Silver has an individual deductible of 1,800 dollars per plan year.\n- [pgvector] Harbor Mutual Silver renews coverage automatically unless the member cancels.\n- [pgvector] Harbor Mutual Silver sends prior authorization clinical reviews to Kestrel Review Services under a delegated agreement.\n\nConnections in memory:\n- context 1: plan_harbor_mutual_silver; plan_harbor_mutual_silver -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_silver -[OFFERS]- payer_harbor_mutual\n- context 2: plan_harbor_mutual_silver; plan_harbor_mutual_silver -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_silver -[OFFERS]- payer_harbor_mutual\n- context 3: plan_harbor_mutual_silver; plan_harbor_mutual_silver -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_silver -[OFFERS]- payer_harbor_mutual\n- context 4: plan_harbor_mutual_silver; plan_harbor_mutual_silver -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_silver -[OFFERS]- payer_harbor_mutual\n- context 5: plan_harbor_mutual_silver -[USES_NETWORK]- network_bayline; plan_harbor_mutual_silver -[USES_NETWORK]- network_bayline -[COVERS]- region_coastal_north\n- context 6: plan_harbor_mutual_silver; plan_harbor_mutual_silver -[OFFERS]- payer_harbor_mutual; plan_harbor_mutual_silver -[OFFERS]- payer_harbor_mutual -[BELONGS_TO]- dept_harbor_provider_relations\n- context 7: plan_harbor_mutual_silver; plan_harbor_mutual_silver -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_silver -[OFFERS]- payer_harbor_mutual\n- context 8: plan_harbor_mutual_silver; plan_harbor_mutual_silver -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_silver -[OFFERS]- payer_harbor_mutual\n- context 9: plan_harbor_mutual_silver; plan_harbor_mutual_silver -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_silver -[OFFERS]- payer_harbor_mutual\n- context 10: plan_harbor_mutual_silver; plan_harbor_mutual_silver -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_silver -[OFFERS]- payer_harbor_mutual\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "1. **Confirm the network:** Identify that Harbor Mutual Silver members access in-network providers through the Bayline Provider Network.\n2. **Check referral policy for OB-GYNs:** Look for specific rules within the Bayline Provider Network regarding referrals for OB-GYNs.\n3. **Formulate the answer:** State whether a referral is needed, based on the identified network policy.",
+            "tokenCounts": {
+              "prompt": 870,
+              "completion": 801,
+              "reasoning": 722
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 870,
+          "completion": 801,
+          "reasoning": 722
+        },
+        "latencyMs": 3992
+      }
+    },
+    "relational-010/without": {
+      "queryId": "relational-010",
+      "condition": "without",
+      "recordedAt": "2026-11-05T20:33:38.582Z",
+      "gitSha": "90d9c9de1fe277d90aa8fe4c822755a87c0bd0d8",
+      "invocation": 1,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "1102282238cacdfcb4a01cbf541c04738f366149d9c4f55e8a3fe8a8f8e4745c",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: Can Harbor Mutual Silver members see an OB-GYN without a referral?\n\nRelevant context:\n- [pgvector] Harbor Mutual Silver covers out-of-network care only for emergencies.\n- [pgvector] Harbor Mutual Silver charges a 45 dollar copay for a specialist office visit.\n- [pgvector] Harbor Mutual Silver members see in-network providers through the Bayline Provider Network.\n- [pgvector] Harbor Mutual sells the Silver plan on both the individual and small-group markets.\n- [pgvector] Bayline Provider Network lets members self-refer to in-network OB-GYNs.\n- [pgvector] Harbor Mutual Silver members may request an external review once the internal appeal is exhausted.\n- [pgvector] Harbor Mutual Silver covers generic prescriptions at a 15 dollar copay.\n- [pgvector] Harbor Mutual Silver has an individual deductible of 1,800 dollars per plan year.\n- [pgvector] Harbor Mutual Silver renews coverage automatically unless the member cancels.\n- [pgvector] Harbor Mutual Silver sends prior authorization clinical reviews to Kestrel Review Services under a delegated agreement.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "**Plan to address the user's request:**\n\n1.  **Identify keywords:** The key terms are \"Harbor Mutual Silver,\" \"OB-GYN,\" and \"referral.\"\n2.  **Scan context for relevant information:** Look for any statements linking these terms.\n3.  **Locate direct answer:** The statement \"Bayline Provider Network lets members self-refer to in-network OB-GYNs\" directly addresses the question.\n4.  **Formulate response:** State clearly that Harbor Mutual Silver members can self-refer to in-network OB-GYNs because they use the Bayline Provider Network.",
+            "tokenCounts": {
+              "prompt": 268,
+              "completion": 224,
+              "reasoning": 93
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 268,
+          "completion": 224,
+          "reasoning": 93
+        },
+        "latencyMs": 1541
+      }
+    },
+    "relational-011/with": {
+      "queryId": "relational-011",
+      "condition": "with",
+      "recordedAt": "2026-11-06T15:05:58.598Z",
+      "gitSha": "72546d8fcb4ba368e61d3e95631611c7ee71dc04",
+      "invocation": 2,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "c104f87eeb5e8d0f12eff585af8d717cdc34da442a3fd8248067e7b70c6caca7",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How fast is a directory error fixed for Brightwater Basic HMO doctors once it is reported?\n\nRelevant context:\n- [pgvector] Bayline Provider Network publishes directory corrections within 48 hours of a report.\n- [pgvector] Brightwater Basic HMO members use the Bayline Provider Network.\n- [pgvector] Brightwater Basic HMO allows members to change their primary care physician once a quarter.\n- [pgvector] Brightwater Basic HMO does not cover out-of-network care except emergencies and urgent care while traveling.\n- [pgvector] Brightwater Basic HMO resolves a standard appeal within 30 days of receipt.\n- [pgvector] Brightwater Basic HMO has no deductible for in-network services.\n- [pgvector] Brightwater Basic HMO requires a referral from the primary care physician for every specialist visit.\n- [pgvector] Brightwater Basic HMO charges a 30 dollar specialist copay once a referral is on file.\n- [pgvector] Brightwater Basic HMO charges a 10 dollar primary care copay.\n- [pgvector] Brightwater Basic HMO offers the Breathe Easy asthma program.\n\nConnections in memory:\n- context 1: plan_brightwater_basic_hmo -[USES_NETWORK]- network_bayline; plan_brightwater_basic_hmo -[USES_NETWORK]- network_bayline -[COVERS]- region_coastal_north\n- context 2: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n- context 3: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[OFFERS]- payer_brightwater\n- context 4: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[OFFERS]- payer_brightwater\n- context 5: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[OFFERS]- payer_brightwater\n- context 6: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n- context 7: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n- context 8: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n- context 9: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n- context 10: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "A directory error for Brightwater Basic HMO doctors is fixed within 48 hours of being reported, as Brightwater Basic HMO members use the Bayline Provider Network, and the Bayline Provider Network publishes directory corrections within 48 hours.",
+            "tokenCounts": {
+              "prompt": 815,
+              "completion": 209,
+              "reasoning": 161
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 815,
+          "completion": 209,
+          "reasoning": 161
+        },
+        "latencyMs": 1555
+      }
+    },
+    "relational-011/without": {
+      "queryId": "relational-011",
+      "condition": "without",
+      "recordedAt": "2026-11-06T15:05:44.040Z",
+      "gitSha": "72546d8fcb4ba368e61d3e95631611c7ee71dc04",
+      "invocation": 2,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "79079fc37f08bad4179303beaa7539b137582cf15b1ef5bccc7b804ea5c0352a",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How fast is a directory error fixed for Brightwater Basic HMO doctors once it is reported?\n\nRelevant context:\n- [pgvector] Bayline Provider Network publishes directory corrections within 48 hours of a report.\n- [pgvector] Brightwater Basic HMO members use the Bayline Provider Network.\n- [pgvector] Brightwater Basic HMO allows members to change their primary care physician once a quarter.\n- [pgvector] Brightwater Basic HMO does not cover out-of-network care except emergencies and urgent care while traveling.\n- [pgvector] Brightwater Basic HMO resolves a standard appeal within 30 days of receipt.\n- [pgvector] Brightwater Basic HMO has no deductible for in-network services.\n- [pgvector] Brightwater Basic HMO requires a referral from the primary care physician for every specialist visit.\n- [pgvector] Brightwater Basic HMO charges a 30 dollar specialist copay once a referral is on file.\n- [pgvector] Brightwater Basic HMO charges a 10 dollar primary care copay.\n- [pgvector] Brightwater Basic HMO offers the Breathe Easy asthma program.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "Brightwater Basic HMO doctors' directory errors are fixed within **48 hours** of being reported because Brightwater Basic HMO members use the Bayline Provider Network, which publishes directory corrections within that timeframe.",
+            "tokenCounts": {
+              "prompt": 267,
+              "completion": 231,
+              "reasoning": 191
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 267,
+          "completion": 231,
+          "reasoning": 191
+        },
+        "latencyMs": 2088
+      }
+    },
+    "relational-012/with": {
+      "queryId": "relational-012",
+      "condition": "with",
+      "recordedAt": "2026-11-06T15:06:32.676Z",
+      "gitSha": "72546d8fcb4ba368e61d3e95631611c7ee71dc04",
+      "invocation": 2,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "a5d784e9b62053806703c6f793107cb3b3188bc40b38d0bd86d3d369f05fb5e1",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How late must urgent care centers stay open for Harbor Mutual Bronze Flex members?\n\nRelevant context:\n- [pgvector] Harbor Mutual Bronze Flex charges a 350 dollar copay for an emergency room visit after the deductible.\n- [pgvector] Harbor Mutual Bronze Flex covers two telehealth visits per year at no cost before the deductible.\n- [pgvector] Harbor Mutual Bronze Flex caps annual out-of-pocket costs at 7,500 dollars.\n- [pgvector] Bayline Provider Network requires its urgent care centers to stay open until at least 9 p.m.\n- [pgvector] Harbor Mutual Bronze Flex uses the same Bayline Provider Network as the Silver plan.\n- [pgvector] Harbor Mutual Bronze Flex covers preventive screenings before the deductible.\n- [pgvector] Harbor Mutual Bronze Flex pairs with a health savings account and applies most copays only after the deductible is met.\n- [pgvector] Harbor Mutual Silver covers out-of-network care only for emergencies.\n- [pgvector] Harbor Mutual Bronze Flex has an individual deductible of 4,200 dollars per plan year.\n- [pgvector] Harbor Mutual Bronze Flex routes prior authorization reviews to Kestrel Review Services.\n\nConnections in memory:\n- context 1: plan_harbor_mutual_bronze_flex; plan_harbor_mutual_bronze_flex -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_bronze_flex -[OFFERS]- payer_harbor_mutual\n- context 2: plan_harbor_mutual_bronze_flex; plan_harbor_mutual_bronze_flex -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_bronze_flex -[OFFERS]- payer_harbor_mutual\n- context 3: plan_harbor_mutual_bronze_flex; plan_harbor_mutual_bronze_flex -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_bronze_flex -[OFFERS]- payer_harbor_mutual\n- context 4: plan_harbor_mutual_bronze_flex -[USES_NETWORK]- network_bayline; plan_harbor_mutual_bronze_flex -[USES_NETWORK]- network_bayline -[COVERS]- region_coastal_north\n- context 5: plan_harbor_mutual_bronze_flex; plan_harbor_mutual_bronze_flex -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_bronze_flex -[OFFERS]- payer_harbor_mutual\n- context 6: plan_harbor_mutual_bronze_flex; plan_harbor_mutual_bronze_flex -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_bronze_flex -[OFFERS]- payer_harbor_mutual\n- context 7: plan_harbor_mutual_bronze_flex; plan_harbor_mutual_bronze_flex -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_bronze_flex -[OFFERS]- payer_harbor_mutual\n- context 8: plan_harbor_mutual_bronze_flex -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_bronze_flex -[OFFERS]- payer_harbor_mutual; plan_harbor_mutual_bronze_flex -[USES_NETWORK]- network_bayline\n- context 9: plan_harbor_mutual_bronze_flex; plan_harbor_mutual_bronze_flex -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_bronze_flex -[OFFERS]- payer_harbor_mutual\n- context 10: plan_harbor_mutual_bronze_flex; plan_harbor_mutual_bronze_flex -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_bronze_flex -[OFFERS]- payer_harbor_mutual\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "To address the user's request, I will perform the following steps:\n\n1.  **Identify the network used by Harbor Mutual Bronze Flex:** Locate information linking Harbor Mutual Bronze Flex to a specific provider network.\n2.  **Find the operating hour requirements for urgent care centers within that network:** Search for details regarding how late urgent care centers in the identified network must remain open.\n3.  **Synthesize the information:** Combine the network affiliation with the network's urgent care operating hour requirements to answer the question.\n\n**Relevant Contexts:**\n*   \"Bayline Provider Network requires its urgent care centers to stay open until at least 9 p.m.\" (Context 4)\n*   \"Harbor Mutual Bronze Flex uses the same Bayline Provider Network as the Silver plan.\" (Context 5)\n\n**Execution:**\n*   Context 5 explicitly states that \"Harbor Mutual Bronze Flex uses the same Bayline Provider Network.\"\n*   Context 4 specifies that the \"Bayline Provider Network requires its urgent care centers to stay open until at least 9 p.m.\"\n\n**Answer:**\nUrgent care centers for Harbor Mutual Bronze Flex members must stay open until at least 9 p.m. because Harbor Mutual Bronze Flex uses the Bayline Provider Network, which has this requirement.",
+            "tokenCounts": {
+              "prompt": 973,
+              "completion": 485,
+              "reasoning": 214
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 973,
+          "completion": 485,
+          "reasoning": 214
+        },
+        "latencyMs": 2813
+      }
+    },
+    "relational-012/without": {
+      "queryId": "relational-012",
+      "condition": "without",
+      "recordedAt": "2026-11-06T15:06:16.860Z",
+      "gitSha": "72546d8fcb4ba368e61d3e95631611c7ee71dc04",
+      "invocation": 2,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "5b3e415a537d9ee6c51afc5f6cbd02f26f34a8d540b52ea653d0ce743aab31e3",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How late must urgent care centers stay open for Harbor Mutual Bronze Flex members?\n\nRelevant context:\n- [pgvector] Harbor Mutual Bronze Flex charges a 350 dollar copay for an emergency room visit after the deductible.\n- [pgvector] Harbor Mutual Bronze Flex covers two telehealth visits per year at no cost before the deductible.\n- [pgvector] Harbor Mutual Bronze Flex caps annual out-of-pocket costs at 7,500 dollars.\n- [pgvector] Bayline Provider Network requires its urgent care centers to stay open until at least 9 p.m.\n- [pgvector] Harbor Mutual Bronze Flex uses the same Bayline Provider Network as the Silver plan.\n- [pgvector] Harbor Mutual Bronze Flex covers preventive screenings before the deductible.\n- [pgvector] Harbor Mutual Bronze Flex pairs with a health savings account and applies most copays only after the deductible is met.\n- [pgvector] Harbor Mutual Silver covers out-of-network care only for emergencies.\n- [pgvector] Harbor Mutual Bronze Flex has an individual deductible of 4,200 dollars per plan year.\n- [pgvector] Harbor Mutual Bronze Flex routes prior authorization reviews to Kestrel Review Services.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "Based on the provided context, here's a plan to address the user's request:\n\n1.  **Identify the relevant information regarding urgent care hours:**\n    *   \"Bayline Provider Network requires its urgent care centers to stay open until at least 9 p.m.\"\n\n2.  **Connect this requirement to Harbor Mutual Bronze Flex members:**\n    *   \"Harbor Mutual Bronze Flex uses the same Bayline Provider Network as the Silver plan.\"\n\n3.  **Formulate the answer:** Combine these two pieces of information to state that urgent care centers for Harbor Mutual Bronze Flex members, because they use the Bayline Provider Network, must stay open until at least 9 p.m.",
+            "tokenCounts": {
+              "prompt": 285,
+              "completion": 695,
+              "reasoning": 549
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 285,
+          "completion": 695,
+          "reasoning": 549
+        },
+        "latencyMs": 5250
+      }
+    },
+    "relational-013/with": {
+      "queryId": "relational-013",
+      "condition": "with",
+      "recordedAt": "2026-11-06T15:07:01.632Z",
+      "gitSha": "72546d8fcb4ba368e61d3e95631611c7ee71dc04",
+      "invocation": 2,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "4d236f26f90230a9cb0d681ee64dcfab21564972140394f9f7289a74864c3f98",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How long does it take a new doctor to get credentialed into the network Brightwater Basic HMO uses?\n\nRelevant context:\n- [pgvector] Brightwater Basic HMO members use the Bayline Provider Network.\n- [pgvector] Brightwater Basic HMO requires a referral from the primary care physician for every specialist visit.\n- [pgvector] Brightwater Basic HMO allows members to change their primary care physician once a quarter.\n- [pgvector] Brightwater Basic HMO does not cover out-of-network care except emergencies and urgent care while traveling.\n- [pgvector] Brightwater Basic HMO charges a 30 dollar specialist copay once a referral is on file.\n- [pgvector] Brightwater Basic HMO has no deductible for in-network services.\n- [pgvector] Bayline Provider Network credentialing takes about 60 days from a complete application.\n- [pgvector] Brightwater Basic HMO sends imaging authorizations to Sablefield Imaging Benefits.\n- [pgvector] Brightwater Basic HMO charges a 10 dollar primary care copay.\n- [pgvector] Brightwater Basic HMO covers a yearly eye exam.\n\nConnections in memory:\n- context 1: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n- context 2: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n- context 3: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[OFFERS]- payer_brightwater\n- context 4: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[OFFERS]- payer_brightwater\n- context 5: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n- context 6: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n- context 7: plan_brightwater_basic_hmo -[USES_NETWORK]- network_bayline; plan_brightwater_basic_hmo -[USES_NETWORK]- network_bayline -[COVERS]- region_coastal_north\n- context 8: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n- context 9: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n- context 10: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[OFFERS]- payer_brightwater\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "To answer the user's request, I will perform the following steps:\n\n1.  **Identify the provider network used by Brightwater Basic HMO:** Look for information within the provided context that specifies which network Brightwater Basic HMO members use.\n2.  **Determine the credentialing duration for that specific network:** Once the network is identified, search the context for details regarding the time it takes for a new doctor to get credentialed into that network.\n3.  **Formulate the answer:** Combine the identified network and its credentialing timeline to directly answer the user's question.",
+            "tokenCounts": {
+              "prompt": 815,
+              "completion": 243,
+              "reasoning": 123
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 815,
+          "completion": 243,
+          "reasoning": 123
+        },
+        "latencyMs": 1582
+      }
+    },
+    "relational-013/without": {
+      "queryId": "relational-013",
+      "condition": "without",
+      "recordedAt": "2026-11-06T15:06:47.041Z",
+      "gitSha": "72546d8fcb4ba368e61d3e95631611c7ee71dc04",
+      "invocation": 2,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "027efc212b8f66a27253966ed18ba4ce3ababebd18f8e6ce42f1ab1af89d50b5",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How long does it take a new doctor to get credentialed into the network Brightwater Basic HMO uses?\n\nRelevant context:\n- [pgvector] Brightwater Basic HMO members use the Bayline Provider Network.\n- [pgvector] Brightwater Basic HMO requires a referral from the primary care physician for every specialist visit.\n- [pgvector] Brightwater Basic HMO allows members to change their primary care physician once a quarter.\n- [pgvector] Brightwater Basic HMO does not cover out-of-network care except emergencies and urgent care while traveling.\n- [pgvector] Brightwater Basic HMO charges a 30 dollar specialist copay once a referral is on file.\n- [pgvector] Brightwater Basic HMO has no deductible for in-network services.\n- [pgvector] Bayline Provider Network credentialing takes about 60 days from a complete application.\n- [pgvector] Brightwater Basic HMO sends imaging authorizations to Sablefield Imaging Benefits.\n- [pgvector] Brightwater Basic HMO charges a 10 dollar primary care copay.\n- [pgvector] Brightwater Basic HMO covers a yearly eye exam.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "Brightwater Basic HMO members use the Bayline Provider Network. Credentialing for the Bayline Provider Network takes about **60 days** from a complete application.",
+            "tokenCounts": {
+              "prompt": 267,
+              "completion": 187,
+              "reasoning": 154
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 267,
+          "completion": 187,
+          "reasoning": 154
+        },
+        "latencyMs": 1355
+      }
+    }
+  }
+}
