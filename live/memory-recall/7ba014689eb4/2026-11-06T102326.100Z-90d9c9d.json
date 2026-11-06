@@ -1,0 +1,123 @@
+{
+  "kind": "live-tally",
+  "suite": "memory-recall",
+  "cassetteDigest": "7ba014689eb4111a10cfe8718462e8b78acf7db361401733161804a8f4dc2186",
+  "gitSha": "90d9c9de1fe277d90aa8fe4c822755a87c0bd0d8",
+  "startedAt": "2026-11-06T10:23:26.100Z",
+  "tasks": {
+    "memory-recall-001": {
+      "trials": [
+        true
+      ],
+      "graders": {
+        "retrieved_context_min_length": [
+          true
+        ],
+        "outcome_must_be": [
+          true
+        ],
+        "token_counts_positive": [
+          true
+        ],
+        "episodic_row_written": [
+          true
+        ],
+        "entity_merged": [
+          true
+        ],
+        "trajectory_in_order_match": [
+          true
+        ],
+        "trajectory_any_order_match": [
+          true
+        ],
+        "trajectory_precision": [
+          true
+        ],
+        "trajectory_recall": [
+          true
+        ],
+        "tool_trajectory_precision": [
+          true
+        ],
+        "tool_trajectory_recall": [
+          true
+        ]
+      }
+    },
+    "tool-use-001": {
+      "trials": [
+        true
+      ],
+      "graders": {
+        "retrieved_context_min_length": [
+          true
+        ],
+        "outcome_must_be": [
+          true
+        ],
+        "token_counts_positive": [
+          true
+        ],
+        "episodic_row_written": [
+          true
+        ],
+        "entity_merged": [
+          true
+        ],
+        "trajectory_in_order_match": [
+          true
+        ],
+        "trajectory_precision": [
+          true
+        ],
+        "trajectory_recall": [
+          true
+        ],
+        "tool_trajectory_precision": [
+          true
+        ],
+        "tool_trajectory_recall": [
+          true
+        ]
+      }
+    },
+    "tool-use-002": {
+      "trials": [
+        true
+      ],
+      "graders": {
+        "retrieved_context_min_length": [
+          true
+        ],
+        "outcome_must_be": [
+          true
+        ],
+        "token_counts_positive": [
+          true
+        ],
+        "episodic_row_written": [
+          true
+        ],
+        "entity_merged": [
+          true
+        ],
+        "trajectory_in_order_match": [
+          true
+        ],
+        "trajectory_precision": [
+          true
+        ],
+        "trajectory_recall": [
+          true
+        ],
+        "tool_trajectory_precision": [
+          true
+        ],
+        "tool_trajectory_recall": [
+          true
+        ]
+      }
+    }
+  }
+}
