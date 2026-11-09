@@ -193,6 +193,50 @@ the date, it would be noticed late, if at all.
 
 ## Design
 
+### The owner's choice
+
+_Amended 2026-11-09._ The owner chose the id directly: "migrate it to the latest flash lite.
+paid for dev work, free on ci." **The pin is `gemini-3.5-flash-lite`**, and
+[ADR 0018](../adr/0018-the-chat-model-is-a-pinned-stable-id.md) records it. The rule in "The
+rule that picks the id" and the seven-night candidate series are no longer how the id is
+chosen. The text below is kept as written, and this section says what still applies.
+
+The conductor checked these facts on 2026-11-09. The models list for the owner's key shows
+`models/gemini-3.5-flash-lite`, version `3.5-flash-lite-07-2026`, display name "Gemini 3.5
+Flash Lite". It is the newest stable flash-lite chat model. `gemini-3.8-flash-lite-tts` is
+text-to-speech only, `gemini-flash-lite-latest` is an alias and not a pin, and
+`gemini-3.1-flash-lite` is older. One `generateContent` on it answered 200 with
+`modelVersion: gemini-3.5-flash-lite` on the owner's paid key and on the repository's free
+key. It is also the model the rule would have preferred, and Google's routing target for
+`gemini-2.5-flash` from 2026-12-01.
+
+**Keys.** The owner's paid key runs local development and the recordings. CI keeps the free
+repository secret. `.context/conventions.md`, "Live model quota", says the same.
+
+**What becomes of phase 1.**
+
+| Step | What                                      | Now                                                                                                                                                                                                                                                                                                                                          |
+| ---- | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1a   | `chat-candidate` probe, seven nights      | **Dropped.** The candidate is now the pin, and `chat-pinned` probes it every night through `PINNED_CHAT_MODEL`. The probe and `CANDIDATE_CHAT_MODEL` are removed on the switch branch. The nights it ran before the switch, from the first scheduled canary after 2026-11-09, are informational. Read them from the `eval-canary` artifacts. |
+| 1b   | P1-E's criterion on `gemini-flash-latest` | **Kept, informational.** It is P1-E's handed-over criterion, queued on CI for 2026-11-10. Its result is recorded here, pass or fail. It no longer decides anything, and it does not block the switch. If the alias is unavailable on every attempt, the criterion moves by name to the PRD that owns the next migration, as decision 2 says. |
+| 1c   | The same dispatch on the candidate        | **Dropped.** Phase 2's memory-recall recording runs every task on the new id on the paid key. That covers everything this one free-key trial would have shown, and the recording's per-task results are a phase 2 criterion.                                                                                                                 |
+| 1d   | New-project probes                        | **Kept, owned by P1-I.** It needs the owner's key from the project made on 2026-10-15, which must be kept until phase 3's fresh-clone trial. The call that matters now is `gemini-3.5-flash-lite`. The calls on `gemini-3.8-flash` and `gemini-2.5-flash` are informational.                                                                 |
+| 1e   | Which bucket each id draws on             | **Informational, and narrowed.** Recordings no longer draw on any free bucket. What CI needs is the free-tier daily limit of `gemini-3.5-flash-lite` for the secret's project, read from AI Studio and recorded in the conventions' live-quota section, which does not have it yet.                                                          |
+| —    | The rule agreed before the first dispatch | **Dropped.** No rule chose the id, so there is no pre-registration to check in `git log`.                                                                                                                                                                                                                                                    |
+
+**What becomes of phase 2.** Step 2 stays dropped (P2-E's PR B, above). Steps 1, 3 and 4, and
+the step "the three JSON seams hash their instruction", are built on `feat/p1-i-switch`.
+Steps 6 to 8 are the conductor's, on the paid key, on the same branch: the recordings, the
+budgets and the replay baselines. So is the canary baseline for the new id in step 3. The
+JSON-seam step moved the cassette format to 3. The player refuses the committed version-2 set
+by format until the re-record, so replay and the committed-set tests in `agent-cassette` fail
+on that branch until then. The step 4 price is the one this PRD quotes, $0.30 and $2.50 per
+million tokens, read 2026-11-09. The conductor confirms it against the page before merge,
+along with the page's own date.
+
+**Phase 3 is unchanged.** The fresh-clone trial stays P1-I's, on the owner's new-project key.
+The deadline, 2026-11-30, is unchanged too.
+
 ### The deadline
 
 The switch has to be on `main` by 2026-11-30, the day before routing starts. The plan below
@@ -433,6 +477,16 @@ takes day 2 to 14 and days 8 to 11 to at most 14 if it is chosen: still inside 2
 bucket of its own. A dispatch can leave the probe out with `CANARY_PROBES`, but the
 workflow sets no such input.
 
+_Amended 2026-11-09, the owner's choice._ Phase 2's recordings run on the owner's paid key,
+locally, and not on the free tier. So the tables above no longer constrain them. Days 8 to 11
+collapse into whatever sessions the provider's 5xx windows allow, and no split is needed. The
+44 recording calls and the canary baseline's one call are billed, and they draw on no free
+bucket. The ceiling column still bounds what each recording may spend, because the budgets'
+`modelCalls` do not depend on the key. What stays on the free secret is the nightly
+`eval-live`, the nightly canary (two calls now that the candidate probe has gone), step 1b's
+dispatch, and phase 3's first scheduled runs after the merge. Nothing in phase 2 needs
+`EVAL_SCHEDULE_PAUSED`. Phase 3's fresh-clone trial uses the new-project key as before.
+
 ### Bounding retries on a 503
 
 `createGeminiChat` gets one more option, used only when `EVAL_CASSETTE_MODE` is `record` or
@@ -444,6 +498,24 @@ by failing. The cost of the bound is an aborted recording on a 503 morning. That
 day and keeps the bucket. Without the bound, the same morning spends the bucket and still
 aborts, on the 429.
 
+### The recording, as made
+
+_Added 2026-11-09, for the conductor to fill in._ Each suite is recorded on the owner's paid
+key, on `feat/p1-i-switch`, at cassette format 3. Every cell marked RECORDING-PENDING is
+filled in from the recording, never estimated.
+
+| Suite         | Cassettes | Recorded          | Commit            | `generateContent` | Result on the recording run |
+| ------------- | --------- | ----------------- | ----------------- | ----------------- | --------------------------- |
+| memory-recall | 3         | RECORDING-PENDING | RECORDING-PENDING | RECORDING-PENDING | RECORDING-PENDING           |
+| red-team      | 3         | RECORDING-PENDING | RECORDING-PENDING | RECORDING-PENDING | RECORDING-PENDING           |
+| prior-auth    | 24        | RECORDING-PENDING | RECORDING-PENDING | RECORDING-PENDING | RECORDING-PENDING           |
+
+Budgets by P1-F's rule, from those recordings: RECORDING-PENDING, one row per budgeted task
+(`memory-recall-001`, `tool-use-001`, `tool-use-002`, `rt-001`, `rt-002`, `rt-003`), giving
+input, output and thinking tokens, calls, and the old and new `budgets`. The canary baseline
+for `gemini-3.5-flash-lite`: RECORDING-PENDING (its `version`, `displayName` and
+`modelVersion`, and the date observed).
+
 ## Acceptance criteria
 
 Each criterion names the axis that verifies it. **Model `live`** means a real key, and
@@ -453,37 +525,48 @@ request leaves the process.
 
 **Phase 1**
 
+_Amended 2026-11-09, the owner's choice:_ the owner chose the id, so no phase-1 criterion
+gates the switch any more. Each one's fate is given beside it, and "The owner's choice"
+gives the reasons.
+
 - [ ] **Model `live` / memory `live`, in CI, taken from P1-E:** one trial of each task with
       `EVAL_CHAT_MODEL=gemini-flash-latest`. The report names that id, and the result is
       recorded in this PRD whether it passes or fails. A failure is a finding about the next
       model or about the client, not a defect in this PRD. This is P1-E:472-482 unchanged,
       verified by a dispatch with `chat_model: gemini-flash-latest`. The suite now has three
       tasks where P1-E's had two, so it costs about twelve calls on the alias target, not
-      eight.
+      eight. _Kept, informational: queued for 2026-11-10, and it does not block the switch._
 - [ ] **Model `live` / memory `live`, in CI:** the same, with
       `chat_model: gemini-3.5-flash-lite`. The result is recorded here whether it passes or
-      fails.
+      fails. _Dropped: phase 2's recording runs every task on this id, on the paid key._
 - [ ] **Model `live`, new-project key:** one `generateContent` each on `gemini-3.8-flash`,
       `gemini-3.5-flash-lite` and `gemini-2.5-flash`. The status, and the `modelVersion` of
       each answer, are recorded here. The expected 404 on `gemini-2.5-flash` is recorded with
-      its message.
+      its message. _Kept, owned by P1-I, and needs the owner's key. Only the
+      `gemini-3.5-flash-lite` call bears on the switch now._
 - [ ] **Model `live`, in CI:** the canary's `chat-candidate` probe reports on seven
       consecutive scheduled nights. Each night's verdict for it and for the floating probe is
       tabulated here. **Stubbed transport:** a 503 or a changed `modelVersion` on the
-      candidate exits 0 with a notice. `runner.test.ts` covers both.
+      candidate exits 0 with a notice. `runner.test.ts` covers both. _Dropped: the candidate
+      is the pin. Its probe and both tests leave with the switch, and `chat-pinned` reports on
+      the id every night. Any nights it ran before the switch are informational._
 - [ ] Whether `gemini-3.8-flash`, `gemini-flash-latest` and `gemini-3.5-flash-lite` each
       draw on a daily quota apart from `gemini-2.5-flash`'s, and from each other's, is
       recorded with its source: AI Studio's usage view or a 429's `quotaId`. The per-day
-      split above is revised before any recording if it does not hold.
+      split above is revised before any recording if it does not hold. _Informational and
+      narrowed: recordings use the paid key. What CI still needs is the new id's free-tier
+      daily limit for the secret's project, recorded in the conventions._
 - [ ] The rule in "The rule that picks the id" is agreed at review before the first dispatch,
       and the commit that records the agreement precedes the first dispatch's run date.
-      **Reviewer, from `git log`.**
+      **Reviewer, from `git log`.** _Dropped: no rule chose the id._
 
 **Phase 2**
 
-- [ ] ADR 0018 (or the next free number) is accepted. It names the chosen id and the
+- [x] ADR 0018 (or the next free number) is accepted. It names the chosen id and the
       measurements that chose it, the stable-over-alias rule and the triggers for the next
-      migration, and it is listed in `docs/adr/README.md`.
+      migration, and it is listed in `docs/adr/README.md`. _Met on `feat/p1-i-switch`,
+      amended: no measurement chose the id, so the record names the owner's decision and its
+      reasons in their place, and adds the key policy._
 - [ ] `PINNED_CHAT_MODEL` is the chosen id. Outside test files,
       `grep -rn "gemini-2.5-flash" apps packages --include=*.ts` returns only
       `STAGE2_CHAT_MODEL` and comments that record history. **Reviewer.**
