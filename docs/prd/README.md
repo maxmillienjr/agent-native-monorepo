@@ -8,7 +8,12 @@ over it and update it._
 **The chat model shuts down on 2026-12-01.** Google's deprecations page routes
 `gemini-2.5-flash` to `gemini-3.5-flash-lite` from that day under the same id, so P1-I,
 accepted on 2026-11-09, has to put a measured switch on `main` by 2026-11-30. P2-D's stage
-2, pre-registered on the old id, has to finish recording by then too.
+2, pre-registered on the old id, has to finish recording by then too. P1-I is in progress,
+tracked in [#147](https://github.com/maxmillienjr/agent-native-monorepo/issues/147). Its step
+1a, the only code before the choice, adds the canary's `chat-candidate` probe on
+`gemini-3.5-flash-lite` and lets `EVAL_SCHEDULE_PAUSED=live` skip the scheduled `eval-live`
+alone. The seven nights its rule 3 reads start with the first scheduled canary after that
+merges, with the variable at `live` rather than `true` while stage 2 holds the 2.5 pool.
 
 **Twenty-four PRDs are shipped and the system they describe is running.** The service answers
 `POST /runs` and `POST /runs/stream`; `memory-core` is constructed by the app rather than
@@ -461,7 +466,7 @@ shipped, checks each task's tokens and model calls beside the pass rate.
 | [P1-F](P1-F-cost-and-step-budgets.md)  | Cost, latency, and step budgets as CI assertions              | M    | shipped     |
 | [P1-G](P1-G-task-axis-requirements.md) | Task-level axis requirements for the evaluation suite         | S    | shipped     |
 | P1-H                                   | Live coverage of the replay-only suites by nightly rotation   | M    | draft       |
-| [P1-I](P1-I-chat-model-migration.md)   | Migrate off `gemini-2.5-flash`                                | L    | accepted    |
+| [P1-I](P1-I-chat-model-migration.md)   | Migrate off `gemini-2.5-flash`                                | L    | in-progress |
 
 P1-H, a draft with no file yet, is a candidate raised on 2026-10-26 and not yet accepted.
 Once the recordings are made, prior-auth and the red team run only on replay at night: they

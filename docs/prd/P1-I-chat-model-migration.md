@@ -2,11 +2,11 @@
 id: P1-I
 title: Migrate off `gemini-2.5-flash`
 tier: 1
-status: accepted
+status: in-progress
 size: L
 depends_on: [P1-A, P1-B, P1-E, P1-F]
 blocks: []
-issue: null
+issue: 147
 superseded_by: null
 ---
 
@@ -394,6 +394,15 @@ no calls on those days. The dispatches on days 1 and 2 would need the pause too,
 calls beside the nightly's 15 exceed 20. Day 1's dispatch is itself the first evidence: if
 it completes after that night's `eval-live`, the alias target's day is not the pinned id's.
 The table is revised in this PRD on day 1, before any recording.
+
+**Added with step 1a, 2026-11-09.** The `chat-candidate` probe is on by default, so it runs
+in every canary job, not only the scheduled ones, and it stays until the switch. Each
+dispatch's canary job therefore spends 1 + 1 + 1, one more on the candidate's bucket than
+the tables above count, and the nightly spends one there on days 8 to 11 too. That is two
+more calls in phase 1 and up to four in phase 2 on `gemini-3.5-flash-lite`'s bucket, which
+takes day 2 to 14 and days 8 to 11 to at most 14 if it is chosen: still inside 20 on a
+bucket of its own. A dispatch can leave the probe out with `CANARY_PROBES`, but the
+workflow sets no such input.
 
 ### Bounding retries on a 503
 
