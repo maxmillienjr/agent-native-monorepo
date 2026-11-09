@@ -491,7 +491,7 @@ shipped, checks each task's tokens and model calls beside the pass rate.
 | [P1-E](P1-E-model-drift-canary.md)     | Model-drift canary against pinned and floating model ids      | M    | shipped     |
 | [P1-F](P1-F-cost-and-step-budgets.md)  | Cost, latency, and step budgets as CI assertions              | M    | shipped     |
 | [P1-G](P1-G-task-axis-requirements.md) | Task-level axis requirements for the evaluation suite         | S    | shipped     |
-| P1-H                                   | Live coverage of the replay-only suites by nightly rotation   | M    | draft       |
+| [P1-H](P1-H-live-rotation.md)          | Live coverage of the replay-only suites by nightly rotation   | M    | accepted    |
 | [P1-I](P1-I-chat-model-migration.md)   | Migrate off `gemini-2.5-flash`                                | L    | in-progress |
 
 P1-H, a draft with no file yet, is a candidate raised on 2026-10-26 and not yet accepted.
