@@ -17,11 +17,12 @@ import type { GraphDeps } from '../graph/graph.js';
 import type { ActNodeDeps } from '../nodes/act.node.js';
 import type { DistillNodeDeps } from '../nodes/distill.node.js';
 import type { PlanNodeDeps } from '../nodes/plan.node.js';
-import type { AssessDeps } from '../prior-auth/assessment.js';
+import { ASSESS_PROMPT, type AssessDeps } from '../prior-auth/assessment.js';
 import type { CaseBoard } from '../tools/case-board.js';
 import { defaultRegistry, defineRegistry, type ToolRegistry } from '../tools/registry.js';
-import type { ToolSelectionRequest } from '../tools/selection.js';
+import { SELECT_TOOL_PROMPT, type ToolSelectionRequest } from '../tools/selection.js';
 import type { CompensableTool, ToolDefinition } from '../tools/types.js';
+import { EXTRACTION_PROMPT } from './extraction.js';
 import { CHAT_MODEL, type ModelDeps } from './model-deps.js';
 
 /**
@@ -52,18 +53,28 @@ import { CHAT_MODEL, type ModelDeps } from './model-deps.js';
  * fresh one, write under it, and still be graded by `episodic_row_written` and
  * `semantic_fact_written`, which read persisted state for *this* run.
  * `hash-stability` in the unit tests is the assertion that keeps it true.
+ *
+ * Every chat seam hashes its instruction. `plan` always did, because its
+ * system prompt is an argument. The three JSON seams take their instruction
+ * from a module constant and hashed only the content they send, so a change to
+ * `EXTRACTION_PROMPT`, `SELECT_TOOL_PROMPT` or `ASSESS_PROMPT` replayed cleanly
+ * with answers to the old instruction (found by P2-E's draft). Each now carries
+ * its instruction as `instruction`, the constant the live call sends, and the
+ * cassette format moved to 3 with it (P1-I), so a set recorded before is
+ * refused by version rather than missed seam by seam.
  */
 export const calls = {
   plan: (systemPrompt: string, userPrompt: string): DecisionCall => ({
     seam: 'plan.callLlm',
     request: { systemPrompt, userPrompt },
   }),
-  // The whole request: the plan, every tool's description, tier and schema,
-  // and the run's previous calls. A tool added to the registry, a description
-  // reworded or an output that changed all move this hash, which is the point.
+  // The whole request: the instruction, the plan, every tool's description,
+  // tier and schema, and the run's previous calls. A tool added to the
+  // registry, a description reworded, an output that changed or a reworded
+  // instruction all move this hash, which is the point.
   selectTool: (request: ToolSelectionRequest): DecisionCall => ({
     seam: 'act.selectTool',
-    request,
+    request: { instruction: SELECT_TOOL_PROMPT, ...request },
   }),
   tool: (name: string, input: unknown): DecisionCall => ({
     seam: 'act.tool',
@@ -80,7 +91,7 @@ export const calls = {
   }),
   extract: (context: string): DecisionCall => ({
     seam: 'distill.extractEntities',
-    request: { context },
+    request: { instruction: EXTRACTION_PROMPT, context },
   }),
   embed: (text: string): DecisionCall => ({ seam: 'embed', request: { text } }),
   assess: (
@@ -88,7 +99,7 @@ export const calls = {
     evidence: readonly EvidenceItem[],
   ): DecisionCall => ({
     seam: 'assess.criteria',
-    request: { criteria: [...criteria], evidence: [...evidence] },
+    request: { instruction: ASSESS_PROMPT, criteria: [...criteria], evidence: [...evidence] },
   }),
   /**
    * The run record's seventh seam, which no cassette holds.

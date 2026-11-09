@@ -1,4 +1,5 @@
 import {
+  RUN_DECISION_FORMAT_VERSION,
   RunDecisionSchema,
   RunRecordOpenSchema,
   type RunDecision,
@@ -47,7 +48,11 @@ export class InMemoryRunRecords implements RunRecordRepository {
       ...stored,
       decisions: [
         ...stored.decisions,
-        { ordinal, formatVersion: 2, decision: RunDecisionSchema.parse(decision) },
+        {
+          ordinal,
+          formatVersion: RUN_DECISION_FORMAT_VERSION,
+          decision: RunDecisionSchema.parse(decision),
+        },
       ],
     });
   }

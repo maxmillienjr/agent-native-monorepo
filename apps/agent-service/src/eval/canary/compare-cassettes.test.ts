@@ -25,7 +25,7 @@ function cassette(
 ): Cassette {
   return CassetteSchema.parse({
     header: {
-      formatVersion: 2,
+      formatVersion: 3,
       taskId,
       trialIndex: 0,
       recordedAt: '2026-10-08T03:00:00.000Z',

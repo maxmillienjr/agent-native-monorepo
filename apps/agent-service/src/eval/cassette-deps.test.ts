@@ -21,6 +21,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { cassettePath } from '@repo/eval-harness';
+import { EXTRACTION_PROMPT } from '../agent/model/extraction.js';
 import { NO_USAGE } from '../agent/model/usage.js';
 import { CHAT_MODEL, type ModelDeps } from '../agent/model/model-deps.js';
 import { RunsService } from '../runs/runs.service.js';
@@ -31,7 +32,7 @@ import {
 } from '../agent/model/decision-seam.js';
 import { SyntheticCaseBoard } from '../agent/tools/case-board.js';
 import { defaultRegistry, defineRegistry } from '../agent/tools/registry.js';
-import { selectionRequest } from '../agent/tools/selection.js';
+import { SELECT_TOOL_PROMPT, selectionRequest } from '../agent/tools/selection.js';
 import { webSearchTool } from '../agent/tools/web-search.tool.js';
 import {
   MODEL_HOST,
@@ -64,7 +65,7 @@ vi.mock('@langchain/google-genai', () => ({
 }));
 
 const liveHeader = {
-  formatVersion: 2 as const,
+  formatVersion: 3 as const,
   taskId: 'memory-recall-001',
   trialIndex: 0,
   recordedAt: '2026-09-10T12:00:00.000Z',
@@ -372,7 +373,7 @@ describe('request hashes across two runs of the same task', () => {
     if (key !== undefined) process.env['GOOGLE_API_KEY'] = key;
   });
 
-  async function hashesOfOneRun(): Promise<string[]> {
+  async function decisionsOfOneRun(): Promise<Cassette['decisions']> {
     // Every memory dependency null: the stub writers and the stub retrieval
     // facade, which is what makes this a unit test. The model half is the stub
     // set, decorated by a recorder that keeps the hashes.
@@ -389,7 +390,11 @@ describe('request hashes across two runs of the same task', () => {
     });
 
     const cassette = await recorder.close();
-    return cassette.decisions.map((decision) => decision.requestHash);
+    return cassette.decisions;
+  }
+
+  async function hashesOfOneRun(): Promise<string[]> {
+    return (await decisionsOfOneRun()).map((decision) => decision.requestHash);
   }
 
   it('are identical, because no request carries the run id', async () => {
@@ -398,6 +403,22 @@ describe('request hashes across two runs of the same task', () => {
 
     expect(first.length).toBeGreaterThan(0);
     expect(second).toEqual(first);
+  });
+
+  // Changed deliberately with the cassette format's version 3 (P1-I): the
+  // hashed request of each JSON seam now carries the instruction the live call
+  // sends, so the hashes this run produces differ from every format-2 set's,
+  // and stay equal to each other.
+  it("carry each JSON seam's instruction, the one the live call sends", async () => {
+    const decisions = await decisionsOfOneRun();
+    const instructionAt = (seam: string) =>
+      decisions
+        .filter((decision) => decision.seam === seam)
+        .map((decision) => (decision.request as { instruction?: unknown }).instruction);
+
+    expect(instructionAt('act.selectTool')).not.toHaveLength(0);
+    expect(new Set(instructionAt('act.selectTool'))).toEqual(new Set([SELECT_TOOL_PROMPT]));
+    expect(instructionAt('distill.extractEntities')).toEqual([EXTRACTION_PROMPT]);
   });
 });
 
@@ -696,14 +717,16 @@ describe('loading a set for replay', () => {
   });
   afterEach(() => rmSync(datasetDir, { recursive: true, force: true }));
 
-  it('refuses a version-1 cassette by path, naming the re-record and the baseline commands', () => {
+  it('refuses a version-2 cassette by path, naming the re-record and the baseline commands', () => {
     // `replayDecks` runs before the Nest context exists, so a refusal here is a
-    // refusal before any store is reset.
+    // refusal before any store is reset. Version 2 is the set committed before
+    // P1-I: its JSON seams hashed no instruction, so without the version check
+    // it would miss at the first of them rather than be refused by format.
     const path = cassettePath(datasetDir, 'memory-recall-001', 0);
     mkdirSync(join(datasetDir, 'cassettes'), { recursive: true });
     writeFileSync(
       path,
-      JSON.stringify({ header: { ...liveHeader, formatVersion: 1 }, decisions: [] }),
+      JSON.stringify({ header: { ...liveHeader, formatVersion: 2 }, decisions: [] }),
     );
 
     const refusal = (() => {
@@ -715,7 +738,7 @@ describe('loading a set for replay', () => {
       }
     })();
 
-    expect(refusal).toContain(`${path}: formatVersion is 1, this player reads 2`);
+    expect(refusal).toContain(`${path}: formatVersion is 2, this player reads 3`);
     expect(refusal).toContain('EVAL_CASSETTE_MODE=record EVAL_TRIALS=1 yarn eval');
     expect(refusal).toContain('EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval');
   });

@@ -83,7 +83,7 @@ describe.skipIf(SKIP)('PgRunRecordRepository (integration)', () => {
     expect(stored?.record.finishedAt).toBeInstanceOf(Date);
     // jsonb stores a number as numeric and gives back the same double.
     expect(stored?.decisions.map((row) => row.decision)).toEqual([retrieval, plan]);
-    expect(stored?.decisions.map((row) => row.formatVersion)).toEqual([2, 2]);
+    expect(stored?.decisions.map((row) => row.formatVersion)).toEqual([3, 3]);
   });
 
   it('re-opens the same run_id idempotently, keeping the first header and counting what it holds', async () => {

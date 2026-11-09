@@ -18,7 +18,7 @@ describe('explainAbort', () => {
 
   it('names a set the player refuses, and gives the same two commands', () => {
     const cause = explainAbort(
-      new CassetteIncompatibleError(['formatVersion is 1, this player reads 2']),
+      new CassetteIncompatibleError(['formatVersion is 2, this player reads 3']),
       noTrials,
     );
 

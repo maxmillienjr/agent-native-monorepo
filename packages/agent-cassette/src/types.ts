@@ -64,8 +64,15 @@ export const VECTOR_SEAM: Seam = 'embed';
  * `selection` in it, which `act` reads as "no tool". The replay would not
  * abort; it would run a different trajectory and grade it. The version is
  * what turns that into a refusal.
+ *
+ * Version 3 (P1-I) changed what the three JSON chat seams ask: `selectTool`,
+ * `extractEntities` and `assess.criteria` now carry their instruction in the
+ * request they hash, so a reworded instruction misses instead of replaying the
+ * old answer. A version-2 set would miss on every one of those decisions, one
+ * seam at a time, with a diff that blames the instruction. The version says
+ * the true cause once, before any store is reset.
  */
-export const CASSETTE_FORMAT_VERSION = 2;
+export const CASSETTE_FORMAT_VERSION = 3;
 
 export const CassetteHeaderSchema = z.object({
   formatVersion: z.literal(CASSETTE_FORMAT_VERSION),

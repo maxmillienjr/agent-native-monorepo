@@ -24,7 +24,7 @@ const CONFIG: ReplayConfig = {
 
 function header(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
-    formatVersion: 2,
+    formatVersion: 3,
     taskId: 'memory-recall-001',
     trialIndex: 0,
     recordedAt: '2026-01-01T00:00:00.000Z',
@@ -180,18 +180,27 @@ describe('replay refuses', () => {
     );
   });
 
-  it('a formatVersion that is not 2', () => {
-    expect(() => new CassettePlayer(cassette([], { formatVersion: 3 }), CONFIG)).toThrow(
-      /formatVersion is 3, this player reads 2/,
+  it('a formatVersion that is not 3', () => {
+    expect(() => new CassettePlayer(cassette([], { formatVersion: 4 }), CONFIG)).toThrow(
+      /formatVersion is 4, this player reads 3/,
     );
   });
 
   it('a version-1 cassette, which would match on its hashes and replay the wrong shape', () => {
-    // The requests did not change between the formats, so without the check a
-    // version-1 `act.selectTool` decision would be served, and `act` would read
-    // its pre-P1-F response as "no tool".
+    // The requests did not change between formats 1 and 2, so without the
+    // check a version-1 `act.selectTool` decision would be served, and `act`
+    // would read its pre-P1-F response as "no tool".
     expect(() => new CassettePlayer(cassette([], { formatVersion: 1 }), CONFIG)).toThrow(
-      /formatVersion is 1, this player reads 2: .* has to be re-recorded/,
+      /formatVersion is 1, this player reads 3: .* has to be re-recorded/,
+    );
+  });
+
+  it('a version-2 cassette, whose JSON seams hashed no instruction', () => {
+    // Format 3 (P1-I) adds each JSON seam's instruction to its request. A
+    // version-2 set would otherwise miss at every one of those seams, and the
+    // diff would point at the instruction rather than at the format.
+    expect(() => new CassettePlayer(cassette([], { formatVersion: 2 }), CONFIG)).toThrow(
+      /formatVersion is 2, this player reads 3: .* has to be re-recorded/,
     );
   });
 

@@ -11,7 +11,7 @@ const RETRIEVAL = {
 };
 
 const HEADER = {
-  formatVersion: 2,
+  formatVersion: 3,
   taskId: 'memory-recall-001',
   trialIndex: 0,
   recordedAt: '2026-10-08T00:00:00.000Z',
