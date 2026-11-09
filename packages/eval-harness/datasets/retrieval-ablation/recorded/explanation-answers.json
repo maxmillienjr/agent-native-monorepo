@@ -686,6 +686,294 @@
         },
         "latencyMs": 4641
       }
+    },
+    "relational-018/with": {
+      "queryId": "relational-018",
+      "condition": "with",
+      "recordedAt": "2026-11-09T08:03:37.612Z",
+      "gitSha": "880fabe23b1d8c2fb94df34d7d52bbf82c15979a",
+      "invocation": 5,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "1f23ab96515fdb3e992aad43d37caa45e46a03216a6c113fe61eb10b9a80a9ba",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How soon after enrolling must a Quillmark Family Choice member pick a primary care physician?\n\nRelevant context:\n- [pgvector] Quillmark Senior Advantage members can switch primary care physicians once a month.\n- [pgvector] Quillmark Family Choice covers pediatric well visits with no copay.\n- [pgvector] Riverbend Care Alliance requires members to choose a primary care physician within 30 days of enrollment.\n- [pgvector] Quillmark Family Choice members add a newborn by notifying the plan within 60 days of birth.\n- [pgvector] Quillmark Family Choice requires claims within 180 days of the date of service.\n- [pgvector] Quillmark Family Choice mails a new member ID card for each covered dependent.\n- [pgvector] Quillmark Family Choice covers urgent care visits at a 30 dollar copay.\n- [pgvector] Quillmark Family Choice has a family deductible of 5,000 dollars.\n- [pgvector] Quillmark Family Choice charges a 25 dollar specialist copay.\n- [pgvector] Quillmark Family Choice members use the Riverbend Care Alliance network.\n\nConnections in memory:\n- context 1: plan_quillmark_family_choice -[OFFERS]- payer_quillmark; plan_quillmark_family_choice -[OFFERS]- payer_quillmark -[OFFERS]- plan_quillmark_senior_advantage; plan_quillmark_family_choice -[PHARMACY_BENEFIT_BY]- vendor_pinegate_pharmacy -[PHARMACY_BENEFIT_BY]- plan_quillmark_senior_advantage\n- context 2: plan_quillmark_family_choice; plan_quillmark_family_choice -[OFFERS_PROGRAM]- program_clearpath_maternity; plan_quillmark_family_choice -[OFFERS]- payer_quillmark\n- context 3: plan_quillmark_family_choice -[USES_NETWORK]- network_riverbend; plan_quillmark_family_choice -[OFFERS]- payer_quillmark -[SERVES]- region_inland_valley; plan_quillmark_family_choice -[USES_NETWORK]- network_riverbend -[COVERS]- region_inland_valley\n- context 4: plan_quillmark_family_choice; plan_quillmark_family_choice -[OFFERS]- payer_quillmark\n- context 5: plan_quillmark_family_choice; plan_quillmark_family_choice -[OFFERS]- payer_quillmark\n- context 6: plan_quillmark_family_choice; plan_quillmark_family_choice -[OFFERS]- payer_quillmark\n- context 7: plan_quillmark_family_choice; plan_quillmark_family_choice -[OFFERS]- payer_quillmark\n- context 8: plan_quillmark_family_choice; plan_quillmark_family_choice -[OFFERS_PROGRAM]- program_clearpath_maternity; plan_quillmark_family_choice -[OFFERS]- payer_quillmark\n- context 9: plan_quillmark_family_choice; plan_quillmark_family_choice -[OFFERS_PROGRAM]- program_clearpath_maternity; plan_quillmark_family_choice -[OFFERS]- payer_quillmark\n- context 10: plan_quillmark_family_choice; plan_quillmark_family_choice -[OFFERS_PROGRAM]- program_clearpath_maternity; plan_quillmark_family_choice -[OFFERS]- payer_quillmark\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "1. **Identify the relevant plan:** The user is asking about \"Quillmark Family Choice\".\n2. **Look for PCP selection requirements for this plan:** Scan the provided context for any direct mention of when Quillmark Family Choice members must pick a primary care physician. No direct statement for Quillmark Family Choice specifically.\n3. **Identify the network used by the plan:** Note that \"Quillmark Family Choice members use the Riverbend Care Alliance network.\"\n4. **Check the network's PCP selection requirements:** Find the context stating, \"Riverbend Care Alliance requires members to choose a primary care physician within 30 days of enrollment.\"\n5. **Synthesize the information:** Since Quillmark Family Choice members use the Riverbend Care Alliance network, and the Riverbend Care Alliance network requires members to choose a PCP within 30 days of enrollment, this requirement applies to Quillmark Family Choice members.",
+            "tokenCounts": {
+              "prompt": 848,
+              "completion": 999,
+              "reasoning": 812
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 848,
+          "completion": 999,
+          "reasoning": 812
+        },
+        "latencyMs": 5256
+      }
+    },
+    "relational-018/without": {
+      "queryId": "relational-018",
+      "condition": "without",
+      "recordedAt": "2026-11-09T08:03:19.351Z",
+      "gitSha": "880fabe23b1d8c2fb94df34d7d52bbf82c15979a",
+      "invocation": 5,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "62ee33b9adc8b2f999716210f3315a7d67df277b97030675263125f64718c408",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How soon after enrolling must a Quillmark Family Choice member pick a primary care physician?\n\nRelevant context:\n- [pgvector] Quillmark Senior Advantage members can switch primary care physicians once a month.\n- [pgvector] Quillmark Family Choice covers pediatric well visits with no copay.\n- [pgvector] Riverbend Care Alliance requires members to choose a primary care physician within 30 days of enrollment.\n- [pgvector] Quillmark Family Choice members add a newborn by notifying the plan within 60 days of birth.\n- [pgvector] Quillmark Family Choice requires claims within 180 days of the date of service.\n- [pgvector] Quillmark Family Choice mails a new member ID card for each covered dependent.\n- [pgvector] Quillmark Family Choice covers urgent care visits at a 30 dollar copay.\n- [pgvector] Quillmark Family Choice has a family deductible of 5,000 dollars.\n- [pgvector] Quillmark Family Choice charges a 25 dollar specialist copay.\n- [pgvector] Quillmark Family Choice members use the Riverbend Care Alliance network.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "To address the user's request, I will execute the following steps:\n\n1.  **Identify keywords:** Look for \"Quillmark Family Choice,\" \"primary care physician (PCP),\" \"enrollment,\" and timeframes/deadlines.\n2.  **Scan for direct information:** Review all provided context snippets for explicit statements regarding PCP selection deadlines for Quillmark Family Choice members.\n3.  **Identify indirect connections:** If no direct statement is found, look for connections between \"Quillmark Family Choice\" and other entities mentioned in the context, especially those that *do* have PCP selection requirements.\n4.  **Synthesize information:** Combine relevant pieces of information to form a complete answer.\n\n**Execution:**\n\n*   Snippet 3 states: \"Riverbend Care Alliance requires members to choose a primary care physician within 30 days of enrollment.\"\n*   Snippet 10 states: \"Quillmark Family Choice members use the Riverbend Care Alliance network.\"\n\n**Conclusion:**\nSince Quillmark Family Choice members use the Riverbend Care Alliance network, and Riverbend Care Alliance requires members to choose a primary care physician within 30 days of enrollment, Quillmark Family Choice members must also adhere to this 30-day timeframe.\n\n**Answer:** Quillmark Family Choice members must pick a primary care physician within 30 days of enrollment because they use the Riverbend Care Alliance network, which has this requirement.",
+            "tokenCounts": {
+              "prompt": 270,
+              "completion": 873,
+              "reasoning": 576
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 270,
+          "completion": 873,
+          "reasoning": 576
+        },
+        "latencyMs": 6360
+      }
+    },
+    "relational-020/with": {
+      "queryId": "relational-020",
+      "condition": "with",
+      "recordedAt": "2026-11-09T08:04:41.661Z",
+      "gitSha": "880fabe23b1d8c2fb94df34d7d52bbf82c15979a",
+      "invocation": 5,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "e777186d4aabc7a01c5d57aaddbee9ad5a671d89ab23bb5cd75c6f7c84b7561d",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How quickly do doctors in the Quillmark Senior Advantage network reply to secure messages?\n\nRelevant context:\n- [pgvector] Riverbend Care Alliance providers must answer secure messages within two business days.\n- [pgvector] Quillmark Senior Advantage issues an expedited appeal decision within 72 hours.\n- [pgvector] Quillmark Senior Advantage members use the Riverbend Care Alliance network.\n- [pgvector] Quillmark Senior Advantage members can switch primary care physicians once a month.\n- [pgvector] Quillmark Senior Advantage charges a 20 dollar specialist copay.\n- [pgvector] Quillmark Senior Advantage has no deductible for medical services.\n- [pgvector] Quillmark Health Partners pays clean claims within 14 days.\n- [pgvector] Harbor Mutual Provider Relations answers provider email within two business days.\n- [pgvector] Quillmark Health Partners completes an annual health risk assessment for every Senior Advantage member.\n- [pgvector] Quillmark Senior Advantage pharmacy benefits run through Pinegate Pharmacy Solutions.\n\nConnections in memory:\n- context 1: plan_quillmark_senior_advantage -[USES_NETWORK]- network_riverbend; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark -[SERVES]- region_inland_valley; plan_quillmark_senior_advantage -[USES_NETWORK]- network_riverbend -[COVERS]- region_inland_valley\n- context 2: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[OFFERS_PROGRAM]- program_homeward_transitions; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n- context 3: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[NURSE_LINE_BY]- vendor_tallowood_nurse_line; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n- context 4: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[OFFERS_PROGRAM]- program_homeward_transitions; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n- context 5: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[NURSE_LINE_BY]- vendor_tallowood_nurse_line; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n- context 6: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[NURSE_LINE_BY]- vendor_tallowood_nurse_line; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n- context 7: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark -[SERVES]- region_coastal_north\n- context 9: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark -[SERVES]- region_coastal_north\n- context 10: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[NURSE_LINE_BY]- vendor_tallowood_nurse_line; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "**Plan:**\n\n1.  Identify the network that Quillmark Senior Advantage members use.\n2.  Locate the policy regarding secure message reply times for providers within that identified network.\n3.  Combine these pieces of information to answer the user's question.",
+            "tokenCounts": {
+              "prompt": 840,
+              "completion": 341,
+              "reasoning": 286
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 840,
+          "completion": 341,
+          "reasoning": 286
+        },
+        "latencyMs": 31512
+      }
+    },
+    "relational-020/without": {
+      "queryId": "relational-020",
+      "condition": "without",
+      "recordedAt": "2026-11-09T08:03:57.142Z",
+      "gitSha": "880fabe23b1d8c2fb94df34d7d52bbf82c15979a",
+      "invocation": 5,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "b2b10f005d639c85671887de52ddd970811bbde64c5c30fd2d30c1a1da4c96f5",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How quickly do doctors in the Quillmark Senior Advantage network reply to secure messages?\n\nRelevant context:\n- [pgvector] Riverbend Care Alliance providers must answer secure messages within two business days.\n- [pgvector] Quillmark Senior Advantage issues an expedited appeal decision within 72 hours.\n- [pgvector] Quillmark Senior Advantage members use the Riverbend Care Alliance network.\n- [pgvector] Quillmark Senior Advantage members can switch primary care physicians once a month.\n- [pgvector] Quillmark Senior Advantage charges a 20 dollar specialist copay.\n- [pgvector] Quillmark Senior Advantage has no deductible for medical services.\n- [pgvector] Quillmark Health Partners pays clean claims within 14 days.\n- [pgvector] Harbor Mutual Provider Relations answers provider email within two business days.\n- [pgvector] Quillmark Health Partners completes an annual health risk assessment for every Senior Advantage member.\n- [pgvector] Quillmark Senior Advantage pharmacy benefits run through Pinegate Pharmacy Solutions.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "Based on the provided context, here's the plan to address the user's request:\n\n1.  **Identify the network affiliation:** Note that \"Quillmark Senior Advantage members use the Riverbend Care Alliance network.\"\n2.  **Locate message response policy:** Find the policy for \"Riverbend Care Alliance providers\" regarding secure messages.\n3.  **Synthesize the information:** Combine these two facts to state how quickly doctors in the Quillmark Senior Advantage network (who are Riverbend Care Alliance providers) must reply to secure messages.",
+            "tokenCounts": {
+              "prompt": 243,
+              "completion": 418,
+              "reasoning": 305
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 243,
+          "completion": 418,
+          "reasoning": 305
+        },
+        "latencyMs": 6521
+      }
+    },
+    "relational-021/with": {
+      "queryId": "relational-021",
+      "condition": "with",
+      "recordedAt": "2026-11-09T08:05:19.668Z",
+      "gitSha": "880fabe23b1d8c2fb94df34d7d52bbf82c15979a",
+      "invocation": 5,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "2d00fa612f5d4287d39c3cea56b43070f13dd09f588632785f822a05d23b2a5e",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How many days' supply does mail order provide for Cedarline Gold Access prescriptions?\n\nRelevant context:\n- [pgvector] Cedarline Gold Access decides standard prior authorization requests within seven calendar days.\n- [pgvector] Cedarline Gold Access pharmacy benefits are administered by Pinegate Pharmacy Solutions.\n- [pgvector] Pinegate Pharmacy Solutions fills mail-order prescriptions in 90-day supplies.\n- [pgvector] Cedarline Health reviews prior authorization requests for Gold Access in house rather than through a vendor.\n- [pgvector] Cedarline Gold Access does not require prior authorization for the first twelve physical therapy visits.\n- [pgvector] Cedarline Gold Access gives members 60 days from a denial to file an appeal.\n- [pgvector] Cedarline Gold Access charges a 20 dollar copay for primary care visits.\n- [pgvector] Cedarline Gold Access covers urgent care at a 35 dollar copay.\n- [pgvector] Cedarline Gold Access charges a 30 dollar copay for a specialist visit, with no referral needed.\n- [pgvector] Cedarline Gold Access has an individual deductible of 750 dollars per plan year.\n\nConnections in memory:\n- context 1: plan_cedarline_gold_access; plan_cedarline_gold_access -[OFFERS]- payer_cedarline_health\n- context 2: plan_cedarline_gold_access; plan_cedarline_gold_access -[OFFERS]- payer_cedarline_health; plan_cedarline_gold_access -[PHARMACY_BENEFIT_BY]- vendor_pinegate_pharmacy\n- context 3: plan_cedarline_gold_access -[PHARMACY_BENEFIT_BY]- vendor_pinegate_pharmacy\n- context 4: plan_cedarline_gold_access; plan_cedarline_gold_access -[OFFERS]- payer_cedarline_health; plan_cedarline_gold_access -[PHARMACY_BENEFIT_BY]- vendor_pinegate_pharmacy\n- context 5: plan_cedarline_gold_access; plan_cedarline_gold_access -[OFFERS]- payer_cedarline_health\n- context 6: plan_cedarline_gold_access; plan_cedarline_gold_access -[OFFERS]- payer_cedarline_health\n- context 7: plan_cedarline_gold_access; plan_cedarline_gold_access -[OFFERS]- payer_cedarline_health; plan_cedarline_gold_access -[PHARMACY_BENEFIT_BY]- vendor_pinegate_pharmacy\n- context 8: plan_cedarline_gold_access; plan_cedarline_gold_access -[OFFERS]- payer_cedarline_health\n- context 9: plan_cedarline_gold_access; plan_cedarline_gold_access -[OFFERS]- payer_cedarline_health; plan_cedarline_gold_access -[PHARMACY_BENEFIT_BY]- vendor_pinegate_pharmacy\n- context 10: plan_cedarline_gold_access; plan_cedarline_gold_access -[OFFERS]- payer_cedarline_health; plan_cedarline_gold_access -[PHARMACY_BENEFIT_BY]- vendor_pinegate_pharmacy\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "**Plan:**\n\n1. **Identify the core question:** The user wants to know the number of days' supply for mail-order prescriptions under Cedarline Gold Access.\n2. **Scan context for keywords:** Look for terms like \"mail order,\" \"supply,\" \"days,\" and \"Cedarline Gold Access\" or its pharmacy benefits administrator, \"Pinegate Pharmacy Solutions.\"\n3. **Locate specific information:** The statement \"[pgvector] Pinegate Pharmacy Solutions fills mail-order prescriptions in 90-day supplies\" directly answers the question.\n4. **Formulate the answer:** State that mail order provides a 90-day supply.",
+            "tokenCounts": {
+              "prompt": 797,
+              "completion": 265,
+              "reasoning": 130
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 797,
+          "completion": 265,
+          "reasoning": 130
+        },
+        "latencyMs": 9850
+      }
+    },
+    "relational-021/without": {
+      "queryId": "relational-021",
+      "condition": "without",
+      "recordedAt": "2026-11-09T08:04:56.811Z",
+      "gitSha": "880fabe23b1d8c2fb94df34d7d52bbf82c15979a",
+      "invocation": 5,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "0e14e46d9b76767359cc55ba0f3d742980b839cd8959e6d621d8a690bb123952",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How many days' supply does mail order provide for Cedarline Gold Access prescriptions?\n\nRelevant context:\n- [pgvector] Cedarline Gold Access decides standard prior authorization requests within seven calendar days.\n- [pgvector] Cedarline Gold Access pharmacy benefits are administered by Pinegate Pharmacy Solutions.\n- [pgvector] Pinegate Pharmacy Solutions fills mail-order prescriptions in 90-day supplies.\n- [pgvector] Cedarline Health reviews prior authorization requests for Gold Access in house rather than through a vendor.\n- [pgvector] Cedarline Gold Access does not require prior authorization for the first twelve physical therapy visits.\n- [pgvector] Cedarline Gold Access gives members 60 days from a denial to file an appeal.\n- [pgvector] Cedarline Gold Access charges a 20 dollar copay for primary care visits.\n- [pgvector] Cedarline Gold Access covers urgent care at a 35 dollar copay.\n- [pgvector] Cedarline Gold Access charges a 30 dollar copay for a specialist visit, with no referral needed.\n- [pgvector] Cedarline Gold Access has an individual deductible of 750 dollars per plan year.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "Here's a plan to address the user's request:\n\n1.  **Identify the administrator of pharmacy benefits for Cedarline Gold Access.** The context states: \"Cedarline Gold Access pharmacy benefits are administered by Pinegate Pharmacy Solutions.\"\n2.  **Locate information regarding mail-order prescription supplies from Pinegate Pharmacy Solutions.** The context states: \"Pinegate Pharmacy Solutions fills mail-order prescriptions in 90-day supplies.\"\n3.  **Synthesize the information to answer the user's question.** Since Pinegate Pharmacy Solutions administers pharmacy benefits for Cedarline Gold Access and fills mail-order prescriptions in 90-day supplies, Cedarline Gold Access mail-order prescriptions provide a 90-day supply.",
+            "tokenCounts": {
+              "prompt": 279,
+              "completion": 337,
+              "reasoning": 185
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 279,
+          "completion": 337,
+          "reasoning": 185
+        },
+        "latencyMs": 2141
+      }
+    },
+    "relational-022/with": {
+      "queryId": "relational-022",
+      "condition": "with",
+      "recordedAt": "2026-11-09T08:05:49.714Z",
+      "gitSha": "880fabe23b1d8c2fb94df34d7d52bbf82c15979a",
+      "invocation": 5,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "91ddd01dad40e536dbe581314f0d92d63ad0d025153036453674ae2e98f382ce",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How long does a standard formulary exception take for Quillmark Family Choice?\n\nRelevant context:\n- [pgvector] Quillmark Family Choice resolves a standard post-service appeal within 60 days.\n- [pgvector] Quillmark Family Choice requires claims within 180 days of the date of service.\n- [pgvector] Pinegate Pharmacy Solutions administers the Quillmark Family Choice drug formulary.\n- [pgvector] Pinegate Pharmacy Solutions decides a standard formulary exception request within 72 hours.\n- [pgvector] Quillmark Senior Advantage issues an expedited appeal decision within 72 hours.\n- [pgvector] Pinegate Pharmacy Solutions puts Quillmark formulary changes into effect within 30 days of a committee decision.\n- [pgvector] Quillmark Family Choice charges a 25 dollar specialist copay.\n- [pgvector] The Quillmark Pharmacy and Therapeutics Committee notifies members of formulary changes 60 days before they take effect.\n- [pgvector] Quillmark Family Choice has a family deductible of 5,000 dollars.\n- [pgvector] Quillmark Family Choice covers pediatric well visits with no copay.\n\nConnections in memory:\n- context 1: plan_quillmark_family_choice; plan_quillmark_family_choice -[OFFERS]- payer_quillmark\n- context 2: plan_quillmark_family_choice; plan_quillmark_family_choice -[OFFERS]- payer_quillmark\n- context 3: plan_quillmark_family_choice; plan_quillmark_family_choice -[OFFERS_PROGRAM]- program_clearpath_maternity; plan_quillmark_family_choice -[OFFERS]- payer_quillmark\n- context 4: plan_quillmark_family_choice -[PHARMACY_BENEFIT_BY]- vendor_pinegate_pharmacy\n- context 5: plan_quillmark_family_choice -[OFFERS]- payer_quillmark; plan_quillmark_family_choice -[OFFERS]- payer_quillmark -[OFFERS]- plan_quillmark_senior_advantage; plan_quillmark_family_choice -[PHARMACY_BENEFIT_BY]- vendor_pinegate_pharmacy -[PHARMACY_BENEFIT_BY]- plan_quillmark_senior_advantage\n- context 6: plan_quillmark_family_choice -[OFFERS]- payer_quillmark; plan_quillmark_family_choice -[PHARMACY_BENEFIT_BY]- vendor_pinegate_pharmacy; plan_quillmark_family_choice -[OFFERS]- payer_quillmark -[BELONGS_TO]- committee_quillmark_pt\n- context 7: plan_quillmark_family_choice; plan_quillmark_family_choice -[OFFERS_PROGRAM]- program_clearpath_maternity; plan_quillmark_family_choice -[OFFERS]- payer_quillmark\n- context 8: plan_quillmark_family_choice -[OFFERS]- payer_quillmark; plan_quillmark_family_choice -[PHARMACY_BENEFIT_BY]- vendor_pinegate_pharmacy; plan_quillmark_family_choice -[OFFERS]- payer_quillmark -[BELONGS_TO]- committee_quillmark_pt\n- context 9: plan_quillmark_family_choice; plan_quillmark_family_choice -[OFFERS_PROGRAM]- program_clearpath_maternity; plan_quillmark_family_choice -[OFFERS]- payer_quillmark\n- context 10: plan_quillmark_family_choice; plan_quillmark_family_choice -[OFFERS_PROGRAM]- program_clearpath_maternity; plan_quillmark_family_choice -[OFFERS]- payer_quillmark\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "A standard formulary exception request for Quillmark Family Choice, administered by Pinegate Pharmacy Solutions, takes **within 72 hours** to be decided.",
+            "tokenCounts": {
+              "prompt": 909,
+              "completion": 216,
+              "reasoning": 185
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 909,
+          "completion": 216,
+          "reasoning": 185
+        },
+        "latencyMs": 1595
+      }
+    },
+    "relational-022/without": {
+      "queryId": "relational-022",
+      "condition": "without",
+      "recordedAt": "2026-11-09T08:05:35.110Z",
+      "gitSha": "880fabe23b1d8c2fb94df34d7d52bbf82c15979a",
+      "invocation": 5,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "1079abbcd109a57816ccba64e737d9a83a4be459c3efbbee2414ad31d38c3184",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How long does a standard formulary exception take for Quillmark Family Choice?\n\nRelevant context:\n- [pgvector] Quillmark Family Choice resolves a standard post-service appeal within 60 days.\n- [pgvector] Quillmark Family Choice requires claims within 180 days of the date of service.\n- [pgvector] Pinegate Pharmacy Solutions administers the Quillmark Family Choice drug formulary.\n- [pgvector] Pinegate Pharmacy Solutions decides a standard formulary exception request within 72 hours.\n- [pgvector] Quillmark Senior Advantage issues an expedited appeal decision within 72 hours.\n- [pgvector] Pinegate Pharmacy Solutions puts Quillmark formulary changes into effect within 30 days of a committee decision.\n- [pgvector] Quillmark Family Choice charges a 25 dollar specialist copay.\n- [pgvector] The Quillmark Pharmacy and Therapeutics Committee notifies members of formulary changes 60 days before they take effect.\n- [pgvector] Quillmark Family Choice has a family deductible of 5,000 dollars.\n- [pgvector] Quillmark Family Choice covers pediatric well visits with no copay.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "Here's a plan to address the user's request:\n\n1.  **Identify the key entities and request:** The user is asking about \"Quillmark Family Choice\" and a \"standard formulary exception.\"\n2.  **Scan for relevant keywords:** Look for \"Quillmark Family Choice,\" \"formulary exception,\" and terms related to timeframes.\n3.  **Locate the direct answer:**\n    *   \"Pinegate Pharmacy Solutions administers the Quillmark Family Choice drug formulary.\" (Establishes Pinegate's role).\n    *   \"Pinegate Pharmacy Solutions decides a standard formulary exception request within 72 hours.\" (Directly answers the timeframe for a standard formulary exception).\n4.  **Formulate the answer:** State the timeframe clearly, referencing both Quillmark Family Choice and Pinegate Pharmacy Solutions as the administrator.\n\n**Answer:** A standard formulary exception request for Quillmark Family Choice, administered by Pinegate Pharmacy Solutions, is decided within 72 hours.",
+            "tokenCounts": {
+              "prompt": 276,
+              "completion": 383,
+              "reasoning": 171
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 276,
+          "completion": 383,
+          "reasoning": 171
+        },
+        "latencyMs": 2432
+      }
+    },
+    "relational-023/without": {
+      "queryId": "relational-023",
+      "condition": "without",
+      "recordedAt": "2026-11-09T08:06:06.758Z",
+      "gitSha": "880fabe23b1d8c2fb94df34d7d52bbf82c15979a",
+      "invocation": 5,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "9cc5cbefdfd846080a07fb6e9cab6c8ccb79ce333292d0bb838e8be8d7a55eda",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: When can an Orrin Valley Community Plan member refill a prescription early?\n\nRelevant context:\n- [pgvector] Orrin Valley Community Plan requires members to fill prescriptions at in-network pharmacies.\n- [pgvector] Orrin Valley Community Plan sends renewal packets 45 days before eligibility ends.\n- [pgvector] Orrin Valley Community Plan renews eligibility every twelve months.\n- [pgvector] Orrin Valley Community Plan covers eyeglasses once every two years.\n- [pgvector] Orrin Valley Community Plan charges a 3 dollar copay for brand-name prescriptions.\n- [pgvector] Orrin Valley Community Plan pharmacy benefits are managed by Pinegate Pharmacy Solutions.\n- [pgvector] Orrin Valley Community Plan requires claims within 120 days of the date of service.\n- [pgvector] Pinegate Pharmacy Solutions allows an early refill once the member has used 75 percent of a supply.\n- [pgvector] Orrin Valley Community Plan charges no copays for primary care.\n- [pgvector] Orrin Valley Community Plan covers two adult dental cleanings a year.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "Orrin Valley Community Plan members can refill a prescription early once they have used 75 percent of their current supply. This policy is managed by Pinegate Pharmacy Solutions, who handles the plan's pharmacy benefits.",
+            "tokenCounts": {
+              "prompt": 262,
+              "completion": 206,
+              "reasoning": 163
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 262,
+          "completion": 206,
+          "reasoning": 163
+        },
+        "latencyMs": 4035
+      }
     }
   }
 }
