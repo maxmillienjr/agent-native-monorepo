@@ -6,7 +6,7 @@ status: accepted
 size: M
 depends_on: [P1-D, P1-E, P1-I, P3-D, P4-B]
 blocks: []
-issue: null
+issue: 159
 superseded_by: null
 ---
 
@@ -14,7 +14,8 @@ superseded_by: null
 
 _Accepted by the owner on 2026-11-09._ The candidate was raised on 2026-10-26 with no file.
 This document is its first written form, and the owner accepted it the same day it was
-written. No issue is open yet.
+written. It is tracked in
+[#159](https://github.com/maxmillienjr/agent-native-monorepo/issues/159).
 
 ## Problem
 

@@ -28,7 +28,8 @@ half moves `ASSESS_PROMPT`, so it re-records prior-auth on the owner's paid key.
 conductor runs a 15-call probe first, and the 20-call recording only if the probe meets the
 thresholds the PRD fixed before any call.
 
-**[P1-H](P1-H-live-rotation.md) is accepted, and no issue is open yet.** The owner
+**[P1-H](P1-H-live-rotation.md) is accepted**, tracked in
+[#159](https://github.com/maxmillienjr/agent-native-monorepo/issues/159). The owner
 accepted it on 2026-11-09. It brings prior-auth and the red team onto the live model at night,
 on the free CI secret, through an `eval-rotation` job that runs last and spends what
 `eval-live` and the canary left. **Its first step costs no call:** read the free-tier
@@ -503,7 +504,7 @@ shipped, checks each task's tokens and model calls beside the pass rate.
 | [P1-I](P1-I-chat-model-migration.md)   | Migrate off `gemini-2.5-flash`                                | L    | in-progress |
 
 [P1-H](P1-H-live-rotation.md), raised on 2026-10-26, was accepted by the owner on
-2026-11-09. No issue is open yet. Prior-auth and the red team run only on replay at night.
+2026-11-09, tracked in [#159](https://github.com/maxmillienjr/agent-native-monorepo/issues/159). Prior-auth and the red team run only on replay at night.
 That shows the code still makes the recorded decisions, never that the live model still
 would. P1-H adds an `eval-rotation` job that runs after `eval-live` and the canary, on the
 free CI secret, and spends what they left. The budget is the pinned model's recorded
