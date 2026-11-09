@@ -84,37 +84,6 @@ export {
 // Semantic Memory — the embedding dimension every schema and DDL derives from
 export { EMBEDDING_DIMENSIONS, EMBEDDING_MODEL, l2Normalize } from './semantic/embedding.js';
 
-// Semantic Memory — Neo4j knowledge graph. `reflect` writes it, every write and
-// read is scoped to a session (P2-D's M1), and no request reads it since
-// ADR 0009. The reader is kept for the P2-B ablation, and the explainer is what
-// P2-D measures.
-export {
-  EntityWriteSchema,
-  RelationshipWriteSchema,
-  FactWriteSchema,
-  type Neo4jWriter,
-  CypherNeo4jWriter,
-} from './semantic/neo4j/neo4j.writer.js';
-export {
-  type GraphReadScope,
-  type Neo4jReader,
-  CypherNeo4jReader,
-} from './semantic/neo4j/neo4j.reader.js';
-export {
-  MAX_EXPLANATION_HOPS,
-  MAX_PATHS_PER_FACT,
-  type ConceptPath,
-  type ExplanationScope,
-  type Neo4jExplainer,
-  CypherNeo4jExplainer,
-  assembleExplanations,
-  compareConceptPaths,
-  conceptPathKey,
-  matchConceptLabels,
-} from './semantic/neo4j/neo4j.explainer.js';
-export { createNeo4jClient } from './semantic/neo4j/neo4j.client.js';
-export { ensureSemanticConstraints } from './semantic/neo4j/neo4j.constraints.js';
-
 // Semantic Memory — pgvector dense embeddings
 export {
   FactUpsertSchema,
@@ -178,11 +147,11 @@ export {
   type RunInspectionInput,
   type RunInspection,
   type MemoryInspector,
-  PgNeo4jMemoryInspector,
+  PgMemoryInspector,
   SeedStateSchema,
   SeedApplicationSchema,
   type SeedState,
   type SeedApplication,
   type SeedManager,
-  PgNeo4jSeedManager,
+  PgSeedManager,
 } from './inspect/index.js';

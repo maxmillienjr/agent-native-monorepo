@@ -41,7 +41,7 @@ describe('mergeRetrievedContext', () => {
     const state = seedWorkingMemory(baseSeed);
     const candidates = [
       { source: 'pgvector' as const, score: 0.9, content: 'fact 1' },
-      { source: 'neo4j' as const, score: 0.8, content: 'fact 2', entityId: 'e1' },
+      { source: 'pgvector' as const, score: 0.8, content: 'fact 2' },
     ];
     const updated = mergeRetrievedContext(state, candidates);
     expect(updated.retrievedContext).toEqual(candidates);

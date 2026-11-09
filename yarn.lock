@@ -3108,7 +3108,6 @@ __metadata:
     drizzle-kit: "npm:^0.31.11"
     drizzle-orm: "npm:^0.45.4"
     eslint: "npm:^9.39.5"
-    neo4j-driver: "npm:^5.28.0"
     pg: "npm:^8.23.1"
     pgvector: "npm:^0.3.0"
     typescript: "npm:^5.7.0"
@@ -4406,7 +4405,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"base64-js@npm:^1.3.1, base64-js@npm:^1.5.1":
+"base64-js@npm:^1.5.1":
   version: 1.5.1
   resolution: "base64-js@npm:1.5.1"
   checksum: 10c0/f23823513b63173a001030fae4f2dabe283b99a9d324ade3ad3d148e218134676f1ee8568c877cd79ec1c53158dcf2d2ba527a97c606618928ba99dd930102bf
@@ -4511,16 +4510,6 @@ __metadata:
   version: 1.1.2
   resolution: "buffer-from@npm:1.1.2"
   checksum: 10c0/124fff9d66d691a86d3b062eff4663fe437a9d9ee4b47b1b9e97f5a5d14f6d5399345db80f796827be7c95e70a8e765dd404b7c3ff3b3324f98e9b0c8826cc34
-  languageName: node
-  linkType: hard
-
-"buffer@npm:^6.0.3":
-  version: 6.0.3
-  resolution: "buffer@npm:6.0.3"
-  dependencies:
-    base64-js: "npm:^1.3.1"
-    ieee754: "npm:^1.2.1"
-  checksum: 10c0/2a905fbbcde73cc5d8bd18d1caa23715d5f83a5935867c2329f0ac06104204ba7947be098fe1317fbd8830e26090ff8e764f08cd14fefc977bb248c3487bcbd0
   languageName: node
   linkType: hard
 
@@ -8046,35 +8035,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"neo4j-driver-bolt-connection@npm:5.28.3":
-  version: 5.28.3
-  resolution: "neo4j-driver-bolt-connection@npm:5.28.3"
-  dependencies:
-    buffer: "npm:^6.0.3"
-    neo4j-driver-core: "npm:5.28.3"
-    string_decoder: "npm:^1.3.0"
-  checksum: 10c0/80003b7a3544c8c28e7a0873acb7409283f839367b68cba801ee545858070f18912ee1a03cd10f9ec4aa1c440a4f81a84b979a3cb811b87b592d4585ac548d54
-  languageName: node
-  linkType: hard
-
-"neo4j-driver-core@npm:5.28.3":
-  version: 5.28.3
-  resolution: "neo4j-driver-core@npm:5.28.3"
-  checksum: 10c0/86f70793eef16e80334dc19c1d3321997048b9e8e14b0c77177dbac61e5a183fb05bede16e3ef81301b6deb7d5629cbfd2281428bb31b47e2439a6bb5dc596a9
-  languageName: node
-  linkType: hard
-
-"neo4j-driver@npm:^5.28.0":
-  version: 5.28.3
-  resolution: "neo4j-driver@npm:5.28.3"
-  dependencies:
-    neo4j-driver-bolt-connection: "npm:5.28.3"
-    neo4j-driver-core: "npm:5.28.3"
-    rxjs: "npm:^7.8.2"
-  checksum: 10c0/5a4f388e634f0ca6db72483ac91e1242af394938c055a4e1fe4a847b27f594d4c70ad9d266de80c5c058c8617762b44887b38f5a4dfea5bca60874c4cd19574d
-  languageName: node
-  linkType: hard
-
 "node-domexception@npm:^1.0.0":
   version: 1.0.0
   resolution: "node-domexception@npm:1.0.0"
@@ -9232,7 +9192,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rxjs@npm:^7.8.0, rxjs@npm:^7.8.2":
+"rxjs@npm:^7.8.0":
   version: 7.8.2
   resolution: "rxjs@npm:7.8.2"
   dependencies:
@@ -9251,13 +9211,6 @@ __metadata:
     has-symbols: "npm:^1.1.0"
     isarray: "npm:^2.0.5"
   checksum: 10c0/43c86ffdddc461fb17ff8a17c5324f392f4868f3c7dd2c6a5d9f5971713bc5fd755667212c80eab9567595f9a7509cc2f83e590ddaebd1bd19b780f9c79f9a8d
-  languageName: node
-  linkType: hard
-
-"safe-buffer@npm:~5.2.0":
-  version: 5.2.1
-  resolution: "safe-buffer@npm:5.2.1"
-  checksum: 10c0/6501914237c0a86e9675d4e51d89ca3c21ffd6a31642efeba25ad65720bce6921c9e7e974e5be91a786b25aa058b5303285d3c15dbabf983a919f5f630d349f3
   languageName: node
   linkType: hard
 
@@ -9694,15 +9647,6 @@ __metadata:
     define-properties: "npm:^1.2.1"
     es-object-atoms: "npm:^1.0.0"
   checksum: 10c0/d53af1899959e53c83b64a5fd120be93e067da740e7e75acb433849aa640782fb6c7d4cd5b84c954c84413745a3764df135a8afeb22908b86a835290788d8366
-  languageName: node
-  linkType: hard
-
-"string_decoder@npm:^1.3.0":
-  version: 1.3.0
-  resolution: "string_decoder@npm:1.3.0"
-  dependencies:
-    safe-buffer: "npm:~5.2.0"
-  checksum: 10c0/810614ddb030e271cd591935dcd5956b2410dd079d64ff92a1844d6b7588bf992b3e1b69b0f4d34a3e06e0bd73046ac646b5264c1987b20d0601f81ef35d731d
   languageName: node
   linkType: hard
 

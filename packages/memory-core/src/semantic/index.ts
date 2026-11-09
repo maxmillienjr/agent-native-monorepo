@@ -1,12 +1,3 @@
-export { createNeo4jClient, type Neo4jConfig } from './neo4j/neo4j.client.js';
-export {
-  EntityWriteSchema,
-  RelationshipWriteSchema,
-  type Neo4jWriter,
-  CypherNeo4jWriter,
-} from './neo4j/neo4j.writer.js';
-export { type Neo4jReader, CypherNeo4jReader } from './neo4j/neo4j.reader.js';
-
 export { createPgvectorPool, type PgvectorConfig } from './pgvector/pgvector.client.js';
 export {
   FactUpsertSchema,

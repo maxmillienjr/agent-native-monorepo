@@ -1,8 +1,8 @@
 /**
  * Environment guard for the database-backed integration suites.
  *
- * These suites need a real Postgres (pgvector) and/or a real Neo4j. They used to
- * open with a bare `describe.skipIf(!DATABASE_URL || !NEO4J_URI)`, which is right
+ * These suites need a real Postgres (pgvector). They used to open with a bare
+ * `describe.skipIf(!DATABASE_URL)`, which is right
  * for a laptop and wrong for CI: when the variables were absent the whole suite
  * skipped and vitest still exited 0, so a nightly run that asserted nothing was
  * indistinguishable from a nightly run that passed.

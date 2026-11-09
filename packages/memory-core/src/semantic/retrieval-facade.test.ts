@@ -3,6 +3,7 @@ import { ZodError } from 'zod';
 import { EMBEDDING_DIMENSIONS } from './embedding.js';
 import type { PgvectorReader, PgvectorSearchScope } from './pgvector/pgvector.reader.js';
 import {
+  RetrievalCandidateSchema,
   RetrievalQuerySchema,
   VectorRetrievalFacade,
   type RetrievalCandidate,
@@ -103,5 +104,26 @@ describe('RetrievalQuerySchema, the scope a query must carry (P4-B, M2)', () => 
       ZodError,
     );
     expect(calls).toEqual([]);
+  });
+});
+
+describe('RetrievalCandidateSchema', () => {
+  it('names one source, pgvector, and refuses any other (P2-E)', () => {
+    expect(RetrievalCandidateSchema.shape.source.value).toBe('pgvector');
+    for (const source of ['pinecone', 'graph']) {
+      expect(RetrievalCandidateSchema.safeParse({ source, score: 1, content: 'x' }).success).toBe(
+        false,
+      );
+    }
+  });
+
+  it('carries no entityId, which no store sets (P2-E)', () => {
+    const parsed = RetrievalCandidateSchema.parse({
+      source: 'pgvector',
+      score: 1,
+      content: 'x',
+      entityId: 'e1',
+    });
+    expect(parsed).not.toHaveProperty('entityId');
   });
 });

@@ -19,7 +19,6 @@
     "@repo/shared-types": "workspace:*",
     "@repo/telemetry": "workspace:*",
     "drizzle-orm": "^0.45.4",
-    "neo4j-driver": "^5.28.0",
     "pg": "^8.23.1",
     "pgvector": "^0.3.0",
     "zod": "^4.6.6"

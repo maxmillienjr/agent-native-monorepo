@@ -50,8 +50,7 @@ function cosineSearch(
   // lacks. Cosine distance is not a total order over this table: the eval
   // harness seeds every fact in a task with one vector, and identical
   // vectors are at identical distance from any query. content_hash is the
-  // primary key, so ordering on it after the distance is total, and it is
-  // the key the Neo4j reader breaks its own tie on and rrfMerge fuses on.
+  // primary key, so ordering on it after the distance is total.
   return isScoped(scope)
     ? [
         `SELECT content_hash, text, episode_id,

@@ -21,9 +21,8 @@ export const RetrievalQuerySchema = z
     /**
      * Opts out of session isolation, explicitly. Retrieval is session-scoped;
      * this is for the case where long-term recall across sessions is the
-     * point. Nothing outside the tests sets it: P2-B's ablation scopes every
-     * query to its dataset's session. It stays so that reading every session
-     * is a choice a caller writes down, not an argument it forgot.
+     * point. Nothing outside the tests sets it. It stays so that reading every
+     * session is a choice a caller writes down, not an argument it forgot.
      */
     crossSession: z.boolean().default(false),
   })
@@ -42,15 +41,16 @@ export type RetrievalQueryInput = z.input<typeof RetrievalQuerySchema>;
 
 export const RetrievalCandidateSchema = z.object({
   /**
-   * Which reader produced the candidate. A run only ever sees `pgvector`;
-   * `neo4j` is what `CypherNeo4jReader` returns, to the P2-B ablation.
+   * The store that produced the candidate, and there is one. It stays a field,
+   * narrowed rather than dropped, because `plan` renders it into its prompt as
+   * `[pgvector]`, and that prompt is in every recorded `plan` request's hash
+   * (P2-E).
    */
-  source: z.enum(['neo4j', 'pgvector']),
+  source: z.literal('pgvector'),
   score: z.number(),
   content: z.string(),
-  /** sha256 of `content`, and the key both readers break a tied score on. */
+  /** sha256 of `content`, and the key the reader breaks a tied score on. */
   contentHash: z.string().optional(),
-  entityId: z.string().optional(),
   episodeId: z.string().uuid().optional(),
 });
 export type RetrievalCandidate = z.infer<typeof RetrievalCandidateSchema>;
@@ -68,8 +68,8 @@ export interface RetrievalFacade {
  * Fusion (ADR 0002). P2-B measured that against pre-registered labels: on the
  * deployed path the graph list was empty for every query, so the fused list
  * equalled the vector list, and with perfect seeds fusion lowered Recall@10 by
- * 0.145. ADR 0009 took the graph out of the request path. `reflect` still
- * writes it, for an explanation role that P2-D measures or removes.
+ * 0.145. ADR 0009 took the graph out of the request path, and ADR 0012 removed
+ * it (P2-E).
  *
  * It stays a facade, rather than `retrieve` calling the reader, because it is
  * where a query is validated and so where the session scope is decided.

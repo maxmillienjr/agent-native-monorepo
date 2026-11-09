@@ -3,7 +3,7 @@ export {
   type RunInspectionInput,
   type RunInspection,
   type MemoryInspector,
-  PgNeo4jMemoryInspector,
+  PgMemoryInspector,
 } from './run-inspector.js';
 export {
   SeedStateSchema,
@@ -11,5 +11,5 @@ export {
   type SeedState,
   type SeedApplication,
   type SeedManager,
-  PgNeo4jSeedManager,
+  PgSeedManager,
 } from './seed-manager.js';
