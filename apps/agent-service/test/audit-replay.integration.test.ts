@@ -367,7 +367,17 @@ describe.skipIf(SKIP)('audit:replay (integration)', () => {
 
     expect(header.rows[0]?.model_axis).toBe('replay');
     expect(report.exitCode).toBe(0);
-    expect(report.decisions.recorded).toBeGreaterThan(6);
+    // Every decision the cassette holds was recorded into the run, which is what
+    // makes it replayable. Read from the cassette rather than fixed: the count
+    // follows the extraction (11 on gemini-2.5-flash, which extracted 7 facts; 5
+    // on gemini-3.5-flash-lite, which extracts 1), and P1-I re-recorded it.
+    const cassette = JSON.parse(
+      readFileSync(
+        join(MEMORY_RECALL_DATASET_DIR, 'cassettes', 'memory-recall-001.trial-0.json'),
+        'utf8',
+      ),
+    ) as { decisions: unknown[] };
+    expect(report.decisions.recorded).toBeGreaterThanOrEqual(cassette.decisions.length);
     expect(reached()).toEqual([]);
   });
 
