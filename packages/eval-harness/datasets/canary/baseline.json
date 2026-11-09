@@ -10,12 +10,21 @@
       "version": "Gemini Flash Latest",
       "displayName": "Gemini Flash Latest",
       "observedAt": "2026-10-08"
+    },
+    "gemini-3.5-flash-lite": {
+      "version": "3.5-flash-lite-07-2026",
+      "displayName": "Gemini 3.5 Flash Lite",
+      "observedAt": "2026-11-09"
     }
   },
   "chat": {
     "gemini-flash-latest": {
       "modelVersion": "gemini-3.8-flash",
       "observedAt": "2026-10-12"
+    },
+    "gemini-3.5-flash-lite": {
+      "modelVersion": "gemini-3.5-flash-lite",
+      "observedAt": "2026-11-09"
     }
   },
   "embedding": {
