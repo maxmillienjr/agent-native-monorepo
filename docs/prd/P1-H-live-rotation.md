@@ -243,7 +243,10 @@ budget = L − S − R
 ```
 
 `S` is the actual spend, not the recorded spend. A night on which memory-recall needs 17 calls
-leaves a smaller slice. It does not make the slice abort. The nightly can start before the
+leaves a smaller slice. It does not make the slice abort. When `eval-live` aborted it wrote no
+report, only `eval-abort.json`. If the abort names a per-day quota the budget is 0. For any
+other cause `S` is the sum of memory-recall's `modelCalls` ceilings, 17, plus the canary's
+call. The nightly can start before the
 day resets: GitHub has started it between 07:30 and 10:15 UTC, and in winter the day resets
 at 08:00 UTC (`conventions.md:522-527`). If `eval-live` ran before the reset and the rotation
 after it, `S` counts calls from the previous day, so the budget comes out smaller than the
@@ -286,14 +289,14 @@ export function selectSlice(tasks: readonly RotationTask[], budget: number): Sli
 The order is fixed: coverage ascending, then prior-auth before red-team, then the suite's
 file order (`dataset.ts:269-271` sorts by file name). The walk takes every task whose cost
 still fits the remaining budget and skips the ones that do not. A skipped task with the
-lowest coverage is named in the summary as "did not fit tonight". This selector beats the
-two alternatives the index paragraph named:
+lowest coverage is named in the summary as "did not fit tonight". There were two ways to
+choose the slice, and this one was chosen:
 
-- **From the date, or `run_number`, modulo the cycle.** A missed night leaves a hole until the
-  next cycle comes round. `run_number` also counts dispatches and runs on which the job was
-  skipped. Neither depends on what was actually measured.
-- **From the history.** A night that was skipped, paused or aborted pushes no tally (`agent-eval.yml:323-324`:
-  "An aborted run wrote no tally"). The next night's coverage is therefore unchanged and the
+- **Rejected: from the date, or `run_number`, modulo a fixed cycle.** A missed night leaves a
+  hole until the next cycle comes round. `run_number` also counts dispatches and runs on which
+  the job was skipped. Neither depends on what was actually measured.
+- **Chosen: from the history.** A night that was skipped, paused or aborted pushes no tally
+  (`agent-eval.yml:323-324`: "An aborted run wrote no tally"). The next night's coverage is therefore unchanged and the
   selector picks the same tasks again, so it resumes by construction. A re-record starts a new
   epoch, coverage drops to zero, and the walk starts again from the first task. A task added
   to a suite has zero coverage and runs first. Anyone with the `eval-history` commit and
@@ -497,9 +500,11 @@ These are the answers it was accepted with:
 
 **Risks that would make this wrong.**
 
-- **`L` may be too small for the design.** If the pinned model's free day is 15 or less, no
-  task with a model call ever fits after `S` = 13 and `R` = 1. In that case every night is
-  "not run", and the two "CI, model `live`" criteria cannot be met on the free key. The PRD
+- **`L` may be too small for the design.** If the pinned model's free day is 14 or less, no
+  task with a model call fits after `S` = 13 and `R` = 1. Every night is then "not run", and
+  the two "CI, model `live`" criteria cannot be met on the free key. From 15 to 18, the slice
+  holds one to four prior-auth tasks, and the red team runs only on nights when the budget
+  covers a whole task (3 calls for `rt-001` and `rt-002`, 6 for `rt-003`). The PRD
   then stays `in-progress`, and whether to change the key is the owner's call under ADR 0018.
   At `L` = 20 it works, but the red team's first pooled verdict is about 80 nights out per
   arm. Its nightly value is then the zero-tolerance check and nothing more.
