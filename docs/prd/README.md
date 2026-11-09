@@ -28,14 +28,20 @@ half moves `ASSESS_PROMPT`, so it re-records prior-auth on the owner's paid key.
 conductor runs a 15-call probe first, and the 20-call recording only if the probe meets the
 thresholds the PRD fixed before any call.
 
-**[P1-H](P1-H-live-rotation.md) is accepted**, tracked in
-[#159](https://github.com/maxmillienjr/agent-native-monorepo/issues/159). The owner
-accepted it on 2026-11-09. It brings prior-auth and the red team onto the live model at night,
-on the free CI secret, through an `eval-rotation` job that runs last and spends what
-`eval-live` and the canary left. **Its first step costs no call:** read the free-tier
-`generateContent` requests per day for `gemini-3.5-flash-lite` on the secret's project from
-AI Studio, and record it in `.context/conventions.md`. Google's rate-limits page does not
-publish that figure, and the job is built to run nothing until it is recorded.
+**[P1-H](P1-H-live-rotation.md) is in progress**, tracked in
+[#159](https://github.com/maxmillienjr/agent-native-monorepo/issues/159). It brings
+prior-auth and the red team onto the live model at night, on the free CI secret, through an
+`eval-rotation` job that runs last and spends what `eval-live` and the canary left. Branch
+`feat/p1-h` builds all of it that fakes or the YAML can check, with no model call: the
+selector (`eval:history slice`), the budget `L − S − R`, tallies pooled under the suite's own
+name, the `tasks-random` floor of 2 trials, the zero-tolerance graders, `promote-live
+--suite`, `canary:compare` with `COMPARE_SUITE`, and the job with `EVAL_ROTATION_DAILY_LIMIT`
+empty. All three suites replay to `match`. STATUS row 38 is `stubbed`. **Next, and it costs
+no call:** the owner reads the free-tier `generateContent` requests per day for
+`gemini-3.5-flash-lite` on the secret's project from AI Studio, and records it in
+`.context/conventions.md` and the workflow. Google's rate-limits page does not publish that
+figure, and until it is recorded the job runs nothing and warns. Then one dispatch with
+`rotation: true`, and the scheduled nights.
 
 **[P2-E](P2-E-remove-the-graph.md) is shipped: the graph is gone.** ADR 0012's option C
 landed in two pull requests on 2026-11-09. #152 (`df655c0`) stopped `reflect` writing the
@@ -55,8 +61,8 @@ checkpoints under the runId its own response returned. It wrote `:Concept` and `
 as well until P2-E, which removed the store on 2026-11-09.
 
 **`docs/STATUS.md` is the authority on any capability sentence, including the ones above.**
-Thirty-seven rows, each with a status and evidence cited by name — thirty `implemented`,
-two `planned`, two `stubbed`, three `removed`, none `broken`. The rule that keeps it true is in
+Thirty-eight rows, each with a status and evidence cited by name — thirty `implemented`,
+two `planned`, three `stubbed`, three `removed`, none `broken`. The rule that keeps it true is in
 `.context/conventions.md`: a change that moves a row moves it there in the same pull
 request. `yarn lint:docs` fails CI when a PRD's status disagrees with its row below.
 
@@ -500,7 +506,7 @@ shipped, checks each task's tokens and model calls beside the pass rate.
 | [P1-E](P1-E-model-drift-canary.md)     | Model-drift canary against pinned and floating model ids      | M    | shipped     |
 | [P1-F](P1-F-cost-and-step-budgets.md)  | Cost, latency, and step budgets as CI assertions              | M    | shipped     |
 | [P1-G](P1-G-task-axis-requirements.md) | Task-level axis requirements for the evaluation suite         | S    | shipped     |
-| [P1-H](P1-H-live-rotation.md)          | Live coverage of the replay-only suites by nightly rotation   | M    | accepted    |
+| [P1-H](P1-H-live-rotation.md)          | Live coverage of the replay-only suites by nightly rotation   | M    | in-progress |
 | [P1-I](P1-I-chat-model-migration.md)   | Migrate off `gemini-2.5-flash`                                | L    | in-progress |
 
 [P1-H](P1-H-live-rotation.md), raised on 2026-10-26, was accepted by the owner on
@@ -518,7 +524,8 @@ page and has not been recorded yet. Recording it is P1-H's first criterion, and 
 the job runs nothing. P1-H also pre-registers P1-D's floor for the `tasks-random` regime at 2
 trials per task, where it was 15. A single live failure of `no_false_approval` or of a red-team
 `canary_absent_*` grader turns the rotation job red. It depends on P1-D, P1-E, P1-I, P3-D and
-P4-B.
+P4-B. It has been in progress since 2026-11-09: everything but the recorded limit, the
+dispatch and the nights is built, and the job runs nothing until the limit is recorded.
 
 [P1-I](P1-I-chat-model-migration.md), accepted on 2026-11-09, moves the chat model off `gemini-2.5-flash`.
 This paragraph used to say no shutdown date forces it before 2028-05-14. That is the
