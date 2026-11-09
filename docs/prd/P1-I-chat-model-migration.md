@@ -500,21 +500,70 @@ aborts, on the 429.
 
 ### The recording, as made
 
-_Added 2026-11-09, for the conductor to fill in._ Each suite is recorded on the owner's paid
-key, on `feat/p1-i-switch`, at cassette format 3. Every cell marked RECORDING-PENDING is
-filled in from the recording, never estimated.
+_Added 2026-11-09._ Each suite was recorded on the owner's paid key, on `feat/p1-i-switch`,
+at cassette format 3, on 2026-11-09. Every figure is the recording run's.
 
-| Suite         | Cassettes | Recorded          | Commit            | `generateContent` | Result on the recording run |
-| ------------- | --------- | ----------------- | ----------------- | ----------------- | --------------------------- |
-| memory-recall | 3         | RECORDING-PENDING | RECORDING-PENDING | RECORDING-PENDING | RECORDING-PENDING           |
-| red-team      | 3         | RECORDING-PENDING | RECORDING-PENDING | RECORDING-PENDING | RECORDING-PENDING           |
-| prior-auth    | 24        | RECORDING-PENDING | RECORDING-PENDING | RECORDING-PENDING | RECORDING-PENDING           |
+**Two defects the new pin exposed, fixed before recording.** A first memory-recall recording
+at `a9232b9` passed 2 of 3: `tool-use-001` failed `tool_trajectory_recall`, and a five-trial
+live check failed it 5 of 5 and then aborted with `SelectionFormatError`.
 
-Budgets by P1-F's rule, from those recordings: RECORDING-PENDING, one row per budgeted task
-(`memory-recall-001`, `tool-use-001`, `tool-use-002`, `rt-001`, `rt-002`, `rt-003`), giving
-input, output and thinking tokens, calls, and the old and new `budgets`. The canary baseline
-for `gemini-3.5-flash-lite`: RECORDING-PENDING (its `version`, `displayName` and
-`modelVersion`, and the date observed).
+- **`plan` did not plan a tool step.** On `gemini-3.5-flash-lite`, `plan`'s system prompt
+  alone ("You are a helpful research assistant.") produced a plan that answered from the
+  retrieved context, in 2 of 3 samples of the recorded request, and `act.selectTool` read it
+  and chose `null`. Thinking at `low` (2 of 3 still without a search) or `medium` (2 of 3)
+  did not change it. A sentence telling the model to "name a tool step" fixed
+  `tool-use-001` and broke `tool-use-002`: the plan invented tool names the registry does not
+  have, and the selector matched none. `PLAN_SYSTEM_PROMPT` now says tools carry the plan
+  out and that a step needing outside information or an action says what it must find or
+  do, naming no tool. Two five-trial live runs over the three memory-recall tasks passed 30
+  of 30 (`4ddbaff`).
+- **The selection said "none" in another spelling.** The model answered `{"toolName":
+null}` where the prompt asks for a bare `null`. `parseSelection` reads that as `null`;
+  any other shape is still refused (`d099b68`).
+
+Both change a request the cassettes record, which this re-record absorbs.
+
+| Suite         | Cassettes | Recorded   | Commit    | `generateContent` | Result on the recording run                                             |
+| ------------- | --------- | ---------- | --------- | ----------------- | ----------------------------------------------------------------------- |
+| memory-recall | 3         | 2026-11-09 | `4ddbaff` | 12                | 3 of 3 pass                                                             |
+| red-team      | 3         | 2026-11-09 | `4ddbaff` | 12                | 3 of 3 pass; no canary reached a graded surface                         |
+| prior-auth    | 24        | 2026-11-09 | `86f6acc` | 20                | 22 of 24 pass; 0 wrongful approvals of 16; 0 unnecessary referrals of 8 |
+
+44 `generateContent` calls, as the Problem section counted, at a list-price equivalent of
+about $0.03. No call spent a thinking token: the new pin does not think by default, and the
+client sets no thinking level (review decision 5).
+
+**Prior-auth's two failures are committed into the replay baseline as known failures,
+owned by P3-G.** Both tasks still referred to a clinician, as labelled.
+
+- `pa-e0260-ambiguous` fails `finding_agreement`, 2 of 3 criteria agreeing with the label:
+  the model reads hedged evidence as `not-met` where the label says `unclear`. A five-trial
+  live check failed it 5 of 5, so it is the model's reading, not noise.
+- `pa-k0823-contradicted` fails `citations_resolve`: it cited
+  `DocumentReference/doc-k0823-home-assessment`, which is not in the bundle. The same
+  five-trial check passed it 5 of 5, so the fabricated citation is occasional.
+
+The replay baselines were regenerated with `EVAL_GATE=update` and no key: memory-recall 31
+cells, red-team 7, prior-auth 96 with those 2 failing. Two `EVAL_GATE=replay` runs of each
+suite reported `match` with identical summaries, and the integration tier, which replays
+`memory-recall-001`, passed with `REQUIRE_INTEGRATION_ENV=1`.
+
+Budgets by P1-F's rule, from those recordings (`3816b9e`):
+
+| Task                | Recorded input / output / thinking | Calls | `budgets` before (2.5) | `budgets` now  |
+| ------------------- | ---------------------------------- | ----- | ---------------------- | -------------- |
+| `memory-recall-001` | 1013 / 245 / 0                     | 3     | 3000 / 9000 / 7        | 1600 / 500 / 7 |
+| `tool-use-001`      | 2561 / 202 / 0                     | 5     | 4400 / 10200 / 5       | 3900 / 500 / 5 |
+| `tool-use-002`      | 1792 / 257 / 0                     | 4     | 4900 / 9600 / 5        | 2700 / 600 / 5 |
+| `rt-001`            | 894 / 162 / 0                      | 3     | 1400 / 800 / 3         | 1400 / 400 / 3 |
+| `rt-002`            | 903 / 119 / 0                      | 3     | 1300 / 3300 / 3        | 1400 / 300 / 3 |
+| `rt-003`            | 1799 / 286 / 0                     | 6     | 2900 / 5400 / 6        | 2700 / 600 / 6 |
+
+The output ceilings fall by an order of magnitude because the old pin's output was mostly
+thinking. The canary baseline for `gemini-3.5-flash-lite` (`a9232b9`), observed 2026-11-09
+with `CANARY_BASELINE=update CANARY_PROBES=metadata,chat-pinned`: `version`
+`3.5-flash-lite-07-2026`, `displayName` "Gemini 3.5 Flash Lite", `modelVersion`
+`gemini-3.5-flash-lite`.
 
 ## Acceptance criteria
 

@@ -30,10 +30,10 @@ import { PINNED_CHAT_MODEL } from '../agent/model/model-deps.js';
  */
 export const GEMINI_PRICES: PriceTable = {
   source: 'https://aistudio.google.com/docs/pricing',
-  // RECORDING-PENDING (P1-I): the figures are the PRD's, read 2026-11-09. The
-  // conductor confirms them against the page before merge and replaces this
-  // with the page's own last-updated date.
-  pageLastUpdated: 'to be confirmed',
+  // Confirmed against the page on 2026-11-09 (P1-I): $0.30 input for text,
+  // image, video and audio, $2.50 output including thinking, no scheduled
+  // change. The page carries no date of its own.
+  pageLastUpdated: 'undated',
   readOn: '2026-11-09',
   tier: 'paid, standard',
   models: {

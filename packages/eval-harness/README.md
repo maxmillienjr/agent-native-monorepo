@@ -135,8 +135,8 @@ roughly forty `generateContent` calls against the free-tier quota of 20 a day fo
 rate, and none is presented as one. Every number in this section was measured on
 `gemini-2.5-flash`. The pin has been `gemini-3.5-flash-lite` since P1-I (ADR 0018), whose
 recording run is the first measurement on it:
-RECORDING-PENDING (P1-I: each suite's recording-run result on `gemini-3.5-flash-lite`, its
-date and commit; see the PRD's recording table).
+memory-recall 3 of 3 and red-team 3 of 3 at `4ddbaff`, prior-auth 22 of 24 at `86f6acc`
+with 0 wrongful approvals of 16, all on 2026-11-09, one trial each (P1-I's recording table).
 
 P2-B added a third task, `graph-recall-001`, which proved that a fact only the graph held
 reached `plan`'s prompt, graded by a `retrieved_from_source` grader. ADR 0009 made retrieval
