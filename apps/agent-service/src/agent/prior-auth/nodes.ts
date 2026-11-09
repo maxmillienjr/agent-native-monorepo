@@ -96,6 +96,12 @@ export async function assessNode(state: PriorAuthState, deps: PriorAuthGraphDeps
  * `prior_auth.elapsed_ms` is the time from receipt to here, which is the
  * whole of what the tool holds a request for (P3-D's second SB 1120
  * invariant), on the span so P1-F can budget it.
+ *
+ * `prior_auth.unresolved_citations` counts the citations in the model's
+ * findings that name no resource in this request (P3-G). `decideDisposition`
+ * removes them, and a `met` that cited one refers. On the service path no
+ * grader runs, so this count is the one signal that the model fabricated a
+ * reference. A count, never the reference.
  */
 export async function disposeNode(state: PriorAuthState, deps: PriorAuthGraphDeps): Update {
   return withNodeSpan('dispose', async (span) => {
@@ -107,7 +113,13 @@ export async function disposeNode(state: PriorAuthState, deps: PriorAuthGraphDep
         ? { kind: 'refer-to-clinician', findings: [] }
         : decideDisposition(state.policy, state.findings, request.resourceIds);
 
+    const inRequest = new Set(request.resourceIds);
+    const unresolved = state.findings
+      .flatMap((finding) => finding.evidence)
+      .filter((reference) => !inRequest.has(reference)).length;
+
     span.setAttribute('prior_auth.disposition', disposition.kind);
+    span.setAttribute('prior_auth.unresolved_citations', unresolved);
     span.setAttribute(
       'prior_auth.elapsed_ms',
       deps.clock.now().getTime() - new Date(state.receivedAt).getTime(),

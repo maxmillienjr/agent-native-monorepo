@@ -3,8 +3,8 @@
     "formatVersion": 3,
     "taskId": "pa-e0470-all-met-narrative",
     "trialIndex": 0,
-    "recordedAt": "2026-11-09T17:22:41.552Z",
-    "gitSha": "86f6accdf5c3131da46a58edb611ae7038fecfce",
+    "recordedAt": "2026-11-09T22:27:19.794Z",
+    "gitSha": "5b35f9439bfac0fff9cb71211b1cbda39f2689ab",
     "axes": {
       "model": "live",
       "memory": "live"
@@ -16,9 +16,9 @@
   "decisions": [
     {
       "seam": "assess.criteria",
-      "requestHash": "ee5fad8f80c8d517741f12f2068f68cff201a5baa7b58743091369341171b301",
+      "requestHash": "ae0ab404d9ab8f9307addf3385943c612c6ead6816f76f9a6a209b48d1c77eef",
       "request": {
-        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states something that fails the criterion,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nCite every evidence reference you relied on, exactly as given (for example \"DocumentReference/doc-1\").\nNever cite a reference that is not in the evidence list. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
+        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states a fact that fails the criterion, such as a value outside a threshold or a date outside a window,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nA time stated relative to a dated document, such as days or a week before or after it, is dated.\nA statement that is uncertain, conditional or reported second-hand is \"insufficient\", even when it suggests the criterion fails.\nEvidence that does not confirm a criterion is \"insufficient\", not \"not-met\".\nCite only references copied exactly from the evidence list (for example \"DocumentReference/doc-1\").\nNever compose a reference from a document's description or a criterion's wording. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
         "criteria": [
           {
             "id": "e0470-osa-diagnosis",
@@ -61,7 +61,7 @@
             "evidence": [
               "DocumentReference/doc-e0470-all-met-narrative-visit"
             ],
-            "rationale": "The prescriber states in the clinical note that the patient has a diagnosis of obstructive sleep apnea."
+            "rationale": "The prescriber states that the member has obstructive sleep apnea."
           },
           {
             "criterionId": "e0470-cpap-failure",
@@ -69,7 +69,7 @@
             "evidence": [
               "DocumentReference/doc-e0470-all-met-narrative-visit"
             ],
-            "rationale": "The record documents a trial of three months of CPAP from April through June, and the prescriber states that it was not tolerated and did not control the apnea."
+            "rationale": "The record documents a trial of three months of CPAP and the prescriber states that it was not tolerated and did not control the apnea."
           },
           {
             "criterionId": "e0470-ahi-threshold",
@@ -77,7 +77,7 @@
             "evidence": [
               "DocumentReference/doc-e0470-all-met-narrative-visit"
             ],
-            "rationale": "The sleep study dated in March (within the 12 months before the request) reports thirty-seven obstructive events an hour, which is an AHI of at least 18 events per hour."
+            "rationale": "A sleep study in March (dated within 12 months before the request of 2026-09-08) reports 37 obstructive events an hour, which is at least 18 events per hour."
           },
           {
             "criterionId": "e0470-bilevel-titration",
@@ -85,11 +85,11 @@
             "evidence": [
               "DocumentReference/doc-e0470-all-met-narrative-visit"
             ],
-            "rationale": "The prescriber's note documents that bi-level pressure at 15 over 9 controlled the apnea down to a couple of events an hour."
+            "rationale": "The prescriber's note documents that bi-level pressure at 15 over 9 controlled the apnea."
           }
         ]
       },
-      "latencyMs": 1291
+      "latencyMs": 1242
     }
   ]
 }

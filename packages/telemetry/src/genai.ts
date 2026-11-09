@@ -159,12 +159,14 @@ export const ALLOWED_SPAN_ATTRIBUTES: ReadonlySet<string> = new Set<string>([
   'tool.awaiting_approval',
   // The prior-authorization nodes (P3-D). Times, a priority and the kind of
   // disposition: the request clock P1-F budgets and P3-E sorts by, and nothing
-  // from the member's record. No code, no criterion, no finding.
+  // from the member's record. No code, no criterion, no finding. P3-G adds a
+  // count of the model's citations that name no resource in the request.
   'prior_auth.received_at',
   'prior_auth.priority',
   'prior_auth.decision_due_by',
   'prior_auth.disposition',
   'prior_auth.elapsed_ms',
+  'prior_auth.unresolved_citations',
   // The review surface, `$inquire` and the overdue sweep (P3-E). A case id the
   // server assigned, counts, times and outcomes. Never a finding, a reason, a
   // reviewer or anything that identifies the member.

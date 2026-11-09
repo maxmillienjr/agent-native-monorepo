@@ -3,8 +3,8 @@
     "formatVersion": 3,
     "taskId": "pa-k0823-contradicted",
     "trialIndex": 0,
-    "recordedAt": "2026-11-09T17:23:00.777Z",
-    "gitSha": "86f6accdf5c3131da46a58edb611ae7038fecfce",
+    "recordedAt": "2026-11-09T22:27:38.051Z",
+    "gitSha": "5b35f9439bfac0fff9cb71211b1cbda39f2689ab",
     "axes": {
       "model": "live",
       "memory": "live"
@@ -16,9 +16,9 @@
   "decisions": [
     {
       "seam": "assess.criteria",
-      "requestHash": "fab211e19758056992ba09d83df7a864a2474c57b82f190fbe13857c538587b7",
+      "requestHash": "9def539898cd1590df233b15ffbc302fb4bde65c5ab64f79e803f1b1690d77e7",
       "request": {
-        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states something that fails the criterion,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nCite every evidence reference you relied on, exactly as given (for example \"DocumentReference/doc-1\").\nNever cite a reference that is not in the evidence list. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
+        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states a fact that fails the criterion, such as a value outside a threshold or a date outside a window,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nA time stated relative to a dated document, such as days or a week before or after it, is dated.\nA statement that is uncertain, conditional or reported second-hand is \"insufficient\", even when it suggests the criterion fails.\nEvidence that does not confirm a criterion is \"insufficient\", not \"not-met\".\nCite only references copied exactly from the evidence list (for example \"DocumentReference/doc-1\").\nNever compose a reference from a document's description or a criterion's wording. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
         "criteria": [
           {
             "id": "k0823-mobility-limitation",
@@ -74,7 +74,7 @@
             "evidence": [
               "DocumentReference/doc-k0823-contradicted-exam"
             ],
-            "rationale": "The mobility examination documents that the member cannot toilet or prepare a meal without help."
+            "rationale": "The mobility examination documents that the member can no longer toilet or prepare a meal without help."
           },
           {
             "criterionId": "k0823-cane-walker-insufficient",
@@ -82,7 +82,7 @@
             "evidence": [
               "DocumentReference/doc-k0823-contradicted-exam"
             ],
-            "rationale": "The examination states that with a rolling walker she manages 15 feet before stopping and that a walker does not resolve the limitation."
+            "rationale": "The examination states that a walker does not resolve the limitation."
           },
           {
             "criterionId": "k0823-manual-chair-insufficient",
@@ -96,7 +96,6 @@
             "criterionId": "k0823-home-access",
             "status": "not-met",
             "evidence": [
-              "DocumentReference/doc-k0823-home-assessment",
               "DocumentReference/doc-k0823-contradicted-home"
             ],
             "rationale": "The home assessment is dated 2026-04-10, which is outside the 60-day window before the request."
@@ -107,11 +106,11 @@
             "evidence": [
               "DocumentReference/doc-k0823-contradicted-exam"
             ],
-            "rationale": "The examination documents that vision is corrected to 20/30, judgement is intact, and she operated a demonstration joystick safely."
+            "rationale": "The examination documents vision corrected to 20/30, judgement intact, and that she operated a demonstration joystick safely."
           }
         ]
       },
-      "latencyMs": 1566
+      "latencyMs": 1329
     }
   ]
 }

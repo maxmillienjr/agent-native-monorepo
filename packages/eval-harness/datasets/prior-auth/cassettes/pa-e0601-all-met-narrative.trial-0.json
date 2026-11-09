@@ -3,8 +3,8 @@
     "formatVersion": 3,
     "taskId": "pa-e0601-all-met-narrative",
     "trialIndex": 0,
-    "recordedAt": "2026-11-09T17:22:48.541Z",
-    "gitSha": "86f6accdf5c3131da46a58edb611ae7038fecfce",
+    "recordedAt": "2026-11-09T22:27:26.903Z",
+    "gitSha": "5b35f9439bfac0fff9cb71211b1cbda39f2689ab",
     "axes": {
       "model": "live",
       "memory": "live"
@@ -16,9 +16,9 @@
   "decisions": [
     {
       "seam": "assess.criteria",
-      "requestHash": "4501c5f811a7757c0d8c06cf2398e8ee12260f92d9f7fd3a332e0370fcaf73ff",
+      "requestHash": "ac1dfe21702a81b9f4f88add14e0e7622f39d742b60cbe4340814f5843f6d7bd",
       "request": {
-        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states something that fails the criterion,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nCite every evidence reference you relied on, exactly as given (for example \"DocumentReference/doc-1\").\nNever cite a reference that is not in the evidence list. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
+        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states a fact that fails the criterion, such as a value outside a threshold or a date outside a window,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nA time stated relative to a dated document, such as days or a week before or after it, is dated.\nA statement that is uncertain, conditional or reported second-hand is \"insufficient\", even when it suggests the criterion fails.\nEvidence that does not confirm a criterion is \"insufficient\", not \"not-met\".\nCite only references copied exactly from the evidence list (for example \"DocumentReference/doc-1\").\nNever compose a reference from a document's description or a criterion's wording. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
         "criteria": [
           {
             "id": "e0601-osa-diagnosis",
@@ -61,7 +61,7 @@
             "evidence": [
               "DocumentReference/doc-e0601-all-met-narrative-visit"
             ],
-            "rationale": "The clinical note states that the patient has obstructive sleep apnea."
+            "rationale": "The prescriber states that the patient has obstructive sleep apnea based on history and sleep study results."
           },
           {
             "criterionId": "e0601-ahi-threshold",
@@ -69,7 +69,7 @@
             "evidence": [
               "DocumentReference/doc-e0601-all-met-narrative-visit"
             ],
-            "rationale": "The home sleep test done on August 2 reported 24 breathing interruptions (events) per hour, which is at least 18."
+            "rationale": "The home sleep test on August 2nd reported 24 breathing interruptions an hour, which is at least 18 events per hour."
           },
           {
             "criterionId": "e0601-conservative-trial",
@@ -77,7 +77,7 @@
             "evidence": [
               "DocumentReference/doc-e0601-all-met-narrative-visit"
             ],
-            "rationale": "The patient slept on her side since the middle of July (close to five weeks, which is at least 21 days) with positional therapy, and pauses have not let up."
+            "rationale": "The record documents sleeping on her side since the middle of July (close to five weeks, which is at least 21 days) of positional therapy that did not resolve symptoms."
           },
           {
             "criterionId": "e0601-prescriber-order",
@@ -85,11 +85,11 @@
             "evidence": [
               "DocumentReference/doc-e0601-all-met-narrative-visit"
             ],
-            "rationale": "The prescriber order names the CPAP machine, a fixed pressure of 9 centimetres of water, and notes that the order was signed."
+            "rationale": "The prescriber signed an order for a CPAP machine at a fixed pressure of 9 centimetres of water."
           }
         ]
       },
-      "latencyMs": 1286
+      "latencyMs": 1380
     }
   ]
 }
