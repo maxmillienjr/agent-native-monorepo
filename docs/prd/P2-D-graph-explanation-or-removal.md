@@ -2,7 +2,7 @@
 id: P2-D
 title: Measure the graph's explanation role, or remove it (ADR 0009's fallback)
 tier: 2
-status: in-progress
+status: shipped
 size: M
 depends_on: [P1-A, P1-B, P2-B]
 blocks: [P2-E]
@@ -453,9 +453,9 @@ docs/adr/NNNN-*.md                                           the outcome, whiche
 Each criterion names the axis it is verified on. "Pure" means a unit test with no store and
 no network. "Memory live" means `pgvector:pg16` and `neo4j:5-community` containers.
 
-Ticked on 2026-10-08, each against the evidence named after it. Three criteria are split,
-because stage 1 was `good` and their second half needs stage 2. The open halves are P2-D's
-own, and stage 2 is the next piece of this PRD.
+Ticked on 2026-10-08, each against the evidence named after it. Three criteria were split,
+because stage 1 was `good` and their second half needed stage 2. Those three halves were
+ticked on 2026-11-09, once stage 2 had been recorded and replayed ("Stage 2, as run").
 
 - [x] `explanation-labels.json` is committed before any commit that adds the explainer or the
       runner, and the report prints its sha256 and the dataset's. **Reviewer, from
@@ -513,23 +513,33 @@ own, and stage 2 is the next piece of this PRD.
       of 0.
 - [x] Stage 2 matches stage 1's outcome, on the branch stage 1 took. Stage 1 is `good`, so
       the report states that stage 2 has not run and made 0 `generateContent` calls.
-- [ ] Stage 2's recording run reports both graders for 38 queries × 2 conditions on **model
+- [x] Stage 2's recording run reports both graders for 38 queries × 2 conditions on **model
       live, memory live**. **Model replay** then reproduces every grader result with no
-      request to the model host. **Reviewer, from the committed report.** _Open, P2-D stage 2. The code exists, and a dry run on a fake model showed it resumable ("Stage 2's
-      code, and the run that remains"). The 76 calls remain, ten days at eight a day._
+      request to the model host. **Reviewer, from the committed report.** Recorded on model
+      `live` (`gemini-2.5-flash`) and memory `live`, 76 of 76 answers over six invocations
+      from 2026-11-05 to 2026-11-09. `stage2-summary.md` reports `answer_key_present` and
+      `bridge_named` for both conditions, n = 38, and per query. Two runs on model `replay`
+      with `GOOGLE_API_KEY=` empty made 0 requests, matched each other, and matched the
+      recording run's report in every line but the model axis label, once timestamps were
+      masked. All four reports are committed at `a256784`.
 - [x] `renderExplanationBlock` and the `without` prompt are pinned. The `without` prompt
       equals `planNode`'s for the same state. **Pure.** `explanation-prompt.test.ts` runs
       `planNode` on the same state and holds what it sends equal to `without`. It pins the
       bytes of `with`, and checks that deleting the block from `with` gives `without`.
       `plan.node.test.ts` pins `planNode`'s own bytes, which both cassettes key on.
 - [x] The ADR is listed in `docs/adr/README.md`, states that the result is under an oracle
-      extractor, and is `proposed` until the owner accepts it. **Reviewer.** ADR 0012.
-- [ ] The ADR records the row the rule selected and, for a C row, supersedes ADR 0004.
-      **Reviewer.** _Open, P2-D stage 2. Stage 1 alone selects no row._
+      extractor, and is `proposed` until the owner accepts it. **Reviewer.** ADR 0012, which
+      the owner accepted on 2026-11-09 (its **Decided** line and Decision section).
+- [x] The ADR records the row the rule selected and, for a C row, supersedes ADR 0004.
+      **Reviewer.** ADR 0012's "The row the rule selects" records `good` / `not met`, option
+      C, and its header supersedes ADR 0004. ADR 0004's status line and index row read
+      `superseded by 0012`, as ADR 0002's moved at 0009's acceptance.
 - [x] `docs/STATUS.md` rows 15 and 23, CTL-EVAL-04's note, `.context/conventions.md`'s
       Testing paragraph, `.context/architecture.md`'s Neo4j bullet and the docstring on
       `CypherNeo4jReader` state stage 1's result and the CI-tier decision. **Reviewer.**
-- [ ] The same six places state the final outcome. **Reviewer.** _Open, P2-D stage 2._
+- [x] The same six places state the final outcome. **Reviewer.** Each says option C: the
+      graph explains, `plan` does not use it, and P2-E removes it. Row 15's owner is now
+      P2-E.
 - [x] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
       pass.
 
@@ -668,7 +678,8 @@ _As run, from 2026-11-05._ The nightly now starts after the 07:00 UTC reset and 
 15, so the first three days recorded 8, 6 and 5 answers (19 in all), the third stopped by a
 per-day 429. The owner then paused the scheduled jobs: `EVAL_SCHEDULE_PAUSED` was set at
 01:25 UTC on 2026-11-09, so the nightly `eval-live` and `eval-canary` skip and a day holds 20. The remaining 57 answers are three days of at most 20, and the variable is deleted once
-the last is committed. No `eval-history` tally is pushed for the nights between.
+the last is committed. No `eval-history` tally is pushed for the nights between. That plan
+did not hold: "Stage 2, as run", below, records what happened.
 
 Where stage 2's code differs from the Design:
 
@@ -696,6 +707,75 @@ Where stage 2's code differs from the Design:
    the answer fact in all 38. That is the `reflect` shape's over-linking again: the gold
    path is in the block, among about twenty others. It is recorded before any answer
    exists, so it cannot be used afterwards to explain a `not met` or to discount a `met`.
+
+## Stage 2, as run
+
+Recorded from 2026-11-05 to 2026-11-09: 76 of 76 answers on `gemini-2.5-flash`, in six
+invocations over five recording days. **The schedule above, eight calls a day for ten
+days, was not followed.** The plan is left as written; this is the record of the run.
+
+| Day | Date (UTC)                                                  | Answers after | Notes                                                                                                                                                                                                                   |
+| --- | ----------------------------------------------------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | 2026-11-05                                                  | 8             |                                                                                                                                                                                                                         |
+| 2   | 2026-11-06                                                  | 14            |                                                                                                                                                                                                                         |
+| 3   | 2026-11-09 01:20, which is the 2026-11-08 Pacific quota day | 19            | A per-day 429 after 5                                                                                                                                                                                                   |
+| 4   | 2026-11-09 07:04 and 08:03                                  | 29            | 1 at 07:04, on the previous day's remainder, because the reset is 08:00 UTC since US daylight time ended. 9 after the reset from 20 requests, because the client's retries on a 503 spend quota, and then a per-day 429 |
+| 5   | 2026-11-09 13:47 to 13:51                                   | 76            | 47 answers from 47 requests, at `EVAL_STAGE2_PACE_MS=3000`, on the owner's **paid** key from another GCP project                                                                                                        |
+
+**Day 5 left the free tier, by the owner's decision.** Open question 2 decided the free tier
+and left a billed key to the owner. On 2026-11-09 the owner decided to finish on a paid key
+from another GCP project. A probe on that key first answered `modelVersion`
+`gemini-2.5-flash`. The model id, the client and the prompts are the same for all 76
+answers; only the project and the tier changed. Off the free tier's five a minute, the
+calls were paced 3 seconds apart rather than 13 (divergence 5 above).
+
+**Why the free-tier days fell short of the plan.** The nightly started after the reset and
+spent about 15 calls (the note above). The reset moved from 07:00 to 08:00 UTC when US
+daylight time ended, so day 4's 07:04 start drew on the previous Pacific day. And
+`yarn eval:explanation` builds its own `RunsService`, so the client's six retries on a 503
+were not bounded, and each one spent quota. `.context/conventions.md`, "Live model quota",
+now records both.
+
+**The answers' commits.** Each answer records the `gitSha` it was recorded at. Day 1's,
+`90d9c9d`, is on `main`. Rebasing this branch onto `main` orphaned the others, and a tag
+keeps each reachable:
+
+| Tag                                     | Commit    | Answers |
+| --------------------------------------- | --------- | ------- |
+| `recording/p2d-s2-day2-2026-11-06`      | `72546d8` | 6       |
+| `recording/p2d-s2-day3-2026-11-09`      | `1c74b1e` | 5       |
+| `recording/p2d-s2-day4a-2026-11-09`     | `60ad018` | 1       |
+| `recording/p2d-s2-day4b-2026-11-09`     | `880fabe` | 9       |
+| `recording/p2d-s2-day5-paid-2026-11-09` | `e33114a` | 47      |
+
+**The schedule pause.** `EVAL_SCHEDULE_PAUSED` was `true` from 01:25 UTC on 2026-11-09. It
+was set to `live` at 12:59 UTC, because P1-I needed the scheduled canary back, and deleted
+at 13:51 UTC, once the last answer was recorded. The one scheduled night it covered was
+2026-11-09's, whose `eval-live` and `eval-canary` were skipped, so `eval-history` has no
+tally for that night.
+
+**It finished before the model goes.** Google shuts `gemini-2.5-flash` down on 2026-12-01
+and routes the id to another model (P1-I). The last answer was recorded on 2026-11-09.
+Replay and re-scoring need only the committed answer file.
+
+**Replay.** Two runs with `GOOGLE_API_KEY=` empty made 0 requests to the model host, matched
+each other, and matched the recording run's report in every line but the model axis label
+(`live` against `replay`), once timestamps were masked. The four reports are committed under
+`reports/explanation/`.
+
+**The result.** Relational queries whose answer fact `vector` retrieved, n = 38:
+
+| Grader                      | `without` | `with` | with − without | 95% interval     |
+| --------------------------- | --------- | ------ | -------------- | ---------------- |
+| `answer_key_present` (rule) | 0.895     | 0.816  | −0.079         | [−0.184, +0.026] |
+| `bridge_named` (reported)   | 0.947     | 0.842  | −0.105         | [−0.237, +0.000] |
+
+**Stage 2 is `not met`, and the rule selects option C.** It needed at least +0.10 with a
+lower bound above 0. The row is "`good` / `not met`": the graph explains, and `plan` does
+not use it. C follows by ADR 0009's condition, ADR 0012 supersedes ADR 0004, and P2-E
+removes the graph. The owner accepted ADR 0012 on 2026-11-09. The point estimate is negative, and it is reported as measured.
+It is not a finding of harm: the interval includes 0, and this PRD's risks named the low
+power of 38 pairs for +0.10 before the run.
 
 ## Risks and open questions
 

@@ -8,14 +8,15 @@ over it and update it._
 **The chat model shuts down on 2026-12-01.** Google's deprecations page routes
 `gemini-2.5-flash` to `gemini-3.5-flash-lite` from that day under the same id, so P1-I,
 accepted on 2026-11-09, has to put a measured switch on `main` by 2026-11-30. P2-D's stage
-2, pre-registered on the old id, has to finish recording by then too. P1-I is in progress,
+2, pre-registered on the old id, finished recording on 2026-11-09. P1-I is in progress,
 tracked in [#147](https://github.com/maxmillienjr/agent-native-monorepo/issues/147). Its step
 1a, the only code before the choice, adds the canary's `chat-candidate` probe on
 `gemini-3.5-flash-lite` and lets `EVAL_SCHEDULE_PAUSED=live` skip the scheduled `eval-live`
 alone. The seven nights its rule 3 reads start with the first scheduled canary after that
-merges, with the variable at `live` rather than `true` while stage 2 holds the 2.5 pool.
+merges. Stage 2 no longer holds the 2.5 pool, and the variable was deleted at 13:51 UTC on
+2026-11-09, so the scheduled `eval-live` runs again as well.
 
-**Twenty-four PRDs are shipped and the system they describe is running.** The service answers
+**Twenty-five PRDs are shipped and the system they describe is running.** The service answers
 `POST /runs` and `POST /runs/stream`; `memory-core` is constructed by the app rather than
 sitting beside it; the graph compiles with a checkpointer and a retry policy on every node
 that performs I/O; and `packages/eval-harness` measures the result. Verified against live
@@ -165,26 +166,26 @@ reads `match`. P4-B was amended: the graph half of its cross-session leak is clo
 read side, its graph session filter (M1) moves to P2-D, and M2 and M3 stay. P2-D owns the
 rest, in the next paragraph.
 
-**[P2-D](P2-D-graph-explanation-or-removal.md) is in progress**, tracked in
-[#100](https://github.com/maxmillienjr/agent-native-monorepo/issues/100), and stage 1 is
-`good`. Gold concept paths for P2-B's 201 pairs were committed before any explainer code.
-M1 now covers edges: every graph write carries its session, and both graph reads require
-one. `yarn eval:explanation` runs with no key and no embeddings. On the relational stratum,
-path recall@3 is 1.000 and precision@3 is 0.637 [0.553, 0.723], and two runs from empty
-stores are identical. The pass is weak evidence, as the PRD said it would be. Recall is all
-but guaranteed by how `reflect` links facts, the label linker equals the oracle, and the
-extractor is the corpus. The PRD's predicted failure appeared in only 12 of 50 pairs.
-[ADR 0012](../adr/0012-the-graphs-explanation-role-stage-one.md), proposed, records that
-the rule selects no outcome yet and recommends stage 2 as pre-registered. Stage 2 is 76
-`generateContent` calls on `plan`'s answers, and its code exists with none of them spent:
-the prompts are pinned to `planNode`'s, the graders apply the rule, and the answer file is
-recorded resumably and replayed with no key. A dry run on a fake model was killed mid-run,
-resumed, and stopped by a per-day 429, and it ended with 76 answers, none asked twice once
-recorded. Recording started on 2026-11-05; on 2026-11-09 it had 29 of the 76 answers, at
-about nine a day with the scheduled `eval-live` paused, and it has to finish by 2026-11-30,
-when `gemini-2.5-flash` is routed to another model (P1-I).
-Neither command runs in CI, by decision: P2-E reproduces or archives both, depending on the
-outcome.
+**[P2-D](P2-D-graph-explanation-or-removal.md) has shipped**, tracked in
+[#100](https://github.com/maxmillienjr/agent-native-monorepo/issues/100), and its rule
+selected option C: the graph is to be removed. Gold concept paths for P2-B's 201 pairs were
+committed before any explainer code. M1 covers edges: every graph write carries its
+session, and both graph reads require one. Stage 1 was `good` on the relational stratum,
+with path recall@3 1.000 and precision@3 0.637 [0.553, 0.723]. That was weak evidence, as
+the PRD said it would be: recall is all but guaranteed by how `reflect` links facts, the
+label linker equals the oracle, and the extractor is the corpus. Stage 2 asked `plan` 38
+relational questions with and without the graph's paths in its prompt, 76
+`generateContent` calls on `gemini-2.5-flash` recorded from 2026-11-05 to 2026-11-09: 29 on
+the free tier, and the last 47 on the owner's paid key, under the same model id. The answer
+key was present in 0.895 of the answers without the paths and 0.816 with them, a
+difference of −0.079 [−0.184, +0.026]. The rule needed +0.10 with a lower bound above 0, so
+stage 2 is `not met`. That is not a finding of harm: the interval includes 0, and the PRD
+said before the run that 38 pairs have low power for +0.10. Replay with no key reproduces
+every grader result and makes no request.
+[ADR 0012](../adr/0012-the-graphs-explanation-role-stage-one.md), accepted by the owner on
+2026-11-09, records option C: the graph explains, and `plan` does not use it. It supersedes
+ADR 0004. Neither command runs in CI, by decision, and P2-E archives both when it removes
+the graph.
 
 **[P2-C](P2-C-otel-genai-semantics.md) has shipped**, tracked in
 [#74](https://github.com/maxmillienjr/agent-native-monorepo/issues/74). A run is now one
@@ -490,24 +491,25 @@ suites on the chosen id and re-derives the budgets: about 86 `generateContent` c
 at least twelve days, with the switch due on `main` by 2026-11-30. It owns P1-E's one unmet
 criterion, the suite on the floating alias, as its first measurement; three dispatches and
 a probe from 2026-10-26 to 2026-11-03 ran into the alias's 503s and its own daily quota.
-P2-D's stage 2 is pre-registered on `gemini-2.5-flash`, so its last call has to be made by
-2026-11-30 too.
+P2-D's stage 2, pre-registered on `gemini-2.5-flash`, made its last call on 2026-11-09,
+ahead of that date.
 
 ## Tier 2 — Make the architecture real
 
 The three-tier memory model is instantiated and the graph is checkpointed. The hybrid
 premise was measured by P2-B and did not hold, and ADR 0009 made retrieval vector-only. What
-remains is the knowledge graph that `reflect` still writes: P2-D measures what it is for, or
-removes it. The standard vocabulary for reporting either is in place: P2-C emits the
+remains is the knowledge graph that `reflect` still writes. P2-D measured its one remaining
+role, explanation, and it did not meet the rule, so ADR 0012 removes the graph and P2-E does
+the removal. The standard vocabulary for reporting either is in place: P2-C emits the
 OpenTelemetry GenAI conventions.
 
-| ID                                           | Title                                                                    | Size | Status      |
-| -------------------------------------------- | ------------------------------------------------------------------------ | ---- | ----------- |
-| [P2-A](P2-A-wire-memory-core.md)             | Wire memory-core into the service; add checkpointing and retry           | L    | shipped     |
-| [P2-B](P2-B-retrieval-ablation.md)           | Hybrid retrieval evaluation and the graph/vector/hybrid ablation         | L    | shipped     |
-| [P2-C](P2-C-otel-genai-semantics.md)         | OpenTelemetry GenAI semantics, including evaluation events               | L    | shipped     |
-| [P2-D](P2-D-graph-explanation-or-removal.md) | Measure the graph's explanation role, or remove it (ADR 0009's fallback) | M    | in-progress |
-| P2-E                                         | Act on P2-D's outcome: remove the graph, or wire its explanation         | M    | draft       |
+| ID                                           | Title                                                                    | Size | Status  |
+| -------------------------------------------- | ------------------------------------------------------------------------ | ---- | ------- |
+| [P2-A](P2-A-wire-memory-core.md)             | Wire memory-core into the service; add checkpointing and retry           | L    | shipped |
+| [P2-B](P2-B-retrieval-ablation.md)           | Hybrid retrieval evaluation and the graph/vector/hybrid ablation         | L    | shipped |
+| [P2-C](P2-C-otel-genai-semantics.md)         | OpenTelemetry GenAI semantics, including evaluation events               | L    | shipped |
+| [P2-D](P2-D-graph-explanation-or-removal.md) | Measure the graph's explanation role, or remove it (ADR 0009's fallback) | M    | shipped |
+| P2-E                                         | Act on P2-D's outcome: remove the graph (option C, ADR 0012)             | M    | draft   |
 
 ## Tier 3 — Regulated-domain credibility
 
@@ -588,8 +590,8 @@ P2-D is drawn under P2-B, whose corpus, recorded embeddings, seeding and bootstr
 measurement reuses. It also depends on P1-A directly, for the harness, and on P1-B, whose
 `ModelDeps` seam and recording pattern its conditional answer-level stage uses. Its graph
 session filter is the M1 that P4-B handed over, extended to edges. P2-E, a draft with no
-file yet, executes whichever outcome P2-D's ADR selects, removal or wiring, from the
-specification P2-D writes for both.
+file yet, executes the outcome ADR 0012 records, removing the graph, from the specification
+P2-D wrote under "What P2-E inherits".
 
 P4-B is drawn under P2-B, whose `graphFacts` seed format its cross-session case needs (the
 graph-path task it also used was deleted with ADR 0009); it also depends on P1-A and P1-B directly, for the harness and
