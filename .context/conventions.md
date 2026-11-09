@@ -316,9 +316,16 @@ selected option C: the graph explains, `plan` does not use it, and P2-E removes 
   sends, the chat or embedding model id, the embedding width, the tool registry (any tool's
   name, description, tier or input schema is in every selection request), a graph
   change that alters which decisions a run makes, or the canary reporting `changed` on a
-  pinned id. The first four are mechanical — the request hash moves, every replay misses,
-  and `CassetteMissError` prints the diff. The last is the one nothing else notices: the id
-  is the same, so the cassettes replay cleanly with the old model's answers. The
+  pinned id. Most of these are mechanical. A moved request, `plan`'s prompt strings or the
+  registry moves the request hash, every replay misses, and `CassetteMissError` prints the
+  diff. A chat or embedding id or width that differs from a cassette's header is refused by
+  the player. **Two are not mechanical.** The three JSON seams, `distill`, `act.selectTool`
+  and `assess.criteria`, hash the content they send and not their instruction (`calls` in
+  `agent/model/decision-seam.ts`). So a change to `EXTRACTION_PROMPT`, `SELECT_TOOL_PROMPT`
+  or `ASSESS_PROMPT` replays cleanly, with answers to the old instruction. On 2026-11-09 a
+  scratch tree that replaced `EXTRACTION_PROMPT` replayed all three suites with no miss
+  (P2-E). The other is the canary reporting `changed`: the id is the same, so the cassettes
+  replay cleanly with the old model's answers. Nothing else notices either one. The
   cost is real and it falls on prompt changes, which are common here; the alternative,
   keying on a normalized shape, serves the old answer to the new prompt and calls it a
   pass. Re-recording needs a live key and about eleven `generateContent` calls for the
