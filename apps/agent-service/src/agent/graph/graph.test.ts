@@ -4,6 +4,7 @@ import { CassetteMissError } from '@repo/agent-cassette';
 import { buildAgentGraph, type GraphDeps } from './graph.js';
 import { NO_USAGE } from '../model/usage.js';
 import { RunRecordWriteError } from '../../audit/persisting-deck.js';
+import { ProviderUnavailableError } from '../model/server-errors.js';
 import { defineRegistry } from '../tools/registry.js';
 
 /**
@@ -224,6 +225,31 @@ describe('buildAgentGraph', () => {
     await expect(
       compiled.invoke({ runId: '550e8400-e29b-41d4-a716-446655440007' }),
     ).rejects.toThrow(RunRecordWriteError);
+    expect(attempts).toBe(1);
+  });
+
+  it('does not retry a chat call the bounded client already retried on a 5xx', async () => {
+    // Under `yarn eval` the client has made two requests by now (P1-I). Three
+    // node attempts would make six, the spend the bound exists to stop.
+    let attempts = 0;
+    const deps = makeDeps();
+    deps.plan.callLlm = async () => {
+      attempts += 1;
+      throw new ProviderUnavailableError('generateContent', 2, new Error('503'), 503);
+    };
+
+    const compiled = buildAgentGraph(
+      deps,
+      {
+        sessionId: '550e8400-e29b-41d4-a716-446655440000',
+        messages: [{ role: 'user', content: 'What is LangGraph?' }],
+      },
+      'corr-123',
+    );
+
+    await expect(
+      compiled.invoke({ runId: '550e8400-e29b-41d4-a716-446655440008' }),
+    ).rejects.toThrow(ProviderUnavailableError);
     expect(attempts).toBe(1);
   });
 });

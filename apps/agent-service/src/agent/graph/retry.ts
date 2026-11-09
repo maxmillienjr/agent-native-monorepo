@@ -37,6 +37,16 @@ function isRecordWriteFailure(error: unknown): boolean {
 }
 
 /**
+ * Detects a chat call the bounded client has already retried once on a 5xx
+ * (P1-I). Re-running the node would make two more requests per attempt, which
+ * is the quota the bound exists to keep. Only `yarn eval` builds that client,
+ * so a request's 5xx is retried here as before. Matched on `name`.
+ */
+function isProviderUnavailable(error: unknown): boolean {
+  return error instanceof Error && error.name === 'ProviderUnavailableError';
+}
+
+/**
  * Applied to every node that performs I/O.
  *
  * Note what this requires of those nodes: a `retryPolicy` only ever fires on a
@@ -58,5 +68,6 @@ export const IO_RETRY: RetryPolicy = {
     !(error instanceof z.core.$ZodError) &&
     !isClientError(error) &&
     !isCassetteMiss(error) &&
-    !isRecordWriteFailure(error),
+    !isRecordWriteFailure(error) &&
+    !isProviderUnavailable(error),
 };
