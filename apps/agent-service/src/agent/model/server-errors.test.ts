@@ -131,11 +131,11 @@ describe('a 5xx on the chat path', () => {
 
   it("keeps the default retries on the service's request path", async () => {
     // What a request builds: no `setChatOptions` call, which only `yarn eval`
-    // makes. P2-D's stage 2 recorder builds its client this way too.
+    // makes.
     process.env['GOOGLE_API_KEY'] = 'fake-key';
     fetchStub.mockImplementation(async () => unavailable());
 
-    const callLlm = new RunsService(null, null, null, null, null, null).modelDeps().plan.callLlm;
+    const callLlm = new RunsService(null, null, null, null, null).modelDeps().plan.callLlm;
     const error = await settle(callLlm('system', 'user'));
 
     expect(fetchStub).toHaveBeenCalledTimes(7);
@@ -147,7 +147,7 @@ describe('a 5xx on the chat path', () => {
     process.env['GOOGLE_API_KEY'] = 'fake-key';
     fetchStub.mockImplementation(async () => unavailable());
 
-    const runs = new RunsService(null, null, null, null, null, null);
+    const runs = new RunsService(null, null, null, null, null);
     runs.setChatOptions({ boundServerErrors: true });
     const { act } = runs.modelDeps();
     const error = await settle(act.selectTool(selectionRequest('a plan', act.registry, [])));

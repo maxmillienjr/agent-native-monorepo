@@ -16,8 +16,6 @@
     "test:integration": "turbo test:integration",
     "test:e2e": "turbo test:e2e",
     "eval": "turbo eval",
-    "eval:retrieval": "turbo eval:retrieval",
-    "eval:explanation": "turbo eval:explanation",
     "eval:promote-live": "turbo build --filter=@repo/agent-service... --output-logs=errors-only && yarn workspace @repo/agent-service eval:promote-live",
     "canary": "turbo build --filter=@repo/agent-service... --output-logs=errors-only && yarn workspace @repo/agent-service canary",
     "audit:replay": "turbo build --filter=@repo/agent-service... --output-logs=errors-only && yarn workspace @repo/agent-service audit:replay",

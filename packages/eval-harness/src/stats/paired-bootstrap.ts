@@ -11,9 +11,9 @@
  * small, fast, and fully determined by a 32-bit seed — rather than
  * `Math.random`, which cannot be seeded at all.
  *
- * It lives in `stats/` rather than `retrieval/` because nothing here knows what
- * a query is. P1-D's gate compares a run against a baseline and needs the same
- * interval.
+ * Nothing here knows what a query is. It was written for P2-B's retrieval
+ * ablation, archived since P2-E, and P1-D's gate compares a run against a
+ * baseline with the same interval.
  */
 
 export interface PairedBootstrapOptions {

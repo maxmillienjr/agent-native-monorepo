@@ -11,9 +11,8 @@ export const PLAN_INSTRUCTION = "Based on the above, create a plan to address th
  * `plan`'s user prompt for a state: the transcript, the retrieved context if
  * there is any, and the instruction.
  *
- * Exported so that P2-D's stage 2 can ask the model exactly what this node
- * asks it, and a test can hold the two equal. A copy of the template in the
- * evaluation would let the measured prompt drift from the shipped one.
+ * Exported so that `plan.node.test.ts` can pin its bytes: every recorded
+ * `plan` request hashes them, so a change here is a re-record.
  */
 export function buildPlanPrompt(state: Pick<AgentState, 'messages' | 'retrievedContext'>): string {
   // Build context from messages and retrieved context

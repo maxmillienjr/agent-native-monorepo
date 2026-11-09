@@ -14,8 +14,8 @@ export interface RetrieveNodeDeps {
  * Vector-only since ADR 0009. The node used to derive graph seed ids from the
  * query's capitalized words and pass them to a facade that fused the graph's
  * list with the vector list. P2-B measured that and it did not help, so the
- * seed linker left the request path; it is kept, frozen, only where the
- * ablation reproduces the fused path (`eval/seed-linker.ts`).
+ * seed linker left the request path, and P2-E removed the graph and the
+ * linker with it.
  */
 export async function retrieveNode(
   state: AgentState,
