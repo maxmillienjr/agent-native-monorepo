@@ -1,10 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import {
-  entityMerged,
   episodicRowWritten,
-  factsPersistedToBothIndices,
   outcomeMustBe,
   retrievedContextMinLength,
+  semanticFactWritten,
   tokenCountsPositive,
 } from './code.js';
 import type { MemoryOutcome } from '../outcome.js';
@@ -32,8 +31,6 @@ function outcome(overrides: Partial<MemoryOutcome> = {}): MemoryOutcome {
     episodeRowsForRun: 2,
     factRowsForRun: 1,
     factNodesForRun: 1,
-    extractedConceptIds: ['langgraph'],
-    mergedConceptIds: ['langgraph'],
     extractedFactTexts: ['LangGraph is used for building stateful agent workflows.'],
     ...overrides,
   };
@@ -76,7 +73,7 @@ describe('the three assertions migrated from run-fixture-001.json', () => {
 
 describe('outcome graders', () => {
   it('assert against persisted state and demand a live memory axis', () => {
-    for (const grader of [episodicRowWritten(1), entityMerged(1), factsPersistedToBothIndices(1)]) {
+    for (const grader of [episodicRowWritten(1), semanticFactWritten(1)]) {
       expect(grader.requires).toEqual({ memory: 'live' });
     }
   });
@@ -89,22 +86,23 @@ describe('outcome graders', () => {
     );
   });
 
-  it('fails when the concepts distill produced are not in the graph', async () => {
-    const grader = entityMerged(1);
+  it('fails when reflect wrote no semantic_facts row for the run', async () => {
+    const grader = semanticFactWritten(1);
+    expect(grader.name).toBe('semantic_fact_written');
     expect((await grader.grade(transcript(), outcome())).label).toBe('pass');
 
-    // Extracted but absent: `reflect` produced an extraction and wrote none of
-    // it. A grader that counted `:Concept` nodes instead would report a pass
-    // here on the seeded concepts alone.
-    const wroteNothing = outcome({ extractedConceptIds: ['langgraph'], mergedConceptIds: [] });
+    // Extracted but not written: `distill` produced a fact and `reflect` wrote
+    // no row under this run's id.
+    const wroteNothing = outcome({ factRowsForRun: 0 });
     const score = await grader.grade(transcript(), wroteNothing);
     expect(score.label).toBe('fail');
-    expect(score.explanation).toContain('0 of 1');
+    expect(score.explanation).toContain('0 semantic_facts row(s)');
+    expect(score.explanation).toContain('needed 1');
   });
 
-  it('reports both indices for a fact', async () => {
-    const grader = factsPersistedToBothIndices(1);
-    expect((await grader.grade(transcript(), outcome())).label).toBe('pass');
-    expect((await grader.grade(transcript(), outcome({ factNodesForRun: 0 }))).label).toBe('fail');
+  it('counts rows against the minimum it was given', async () => {
+    const grader = semanticFactWritten(3);
+    expect((await grader.grade(transcript(), outcome({ factRowsForRun: 2 }))).label).toBe('fail');
+    expect((await grader.grade(transcript(), outcome({ factRowsForRun: 3 }))).label).toBe('pass');
   });
 });

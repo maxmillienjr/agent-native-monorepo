@@ -82,28 +82,17 @@ export function episodicRowWritten(minimum: number): Grader<MemoryOutcome> {
 }
 
 /**
- * Did `reflect` MERGE the entities `distill` produced?
+ * Did `reflect` write at least `minimum` `semantic_facts` rows under this run's id?
  *
- * Keyed on the run's own extraction rather than on a count of `:Concept` nodes,
- * because `mergeEntity` records no episode on the node — a bare count cannot
- * attribute a concept to a run, and would report a pass on the seeded concepts
- * alone.
+ * The one semantic write `reflect` makes (P2-E), and the positive control ADR
+ * 0011 names: the agent still promotes what the user said. Keyed on the row's
+ * `episode_id`, so a seeded fact never counts. A fact whose text an earlier run
+ * already wrote lands on that run's row, since the upsert keys on the content
+ * hash, so a run that only repeats known facts reads zero here.
  */
-export function entityMerged(minimum: number): Grader<MemoryOutcome> {
-  return outcomeGrader('entity_merged', (outcome) => {
-    const merged = outcome.mergedConceptIds.length;
-    const extracted = outcome.extractedConceptIds.length;
-    const detail = `${merged} of ${extracted} extracted concept(s) present in the graph`;
-    return merged >= minimum ? pass(detail) : fail(`${detail}, needed ${minimum}`);
-  });
-}
-
-/** Did the fact reach both indices, keyed on the same content hash? */
-export function factsPersistedToBothIndices(minimum: number): Grader<MemoryOutcome> {
-  return outcomeGrader('facts_persisted_to_both_indices', (outcome) => {
-    const detail = `pgvector=${outcome.factRowsForRun} neo4j=${outcome.factNodesForRun}`;
-    return outcome.factRowsForRun >= minimum && outcome.factNodesForRun >= minimum
-      ? pass(detail)
-      : fail(`${detail}, each needed ${minimum}`);
+export function semanticFactWritten(minimum: number): Grader<MemoryOutcome> {
+  return outcomeGrader('semantic_fact_written', (outcome) => {
+    const detail = `${outcome.factRowsForRun} semantic_facts row(s) for run ${outcome.runId}`;
+    return outcome.factRowsForRun >= minimum ? pass(detail) : fail(`${detail}, needed ${minimum}`);
   });
 }

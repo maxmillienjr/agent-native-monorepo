@@ -186,8 +186,6 @@ describe('the red team keeps its own denominator', () => {
         episodeRowsForRun: 2,
         factRowsForRun: 1,
         factNodesForRun: 1,
-        extractedConceptIds: [],
-        mergedConceptIds: [],
         extractedFactTexts: [],
       }),
       close: async () => {},

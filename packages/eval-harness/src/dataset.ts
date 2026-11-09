@@ -17,7 +17,7 @@ import {
   retrievedContextMinLength,
   tokenCountsPositive,
   episodicRowWritten,
-  entityMerged,
+  semanticFactWritten,
 } from './graders/code.js';
 import { trajectoryGraders } from './graders/trajectory.js';
 import { RED_TEAM_SURFACES, redTeamGraders } from './graders/red-team.js';
@@ -191,8 +191,8 @@ export const TaskSpecSchema = z.object({
     tokenCountsPositive: z.boolean().optional(),
     /** `reflect` wrote at least this many `episodes` rows under the run's id. */
     episodicRowsMin: z.number().int().nonnegative().optional(),
-    /** `reflect` MERGEd at least this many of the concepts `distill` produced. */
-    mergedConceptsMin: z.number().int().nonnegative().optional(),
+    /** `reflect` wrote at least this many `semantic_facts` rows under the run's id. */
+    semanticFactRowsMin: z.number().int().nonnegative().optional(),
   }),
   /**
    * The reference the trajectory graders score against, and the threshold each
@@ -227,7 +227,9 @@ export function buildGraders(spec: TaskSpec): Grader<MemoryOutcome>[] {
   if (a.outcomeMustBe !== undefined) graders.push(outcomeMustBe(a.outcomeMustBe));
   if (a.tokenCountsPositive === true) graders.push(tokenCountsPositive());
   if (a.episodicRowsMin !== undefined) graders.push(episodicRowWritten(a.episodicRowsMin));
-  if (a.mergedConceptsMin !== undefined) graders.push(entityMerged(a.mergedConceptsMin));
+  if (a.semanticFactRowsMin !== undefined) {
+    graders.push(semanticFactWritten(a.semanticFactRowsMin));
+  }
 
   if (spec.expectedTrajectory) {
     graders.push(...trajectoryGraders<MemoryOutcome>(spec.expectedTrajectory));

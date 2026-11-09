@@ -50,8 +50,8 @@ import { CHAT_MODEL, type ModelDeps } from './model-deps.js';
  *
  * Nothing here carries the `runId`. That is what lets a replayed run mint a
  * fresh one, write under it, and still be graded by `episodic_row_written` and
- * `entity_merged`, which read persisted state for *this* run. `hash-stability`
- * in the unit tests is the assertion that keeps it true.
+ * `semantic_fact_written`, which read persisted state for *this* run.
+ * `hash-stability` in the unit tests is the assertion that keeps it true.
  */
 export const calls = {
   plan: (systemPrompt: string, userPrompt: string): DecisionCall => ({

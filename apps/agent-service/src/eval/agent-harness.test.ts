@@ -132,7 +132,6 @@ describe('AgentServiceHarness, for a task with prior runs', () => {
     const outcome = await harness.captureOutcome(task, transcript);
 
     expect(outcome.extractedFactTexts).toEqual([`a fact from ${sessionOf(task.input)}`]);
-    expect(outcome.extractedConceptIds).toEqual(['northwind']);
   });
 });
 

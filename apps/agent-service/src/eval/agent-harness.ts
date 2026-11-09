@@ -41,19 +41,14 @@ export class AgentServiceHarness implements AgentHarness<MemoryOutcome> {
   readonly name = 'agent-service';
 
   /**
-   * What `distill` produced on each run, kept until its outcome is captured.
+   * The fact texts `distill` produced on each run, kept until its outcome is
+   * captured.
    *
    * `Transcript` is the system-agnostic record and has no business carrying an
-   * extraction, but `entity_merged` has to ask whether *this run's* concepts
-   * reached the graph — and `mergeEntity` writes no episode onto a `:Concept`,
-   * so there is nothing on the node to ask with. The fact texts are kept for
-   * the red team's `canary_absent_from_extraction` (P4-B), which asks what
-   * `reflect` was handed rather than what rows it wrote.
+   * extraction, but the red team's `canary_absent_from_extraction` (P4-B) asks
+   * what `reflect` was handed rather than what rows it wrote.
    */
-  private readonly extractionByRun = new Map<
-    string,
-    { conceptIds: string[]; factTexts: string[] }
-  >();
+  private readonly factTextsByRun = new Map<string, string[]>();
 
   /**
    * Which trial of each task is next, so the right cassette is opened.
@@ -168,10 +163,10 @@ export class AgentServiceHarness implements AgentHarness<MemoryOutcome> {
     const { traced, priorSpans } = await this.tracedRuns(task);
     const latencyMs = Date.now() - startedAt;
 
-    this.extractionByRun.set(traced.response.runId, {
-      conceptIds: (traced.extraction?.entities ?? []).map((entity) => entity.id),
-      factTexts: (traced.extraction?.facts ?? []).map((fact) => fact.text),
-    });
+    this.factTextsByRun.set(
+      traced.response.runId,
+      (traced.extraction?.facts ?? []).map((fact) => fact.text),
+    );
 
     return {
       runId: traced.response.runId,
@@ -243,14 +238,10 @@ export class AgentServiceHarness implements AgentHarness<MemoryOutcome> {
   }
 
   async captureOutcome(_task: Task<MemoryOutcome>, transcript: Transcript): Promise<MemoryOutcome> {
-    const extraction = this.extractionByRun.get(transcript.runId);
-    this.extractionByRun.delete(transcript.runId);
-    const extractedConceptIds = extraction?.conceptIds ?? [];
+    const factTexts = this.factTextsByRun.get(transcript.runId);
+    this.factTextsByRun.delete(transcript.runId);
 
-    const inspection = await this.inspector.inspectRun({
-      runId: transcript.runId,
-      conceptIds: extractedConceptIds,
-    });
+    const inspection = await this.inspector.inspectRun({ runId: transcript.runId });
 
     return {
       runId: transcript.runId,
@@ -258,9 +249,7 @@ export class AgentServiceHarness implements AgentHarness<MemoryOutcome> {
       episodeRowsForRun: inspection.episodeRowsForRun,
       factRowsForRun: inspection.factRowsForRun,
       factNodesForRun: inspection.factNodesForRun,
-      extractedConceptIds,
-      mergedConceptIds: inspection.presentConceptIds,
-      extractedFactTexts: extraction?.factTexts ?? [],
+      extractedFactTexts: factTexts ?? [],
     };
   }
 

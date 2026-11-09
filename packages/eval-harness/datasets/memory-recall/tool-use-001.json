@@ -42,7 +42,7 @@
     "outcomeMustBe": "success",
     "tokenCountsPositive": true,
     "episodicRowsMin": 1,
-    "mergedConceptsMin": 1
+    "semanticFactRowsMin": 1
   },
   "expectedTrajectory": {
     "nodes": ["ingress", "retrieve", "plan", "act", "distill", "reflect", "egress"],

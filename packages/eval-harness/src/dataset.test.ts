@@ -64,10 +64,20 @@ describe('the shipped dataset', () => {
       (t) => t.id === 'memory-recall-001',
     )!.graders;
     const episodic = graders.find((g) => g.name === 'episodic_row_written');
-    const entity = graders.find((g) => g.name === 'entity_merged');
+    const semantic = graders.find((g) => g.name === 'semantic_fact_written');
 
     expect(episodic?.requires).toEqual({ memory: 'live' });
-    expect(entity?.requires).toEqual({ memory: 'live' });
+    expect(semantic?.requires).toEqual({ memory: 'live' });
+  });
+
+  it('asks every task whether the run wrote semantic memory (P2-E)', () => {
+    // The positive control ADR 0011 names, moved off the graph with the graph's
+    // writes. A task that lost it would grade a run that promoted nothing.
+    for (const task of loadMemoryRecallSuite().tasks) {
+      const names = task.graders.map((g) => g.name);
+      expect(names, task.id).toContain('semantic_fact_written');
+      expect(names, task.id).not.toContain('entity_merged');
+    }
   });
 
   it('gives every task a distinct session, so one reset cannot disturb another', () => {

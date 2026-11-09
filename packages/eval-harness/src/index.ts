@@ -74,8 +74,7 @@ export {
   outcomeMustBe,
   tokenCountsPositive,
   episodicRowWritten,
-  entityMerged,
-  factsPersistedToBothIndices,
+  semanticFactWritten,
 } from './graders/code.js';
 export {
   ModelGrader,

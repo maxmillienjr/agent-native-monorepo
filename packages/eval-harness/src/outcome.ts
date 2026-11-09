@@ -25,10 +25,6 @@ export interface MemoryOutcome {
   readonly factRowsForRun: number;
   /** `(:Fact {episodeId})` nodes for this run. */
   readonly factNodesForRun: number;
-  /** Concept ids `distill` produced on this run. */
-  readonly extractedConceptIds: readonly string[];
-  /** Of those, the ones a `(:Concept)` node exists for after the run. */
-  readonly mergedConceptIds: readonly string[];
   /**
    * The fact texts `distill` produced on this run: what `reflect` was handed
    * to promote to semantic memory (P4-B).
