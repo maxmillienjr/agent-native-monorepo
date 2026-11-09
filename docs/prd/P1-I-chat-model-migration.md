@@ -363,6 +363,13 @@ _Amended 2026-11-09, when P2-E was accepted._ Two changes to the steps above:
   costs nothing here because step 6 records every suite. **Pure:** changing any of the
   three prompts changes its seam's hash.
 
+_Recorded 2026-11-09, by P2-E's PR B:_ step 2 is dropped, with its criterion "after the
+switch, P2-D's answer file replays under the default configuration". PR B deletes
+`run-explanation.ts` and `answer-file.ts` before the pin moves, so there is nothing for
+`STAGE2_CHAT_MODEL` to go in, and the grep criterion expects no `STAGE2_CHAT_MODEL` hit.
+Stage 2 replays at the tag `archive/p2e-graph-measurements` (`df655c0`), where the pin is
+still `gemini-2.5-flash`; it reproduced there with no key on 2026-11-09.
+
 ### Quota and the per-day split
 
 Every count is `generateContent`. The expected figures are the 2026-11 recordings' counts.

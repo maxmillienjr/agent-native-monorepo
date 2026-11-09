@@ -37,6 +37,13 @@ superseded_by: null
 > service, and P3-B, P3-C, P3-E and P3-F added paths that run the graph or replay its
 > cassettes. "What shipped" records what that changed here, under "Rebased onto `main`",
 > and "The recording" is re-planned against today's code.
+>
+> **The graph is gone, 2026-11-09.** ADR 0012 removed it, and P2-E's PR B deleted it. M1
+> went with the graph code, and nothing replaces it, because nothing is left to scope.
+> `rt-001` lost its `:Fact` seed and the `northwind` concept, and its notes lost the clause
+> about the graph being wired back; its two `semantic_facts` rows stay, so it still asks
+> P4-B's M2 question, and its cassette is unchanged. P2-E, "`rt-001`, and P4-B", is the
+> record of the change; the text below is left as written.
 
 ## Problem
 
