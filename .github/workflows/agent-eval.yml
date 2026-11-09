@@ -4,11 +4,11 @@ name: Agent Eval
 #
 # The replay job also replays two suites as further steps, each with its own
 # cassettes, its own baseline and its own report, so neither rate shares a
-# denominator with memory-recall's. Prior-auth (P3-D), `EVAL_SUITE=prior-auth`:
-# not in the live job, because a live trial of it is twenty generateContent
-# calls, the whole of a free-tier day. The memory-poisoning red team (P4-B),
-# `EVAL_SUITE=red-team`: not in the live job, because a live trial of it is
-# twelve generateContent calls on top of the nightly's twelve.
+# denominator with memory-recall's. Prior-auth (P3-D), `EVAL_SUITE=prior-auth`,
+# is twenty generateContent calls for one trial of every task, and the
+# memory-poisoning red team (P4-B), `EVAL_SUITE=red-team`, is twelve. Neither is
+# in the live job, which spends about twelve on memory-recall: the rotation job
+# below runs them on the live model a slice a night instead (P1-H).
 #
 #   replay  every pull request, every push to main, and nightly. The model's
 #           decisions come from the committed cassettes, so it makes no model
@@ -30,11 +30,26 @@ name: Agent Eval
 #   compare after the live job. The night's recorded decisions against the
 #           committed cassettes, read from the live artifact. No model call.
 #
+# And one more spends what the night has left on the two replay-only suites
+# (P1-H):
+#
+#   rotation  nightly, after live and canary, in their concurrency group. It
+#           reads what they spent from the eval-live artifact, takes a budget of
+#           L − S − R (L the recorded free-tier limit, EVAL_ROTATION_DAILY_LIMIT
+#           below; S tonight's spend; R = 1 for a 5xx retry), and runs the
+#           least-covered prior-auth and red-team tasks that fit, one trial
+#           each, pooling their tallies on eval-history. With L empty it runs
+#           nothing and warns. Red on `regressed`, an abort, a budget breach, or
+#           one live failure of no_false_approval or a canary_absent grader. In
+#           no ruleset: a nightly signal, not a merge gate.
+#
 # The repository variable EVAL_SCHEDULE_PAUSED pauses the schedule and leaves
 # dispatch alone. `true` skips the scheduled live and canary jobs, so a day's
 # twenty calls can go to a recording. `live` skips the scheduled live job alone
 # and keeps the canary, which spends one call on the pinned pool (P1-I set it
-# while P2-D's stage 2 held that pool).
+# while P2-D's stage 2 held that pool). Both skip the rotation, which needs the
+# live job. `rotation` skips the scheduled rotation alone, to leave its share of
+# the day to a free-key dispatch planned for the same Pacific day.
 # Replay still runs nightly: it makes no model call.
 #
 # What goes red is the regression gate's verdict (P1-D), not "a trial failed":
@@ -66,6 +81,12 @@ on:
           comparison, not the pinned rate: no tally is pushed. Empty runs the pinned id.
         type: string
         default: ''
+      rotation:
+        description: >-
+          Also run the rotation's prior-auth and red-team slice after the live job, on what
+          the day has left (P1-H). Not with chat_model.
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -174,7 +195,7 @@ jobs:
           if [ "$EVENT" != schedule ] && [ "$EVENT" != workflow_dispatch ]; then
             echo "> **Live tier:** not run on \`$EVENT\`. It runs nightly and on dispatch." >> "$GITHUB_STEP_SUMMARY"
           elif [ "$HAS_KEY" = false ]; then
-            echo '> **Live tier and canary: did not run.** There is no `GOOGLE_API_KEY` repository secret, so the `eval-live`, `eval-compare` and `eval-canary` jobs were skipped. This replay is a frozen sample and cannot catch the model getting worse, the client breaking, or the model behind the pinned id changing.' >> "$GITHUB_STEP_SUMMARY"
+            echo '> **Live tier and canary: did not run.** There is no `GOOGLE_API_KEY` repository secret, so the `eval-live`, `eval-compare`, `eval-canary` and `eval-rotation` jobs were skipped. This replay is a frozen sample and cannot catch the model getting worse, the client breaking, or the model behind the pinned id changing.' >> "$GITHUB_STEP_SUMMARY"
           elif [ "$HAS_KEY" != true ]; then
             echo '> **Live tier: did not run.** The `eval-live-gate` job did not report whether a key exists.' >> "$GITHUB_STEP_SUMMARY"
           else
@@ -457,4 +478,224 @@ jobs:
         with:
           name: eval-compare
           path: ${{ env.COMPARE_OUTPUT_DIR }}
+          if-no-files-found: warn
+
+  # Prior-auth and the red team on the live model, a slice a night (P1-H).
+  # Last, after the live job and the canary, so it spends what they left and
+  # cannot take a call either needed. Skipped whenever the live job was, so
+  # EVAL_SCHEDULE_PAUSED `true` and `live` stop it too; `rotation` stops it
+  # alone. A dispatch runs it only with `rotation: true` and no `chat_model`.
+  rotation:
+    name: eval-rotation
+    needs: [gate, live, canary]
+    if: >-
+      !cancelled() && needs.gate.outputs.has_key == 'true' && needs.live.result != 'skipped' &&
+      (github.event_name == 'schedule' && vars.EVAL_SCHEDULE_PAUSED != 'rotation' ||
+      github.event_name == 'workflow_dispatch' && inputs.rotation && !inputs.chat_model)
+    # The live job's group: the same daily quota.
+    concurrency:
+      group: eval-live
+      cancel-in-progress: false
+    # It pushes its tallies to eval-history, as the live job does.
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: agentdb
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-retries 10
+    env:
+      # L: the free-tier generateContent requests per day for the pinned chat
+      # id on the repository secret's project, read from AI Studio's rate-limit
+      # view for that project or from a per-day 429's quotaValue, with its
+      # source and date in .context/conventions.md, "Live model quota". Not
+      # recorded yet. Empty: the job runs nothing and warns; it never falls
+      # back to a guessed number.
+      EVAL_ROTATION_DAILY_LIMIT: ''
+      # As the live job: a live run that keeps a copy of its decisions.
+      EVAL_CASSETTE_MODE: record
+      EVAL_EXPECT_AXES: model=live memory=live
+      # The slice is costed at one trial a task.
+      EVAL_TRIALS: '1'
+      # The pooled verdict decides, plus the zero-tolerance graders: one live
+      # failure of no_false_approval or a canary_absent grader is red.
+      EVAL_GATE: live
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24.x'
+          cache: 'yarn'
+
+      - run: |
+          {
+            echo "EVAL_HISTORY_DIR=$RUNNER_TEMP/eval-history"
+            echo "ROTATION_LIVE_DIR=$RUNNER_TEMP/eval-live"
+            echo "ROTATION_OUTPUT_DIR=$RUNNER_TEMP/eval-rotation"
+          } >> "$GITHUB_ENV"
+
+      - run: yarn install --immutable
+
+      # What the live job spent is in its report. Without the artifact the
+      # budget step falls back to memory-recall's modelCalls ceilings.
+      - uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          name: eval-live
+          path: ${{ runner.temp }}/eval-live
+
+      - name: Check out the evaluation history
+        run: |
+          yarn turbo build --filter=@repo/agent-service... --output-logs=errors-only
+          yarn workspace @repo/agent-service eval:history open
+
+      # budget = L − S − R, then the least-covered tasks that fit it. Writes
+      # rotation-summary.md and the outputs below; with L empty, an empty slice.
+      - name: Choose tonight's slice
+        id: slice
+        env:
+          ROTATION_CANARY_RESULT: ${{ needs.canary.result }}
+          ROTATION_LIVE_TRIALS: ${{ inputs.trials || '1' }}
+        run: yarn workspace @repo/agent-service eval:history slice
+
+      # As the live job does for memory-recall: so the artifact holds tonight's
+      # recordings and nothing else. The epoch is read from git, not from disk.
+      - name: Clear the selected suites' committed cassettes
+        if: ${{ steps.slice.outputs.run == 'true' }}
+        env:
+          PRIOR_AUTH: ${{ steps.slice.outputs.prior_auth }}
+          RED_TEAM: ${{ steps.slice.outputs.red_team }}
+        run: |
+          if [ -n "$PRIOR_AUTH" ]; then rm -f packages/eval-harness/datasets/prior-auth/cassettes/*.json; fi
+          if [ -n "$RED_TEAM" ]; then rm -f packages/eval-harness/datasets/red-team/cassettes/*.json; fi
+
+      # The key is on the two runs only, as in the live job.
+      - name: Prior-auth slice
+        if: ${{ steps.slice.outputs.prior_auth != '' }}
+        env:
+          EVAL_SUITE: prior-auth
+          EVAL_TASKS: ${{ steps.slice.outputs.prior_auth }}
+          EVAL_OUTPUT_DIR: ${{ runner.temp }}/eval-rotation/prior-auth
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+        run: yarn eval
+
+      # Whatever prior-auth's verdict, except a per-day 429: the day is then
+      # spent, and a request here would only be refused.
+      - name: Red-team slice
+        if: ${{ !cancelled() && steps.slice.outputs.red_team != '' }}
+        env:
+          EVAL_SUITE: red-team
+          EVAL_TASKS: ${{ steps.slice.outputs.red_team }}
+          EVAL_OUTPUT_DIR: ${{ runner.temp }}/eval-rotation/red-team
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+        run: |
+          abort="$ROTATION_OUTPUT_DIR/prior-auth/eval-abort.json"
+          if [ -f "$abort" ] && [ "$(jq -r '.cause.code // ""' "$abort")" = daily-quota ]; then
+            echo '::error title=Rotation::The prior-auth slice aborted on the per-day quota, so the red-team slice did not run.'
+            exit 1
+          fi
+          yarn eval
+
+      # Even when a verdict is red. An aborted suite wrote no tally.
+      - name: Push the tallies to eval-history
+        if: ${{ !cancelled() && steps.slice.outputs.run == 'true' }}
+        run: yarn workspace @repo/agent-service eval:history publish
+
+      # Tonight's recordings go with the reports, and the committed set comes
+      # back for the comparison below.
+      - name: Keep the recorded cassettes with the reports
+        if: ${{ always() && steps.slice.outputs.run == 'true' }}
+        run: |
+          for suite in prior-auth red-team; do
+            dir="$ROTATION_OUTPUT_DIR/$suite"
+            [ -d "$dir" ] || continue
+            mkdir -p "$dir/cassettes"
+            find "packages/eval-harness/datasets/$suite/cassettes" -name '*.json' \
+              -exec cp {} "$dir/cassettes/" \;
+            git checkout HEAD -- "packages/eval-harness/datasets/$suite/cassettes"
+          done
+
+      # P1-E's comparison, per suite, at no model cost. Informational: it does
+      # not change this job's colour.
+      - name: Decisions against the committed cassettes
+        if: ${{ always() && steps.slice.outputs.run == 'true' }}
+        run: |
+          for suite in prior-auth red-team; do
+            live="$ROTATION_OUTPUT_DIR/$suite/cassettes"
+            [ -d "$live" ] || continue
+            COMPARE_SUITE="$suite" COMPARE_LIVE_DIR="$live" \
+              COMPARE_OUTPUT_DIR="$ROTATION_OUTPUT_DIR/$suite/compare" \
+              yarn workspace @repo/agent-service canary:compare ||
+              echo "::notice title=Rotation decisions ($suite)::canary:compare exited non-zero; see its summary."
+          done
+
+      - name: Job summary
+        if: always()
+        env:
+          BUDGET: ${{ steps.slice.outputs.budget }}
+        run: |
+          if [ -f "$ROTATION_OUTPUT_DIR/rotation-summary.md" ]; then
+            cat "$ROTATION_OUTPUT_DIR/rotation-summary.md" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo '## Rotation — did not start' >> "$GITHUB_STEP_SUMMARY"
+            echo 'No summary was written. See the step that failed before the slice was chosen.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+          made=''
+          for suite in prior-auth red-team; do
+            dir="$ROTATION_OUTPUT_DIR/$suite"
+            [ -d "$dir" ] || continue
+            if [ -f "$dir/eval-report.json" ] && [ ! -f "$dir/eval-abort.json" ]; then
+              made="$made $suite $(jq '[.usage.trials[].modelCalls] | add // 0' "$dir/eval-report.json"),"
+            else
+              made="$made $suite unknown (it did not complete),"
+            fi
+          done
+          if [ -n "$made" ]; then
+            echo >> "$GITHUB_STEP_SUMMARY"
+            echo "**Calls the slice made:**${made%,}; the budget was $BUDGET, plus at most R = 1." >> "$GITHUB_STEP_SUMMARY"
+          fi
+          for suite in prior-auth red-team; do
+            for file in "$ROTATION_OUTPUT_DIR/$suite/eval-summary.md" "$ROTATION_OUTPUT_DIR/$suite/compare/compare-summary.md"; do
+              [ -f "$file" ] || continue
+              echo >> "$GITHUB_STEP_SUMMARY"
+              cat "$file" >> "$GITHUB_STEP_SUMMARY"
+            done
+          done
+
+      # A night that measured nothing is green with a warning, never a pass;
+      # a short or unreferenced pool carries the live job's notice.
+      - name: Rotation notices
+        if: always()
+        env:
+          RUN: ${{ steps.slice.outputs.run }}
+        run: |
+          summary="$ROTATION_OUTPUT_DIR/rotation-summary.md"
+          if [ "$RUN" = false ] && [ -f "$summary" ]; then
+            echo "::warning title=Rotation not run::$(head -n 1 "$summary" | sed 's/^## //')"
+          fi
+          for suite in prior-auth red-team; do
+            gate="$ROTATION_OUTPUT_DIR/$suite/eval-gate.json"
+            [ -f "$gate" ] || continue
+            verdict=$(jq -r .verdict "$gate")
+            case "$verdict" in
+              insufficient-evidence|incomparable)
+                echo "::notice title=Rotation $suite: $verdict::Not a pass. The job summary lists the trials each task still needs." ;;
+            esac
+          done
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: eval-rotation
+          path: ${{ env.ROTATION_OUTPUT_DIR }}
           if-no-files-found: warn
