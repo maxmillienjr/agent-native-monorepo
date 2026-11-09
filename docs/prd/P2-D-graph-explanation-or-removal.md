@@ -664,6 +664,12 @@ The nightly takes about 11 calls at 03:00 UTC, which is the evening of the Pacif
 (20:00 PDT, 19:00 PST), so a slice of 8 leaves 19 of the 20 used whenever it runs that
 day. A day that P3-D or P4-B records on is skipped, and the table shifts by a day.
 
+_As run, from 2026-11-05._ The nightly now starts after the 07:00 UTC reset and spends about
+15, so the first three days recorded 8, 6 and 5 answers (19 in all), the third stopped by a
+per-day 429. The owner then paused the scheduled jobs: `EVAL_SCHEDULE_PAUSED` was set at
+01:25 UTC on 2026-11-09, so the nightly `eval-live` and `eval-canary` skip and a day holds 20. The remaining 57 answers are three days of at most 20, and the variable is deleted once
+the last is committed. No `eval-history` tally is pushed for the nights between.
+
 Where stage 2's code differs from the Design:
 
 1. **The 38 are recomputed, not read.** The Design says the list "is printed" from P2-B's
