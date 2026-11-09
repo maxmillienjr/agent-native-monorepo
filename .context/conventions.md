@@ -341,7 +341,12 @@ explanation stages, are archived at a tag and run in no tier (below).
   commands in the message: P1-F's format 2 changed what two seams return and not what they
   ask, so an old set would otherwise match and replay the wrong shape, and P1-I's format 3
   added each JSON seam's instruction to what it asks, so an old set would otherwise miss
-  seam by seam with a diff that blames the prompt.
+  seam by seam with a diff that blames the prompt. **A format bump reaches further than the
+  player.** The run record's decision rows carry the same number
+  (`RUN_DECISION_FORMAT_VERSION` in `memory-core`), and
+  `agent-cassette`'s `cassette-secrets.test.ts` parses the committed memory-recall set with
+  the current schema. So the bump's branch fails that unit test, and every replay, until the
+  set is re-recorded on it.
 - **Three checks replay the committed memory-recall cassettes, not one.** `eval-replay`
   runs the suite. In the `e2e` job's integration step, `audit-replay.integration.test.ts`
   › "replays a run whose decisions came from the committed cassettes, with no request to
