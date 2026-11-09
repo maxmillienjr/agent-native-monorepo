@@ -545,19 +545,27 @@ the owner's key, locally, run by the conductor.
 
 **The probe and the recording**
 
-- [ ] **Model `live`, paid key:** the step-3 probe, five trials each of `pa-e0260-ambiguous`,
+- [x] **Model `live`, paid key:** the step-3 probe, five trials each of `pa-e0260-ambiguous`,
       `pa-k0823-ambiguous` and `pa-k0823-contradicted`, meets every row of its table:
       E0260 `finding_agreement` in at least 4 of 5, both K0823 tasks' `finding_agreement`
       in 5 of 5, `no_false_approval` in 15 of 15. The table of results, the K0823-ambiguous
       cell values and the K0823-contradicted `citations_resolve` count are recorded here,
-      with the date, the commit and the call count.
+      with the date, the commit and the call count. **Met 2026-11-09 at `7a1332a`, 15
+      `generateContent` calls, none errored, $0.020.** E0260 `finding_agreement` 5 of 5
+      (0 of 5 before). K0823-ambiguous 5 of 5, every cell 1.0 ("5/5 criteria agree with
+      the label"), so `k0823-safe-operation` read `insufficient` every time.
+      K0823-contradicted `finding_agreement` 5 of 5 and `citations_resolve` 4 of 5: trial 5
+      cited `DocumentReference/doc-k0823-home`, which no bundle holds. `no_false_approval`
+      15 of 15. The probe holds no approval-labelled task, which is why it did not see what
+      the recording found (below).
 - [ ] **Model `live`, paid key:** 24 cassettes recorded in step 4, each with `formatVersion`
       3, `chatModel` `gemini-3.5-flash-lite`, axes `live`/`live`, and a `gitSha` at which
       `ASSESS_PROMPT` is Option A's. **Reviewer:** `jq` over the headers, and the recorded
       `instruction` equals the constant. The date, commit and `generateContent` count are
       tabled here.
 - [ ] **Blocking, on the recording run:** wrongful approvals 0 of 16 and unnecessary
-      referrals 0 of 8.
+      referrals 0 of 8. **Not met by wording A, 2026-11-09:** wrongful approvals 0 of 16,
+      unnecessary referrals 1 of 8 (`pa-k0823-all-met-narrative`). See "Wording A, as run".
 - [ ] **On the recording run:** `pa-e0260-ambiguous` passes all four graders.
 - [ ] **On the recording run:** `pa-k0823-contradicted` passes `citations_resolve`. If it does
       not, the cassette is committed as recorded, the failure stays a known failure in the
@@ -581,6 +589,32 @@ the owner's key, locally, run by the conductor.
       stands.
 - [ ] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs`, `yarn format:check`,
       `yarn turbo test:unit` and `yarn turbo test:service` pass.
+
+## Wording A, as run (2026-11-09)
+
+The recording, step 4, ran at `7a1332a` on the owner's paid key: 24 tasks, 20
+`generateContent` calls, 23 passing every grader. Both known failures are fixed in it:
+`pa-e0260-ambiguous` and `pa-k0823-contradicted` pass all four graders. **One task that
+passed in `8aef2c2`'s baseline now fails:** `pa-k0823-all-met-narrative` is labelled
+`automated-approval` and referred. Its note is dated 2026-09-04 and says "The supplier
+measured the house the same week". The model read `k0823-home-access` as `insufficient`:
+"no specific date is provided to confirm it was within the 60 days before the request". The
+label is `met`. A date given relative to a dated document is a date, and the new line
+"Evidence that does not confirm a criterion is `insufficient`", beside the existing
+"without a date", pushed the model to demand an absolute one.
+
+**It is the wording, not one unlucky sample.** Five live trials of that task alone, not
+recorded, 10 calls: under wording A it referred in 2 of 5, and under the prompt on `main`
+it approved in 5 of 5. With the recording, wording A refers this task in 3 of 6 trials.
+
+**The recording is not committed to `main`.** It fails a blocking criterion, so it is kept
+as evidence on the tag `recording/p3g-wording-a-2026-11-09` (`eb2ee5e`, cassettes with
+`gitSha` `7a1332a`). Step 3 says a second wording is the owner's call, and this stops there
+for the same reason. The candidate is one added sentence, naming the class rather than the
+fixture: _a time stated relative to a dated document, such as a visit in the same week as a
+dated note, is dated_. A second wording costs another probe, with
+`pa-k0823-all-met-narrative` added to it (20 calls), and another recording (20 calls), about
+$0.06 on the paid key. Option B stands on its own and needs no recording.
 
 ## Risks and open questions
 
