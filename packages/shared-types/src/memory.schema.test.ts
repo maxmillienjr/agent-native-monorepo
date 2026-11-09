@@ -31,16 +31,6 @@ describe('MessageSchema', () => {
 });
 
 describe('RetrievedContextItemSchema', () => {
-  it('accepts a valid neo4j item', () => {
-    const result = RetrievedContextItemSchema.safeParse({
-      source: 'neo4j',
-      score: 0.85,
-      content: 'LangGraph is a framework for building stateful agents.',
-      entityId: 'langgraph',
-    });
-    expect(result.success).toBe(true);
-  });
-
   it('accepts a valid pgvector item with episodeId', () => {
     const result = RetrievedContextItemSchema.safeParse({
       source: 'pgvector',
@@ -51,13 +41,21 @@ describe('RetrievedContextItemSchema', () => {
     expect(result.success).toBe(true);
   });
 
-  it('rejects an invalid source', () => {
-    const result = RetrievedContextItemSchema.safeParse({
-      source: 'pinecone',
-      score: 0.5,
-      content: 'test',
+  it('rejects any source but pgvector, the one store (P2-E)', () => {
+    for (const source of ['pinecone', 'graph', '']) {
+      const result = RetrievedContextItemSchema.safeParse({ source, score: 0.5, content: 'test' });
+      expect(result.success).toBe(false);
+    }
+  });
+
+  it('carries no entityId, which no store sets (P2-E)', () => {
+    const result = RetrievedContextItemSchema.parse({
+      source: 'pgvector',
+      score: 0.85,
+      content: 'LangGraph is a framework for building stateful agents.',
+      entityId: 'langgraph',
     });
-    expect(result.success).toBe(false);
+    expect(result).not.toHaveProperty('entityId');
   });
 });
 

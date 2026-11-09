@@ -6,12 +6,16 @@ export const MessageSchema = z.object({
 });
 export type Message = z.infer<typeof MessageSchema>;
 
+/**
+ * One retrieved fact, as `plan` reads it. `source` names the one store that
+ * produces it. It is narrowed rather than dropped because `plan` renders it as
+ * `[pgvector]`, inside every recorded `plan` request's hash (P2-E).
+ */
 export const RetrievedContextItemSchema = z.object({
-  source: z.enum(['neo4j', 'pgvector']),
+  source: z.literal('pgvector'),
   score: z.number(),
   content: z.string(),
   contentHash: z.string().optional(),
-  entityId: z.string().optional(),
   episodeId: z.string().uuid().optional(),
 });
 export type RetrievedContextItem = z.infer<typeof RetrievedContextItemSchema>;
