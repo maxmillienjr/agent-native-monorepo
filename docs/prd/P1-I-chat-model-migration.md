@@ -5,7 +5,7 @@ tier: 1
 status: in-progress
 size: L
 depends_on: [P1-A, P1-B, P1-E, P1-F]
-blocks: [P3-G]
+blocks: [P1-H, P3-G]
 issue: 147
 superseded_by: null
 ---

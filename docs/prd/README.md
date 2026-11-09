@@ -30,6 +30,15 @@ is implemented, and the prompt is committed, so the prior-auth replay misses fro
 commit until the recording. **Next:** the conductor runs the 15-call probe, and the 20-call
 recording only if the probe meets the thresholds the PRD fixed before any call.
 
+**[P1-H](P1-H-live-rotation.md) is accepted**, tracked in
+[#159](https://github.com/maxmillienjr/agent-native-monorepo/issues/159). The owner
+accepted it on 2026-11-09. It brings prior-auth and the red team onto the live model at night,
+on the free CI secret, through an `eval-rotation` job that runs last and spends what
+`eval-live` and the canary left. **Its first step costs no call:** read the free-tier
+`generateContent` requests per day for `gemini-3.5-flash-lite` on the secret's project from
+AI Studio, and record it in `.context/conventions.md`. Google's rate-limits page does not
+publish that figure, and the job is built to run nothing until it is recorded.
+
 **[P2-E](P2-E-remove-the-graph.md) is shipped: the graph is gone.** ADR 0012's option C
 landed in two pull requests on 2026-11-09. #152 (`df655c0`) stopped `reflect` writing the
 graph and narrowed the extraction to facts, ahead of P1-I's memory-recall recording. #153
@@ -493,19 +502,25 @@ shipped, checks each task's tokens and model calls beside the pass rate.
 | [P1-E](P1-E-model-drift-canary.md)     | Model-drift canary against pinned and floating model ids      | M    | shipped     |
 | [P1-F](P1-F-cost-and-step-budgets.md)  | Cost, latency, and step budgets as CI assertions              | M    | shipped     |
 | [P1-G](P1-G-task-axis-requirements.md) | Task-level axis requirements for the evaluation suite         | S    | shipped     |
-| P1-H                                   | Live coverage of the replay-only suites by nightly rotation   | M    | draft       |
+| [P1-H](P1-H-live-rotation.md)          | Live coverage of the replay-only suites by nightly rotation   | M    | accepted    |
 | [P1-I](P1-I-chat-model-migration.md)   | Migrate off `gemini-2.5-flash`                                | L    | in-progress |
 
-P1-H, a draft with no file yet, is a candidate raised on 2026-10-26 and not yet accepted.
-Once the recordings are made, prior-auth and the red team run only on replay at night: they
-show the code still makes the recorded decisions, never that the live model still would. A
-full live prior-auth run is twenty `generateContent` calls, a whole free-tier day, so the
-nightly runs memory-recall live and nothing else. P1-H would rotate a slice of each
-replay-only suite through the live job, three or four tasks a night, covering prior-auth's 24
-in about a week and pooling the nights the way P1-D pools memory-recall. The cost is the
-open question: on the shared key it takes the nightly to about 18 of the day's 20 and leaves
-development almost nothing, so it waits for the recording queue to clear and is more
-realistic with a paid key. It depends on P1-D (pooling across nights) and P3-D (the suite).
+[P1-H](P1-H-live-rotation.md), raised on 2026-10-26, was accepted by the owner on
+2026-11-09, tracked in [#159](https://github.com/maxmillienjr/agent-native-monorepo/issues/159). Prior-auth and the red team run only on replay at night.
+That shows the code still makes the recorded decisions, never that the live model still
+would. P1-H adds an `eval-rotation` job that runs after `eval-live` and the canary, on the
+free CI secret, and spends what they left. The budget is the pinned model's recorded
+free-tier day, minus the calls those two jobs made that night as read from their reports,
+minus one for a retry. Each night it takes the prior-auth and red-team tasks with the fewest
+trials in their epoch on `eval-history`, so a missed night resumes. It pools them per suite
+as P1-D pools memory-recall. Counted from the committed cassettes, the cost is lower than
+this paragraph used to say. A prior-auth task is one `generateContent` call, and the
+administrative four make none, so "twenty calls" is the whole suite. The red team is 3, 3 and 6. The free-tier limit for `gemini-3.5-flash-lite` is not published on Google's rate-limits
+page and has not been recorded yet. Recording it is P1-H's first criterion, and until then
+the job runs nothing. P1-H also pre-registers P1-D's floor for the `tasks-random` regime at 2
+trials per task, where it was 15. A single live failure of `no_false_approval` or of a red-team
+`canary_absent_*` grader turns the rotation job red. It depends on P1-D, P1-E, P1-I, P3-D and
+P4-B.
 
 [P1-I](P1-I-chat-model-migration.md), accepted on 2026-11-09, moves the chat model off `gemini-2.5-flash`.
 This paragraph used to say no shutdown date forces it before 2028-05-14. That is the
@@ -596,7 +611,7 @@ usage to derive one from.
 The dependency spine, not a schedule:
 
 ```
-P0-A ──▶ P2-A ──▶ P1-A ──┬──▶ P1-B ──┬──▶ P1-C ──┬──▶ P1-D
+P0-A ──▶ P2-A ──▶ P1-A ──┬──▶ P1-B ──┬──▶ P1-C ──┬──▶ P1-D ──▶ P1-H
                          │           │           ├──▶ P1-E ──▶ P1-I
                          │           │           └──▶ P1-F
                          │           ├──▶ P2-B ──┬──▶ P4-B
@@ -635,6 +650,13 @@ measures with, and whose last criterion it owns. It also depends on P1-F, whose 
 re-derives the budgets, and on P1-A and P1-B directly, for the harness and the cassettes it
 re-records. Neither edge is drawn a second time. It re-records P3-D's and P4-B's suites
 without depending on either PRD, the way P4-C re-records P4-B's.
+
+P1-H is drawn under P1-D. It extends P1-D's history, pooling, live comparison and
+promotion to two more suites, and it sets P1-D's floor for the `tasks-random` regime. It
+also depends on P1-E, whose canary runs before it and whose `canary:compare` it extends to a
+suite; on P1-I, whose pin sets the free-tier day it budgets and whose recordings open the
+epochs it pools; and on P3-D and P4-B, whose suites it runs. None of these is drawn a second
+time.
 
 P2-D is drawn under P2-B, whose corpus, recorded embeddings, seeding and bootstrap its
 measurement reuses. It also depends on P1-A directly, for the harness, and on P1-B, whose
