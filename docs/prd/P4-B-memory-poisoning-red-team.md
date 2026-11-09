@@ -5,7 +5,7 @@ tier: 4
 status: shipped
 size: M
 depends_on: [P1-A, P1-B, P2-B]
-blocks: []
+blocks: [P1-H]
 controls: [CTL-MEM-02]
 issue: 96
 superseded_by: null

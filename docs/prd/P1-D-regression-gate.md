@@ -5,7 +5,7 @@ tier: 1
 status: shipped
 size: L
 depends_on: [P1-A, P1-C]
-blocks: []
+blocks: [P1-H]
 issue: 76
 superseded_by: null
 ---
@@ -344,6 +344,11 @@ Lippman-Hand, 1983). Zero failures in n trials bounds the failure rate at about 
 95% confidence. So `held` requires at least `⌈3/δ⌉` = 30 trials per task in each arm, and
 at that point an all-pass sample actually rules out a rate below `1 − δ`. The floor also
 applies to `regressed`, so a single failed night cannot turn the nightly red.
+
+_2026-11-09: for the `tasks-random` regime (20 or more tasks) the floor's successor is
+[P1-H](P1-H-live-rotation.md), which pre-registers 2 trials per task per arm before any
+`tasks-random` verdict was issued. At `⌈3/δ⌉` a 24-task suite would need 300 calls per arm.
+`tasks-fixed` keeps the floor above._
 
 **Operating characteristics.** A 400-simulation sketch of this rule (2,000 resamples each,
 K = 2, the same true rate on both tasks) gave these results:
