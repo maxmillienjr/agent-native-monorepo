@@ -1,7 +1,8 @@
-# 0012 · The graph's explanation role, after stage 1
+# 0012 · The graph's explanation role, after both stages: option C
 
 **Status:** proposed
-**Date:** 2026-10-08
+**Date:** 2026-10-08, with stage 2 and the row the rule selects added 2026-11-09
+**Supersedes:** [0004](0004-one-candidate-universe-for-fusion.md), on acceptance
 
 ## Context
 
@@ -25,10 +26,14 @@ existed:
   least +0.10 with the paths and the bootstrap's lower bound is above 0.
 - **Only `good` then `met` keeps the graph.** Every other row selects option C.
 
-This record reports stage 1, and what the rule requires next. It is `proposed`. Its Decision
-section is written when stage 2 has run.
+This record was proposed on 2026-10-08 with stage 1 alone, which selected no row. Stage 2
+was recorded from 2026-11-05 to 2026-11-09, and this revision adds it. **Stage 1 is `good`,
+stage 2 is `not met`, and the row the rule selects is option C: the graph explains, and
+`plan` does not use it.** The record stays `proposed` until the owner accepts it.
 
 ## The measurement
+
+### Stage 1: the paths
 
 **What ran.** `yarn eval:explanation` ran first on the commit that added it, against empty
 `pgvector/pgvector:pg16` and `neo4j:5-community` containers, with `GOOGLE_API_KEY` empty. It
@@ -65,15 +70,15 @@ Relational stratum, 50 pairs, 95% percentile intervals over 10,000 resamples:
 | `explain·per-fact·oracle` | per-fact    | gold              | 0.990 [0.970, 1.000] | 1.000 [1.000, 1.000] | 1.000 [1.000, 1.000] | 0 / 50              |
 
 **The rule selects `good`.** Recall's lower bound, 1.000, clears 0.70. Precision's lower
-bound, 0.553, clears 0.50. **The rule therefore requires stage 2, and selects no outcome row
-yet.** Neither "keep the graph for explanation" nor option C follows from stage 1 alone.
+bound, 0.553, clears 0.50. **The rule therefore requires stage 2.** Neither "keep the graph
+for explanation" nor option C follows from stage 1 alone.
 
 The other strata are reported and not ruled on. On `explain`, paraphrase precision@3 is
 0.543 and entity-distractor precision@3 is 0.410, with recall 1.000 in both. On the 51
 no-entity pairs the linker found no concept, and the explainer returned nothing on every
 pair.
 
-### Why recall is 1.000, and why that says little
+#### Why recall is 1.000, and why that says little
 
 **The `reflect` shape all but guarantees it on this corpus.** `reflect` links every fact of
 a run to every entity the run extracted. The relational construction requires the answer
@@ -96,7 +101,7 @@ exactly the pairs that score precision 1.
 Linking each fact only to what it mentions lifts precision from 0.637 to 0.990. That is what
 attribution in the extractor would buy, if the extractor attributed correctly.
 
-### The PRD's prediction did not hold, and why
+#### The PRD's prediction did not hold, and why
 
 P2-D predicted the third row. It expected the length-0 path `[A]`, which the gold excludes, to
 rank first wherever A was extracted in the answer fact's run, and so to sink precision.
@@ -108,6 +113,60 @@ prediction failed because of how the corpus distributes facts over episodes, not
 anything in the explainer.** In production one run that discusses A and B extracts both,
 and a fact about B is then linked to A. This corpus has fewer such runs than production
 would.
+
+### Stage 2: the answers
+
+**What ran.** The 38 relational queries whose answer fact `vector` placed in its top ten,
+each asked of `plan` twice: `without`, the prompt exactly as `planNode` builds it, and
+`with`, the same prompt plus the `Connections in memory:` block that
+`renderExplanationBlock` renders from the explainer's paths. 76 `generateContent` calls on
+`gemini-2.5-flash`, through the production client, recorded from 2026-11-05 to 2026-11-09
+in six invocations into `recorded/explanation-answers.json`. The first 29 answers spent the
+free-tier quota. The last 47 were asked on the owner's paid key, in another GCP project, by
+the owner's decision on 2026-11-09, after a probe on that key answered `modelVersion`
+`gemini-2.5-flash`. The model id, the client and the prompts are the same for all 76; only
+the project and the tier changed. P2-D's "Stage 2, as run" has the day-by-day record.
+
+**Replay reproduces it with no key.** Two runs with `GOOGLE_API_KEY` empty made no request
+to the model host, matched each other, and matched the recording run's report in every line
+but the model axis (`live` against `replay`), once timestamps were masked. The four reports
+are committed under `reports/explanation/`.
+
+| Grader                      | `without` | `with` | with − without | 95% interval     | n   |
+| --------------------------- | --------- | ------ | -------------- | ---------------- | --- |
+| `answer_key_present` (rule) | 0.895     | 0.816  | −0.079         | [−0.184, +0.026] | 38  |
+| `bridge_named` (reported)   | 0.947     | 0.842  | −0.105         | [−0.237, +0.000] | 38  |
+
+**The rule selects `not met`.** It needed a difference of at least +0.10 with a lower bound
+above 0. The point estimate is −0.079, and the lower bound is −0.184. The block changed the
+answer key's result on 5 of the 38 queries. Four had the key without the block and lost it
+with the block (relational-009, 010, 013 and 023), and one gained it (relational-038).
+Three missed the key in both conditions, and the other 30 had it in both.
+
+**`not met` is not "harmful".** The point estimate is negative, and it is stated as
+measured. The interval includes 0, and P2-D's risks say in advance that 38 pairs have low
+power for a difference of +0.10, so the measurement cannot distinguish a small harm from no
+effect. What it shows is that the paths did not help by the margin the rule asked for, and
+that is all ADR 0009's condition needs.
+
+P2-D recorded one property of the `with` prompts before any answer existed: the explainer
+returned a path for all ten retrieved facts in 32 of the 38 queries, so the gold path sat
+among about twenty others. That is the `reflect` shape's over-linking, which stage 1 already
+measured as precision 0.637. Because it was recorded first, it is not used here to explain
+the result.
+
+## The row the rule selects
+
+| Stage 1 | Stage 2   | Outcome      |
+| ------- | --------- | ------------ |
+| `good`  | `not met` | **option C** |
+
+**The graph explains, and `plan` does not use it.** The explainer returns the right path on
+this corpus, under an oracle extractor and a helped linker, and giving those paths to `plan`
+did not improve its answers by the pre-registered margin. **Option C follows by ADR 0009's
+condition**: P2-D's measurement does not meet its own rule. **P2-E removes the graph**, from
+the specification in P2-D's "What P2-E inherits". This is the second row of P2-D's outcome
+table, and it was fixed with the PRD on 2026-10-08, before any path or answer existed.
 
 ## What this measurement does not show
 
@@ -122,59 +181,38 @@ paraphrase. "The silver plan" links to nothing.
 explanation reads only its own edges. A new session's graph is nearly empty, so `good` here
 holds for a long-lived session on a corpus like this one.
 
-**Answers.** A path that is right is not yet a path that helps. Stage 2 is the only evidence
-that could keep the graph, and P2-D's Design calls a stage-1 pass weak evidence for the
-three reasons above.
+**Answers, beyond this sample.** Stage 2 is 38 queries on one model, with a lexical grader.
+It does not show that paths hurt answers in general, as the previous section says, and it
+does not show that a better-attributed graph would not help. It measured the graph `reflect`
+writes, which is the one that would ship.
 
-## Options
-
-### 1 · Run stage 2 as pre-registered
-
-Build the stage-2 recorder and replay, then spend the 76 calls: 38 relational queries whose
-answer fact `vector` placed in its top ten, each with and without the paths in `plan`'s
-prompt. At the 9 to 10 spare free-tier calls a day, that is about eight days of quota, shared
-with P3-D's 20-call recording and P4-B's red-team recordings (`.context/conventions.md`,
-"Live model quota"). A key in a separate project would make it one sitting, and that is the
-owner's decision.
-
-- **For.** It is what the rule says. ADR 0009's condition is that the measurement meets its
-  own rule, and only stage 2 can complete it.
-- **Cost.** About a day of code (P2-D's Sizing) and about eight days of calendar. Graph
-  removal and wiring both wait for it.
-
-### 2 · Read the weak pass as a failure, and take ADR 0009's option C now
-
-- **Against.** It changes the rule after seeing a number, which is what pre-registration
-  exists to prevent. The asymmetry the PRD built in, that a stage-1 pass is weak evidence,
-  is the reason stage 2 exists, not a reason to skip it.
-
-### 3 · Read the pass as enough, and keep the graph
-
-- **Against.** The same objection, in the other direction. The PRD makes stage 2 "the
-  evidence that could keep the graph".
+**The model it ran on is going away.** Google shuts `gemini-2.5-flash` down on 2026-12-01 and
+routes the id to another model (P1-I). Stage 2 finished on 2026-11-09, before that. The
+answers cannot be re-asked of the same model afterwards, but replay and re-scoring need no
+model: the committed answer file serves them.
 
 ## Recommendation
 
-**Option 1: run stage 2 as pre-registered, and leave P2-D `in-progress` until it has.** The
-stage-2 code, `renderExplanationBlock`, the `without` prompt pinned to `planNode`'s, the
-resumable answer file and the two graders, was written on 2026-10-08 with no
-`generateContent` call. A dry run on a fake model showed it resumable across a kill, a
-budget and a per-day 429, without asking any recorded answer again. What remains is the 76
-calls: eight a day for ten days, after the nightly's share, on the schedule in P2-D's
-"Stage 2's code, and the run that remains". Nothing in stage 1 is re-run or changed. P2-E
-stays a draft with no file until the rule has selected a row.
+**Accept option C, as the rule selected it, and let P2-E remove the graph.** Nothing in this
+record argues for a different row. On 2026-10-08, with stage 1 alone, this record weighed
+reading the weak pass as a failure, or as enough, against running stage 2 as
+pre-registered, and recommended stage 2, because either shortcut would have changed the
+rule after seeing a number. Stage 2 has now run, with no change to the rule, the labels, the
+prompts or the explainer.
 
-**Whatever stage 2 shows, two findings stand:**
+**Two findings outlast the graph:**
 
-- **M1 is done, and it covers edges.** Every graph write carries its session. `:Fact` keeps
-  its first writer, and `MENTIONS` and `RELATES_TO` are per session. Both graph reads, the
-  ablation's `expandFromSeeds` and the explainer, are scoped to the session, with no
-  unscoped signature. A linker that can reach graph ids now exists, and it landed after
-  M1, as ADR 0009 required.
-- **Attribution is the explainer's precision problem.** Under keep, per-fact `MENTIONS` is
-  the change most worth its cost. It moved precision from 0.637 to 0.990 here, and P2-D's
-  "Graph shape" prices it at two re-recorded cassettes. It is also what ADR 0004's text
-  already says.
+- **M1 was done, and it covered edges.** Every graph write carries its session. `:Fact`
+  keeps its first writer, and `MENTIONS` and `RELATES_TO` are per session. Both graph reads,
+  the ablation's `expandFromSeeds` and the explainer, are scoped to the session, with no
+  unscoped signature. Under C, P2-E deletes it with the graph, and P4-B's M1 becomes a
+  deletion, as P2-D's risks accepted.
+- **Attribution is the explainer's precision problem.** Per-fact `MENTIONS` moved precision
+  from 0.637 to 0.990 on this corpus, and stage 2 measured the `reflect` shape only. A future
+  PRD that wants a graph back for explanation starts there, with a labelled extraction set,
+  since nothing here measures whether the model attributes facts correctly. It is a
+  condition for that PRD, not a fix to this measurement, as ADR 0009 recorded its own for
+  retrieval.
 
 ## Whether the two measurements run in CI
 
@@ -186,11 +224,24 @@ record names the last commit at which each reproduced. After M1, `yarn eval:retr
 still reproduces the committed adjudicated report: the JSON is identical once timestamps
 and latencies are masked.
 
+**The outcome is C, so P2-E archives both.** The reports `a256784` commits for both stages
+were written by `yarn eval:explanation` with no key, and a second such run matched them
+once timestamps were masked. P2-E names the last commit at which each command reproduced,
+verified by a run on that commit.
+
 ## Consequences
 
-This record supersedes nothing. ADR 0009 stands, and its fallback is still pending: P2-D has
-neither met its rule nor closed without one. ADR 0004 is superseded only if the outcome is
-option C.
+**On acceptance, this record supersedes ADR 0004.** ADR 0004 put a `:Fact` copy of every
+distilled fact in the graph so that both retrievers returned one universe of candidates.
+ADR 0009 made that moot on the request path. Under C the `:Fact` copy goes with the graph,
+and ADR 0009's Consequences anticipated that a record removing Neo4j supersedes 0004 as
+well. ADR 0004's status line and index row read `superseded by 0012` once this record is
+accepted, as ADR 0002's moved when 0009 was accepted. Until then the index notes that the
+supersession is pending.
 
-`docs/STATUS.md` row 15 stays `stubbed`, because no request reads the graph. Its text now
-records M1, the explainer and stage 1. Row 23 records the CI-tier decision above.
+**ADR 0009 is not superseded.** Option C is its stated fallback, and executing it is its
+decision.
+
+`docs/STATUS.md` row 15 stays `stubbed` until P2-E removes the graph, because the code
+exists and no request reads it. Its text now records the outcome, and its owner is P2-E.
+Row 23 records the CI-tier decision above.
