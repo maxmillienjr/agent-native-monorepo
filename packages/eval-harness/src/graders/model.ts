@@ -2,7 +2,7 @@ import type { Grader, Score, Transcript } from '../types.js';
 
 /**
  * A judge. `provider` is what the family check compares — the vendor, not the
- * model id, because `gemini-2.5-flash` judging `gemini-2.5-pro` is the same
+ * model id, because a Gemini Flash model judging a Gemini Pro one is the same
  * self-preference problem as a model judging itself.
  */
 export interface ModelJudge {

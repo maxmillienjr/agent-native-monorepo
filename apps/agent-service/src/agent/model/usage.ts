@@ -5,7 +5,8 @@ import type { AgentState } from '../graph/state.js';
  * What one chat call used, as a `ModelDeps` seam returns it.
  *
  * `completion` is billed output: the visible answer plus the thinking tokens
- * `gemini-2.5-flash` is billed for. `reasoning` is the thinking share of it,
+ * the pinned chat model is billed for, which Gemini prices as output.
+ * `reasoning` is the thinking share of it,
  * present only when the reply reported a total to derive it from. The shape is
  * the cassette's `tokenCounts`, so a recorded decision carries exactly what the
  * seam returned.

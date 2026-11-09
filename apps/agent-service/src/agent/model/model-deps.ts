@@ -6,11 +6,15 @@ import type { AssessDeps } from '../prior-auth/assessment.js';
 /**
  * The chat model the service is pinned to, named once.
  *
- * "Pinned" is the stable id: `gemini-2.5-flash` has no dated variant to pin to,
- * and `models.get` reports its version as `001`. Whether the model behind it
- * stays the same is what the drift canary watches (P1-E).
+ * ADR 0018 records the choice and the rule behind it. "Pinned" is the stable
+ * id, never a `-latest` alias: Gemini publishes no dated variant to pin to, so
+ * the stable id is the narrowest name there is, and whether the model behind it
+ * stays the same is what the drift canary watches (P1-E). The id was
+ * `gemini-2.5-flash` until P1-I moved it, before Google began routing that id
+ * here on 2026-12-01; a cassette, a run record or a report made before the move
+ * names the old id in its header.
  */
-export const PINNED_CHAT_MODEL = 'gemini-2.5-flash';
+export const PINNED_CHAT_MODEL = 'gemini-3.5-flash-lite';
 
 /**
  * The chat model this process runs, resolved once at module load.

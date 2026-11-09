@@ -23,8 +23,8 @@ export class ExtractionFormatError extends Error {
  *
  * This used to be `try { JSON.parse(...) } catch { return EMPTY_EXTRACTION }`,
  * which is how the live model path wrote nothing to semantic memory while
- * reporting `outcome: "success"`. `gemini-2.5-flash` wraps JSON in a
- * ```json fence unless asked not to, so every extraction threw, every catch
+ * reporting `outcome: "success"`. `gemini-2.5-flash`, the model pinned then,
+ * wrapped JSON in a ```json fence unless asked not to, so every extraction threw, every catch
  * returned an empty set, and `reflect` faithfully wrote zero of it. The stub
  * model always parsed, so the acceptance run never saw it.
  *

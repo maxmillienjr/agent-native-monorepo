@@ -236,7 +236,7 @@ describe('trace shape', () => {
     expect(plan?.attributes).toEqual({
       'gen_ai.operation.name': 'generate_content',
       'gen_ai.provider.name': 'gcp.gemini',
-      'gen_ai.request.model': 'gemini-2.5-flash',
+      'gen_ai.request.model': CHAT_MODEL,
       'server.address': 'generativelanguage.googleapis.com',
       'server.port': 443,
       'agent_native.seam': 'plan.callLlm',

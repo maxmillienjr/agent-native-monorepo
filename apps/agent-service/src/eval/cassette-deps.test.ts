@@ -582,7 +582,7 @@ describe('replay decks and the model ids', () => {
     expect(() =>
       overridden.replayDecks(dataset, [{ taskId: 'memory-recall-001', trials: 1 }]),
     ).toThrow(
-      /gemini-2\.5-flash[\s\S]*gemini-flash-latest|gemini-flash-latest[\s\S]*gemini-2\.5-flash/,
+      /gemini-3\.5-flash-lite[\s\S]*gemini-flash-latest|gemini-flash-latest[\s\S]*gemini-3\.5-flash-lite/,
     );
   });
 });

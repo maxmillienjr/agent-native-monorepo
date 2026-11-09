@@ -1,11 +1,6 @@
 {
   "formatVersion": 1,
   "metadata": {
-    "gemini-2.5-flash": {
-      "version": "001",
-      "displayName": "Gemini 2.5 Flash",
-      "observedAt": "2026-10-08"
-    },
     "gemini-embedding-001": {
       "version": "001",
       "displayName": "Gemini Embedding 001",
@@ -18,10 +13,6 @@
     }
   },
   "chat": {
-    "gemini-2.5-flash": {
-      "modelVersion": "gemini-2.5-flash",
-      "observedAt": "2026-10-12"
-    },
     "gemini-flash-latest": {
       "modelVersion": "gemini-3.8-flash",
       "observedAt": "2026-10-12"
