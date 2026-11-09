@@ -49,7 +49,7 @@ describe('audit replay of a compensated run', () => {
   }> {
     const records = new InMemoryRunRecords();
     const checkpointer = new MemorySaver();
-    const service = new RunsService(null, null, null, null, checkpointer, records);
+    const service = new RunsService(null, null, null, checkpointer, records);
     const script = [
       {
         toolName: 'request-records',

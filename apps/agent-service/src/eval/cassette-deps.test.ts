@@ -300,7 +300,7 @@ describe('a compensated run, recorded and replayed', () => {
 
   it('replays the compensation from the cassette and never reaches the case board', async () => {
     const recorder = new CassetteRecorder({ header: liveHeader, tokenCountsFor });
-    const recordingService = new RunsService(null, null, null, null, null, null);
+    const recordingService = new RunsService(null, null, null, null, null);
     const remaining = [...script];
     recordingService.setModelDecorator((live) =>
       recordingModelDeps(
@@ -335,7 +335,7 @@ describe('a compensated run, recorded and replayed', () => {
     const opened = vi.spyOn(SyntheticCaseBoard.prototype, 'openRequest');
     const withdrawn = vi.spyOn(SyntheticCaseBoard.prototype, 'withdrawRequest');
     const player = new CassettePlayer(cassette, replayConfig);
-    const replayingService = new RunsService(null, null, null, null, null, null);
+    const replayingService = new RunsService(null, null, null, null, null);
     replayingService.setModelDecorator(() => replayModelDeps(player));
     const replayed = await replayingService.executeTraced({ body, correlationId: 'replay-saga' });
 
@@ -376,7 +376,7 @@ describe('request hashes across two runs of the same task', () => {
     // Every memory dependency null: the stub writers and the stub retrieval
     // facade, which is what makes this a unit test. The model half is the stub
     // set, decorated by a recorder that keeps the hashes.
-    const service = new RunsService(null, null, null, null, null, null);
+    const service = new RunsService(null, null, null, null, null);
     const recorder = new CassetteRecorder({ header: liveHeader });
     service.setModelDecorator((live) => recordingModelDeps(live, recorder));
 
@@ -424,7 +424,7 @@ describe('the decorator seam on RunsService', () => {
   });
 
   it('never touches the memory half', async () => {
-    const service = new RunsService(null, null, null, null, null, null);
+    const service = new RunsService(null, null, null, null, null);
     const seen: string[] = [];
 
     // A decorator that replaces the model half entirely, which is what replay
@@ -477,7 +477,7 @@ describe('the decorator seam on RunsService', () => {
       resolve: async <R>(call: { seam: string }): Promise<R> => seamAnswers[call.seam] as R,
     };
 
-    const service = new RunsService(null, null, null, null, null, null);
+    const service = new RunsService(null, null, null, null, null);
     service.setModelDecorator(() => replayModelDeps(deck));
 
     await expect(
@@ -505,7 +505,7 @@ describe('the decorator seam on RunsService', () => {
       resolve: async <R>(call: { seam: string }): Promise<R> => seamAnswers[call.seam] as R,
     };
 
-    const service = new RunsService(null, null, null, null, null, null);
+    const service = new RunsService(null, null, null, null, null);
     service.setModelDecorator((live) => {
       // `registry` is the one member of the lazy set that has to resolve it.
       void live.act.registry;
@@ -608,7 +608,7 @@ describe('the no-live-call watcher', () => {
   });
 
   it('says nothing about the rest of the traffic a trial makes', () => {
-    // Postgres and Neo4j are not undici clients, but an OTLP exporter is, and a
+    // Postgres is not an undici client, but an OTLP exporter is, and a
     // watcher that failed the run on one would make replay unusable with
     // telemetry switched on.
     const violations = watchForModelRequests(() => {});

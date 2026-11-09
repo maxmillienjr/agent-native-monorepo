@@ -20,7 +20,6 @@ describe('RunsController (e2e)', () => {
   let app: INestApplication;
   let savedApiKey: string | undefined;
   let savedDatabaseUrl: string | undefined;
-  let savedNeo4jUri: string | undefined;
 
   beforeAll(async () => {
     // RunsService.getDeps() reads GOOGLE_API_KEY at request time and switches to
@@ -31,15 +30,13 @@ describe('RunsController (e2e)', () => {
     savedApiKey = process.env['GOOGLE_API_KEY'];
     delete process.env['GOOGLE_API_KEY'];
 
-    // Memory is a second, independent axis: DATABASE_URL and NEO4J_URI select
+    // Memory is a second, independent axis: DATABASE_URL selects
     // the real adapters, the migrations and the checkpointer. A developer with
     // those in their environment would otherwise boot this suite against
     // databases it does not provide, and the service is built to fail loudly
     // rather than fall back to stubs when a configured store is unreachable.
     savedDatabaseUrl = process.env['DATABASE_URL'];
-    savedNeo4jUri = process.env['NEO4J_URI'];
     delete process.env['DATABASE_URL'];
-    delete process.env['NEO4J_URI'];
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -54,7 +51,6 @@ describe('RunsController (e2e)', () => {
     await app.close();
     if (savedApiKey !== undefined) process.env['GOOGLE_API_KEY'] = savedApiKey;
     if (savedDatabaseUrl !== undefined) process.env['DATABASE_URL'] = savedDatabaseUrl;
-    if (savedNeo4jUri !== undefined) process.env['NEO4J_URI'] = savedNeo4jUri;
   });
 
   describe('POST /runs', () => {
@@ -148,15 +144,12 @@ describe('POST /runs/stream when a node fails', () => {
   let app: INestApplication;
   let savedApiKey: string | undefined;
   let savedDatabaseUrl: string | undefined;
-  let savedNeo4jUri: string | undefined;
 
   beforeAll(async () => {
     savedApiKey = process.env['GOOGLE_API_KEY'];
     savedDatabaseUrl = process.env['DATABASE_URL'];
-    savedNeo4jUri = process.env['NEO4J_URI'];
     delete process.env['GOOGLE_API_KEY'];
     delete process.env['DATABASE_URL'];
-    delete process.env['NEO4J_URI'];
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -204,7 +197,6 @@ describe('POST /runs/stream when a node fails', () => {
     await app.close();
     if (savedApiKey !== undefined) process.env['GOOGLE_API_KEY'] = savedApiKey;
     if (savedDatabaseUrl !== undefined) process.env['DATABASE_URL'] = savedDatabaseUrl;
-    if (savedNeo4jUri !== undefined) process.env['NEO4J_URI'] = savedNeo4jUri;
   });
 
   it('emits a terminal error frame and closes the stream', async () => {

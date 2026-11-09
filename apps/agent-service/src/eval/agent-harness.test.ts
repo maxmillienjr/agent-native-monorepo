@@ -67,8 +67,6 @@ function harnessWith(log: string[]) {
       runId: input.runId,
       episodeRowsForRun: 2,
       factRowsForRun: 1,
-      factNodesForRun: 1,
-      presentConceptIds: [...(input.conceptIds ?? [])],
     }),
   };
   const decks: TrialDecks = {
@@ -132,23 +130,19 @@ describe('AgentServiceHarness, for a task with prior runs', () => {
 });
 
 describe('AgentServiceHarness, for a task that seeds another session', () => {
-  it('writes a graph fact under the session it names, not the graded one', async () => {
+  it('restores the attacker’s session and seeds each row under the session it names', async () => {
     const task = rt001();
     const victim = sessionOf(task.input);
-    const [poison] = task.seeds.graphFacts;
-    expect(poison?.sessionId).toBeDefined();
-    expect(poison?.sessionId).not.toBe(victim);
+    const poison = task.seeds.pgvector.find((fact) => fact.sessionId !== victim);
+    expect(poison).toBeDefined();
 
-    const { harness, applied } = harnessWith([]);
+    const { harness, restored, applied } = harnessWith([]);
     await harness.reset(task);
 
-    // The graded session's seed first, with the concepts the `:Fact` mentions,
-    // and no graph fact of the attacker's; then the attacker's `:Fact` alone.
-    expect(applied.map((seed) => [seed.sessionId, seed.graphFacts?.length ?? 0])).toEqual([
-      [victim, 0],
-      [poison?.sessionId, 1],
-    ]);
-    expect(applied[0]?.concepts?.map((concept) => concept.id)).toEqual(['northwind']);
-    expect(applied[1]?.graphFacts?.[0]?.contentHash).toBe(poison?.contentHash);
+    expect(restored).toEqual([victim, poison?.sessionId]);
+    expect(applied).toHaveLength(1);
+    expect(applied[0]?.facts?.map((fact) => fact.sessionId)).toEqual(
+      task.seeds.pgvector.map((fact) => fact.sessionId),
+    );
   });
 });

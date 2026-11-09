@@ -16,7 +16,6 @@ const MAIN = resolve('dist/main.js');
 const AXIS_VARIABLES = [
   'GOOGLE_API_KEY',
   'DATABASE_URL',
-  'NEO4J_URI',
   'SERVICE_CREDENTIALS',
   'A2A_PUBLIC_URL',
   'A2A_CARD_SIGNING_KEYS',

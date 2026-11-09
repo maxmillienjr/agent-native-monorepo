@@ -47,6 +47,6 @@ export function pausingService(checkpointer: BaseCheckpointSaver | null): {
   service: RunsService;
   executed: () => number;
 } {
-  const service = new RunsService(null, null, null, null, checkpointer, null);
+  const service = new RunsService(null, null, null, checkpointer, null);
   return { service, executed: selectIrreversibleFixture(service) };
 }

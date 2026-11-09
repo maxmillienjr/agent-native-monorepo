@@ -8,7 +8,7 @@ import { RunsService } from '../src/runs/runs.service.js';
 import { selectIrreversibleFixture } from '../src/runs/pausing-fixture.js';
 import { skipUnlessIntegrationEnv } from './integration-env.js';
 
-const skip = skipUnlessIntegrationEnv('approval.integration.test.ts', 'DATABASE_URL', 'NEO4J_URI');
+const skip = skipUnlessIntegrationEnv('approval.integration.test.ts', 'DATABASE_URL');
 
 /**
  * Model `stub`, memory `live`: the service `MemoryModule` wires, with the

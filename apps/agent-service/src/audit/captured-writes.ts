@@ -1,36 +1,19 @@
 import { randomUUID } from 'node:crypto';
-import type {
-  EpisodeWriteInput,
-  EpisodicRepository,
-  Neo4jWriter,
-  PgvectorWriter,
-} from '@repo/memory-core';
+import type { EpisodeWriteInput, EpisodicRepository, PgvectorWriter } from '@repo/memory-core';
 
 /** One write `reflect` asked for during a replay, which nothing performed. */
 export type CapturedWrite =
   | { readonly store: 'episodes'; readonly sessionId: string; readonly turnIndex: number }
-  | { readonly store: 'neo4j.concept'; readonly id: string }
-  | {
-      readonly store: 'neo4j.relationship';
-      readonly fromId: string;
-      readonly toId: string;
-      readonly type: string;
-    }
-  | { readonly store: 'neo4j.fact'; readonly contentHash: string }
   | { readonly store: 'semantic_facts'; readonly contentHash: string };
 
 /**
  * The writers `reflect` takes, capturing instead of writing (P3-B).
  *
- * `reflect` has taken no graph writer since P2-E, so `neo4jWriter` captures
- * nothing a replay at this commit asks for. It goes with the rest of the
- * graph code, in P2-E's second pull request.
- *
  * Replay re-executes a run, and `reflect` is a function of its recorded
  * inputs, so what it asks to write is what the run wrote — derived, not read
  * back from `episodes` or `semantic_facts`, which are first-write-wins and
  * keep the earliest run's provenance rather than this one's. Nothing here
- * holds a pool or a driver, so a replay cannot reach a store through it.
+ * holds a pool, so a replay cannot reach a store through it.
  *
  * Only keys are kept: a turn's content and a fact's text are content, and the
  * report that lists these is printed.
@@ -53,23 +36,6 @@ export class CapturedWrites {
     },
     findBySession: async () => {
       throw new Error('a replay read episodic memory, which no node does and replay cannot serve');
-    },
-  };
-
-  readonly neo4jWriter: Neo4jWriter = {
-    mergeEntity: async (entity) => {
-      this.captured.push({ store: 'neo4j.concept', id: entity.id });
-    },
-    mergeRelationship: async (relationship) => {
-      this.captured.push({
-        store: 'neo4j.relationship',
-        fromId: relationship.fromId,
-        toId: relationship.toId,
-        type: relationship.type,
-      });
-    },
-    mergeFact: async (fact) => {
-      this.captured.push({ store: 'neo4j.fact', contentHash: fact.contentHash });
     },
   };
 

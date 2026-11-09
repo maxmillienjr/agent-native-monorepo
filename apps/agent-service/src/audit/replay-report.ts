@@ -79,12 +79,6 @@ function describeWrite(write: ReplayReport['writes'][number]): string {
   switch (write.store) {
     case 'episodes':
       return `episodes        session ${write.sessionId} turn ${write.turnIndex}`;
-    case 'neo4j.concept':
-      return `neo4j :Concept  ${write.id}`;
-    case 'neo4j.relationship':
-      return `neo4j :RELATES_TO ${write.fromId} -[${write.type}]-> ${write.toId}`;
-    case 'neo4j.fact':
-      return `neo4j :Fact     ${write.contentHash}`;
     case 'semantic_facts':
       return `semantic_facts  ${write.contentHash}`;
   }

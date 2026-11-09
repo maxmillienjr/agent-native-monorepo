@@ -2,10 +2,9 @@ import { randomUUID } from 'node:crypto';
 import type { INestApplicationContext } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import type pg from 'pg';
-import type { Driver } from 'neo4j-driver';
 import {
-  PgNeo4jMemoryInspector,
-  PgNeo4jSeedManager,
+  PgMemoryInspector,
+  PgSeedManager,
   type MemoryInspector,
   type SeedManager,
 } from '@repo/memory-core';
@@ -20,7 +19,7 @@ import {
   type Transcript,
 } from '@repo/eval-harness';
 import { AppModule } from '../app.module.js';
-import { PG_POOL, NEO4J_DRIVER } from '../memory/memory.tokens.js';
+import { PG_POOL } from '../memory/memory.tokens.js';
 import { RunsService, type ChatClientOptions, type TracedRun } from '../runs/runs.service.js';
 import { deckDecorator, type TrialDecks } from './cassette-deps.js';
 import type { SpanCollector } from './span-records.js';
@@ -91,13 +90,10 @@ export class AgentServiceHarness implements AgentHarness<MemoryOutcome> {
   /**
    * Removes what the previous trial wrote, then lays the task's seed back down.
    *
-   * Both halves are needed. Deleting alone leaves a two-task suite unrepeatable
-   * — the Neo4j side of `restoreToSeed` is database-wide, because neither
-   * `:Concept` nor `:Fact` carries a session, so task 2's reset takes task 1's
-   * concepts with it. Applying alone leaves the previous trial's episodes and
-   * facts in place, and `episodes` is keyed on `(session_id, turn_index)` with
-   * first write wins, so trial 2 would write no row and its `run_id` would
-   * appear nowhere.
+   * Both halves are needed. Deleting alone leaves the task with no seed.
+   * Applying alone leaves the previous trial's episodes and facts in place, and
+   * `episodes` is keyed on `(session_id, turn_index)` with first write wins, so
+   * trial 2 would write no row and its `run_id` would appear nowhere.
    *
    * It also means a run needs no seeding step before it: an empty database,
    * migrated by `MemoryModule` on boot, is enough. The nightly workflow's seed
@@ -116,39 +112,17 @@ export class AgentServiceHarness implements AgentHarness<MemoryOutcome> {
     for (const sessionId of sessionsNamedBy(task)) {
       await this.seeds.restoreToSeed({
         sessionId,
-        conceptIds: task.seeds.neo4j.map((concept) => concept.id),
-        // Both indices' hashes, because the Neo4j half of the restore keeps a
-        // `:Fact` only if its hash is listed — a graph fact left off this list
-        // is deleted by the reset that is supposed to preserve it.
-        contentHashes: [
-          ...task.seeds.pgvector.map((fact) => fact.contentHash),
-          ...task.seeds.graphFacts.map((fact) => fact.contentHash),
-        ],
+        contentHashes: task.seeds.pgvector.map((fact) => fact.contentHash),
       });
     }
 
-    // The seed is laid down under the graded run's session, except a graph fact
-    // that names another: the attacker's `:Fact` in a cross-session case must
-    // carry the attacker's session, or a scoped graph read would hand it to the
-    // victim as the victim's own. The first call writes the concepts, and a
-    // `:Fact`'s `MENTIONS` edges need them already written.
-    const graded = (task.input as { sessionId: string }).sessionId;
-    const graphFactsBySession = new Map<string, Task<MemoryOutcome>['seeds']['graphFacts']>();
-    for (const fact of task.seeds.graphFacts) {
-      const owner = fact.sessionId ?? graded;
-      graphFactsBySession.set(owner, [...(graphFactsBySession.get(owner) ?? []), fact]);
-    }
-
+    // One call: each `semantic_facts` row carries its own session, so the
+    // attacker's fact in a cross-session case lands in the attacker's session
+    // without a call of its own.
     await this.seeds.applySeed({
-      sessionId: graded,
-      concepts: task.seeds.neo4j,
-      relationships: task.seeds.relationships,
+      sessionId: (task.input as { sessionId: string }).sessionId,
       facts: task.seeds.pgvector.map((fact) => ({ ...fact, embedding: fixtureEmbedding() })),
-      graphFacts: graphFactsBySession.get(graded) ?? [],
     });
-    for (const [sessionId, graphFacts] of graphFactsBySession) {
-      if (sessionId !== graded) await this.seeds.applySeed({ sessionId, graphFacts });
-    }
   }
 
   /**
@@ -248,7 +222,6 @@ export class AgentServiceHarness implements AgentHarness<MemoryOutcome> {
       sessionId: transcript.sessionId,
       episodeRowsForRun: inspection.episodeRowsForRun,
       factRowsForRun: inspection.factRowsForRun,
-      factNodesForRun: inspection.factNodesForRun,
       extractedFactTexts: factTexts ?? [],
     };
   }
@@ -273,9 +246,6 @@ export function sessionsNamedBy(task: Task<MemoryOutcome>): string[] {
       sessionOf(task.input),
       ...(task.priorInputs ?? []).map(sessionOf),
       ...task.seeds.pgvector.map((fact) => fact.sessionId),
-      ...task.seeds.graphFacts.flatMap((fact) =>
-        fact.sessionId === undefined ? [] : [fact.sessionId],
-      ),
     ]),
   ];
 }
@@ -304,12 +274,11 @@ export async function createAgentServiceHarness(
   });
 
   const pool = context.get<pg.Pool | null>(PG_POOL);
-  const driver = context.get<Driver | null>(NEO4J_DRIVER);
 
-  if (!pool || !driver) {
+  if (!pool) {
     await context.close();
     throw new Error(
-      'the memory axis is unconfigured: set DATABASE_URL and NEO4J_URI. ' +
+      'the memory axis is unconfigured: set DATABASE_URL. ' +
         'Outcome graders read persisted state, and against the no-op writers they ' +
         'cannot tell "wrote nothing" from "there was nowhere to write".',
     );
@@ -321,8 +290,8 @@ export async function createAgentServiceHarness(
   return new AgentServiceHarness(
     context,
     runs,
-    new PgNeo4jMemoryInspector(pool, driver),
-    new PgNeo4jSeedManager(pool, driver),
+    new PgMemoryInspector(pool),
+    new PgSeedManager(pool),
     decks,
     spans,
   );

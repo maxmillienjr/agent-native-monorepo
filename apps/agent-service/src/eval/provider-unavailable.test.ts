@@ -103,7 +103,7 @@ const suite: Suite<MemoryOutcome> = {
       id: TASK,
       description: 'a task',
       input: { sessionId: SESSION, messages: [{ role: 'user', content: 'What is LangGraph?' }] },
-      seeds: { neo4j: [], relationships: [], pgvector: [], graphFacts: [] },
+      seeds: { pgvector: [] },
       graders: [passes],
     },
   ],
@@ -117,8 +117,6 @@ const noStores = {
       runId,
       episodeRowsForRun: 1,
       factRowsForRun: 0,
-      factNodesForRun: 0,
-      presentConceptIds: [],
     }),
   } satisfies MemoryInspector,
 };
@@ -150,7 +148,7 @@ describe('a recording run that meets three consecutive 503s', () => {
     vi.stubGlobal('fetch', host.fetch);
 
     const axes = { model: 'live', memory: 'live' } as const;
-    const runs = new RunsService(null, null, null, null, null, null);
+    const runs = new RunsService(null, null, null, null, null);
     // What `createAgentServiceHarness` does with the options `run-eval.ts` passes.
     runs.setChatOptions(chatOptionsFor('record', axes));
     const decks = recordingDecks({ datasetDir, axes, gitSha: 'a'.repeat(40) });

@@ -8,7 +8,6 @@ import { createLogger, withAgentSpan } from '@repo/telemetry';
 import {
   EMBEDDING_DIMENSIONS,
   type EpisodicRepository,
-  type Neo4jWriter,
   type PgvectorWriter,
   type RecordSeam,
   type RecordedModelAxis,
@@ -26,7 +25,6 @@ import { retryServerErrorOnce, stopOnServerError } from '../agent/model/server-e
 import { EXTRACTION_PROMPT, parseExtraction } from '../agent/model/extraction.js';
 import {
   EPISODIC_REPOSITORY,
-  NEO4J_WRITER,
   PGVECTOR_WRITER,
   RETRIEVAL_FACADE,
   CHECKPOINTER,
@@ -62,9 +60,9 @@ const logger = createLogger('runs-service');
  * response's summary fields.
  *
  * `extraction` is here for the same reason. `reflect` writes what `distill`
- * produced, so the only way to ask "were the concepts this run extracted
- * actually MERGEd" is to know what it extracted — a count of `:Concept` nodes
- * cannot attribute one to a run, because `mergeEntity` records no episode on it.
+ * produced, and a fact extracted word for word a second time lands on the row
+ * that already holds it, so a row count keyed on the run cannot say what the
+ * run extracted. The red team's `canary_absent_from_extraction` reads it.
  */
 export interface TracedRun {
   readonly response: RunResponse;
@@ -212,10 +210,6 @@ export class RunsService {
   // metadata and an implicit parameter arrives as `undefined`.
   constructor(
     @Inject(EPISODIC_REPOSITORY) private readonly episodicRepo: EpisodicRepository | null,
-    // Unread since P2-E took the graph writes out of `reflect`. Kept so every
-    // positional construction stays as it is until the token goes with the
-    // rest of the graph code, in P2-E's second pull request.
-    @Inject(NEO4J_WRITER) private readonly neo4jWriter: Neo4jWriter | null,
     @Inject(PGVECTOR_WRITER) private readonly pgvectorWriter: PgvectorWriter | null,
     @Inject(RETRIEVAL_FACADE) private readonly retrievalFacade: RetrievalFacade | null,
     @Inject(CHECKPOINTER) private readonly checkpointer: BaseCheckpointSaver | null,
@@ -261,8 +255,7 @@ export class RunsService {
    * Changes how the chat client is built for every run after this call.
    *
    * Only `yarn eval` calls it, to bound 5xx retries on the live model axis and
-   * when recording (P1-I). A request, and P2-D's stage 2 recorder, which builds
-   * its own `RunsService`, keep LangChain's default retries.
+   * when recording (P1-I). A request keeps LangChain's default retries.
    */
   setChatOptions(options: ChatClientOptions): void {
     this.chatOptions = options;
@@ -278,8 +271,8 @@ export class RunsService {
    *
    * This used to switch the whole dependency set on `GOOGLE_API_KEY`, so a
    * developer with Postgres but no API key got stub memory. `GOOGLE_API_KEY`
-   * now selects the model half; `DATABASE_URL` + `NEO4J_URI`, resolved in
-   * `MemoryModule`, select the memory half.
+   * now selects the model half; `DATABASE_URL`, resolved in `MemoryModule`,
+   * selects the memory half.
    *
    * With a run record open, the set is recorded last, outside anything that
    * assembled or decorated it, so the record holds what the graph was served

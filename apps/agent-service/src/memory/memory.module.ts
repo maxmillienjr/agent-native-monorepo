@@ -1,16 +1,12 @@
 import { Module, Inject, type OnModuleDestroy } from '@nestjs/common';
 import type pg from 'pg';
-import type { Driver } from 'neo4j-driver';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { PostgresSaver } from '@langchain/langgraph-checkpoint-postgres';
 import { createLogger } from '@repo/telemetry';
 import {
   runMigrations,
   createPgvectorPool,
-  createNeo4jClient,
-  ensureSemanticConstraints,
   DrizzleEpisodicRepository,
-  CypherNeo4jWriter,
   PgPgvectorWriter,
   PgPgvectorReader,
   VectorRetrievalFacade,
@@ -22,9 +18,7 @@ import { selectAppealRepository, selectCaseRepository } from './case-repository.
 import {
   MEMORY_CONFIG,
   PG_POOL,
-  NEO4J_DRIVER,
   EPISODIC_REPOSITORY,
-  NEO4J_WRITER,
   PGVECTOR_WRITER,
   RETRIEVAL_FACADE,
   CHECKPOINTER,
@@ -45,8 +39,8 @@ const logger = createLogger('memory-module');
  *
  * Every provider resolves to `null` when the memory axis is unconfigured, so
  * the no-database path stays a first-class one. When it *is* configured,
- * nothing here falls back: a failed migration, an unreachable driver or a
- * failed checkpointer setup stops boot. Selecting no-op writers because a
+ * nothing here falls back: a failed migration or a failed checkpointer setup
+ * stops boot. Selecting no-op writers because a
  * configured database is missing is the defect this replaces, and it must not
  * come back as a runtime path.
  */
@@ -76,32 +70,10 @@ const logger = createLogger('memory-module');
       },
     },
     {
-      provide: NEO4J_DRIVER,
-      inject: [MEMORY_CONFIG],
-      useFactory: async (config: MemoryConfig | null): Promise<Driver | null> => {
-        if (!config) return null;
-        const driver = createNeo4jClient({
-          uri: config.neo4jUri,
-          username: config.neo4jUser,
-          password: config.neo4jPassword,
-        });
-        // Surfaces an unreachable Neo4j at boot rather than on the first run.
-        await driver.verifyConnectivity();
-        await ensureSemanticConstraints(driver);
-        logger.info({ msg: 'memory.neo4j.ready' });
-        return driver;
-      },
-    },
-    {
       provide: EPISODIC_REPOSITORY,
       inject: [PG_POOL],
       useFactory: (pool: pg.Pool | null) =>
         pool ? new DrizzleEpisodicRepository(drizzle(pool)) : null,
-    },
-    {
-      provide: NEO4J_WRITER,
-      inject: [NEO4J_DRIVER],
-      useFactory: (driver: Driver | null) => (driver ? new CypherNeo4jWriter(driver) : null),
     },
     {
       provide: PGVECTOR_WRITER,
@@ -109,8 +81,7 @@ const logger = createLogger('memory-module');
       useFactory: (pool: pg.Pool | null) => (pool ? new PgPgvectorWriter(pool) : null),
     },
     {
-      // Vector-only (ADR 0009). The driver is still constructed above, because
-      // `reflect` writes the graph; nothing on a request reads it.
+      // Vector-only (ADR 0009), over the one semantic index (P2-E).
       provide: RETRIEVAL_FACADE,
       inject: [PG_POOL],
       useFactory: (pool: pg.Pool | null) =>
@@ -158,7 +129,6 @@ const logger = createLogger('memory-module');
   exports: [
     MEMORY_CONFIG,
     EPISODIC_REPOSITORY,
-    NEO4J_WRITER,
     PGVECTOR_WRITER,
     RETRIEVAL_FACADE,
     CHECKPOINTER,
@@ -168,13 +138,9 @@ const logger = createLogger('memory-module');
   ],
 })
 export class MemoryModule implements OnModuleDestroy {
-  constructor(
-    @Inject(PG_POOL) private readonly pool: pg.Pool | null,
-    @Inject(NEO4J_DRIVER) private readonly driver: Driver | null,
-  ) {}
+  constructor(@Inject(PG_POOL) private readonly pool: pg.Pool | null) {}
 
   async onModuleDestroy(): Promise<void> {
-    await this.driver?.close();
     await this.pool?.end();
   }
 }

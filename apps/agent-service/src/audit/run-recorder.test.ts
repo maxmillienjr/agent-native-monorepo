@@ -31,7 +31,7 @@ describe('a chat run on the stub model', () => {
   });
 
   function service(records: InMemoryRunRecords): RunsService {
-    return new RunsService(null, null, null, null, null, records);
+    return new RunsService(null, null, null, null, records);
   }
 
   it('records the body as received and every decision in the order it resolved', async () => {
@@ -106,7 +106,7 @@ describe('a chat run on the stub model', () => {
   });
 
   it('records nothing on the unconfigured memory axis', async () => {
-    const run = await new RunsService(null, null, null, null, null, null).executeTraced({
+    const run = await new RunsService(null, null, null, null, null).executeTraced({
       body: BODY,
       correlationId: 'corr-5',
     });

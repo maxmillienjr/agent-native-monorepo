@@ -15,8 +15,7 @@ import { render } from './replay-report.js';
  * first divergent step. Exit 2: the run cannot be replayed here — no record,
  * no commit, another commit, or no database — and nothing was executed.
  *
- * It reads through a read-only pool and constructs no Neo4j driver and no
- * model client, so it makes no write and no model request whatever the
+ * It reads through a read-only pool and constructs no model client, so it makes no write and no model request whatever the
  * record holds. It needs `DATABASE_URL` and nothing else.
  */
 

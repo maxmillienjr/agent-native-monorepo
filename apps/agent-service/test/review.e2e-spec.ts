@@ -36,13 +36,13 @@ import { ReviewSweep } from '../src/review/review.sweep.js';
  * memory axes.
  *
  * Memory unconfigured always runs, under `yarn turbo test:service`. Memory
- * live runs when `DATABASE_URL` and `NEO4J_URI` are set, which is
+ * live runs when `DATABASE_URL` is set, which is
  * `yarn turbo test:integration`: the integration job in `e2e.yml` exports
- * them and sets `REQUIRE_INTEGRATION_ENV`, under which a missing variable
+ * it and sets `REQUIRE_INTEGRATION_ENV`, under which a missing variable
  * fails this file instead of skipping the axis. The live axis never empties
  * the table; every assertion reads only the cases it created.
  */
-const LIVE_VARIABLES = ['DATABASE_URL', 'NEO4J_URI'] as const;
+const LIVE_VARIABLES = ['DATABASE_URL'] as const;
 
 function liveAxisAvailable(): boolean {
   const missing = LIVE_VARIABLES.filter((name) => (process.env[name] ?? '').trim() === '');

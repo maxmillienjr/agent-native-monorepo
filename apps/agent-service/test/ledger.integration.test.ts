@@ -54,7 +54,7 @@ const RECONSIDERER = generateReviewerKey({
 });
 
 /**
- * The decision ledger in the service, against live Postgres and Neo4j (P3-C).
+ * The decision ledger in the service, against live Postgres (P3-C).
  * Model `stub` unless a test says otherwise; memory `live`; the ledger in a
  * database of its own, written as `ledger_writer`.
  *
@@ -64,7 +64,7 @@ const RECONSIDERER = generateReviewerKey({
  * `ledger:anchor` here is the compiled command.
  */
 
-const SKIP = skipUnlessIntegrationEnv('decision ledger (integration)', 'DATABASE_URL', 'NEO4J_URI');
+const SKIP = skipUnlessIntegrationEnv('decision ledger (integration)', 'DATABASE_URL');
 
 const SESSION = '550e8400-e29b-41d4-a716-4466554400c3';
 const BODY = { sessionId: SESSION, messages: [{ role: 'user', content: 'What is LangGraph?' }] };

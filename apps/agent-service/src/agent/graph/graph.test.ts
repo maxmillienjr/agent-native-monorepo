@@ -112,7 +112,7 @@ describe('buildAgentGraph', () => {
   });
 
   it('retries an I/O node that fails twice and succeeds on the third attempt', async () => {
-    // A transient Neo4j error used to fail the run outright — retryPolicy
+    // A transient store error used to fail the run outright — retryPolicy
     // occurred zero times in source. IO_RETRY allows three attempts.
     let attempts = 0;
     const deps = makeDeps();

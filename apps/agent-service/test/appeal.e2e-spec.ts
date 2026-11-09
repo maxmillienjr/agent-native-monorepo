@@ -30,7 +30,7 @@ import { ReviewSweep } from '../src/review/review.sweep.js';
  * `stub` and on both memory axes, with no ledger and no authentication.
  *
  * Memory unconfigured always runs, under `yarn turbo test:service`. Memory
- * live runs when `DATABASE_URL` and `NEO4J_URI` are set, which is
+ * live runs when `DATABASE_URL` is set, which is
  * `yarn turbo test:integration`, as `review.e2e-spec.ts` does; under
  * `REQUIRE_INTEGRATION_ENV` a missing variable fails this file instead of
  * skipping the axis. The live axis never empties a table; every assertion
@@ -38,7 +38,7 @@ import { ReviewSweep } from '../src/review/review.sweep.js';
  *
  * Every reviewer, filer, credential and key id is labelled synthetic (ADR 0003).
  */
-const LIVE_VARIABLES = ['DATABASE_URL', 'NEO4J_URI'] as const;
+const LIVE_VARIABLES = ['DATABASE_URL'] as const;
 
 function liveAxisAvailable(): boolean {
   const missing = LIVE_VARIABLES.filter((name) => (process.env[name] ?? '').trim() === '');

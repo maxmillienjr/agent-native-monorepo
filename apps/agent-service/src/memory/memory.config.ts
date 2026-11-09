@@ -2,9 +2,6 @@ import { z } from 'zod';
 
 const MemoryConfigSchema = z.object({
   databaseUrl: z.string().min(1),
-  neo4jUri: z.string().min(1),
-  neo4jUser: z.string().min(1),
-  neo4jPassword: z.string().min(1),
 });
 
 export type MemoryConfig = z.infer<typeof MemoryConfigSchema>;
@@ -16,36 +13,16 @@ export type MemoryConfig = z.infer<typeof MemoryConfigSchema>;
  * dependency set on `GOOGLE_API_KEY`, as this service used to, meant a
  * developer with Postgres but no API key got stub memory.
  *
- * Returns `null` when neither variable is set — the no-database path that
- * keeps a clone with no `.env` working, which P0-A's acceptance criteria
+ * Returns `null` when `DATABASE_URL` is unset or empty — the no-database path
+ * that keeps a clone with no `.env` working, which P0-A's acceptance criteria
  * require and `test/runs.e2e-spec.ts` depends on.
  *
- * Half-configured throws. `DATABASE_URL` without `NEO4J_URI` cannot serve
- * hybrid retrieval, and quietly falling back to no-op writers because a
- * configured database is missing is the defect this whole change removes.
+ * `DATABASE_URL` alone selects the axis, because Postgres is the one store
+ * (P2-E). No other variable is read, so one left over in an old `.env` is
+ * ignored rather than refused.
  */
 export function readMemoryConfig(env: NodeJS.ProcessEnv = process.env): MemoryConfig | null {
   const databaseUrl = env['DATABASE_URL'];
-  const neo4jUri = env['NEO4J_URI'];
-
-  if (!databaseUrl && !neo4jUri) return null;
-
-  const parsed = MemoryConfigSchema.safeParse({
-    databaseUrl,
-    neo4jUri,
-    neo4jUser: env['NEO4J_USER'] ?? 'neo4j',
-    neo4jPassword: env['NEO4J_PASSWORD'] ?? 'password',
-  });
-
-  if (!parsed.success) {
-    // Named rather than re-raised as a ZodError, because this is read by
-    // whoever is holding a half-written .env, not by a client.
-    const missing = parsed.error.issues.map((issue) => issue.path.join('.')).join(', ');
-    throw new Error(
-      `Memory is partially configured: ${missing} is missing or empty. ` +
-        'Set DATABASE_URL and NEO4J_URI together, or neither to run without memory.',
-    );
-  }
-
-  return parsed.data;
+  if (!databaseUrl) return null;
+  return MemoryConfigSchema.parse({ databaseUrl });
 }

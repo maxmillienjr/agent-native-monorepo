@@ -47,7 +47,7 @@ const bundle = (
 const FIXED = new Date('2026-03-01T10:00:00Z');
 
 function service(cases = new InMemoryCaseRepository()): PriorAuthService {
-  const runs = new RunsService(null, null, null, null, null, null);
+  const runs = new RunsService(null, null, null, null, null);
   return new PriorAuthService(runs, null, { now: () => FIXED }, null, cases);
 }
 
@@ -174,7 +174,7 @@ describe('the run record on the prior-authorization path, which fails closed (P3
     records: InMemoryRunRecords,
     cases = new InMemoryCaseRepository(),
   ): PriorAuthService {
-    const runs = new RunsService(null, null, null, null, null, records);
+    const runs = new RunsService(null, null, null, null, records);
     return new PriorAuthService(runs, null, { now: () => FIXED }, records, cases);
   }
 
@@ -278,7 +278,7 @@ describe('the ledger on the prior-authorization path, which fails closed (P3-C)'
   function ledgered(store: InMemoryLedgerStore, cases = new InMemoryCaseRepository()) {
     const records = new InMemoryRunRecords();
     const checkpointer = new MemorySaver();
-    const runs = new RunsService(null, null, null, null, null, records);
+    const runs = new RunsService(null, null, null, null, records);
     const runLedger = new RunLedger(new Ledger(store), records, checkpointer);
     return {
       records,

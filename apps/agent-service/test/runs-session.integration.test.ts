@@ -12,7 +12,7 @@ import { bootService, type ServiceApp } from './service-app.js';
 import { skipUnlessIntegrationEnv } from './integration-env.js';
 
 /**
- * Caller-scoped sessions on `/runs`, against live Postgres and Neo4j (P5-D).
+ * Caller-scoped sessions on `/runs`, against live Postgres (P5-D).
  * Model `stub`, memory `live`, two principals.
  *
  * The first test is the measurement in P5-D's Problem, run the other way: `b`
@@ -25,7 +25,7 @@ import { skipUnlessIntegrationEnv } from './integration-env.js';
  * its own.
  */
 
-const SKIP = skipUnlessIntegrationEnv('runs sessions (integration)', 'DATABASE_URL', 'NEO4J_URI');
+const SKIP = skipUnlessIntegrationEnv('runs sessions (integration)', 'DATABASE_URL');
 
 const digest = (token: string) => createHash('sha256').update(token).digest('hex');
 const TOKENS = { a: 'token-a', b: 'token-b' } as const;
@@ -40,7 +40,6 @@ describe.skipIf(SKIP)('runs sessions (integration)', () => {
     service = await bootService({
       SERVICE_CREDENTIALS: `a:${digest(TOKENS.a)},b:${digest(TOKENS.b)}`,
       DATABASE_URL: process.env['DATABASE_URL']!,
-      NEO4J_URI: process.env['NEO4J_URI']!,
     });
     pool = service.app.get<pg.Pool>(PG_POOL);
 

@@ -245,7 +245,7 @@ export class RunExecutor implements AgentExecutor {
 
   /**
    * No running task can be cancelled. A run stopped between `reflect`'s
-   * Postgres and Neo4j writes would leave a partial write that only a replay
+   * episodic and semantic writes would leave a partial write that only a replay
    * makes safe, and nothing replays a cancelled run (P5-A, Non-goals). Thrown
    * rather than published, so the caller gets `-32002` at once instead of
    * waiting for the run to finish and then getting it.

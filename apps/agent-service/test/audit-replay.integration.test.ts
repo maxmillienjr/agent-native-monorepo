@@ -8,14 +8,13 @@ import { Test } from '@nestjs/testing';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import request from 'supertest';
 import type pg from 'pg';
-import type { Driver } from 'neo4j-driver';
 import { PostgresSaver } from '@langchain/langgraph-checkpoint-postgres';
 import { canonicalJson } from '@repo/agent-cassette';
 import { PgRunRecordRepository, createReadOnlyPool } from '@repo/memory-core';
 import { MEMORY_RECALL_DATASET_DIR, loadMemoryRecallSuite } from '@repo/eval-harness';
 import { AppModule } from '../src/app.module.js';
 import { configureApp } from '../src/configure-app.js';
-import { NEO4J_DRIVER, PG_POOL } from '../src/memory/memory.tokens.js';
+import { PG_POOL } from '../src/memory/memory.tokens.js';
 import { RunsService } from '../src/runs/runs.service.js';
 import { codeIdentity } from '../src/audit/code-identity.js';
 import { OPEN_PRINCIPAL } from '../src/auth/credentials.js';
@@ -26,7 +25,7 @@ import { replayDecks, watchForModelRequests } from '../src/eval/cassette-deps.js
 import { skipUnlessIntegrationEnv } from './integration-env.js';
 
 /**
- * The run record and `audit:replay` against live Postgres and Neo4j (P3-B).
+ * The run record and `audit:replay` against live Postgres (P3-B).
  * Model `stub` unless a test says otherwise; memory `live` throughout.
  *
  * The mutation tests edit `run_decisions` and `checkpoint_blobs` with SQL,
@@ -34,7 +33,7 @@ import { skipUnlessIntegrationEnv } from './integration-env.js';
  * show that replay notices an edit to one side and not the other.
  */
 
-const SKIP = skipUnlessIntegrationEnv('audit:replay (integration)', 'DATABASE_URL', 'NEO4J_URI');
+const SKIP = skipUnlessIntegrationEnv('audit:replay (integration)', 'DATABASE_URL');
 
 const SESSION = '550e8400-e29b-41d4-a716-4466554400b0';
 const BODY = { sessionId: SESSION, messages: [{ role: 'user', content: 'What is LangGraph?' }] };
@@ -44,7 +43,6 @@ describe.skipIf(SKIP)('audit:replay (integration)', () => {
   let app: NestExpressApplication;
   let pool: pg.Pool;
   let readOnly: pg.Pool;
-  let driver: Driver;
   let savedKey: string | undefined;
 
   beforeAll(async () => {
@@ -57,7 +55,6 @@ describe.skipIf(SKIP)('audit:replay (integration)', () => {
     await app.init();
 
     pool = app.get<pg.Pool>(PG_POOL);
-    driver = app.get<Driver>(NEO4J_DRIVER);
     readOnly = createReadOnlyPool(process.env['DATABASE_URL']!);
   });
 
@@ -269,7 +266,7 @@ describe.skipIf(SKIP)('audit:replay (integration)', () => {
     });
   });
 
-  it('makes no write to Postgres or Neo4j', async () => {
+  it('makes no write to Postgres', async () => {
     const runId = await post();
     const tables = [
       'run_records',
@@ -285,13 +282,6 @@ describe.skipIf(SKIP)('audit:replay (integration)', () => {
       for (const table of tables) {
         const rows = await pool.query<{ n: number }>(`SELECT count(*)::int AS n FROM ${table}`);
         counted[table] = rows.rows[0]!.n;
-      }
-      const session = driver.session();
-      try {
-        const nodes = await session.run('MATCH (n) RETURN count(n) AS n');
-        counted['neo4j nodes'] = Number(nodes.records[0]!.get('n'));
-      } finally {
-        await session.close();
       }
       return counted;
     };

@@ -43,7 +43,7 @@ const logger = createLogger('ledger-module');
         if (memory === null) {
           throw new Error(
             'LEDGER_DATABASE_URL is set but memory is not: the ledger commits to run records, ' +
-              'which exist only on the memory axis. Set DATABASE_URL and NEO4J_URI too, or unset it.',
+              'which exist only on the memory axis. Set DATABASE_URL too, or unset it.',
           );
         }
         // Short timeouts and an error listener: a ledger that stops answering

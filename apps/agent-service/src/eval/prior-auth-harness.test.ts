@@ -24,7 +24,7 @@ describe('PriorAuthHarness', () => {
 
   beforeAll(() => {
     delete process.env['GOOGLE_API_KEY'];
-    runs = new RunsService(null, null, null, null, null, null);
+    runs = new RunsService(null, null, null, null, null);
     const service = new PriorAuthService(
       runs,
       null,

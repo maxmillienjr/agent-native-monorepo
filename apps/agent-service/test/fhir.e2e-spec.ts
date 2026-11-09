@@ -65,7 +65,7 @@ describe('FHIR prior-authorization surface (e2e)', () => {
 
   beforeAll(async () => {
     // The stub axis on both halves, whatever the developer's shell holds.
-    for (const name of ['GOOGLE_API_KEY', 'DATABASE_URL', 'NEO4J_URI']) {
+    for (const name of ['GOOGLE_API_KEY', 'DATABASE_URL']) {
       saved[name] = process.env[name];
       delete process.env[name];
     }
