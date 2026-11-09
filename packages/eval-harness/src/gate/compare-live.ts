@@ -47,6 +47,29 @@ export function trialFloor(delta: number): number {
   return Math.ceil(3 / delta - 1e-9);
 }
 
+/**
+ * The `tasks-random` floor, pre-registered by P1-H as P1-D's successor for that
+ * regime before any live prior-auth number existed.
+ *
+ * `tasks-random` resamples per-task differences, not trials, so its degenerate
+ * case is every task's difference being equal, and the rule of three then
+ * applies across tasks: at K ≥ `TASKS_RANDOM_FROM` no changed task bounds the
+ * share of changed tasks at 3/K ≤ 0.15, below δ. The regime threshold already
+ * does what `⌈3/δ⌉` does for `tasks-fixed`; what is left is that a task's rate
+ * is not a single coin, which two trials in each arm meet.
+ */
+export const TASKS_RANDOM_TRIAL_FLOOR = 2;
+
+/** The regime a comparison over `taskCount` tasks runs in. */
+export function liveRegime(taskCount: number): LiveRegime {
+  return taskCount >= TASKS_RANDOM_FROM ? 'tasks-random' : 'tasks-fixed';
+}
+
+/** Trials each task needs in each arm before `held` or `regressed` is issued. */
+export function regimeFloor(regime: LiveRegime, delta: number): number {
+  return regime === 'tasks-random' ? TASKS_RANDOM_TRIAL_FLOOR : trialFloor(delta);
+}
+
 export interface LiveTaskArms {
   readonly task: string;
   readonly candidate: { readonly passed: number; readonly trials: number };
@@ -60,6 +83,7 @@ export interface LiveComparison {
   /** Why, in a sentence a job summary can print. */
   readonly reason: string;
   readonly delta: number;
+  /** Trials per task per arm the regime needs: `⌈3/δ⌉` in `tasks-fixed`, 2 in `tasks-random`. */
   readonly floor: number;
   /** Absent only when the arms could not be compared at all. */
   readonly regime?: LiveRegime;
@@ -91,33 +115,40 @@ export function compareLive(
   options: CompareLiveOptions = {},
 ): LiveComparison {
   const delta = options.delta ?? LIVE_DELTA;
-  const floor = trialFloor(delta);
   const resamples = options.resamples ?? 10_000;
   const confidence = options.confidence ?? 0.95;
-  const base = { delta, floor, resamples, confidence };
 
+  // The floor follows the regime, and the regime follows the number of tasks
+  // the two arms name between them, so it is known before either is compared.
   const candidateTasks = Object.keys(candidate.tasks).sort();
-  const arms = (ref: LivePool | undefined): LiveTaskArms[] =>
-    [...new Set([...candidateTasks, ...Object.keys(ref?.tasks ?? {})])].sort().map((task) => {
-      const c = candidate.tasks[task]?.trials ?? [];
-      const r = ref?.tasks[task]?.trials ?? [];
-      return {
-        task,
-        candidate: { passed: c.filter(Boolean).length, trials: c.length },
-        reference: { passed: r.filter(Boolean).length, trials: r.length },
-        needs: {
-          candidate: Math.max(0, floor - c.length),
-          reference: Math.max(0, floor - r.length),
-        },
-      };
-    });
+  const arms = (ref: LivePool | undefined): { floor: number; tasks: LiveTaskArms[] } => {
+    const ids = [...new Set([...candidateTasks, ...Object.keys(ref?.tasks ?? {})])].sort();
+    const floor = regimeFloor(liveRegime(ids.length), delta);
+    return {
+      floor,
+      tasks: ids.map((task) => {
+        const c = candidate.tasks[task]?.trials ?? [];
+        const r = ref?.tasks[task]?.trials ?? [];
+        return {
+          task,
+          candidate: { passed: c.filter(Boolean).length, trials: c.length },
+          reference: { passed: r.filter(Boolean).length, trials: r.length },
+          needs: {
+            candidate: Math.max(0, floor - c.length),
+            reference: Math.max(0, floor - r.length),
+          },
+        };
+      }),
+    };
+  };
+  const base = { delta, resamples, confidence };
 
   if (reference === undefined) {
     return {
       ...base,
       verdict: 'incomparable',
       reason: 'there is no committed live reference yet; promote one with `yarn eval:promote-live`',
-      tasks: arms(undefined),
+      ...arms(undefined),
     };
   }
   if (reference.suite !== candidate.suite) {
@@ -125,14 +156,14 @@ export function compareLive(
       ...base,
       verdict: 'incomparable',
       reason: `the reference is suite \`${reference.suite}\` and this is \`${candidate.suite}\``,
-      tasks: arms(reference),
+      ...arms(reference),
     };
   }
   const referenceTasks = Object.keys(reference.tasks).sort();
   const same =
     referenceTasks.length === candidateTasks.length &&
     referenceTasks.every((task, i) => task === candidateTasks[i]);
-  const tasks = arms(reference);
+  const { floor, tasks } = arms(reference);
   if (!same || tasks.some((t) => t.candidate.trials === 0 || t.reference.trials === 0)) {
     return {
       ...base,
@@ -140,6 +171,7 @@ export function compareLive(
       reason:
         `the task sets differ: reference [${referenceTasks.join(', ')}], ` +
         `candidate [${candidateTasks.join(', ')}]`,
+      floor,
       tasks,
     };
   }
@@ -149,7 +181,7 @@ export function compareLive(
       Object.entries(pool.tasks).map(([task, { trials }]) => [task, trials.map(Number)]),
     );
 
-  const regime: LiveRegime = tasks.length >= TASKS_RANDOM_FROM ? 'tasks-random' : 'tasks-fixed';
+  const regime = liveRegime(tasks.length);
   const bootstrap = {
     resamples,
     confidence,
@@ -186,8 +218,11 @@ export function compareLive(
   if (!floorMet) {
     verdict = 'insufficient-evidence';
     reason =
-      `${short.length} of ${tasks.length} task(s) have fewer than ${floor} trials in an arm ` +
-      `(⌈3/δ⌉ at δ = ${delta}), and below that an all-pass sample cannot rule out a rate under ${1 - delta}`;
+      regime === 'tasks-random'
+        ? `${short.length} of ${tasks.length} task(s) have fewer than ${floor} trials in an arm ` +
+          "(the `tasks-random` floor), and below that a task's rate is a single coin"
+        : `${short.length} of ${tasks.length} task(s) have fewer than ${floor} trials in an arm ` +
+          `(⌈3/δ⌉ at δ = ${delta}), and below that an all-pass sample cannot rule out a rate under ${1 - delta}`;
   } else if (interval.estimate <= -delta && interval.upper < 0) {
     verdict = 'regressed';
     reason = `Δ = ${fmt(interval.estimate)} is at or below −δ and the interval excludes 0`;
@@ -201,7 +236,7 @@ export function compareLive(
       'showing a drop of δ; more trials narrow it';
   }
 
-  return { ...base, verdict, reason, regime, ...interval, tasks };
+  return { ...base, floor, verdict, reason, regime, ...interval, tasks };
 }
 
 const fmt = (value: number): string => (Math.round(value * 1000) / 1000).toString();

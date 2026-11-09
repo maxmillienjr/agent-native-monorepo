@@ -7,6 +7,7 @@ import {
   digestFiles,
   epochDir,
   tallyPath,
+  type DigestInput,
   type LiveTally,
 } from '@repo/eval-harness';
 
@@ -78,20 +79,27 @@ export function repoRoot(cwd: string = process.cwd()): string {
  * committed at the commit it ran.
  */
 export function committedCassetteDigest(datasetDir: string, ref = 'HEAD'): string {
+  return digestFiles(committedCassettes(datasetDir, ref));
+}
+
+/**
+ * The cassette files committed at `ref`, each named relative to the cassettes
+ * directory. The rotation costs a task from these (P1-H), for the reason the
+ * digest is read from git: the job that records clears the files on disk.
+ */
+export function committedCassettes(datasetDir: string, ref = 'HEAD'): DigestInput[] {
   const root = repoRoot(datasetDir);
   const dir = relative(root, cassettesDir(datasetDir)).split('\\').join('/');
   const listed = git(root, ['ls-tree', '--name-only', ref, '--', `${dir}/`])
     .split('\n')
     .filter((path) => path.endsWith('.json'));
-  return digestFiles(
-    listed.map((path) => ({
-      path: path.slice(dir.length + 1),
-      bytes: execFileSync('git', ['cat-file', 'blob', `${ref}:${path}`], {
-        cwd: root,
-        env: gitEnv(),
-      }),
-    })),
-  );
+  return listed.map((path) => ({
+    path: path.slice(dir.length + 1),
+    bytes: execFileSync('git', ['cat-file', 'blob', `${ref}:${path}`], {
+      cwd: root,
+      env: gitEnv(),
+    }),
+  }));
 }
 
 /**

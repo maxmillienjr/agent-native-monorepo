@@ -220,7 +220,10 @@ export {
 export {
   LIVE_DELTA,
   TASKS_RANDOM_FROM,
+  TASKS_RANDOM_TRIAL_FLOOR,
   compareLive,
+  liveRegime,
+  regimeFloor,
   trialFloor,
   type CompareLiveOptions,
   type LiveComparison,
@@ -233,9 +236,17 @@ export {
   renderGateJson,
   renderGateSection,
   renderPool,
+  renderZeroTolerance,
   type GateResult,
   type GateVerdict,
 } from './gate/render.js';
+export {
+  checkZeroTolerance,
+  type ZeroToleranceCheck,
+  type ZeroToleranceCount,
+  type ZeroToleranceFailure,
+  type ZeroToleranceGraders,
+} from './gate/zero-tolerance.js';
 
 // The prior-authorization suite (P3-D): its dataset, graders and figures.
 export {

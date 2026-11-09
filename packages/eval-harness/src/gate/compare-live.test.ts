@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { mulberry32 } from '../stats/paired-bootstrap.js';
 import { poolTallies, type LivePool, type LiveReference, type LiveTally } from './baseline.js';
-import { compareLive, trialFloor, type LiveVerdict } from './compare-live.js';
+import {
+  TASKS_RANDOM_TRIAL_FLOOR,
+  compareLive,
+  liveRegime,
+  regimeFloor,
+  trialFloor,
+  type LiveVerdict,
+} from './compare-live.js';
 
 const bernoulli = (random: () => number, n: number, p: number): boolean[] =>
   Array.from({ length: n }, () => random() < p);
@@ -156,5 +163,76 @@ describe('the decision rule at δ = 0.20, K = 2, 400 simulations', () => {
 
   it('says nothing at n = 5: insufficient-evidence 100%', () => {
     expect(simulate(5, 0.9, 0.9)['insufficient-evidence']).toBe(400);
+  });
+});
+
+/**
+ * P1-H's `tasks-random` floor, pre-registered in its criterion: K = 24, δ = 0.20,
+ * 2 trials per task per arm. The reference is the PRD's: 22 tasks at 0.95 and two
+ * at prior-auth's known-failure rates, 0.0 and 0.8. The PRD's sketch was numpy;
+ * this is the repository's own resampler, `mulberry32` and `pairedBootstrap`, at
+ * the sketch's 1,000 simulations of 2,000 resamples each.
+ */
+const PRIOR_AUTH_RATES: readonly number[] = [...Array.from({ length: 22 }, () => 0.95), 0, 0.8];
+const SIMULATIONS = 1_000;
+
+/** Each simulation draws both arms at n trials per task; the candidate is `shift` lower. */
+function simulateTasksRandom(n: number, shift: number): Record<LiveVerdict, number> {
+  const counts: Record<LiveVerdict, number> = {
+    held: 0,
+    regressed: 0,
+    'insufficient-evidence': 0,
+    incomparable: 0,
+  };
+  const draw = (random: () => number, rates: readonly number[]): Record<string, boolean[]> =>
+    Object.fromEntries(
+      rates.map((p, i) => [`pa-${String(i).padStart(2, '0')}`, bernoulli(random, n, p)]),
+    );
+  const shifted = PRIOR_AUTH_RATES.map((p) => Math.max(0, p - shift));
+  for (let s = 0; s < SIMULATIONS; s += 1) {
+    const random = mulberry32(20261109 + s);
+    const r = reference(draw(random, PRIOR_AUTH_RATES));
+    const c = pool(draw(random, shifted));
+    counts[compareLive(c, r, { resamples: 2_000, seed: s + 1 }).verdict] += 1;
+  }
+  return counts;
+}
+
+describe('the tasks-random floor at δ = 0.20, K = 24, 1,000 simulations', () => {
+  it('is 2 trials per task in tasks-random and stays ⌈3/δ⌉ in tasks-fixed', () => {
+    expect(TASKS_RANDOM_TRIAL_FLOOR).toBe(2);
+    expect(regimeFloor(liveRegime(24), 0.2)).toBe(2);
+    expect(regimeFloor(liveRegime(19), 0.2)).toBe(15);
+  });
+
+  it('holds when nothing changed at 2 trials: held ≥ 90%, regressed ≤ 2%', () => {
+    const counts = simulateTasksRandom(2, 0);
+    expect(counts.held / SIMULATIONS).toBeGreaterThanOrEqual(0.9);
+    expect(counts.regressed / SIMULATIONS).toBeLessThanOrEqual(0.02);
+  });
+
+  it('catches every task 0.25 lower at 2 trials: regressed ≥ 60%', () => {
+    expect(simulateTasksRandom(2, 0.25).regressed / SIMULATIONS).toBeGreaterThanOrEqual(0.6);
+  });
+
+  it('is insufficient-evidence when any arm of any task has fewer than 2 trials', () => {
+    const tasks = (n: number, value = true): Record<string, boolean[]> =>
+      Object.fromEntries(Array.from({ length: 24 }, (_, i) => [`t${i}`, all(n, value)]));
+    const full = compareLive(pool(tasks(2)), reference(tasks(2)));
+    expect(full.regime).toBe('tasks-random');
+    expect(full.floor).toBe(2);
+    expect(full.verdict).toBe('held');
+
+    const short = compareLive(pool({ ...tasks(2), t7: all(1) }), reference(tasks(2)));
+    expect(short.verdict).toBe('insufficient-evidence');
+    expect(short.tasks.find((t) => t.task === 't7')?.needs).toEqual({
+      candidate: 1,
+      reference: 0,
+    });
+
+    // A collapse on every task is still not `regressed` with one reference arm short.
+    const collapse = compareLive(pool(tasks(2, false)), reference({ ...tasks(2), t0: all(1) }));
+    expect(collapse.estimate).toBe(-1);
+    expect(collapse.verdict).toBe('insufficient-evidence');
   });
 });

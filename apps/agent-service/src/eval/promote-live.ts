@@ -4,16 +4,17 @@ import { tmpdir } from 'node:os';
 import { dirname, join, relative } from 'node:path';
 import {
   LiveReferenceSchema,
-  MEMORY_RECALL_DATASET_DIR,
   MEMORY_RECALL_SUITE,
   liveReferencePath,
+  liveRegime,
   poolTallies,
-  trialFloor,
+  regimeFloor,
   LIVE_DELTA,
   type LiveReference,
 } from '@repo/eval-harness';
 import { createLogger } from '@repo/telemetry';
 import { openHistory, readEpochDir, repoRoot } from './history.js';
+import { datasetDirOf } from './suite-dirs.js';
 
 const logger = createLogger('eval');
 
@@ -61,16 +62,57 @@ export function promoteEpoch(options: {
   return { path, reference };
 }
 
+const USAGE = 'usage: yarn eval:promote-live [--suite <name>] <cassette digest>';
+
 /**
- * `yarn eval:promote-live <digest>`.
+ * The command line: `[--suite <name>] <digest>`, the suite defaulting to
+ * memory-recall, which was the only suite with a live tier before P1-H.
+ */
+export function readPromoteArgs(argv: readonly string[]): {
+  readonly suite: string;
+  readonly digest: string;
+} {
+  const rest = [...argv];
+  let suite = MEMORY_RECALL_SUITE;
+  const flag = rest.indexOf('--suite');
+  if (flag >= 0) {
+    const name = rest[flag + 1];
+    if (name === undefined || name.startsWith('--'))
+      throw new Error(`${USAGE}; --suite names no suite`);
+    suite = name;
+    rest.splice(flag, 2);
+  }
+  const [digest, ...extra] = rest;
+  if (digest === undefined || extra.length > 0) throw new Error(USAGE);
+  return { suite, digest };
+}
+
+/**
+ * Promotes the epoch the arguments name into the suite's `baselines/live.json`.
+ * `datasetDirOf` is a parameter so a test can point it away from the
+ * committed datasets.
+ */
+export function promoteLive(options: {
+  readonly argv: readonly string[];
+  readonly historyDir: string;
+  readonly datasetDirOf?: (suite: string) => string;
+}): { readonly suite: string; readonly path: string; readonly reference: LiveReference } {
+  const { suite, digest } = readPromoteArgs(options.argv);
+  const datasetDir = (options.datasetDirOf ?? datasetDirOf)(suite);
+  return { suite, ...promoteEpoch({ historyDir: options.historyDir, suite, digest, datasetDir }) };
+}
+
+/**
+ * `yarn eval:promote-live [--suite <name>] <digest>`.
  *
  * Reads `EVAL_HISTORY_DIR` when it names a checkout of the branch, and
  * otherwise checks `origin/eval-history` out into a temporary worktree and
  * removes it afterwards.
  */
 function main(): void {
-  const digest = process.argv[2];
-  if (digest === undefined) throw new Error('usage: yarn eval:promote-live <cassette digest>');
+  const argv = process.argv.slice(2);
+  // Before any checkout, so a typo costs no fetch.
+  readPromoteArgs(argv);
 
   const root = repoRoot();
   const given = process.env['EVAL_HISTORY_DIR'];
@@ -79,21 +121,16 @@ function main(): void {
 
   try {
     if (temporary) openHistory({ repoDir: root, dir: historyDir, create: false });
-    const { path, reference } = promoteEpoch({
-      historyDir,
-      suite: MEMORY_RECALL_SUITE,
-      digest,
-      datasetDir: MEMORY_RECALL_DATASET_DIR,
-    });
-    const floor = trialFloor(LIVE_DELTA);
+    const { suite, path, reference } = promoteLive({ argv, historyDir });
+    const tasks = Object.entries(reference.tasks);
+    const floor = regimeFloor(liveRegime(tasks.length), LIVE_DELTA);
     logger.info({
       msg: 'eval.promote-live',
+      suite,
       wrote: relative(root, path),
       epoch: reference.cassetteDigest.slice(0, 12),
       runs: reference.runs.length,
-      trials: Object.fromEntries(
-        Object.entries(reference.tasks).map(([task, { trials }]) => [task, trials.length]),
-      ),
+      trials: Object.fromEntries(tasks.map(([task, { trials }]) => [task, trials.length])),
       floor,
       detail:
         'review and commit the file; a task under the floor keeps every live verdict at ' +
