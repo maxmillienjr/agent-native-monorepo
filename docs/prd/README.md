@@ -467,13 +467,19 @@ open question: on the shared key it takes the nightly to about 18 of the day's 2
 development almost nothing, so it waits for the recording queue to clear and is more
 realistic with a paid key. It depends on P1-D (pooling across nights) and P3-D (the suite).
 
-P1-I, a draft with no file yet, moves the chat model off `gemini-2.5-flash`. No shutdown
-date forces it before 2028-05-14, but a key from a new GCP project already gets a 404 on the
-pinned id, so the repository cannot be run from a fresh clone on its own key. It re-records
-every cassette suite on the new id and re-derives the budgets, so it costs well over a
-free-tier day. It owns P1-E's one unmet criterion, the suite on the floating alias, as its
-first measurement; three dispatches and a probe from 2026-10-26 to 2026-11-03 ran into the
-alias's 503s and its own daily quota.
+[P1-I](P1-I-chat-model-migration.md), a draft, moves the chat model off `gemini-2.5-flash`.
+This paragraph used to say no shutdown date forces it before 2028-05-14. That is the
+embedding model's date. Google's deprecations page, read 2026-11-09, shuts
+`gemini-2.5-flash` down on 2026-12-01 and routes its requests to `gemini-3.5-flash-lite`
+from that day, under the same id. A key from a new GCP project already gets a 404 on it, so
+the repository cannot be run from a fresh clone on its own key. The draft measures two
+candidates against a rule agreed before the first call, then re-records all three cassette
+suites on the chosen id and re-derives the budgets: about 86 `generateContent` calls over
+at least twelve days, with the switch due on `main` by 2026-11-30. It owns P1-E's one unmet
+criterion, the suite on the floating alias, as its first measurement; three dispatches and
+a probe from 2026-10-26 to 2026-11-03 ran into the alias's 503s and its own daily quota.
+P2-D's stage 2 is pre-registered on `gemini-2.5-flash`, so its last call has to be made by
+2026-11-30 too.
 
 ## Tier 2 — Make the architecture real
 
