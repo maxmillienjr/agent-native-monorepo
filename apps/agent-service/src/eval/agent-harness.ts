@@ -21,7 +21,7 @@ import {
 } from '@repo/eval-harness';
 import { AppModule } from '../app.module.js';
 import { PG_POOL, NEO4J_DRIVER } from '../memory/memory.tokens.js';
-import { RunsService, type TracedRun } from '../runs/runs.service.js';
+import { RunsService, type ChatClientOptions, type TracedRun } from '../runs/runs.service.js';
 import { deckDecorator, type TrialDecks } from './cassette-deps.js';
 import type { SpanCollector } from './span-records.js';
 
@@ -300,10 +300,14 @@ export function sessionsNamedBy(task: Task<MemoryOutcome>): string[] {
  * the process with SIGABRT and no message when a provider factory throws, and a
  * misconfigured memory axis is a configuration mistake whose message is the
  * whole point.
+ *
+ * `chat` reaches the service's chat client: `yarn eval` bounds 5xx retries
+ * with it on the live axis and when recording (P1-I).
  */
 export async function createAgentServiceHarness(
   decks?: TrialDecks,
   spans?: SpanCollector,
+  chat?: ChatClientOptions,
 ): Promise<AgentServiceHarness> {
   const context = await NestFactory.createApplicationContext(AppModule, {
     abortOnError: false,
@@ -322,9 +326,12 @@ export async function createAgentServiceHarness(
     );
   }
 
+  const runs = context.get(RunsService);
+  if (chat !== undefined) runs.setChatOptions(chat);
+
   return new AgentServiceHarness(
     context,
-    context.get(RunsService),
+    runs,
     new PgNeo4jMemoryInspector(pool, driver),
     new PgNeo4jSeedManager(pool, driver),
     decks,

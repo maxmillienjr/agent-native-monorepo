@@ -59,7 +59,8 @@ import {
 import { CHAT_MODEL, PINNED_CHAT_MODEL } from '../agent/model/model-deps.js';
 import { committedCassetteDigest } from './history.js';
 import { GEMINI_PRICES } from './pricing.js';
-import { runAndReport, type RunEnd } from './run-suite.js';
+import { chatOptionsFor, runAndReport, type RunEnd } from './run-suite.js';
+import type { ChatClientOptions } from '../runs/runs.service.js';
 import { SpanCollector } from './span-records.js';
 
 const logger = createLogger('eval');
@@ -123,6 +124,7 @@ interface SuiteDefinition<TOutcome> {
   harness(
     decks: TrialDecks | undefined,
     spans: SpanCollector,
+    chat: ChatClientOptions,
   ): Promise<AgentHarness<TOutcome> & { close(): Promise<void> }>;
   finish(report: SuiteReport<TOutcome>): SuiteReport<TOutcome>;
 }
@@ -133,7 +135,7 @@ function memoryRecallSuite(): SuiteDefinition<MemoryOutcome> {
     datasetDir: MEMORY_RECALL_DATASET_DIR,
     defaultTrials: 5,
     load: (trials) => loadMemoryRecallSuite(trials),
-    harness: (decks, spans) => createAgentServiceHarness(decks, spans),
+    harness: (decks, spans, chat) => createAgentServiceHarness(decks, spans, chat),
     finish: (report) => report,
   };
 }
@@ -153,7 +155,7 @@ function redTeamSuite(): SuiteDefinition<MemoryOutcome> {
     datasetDir: RED_TEAM_DATASET_DIR,
     defaultTrials: 1,
     load: (trials) => loadRedTeamSuite(trials),
-    harness: (decks, spans) => createAgentServiceHarness(decks, spans),
+    harness: (decks, spans, chat) => createAgentServiceHarness(decks, spans, chat),
     finish: (report) => report,
   };
 }
@@ -169,7 +171,7 @@ function priorAuthSuite(): SuiteDefinition<PriorAuthOutcome> {
       labels = suite.labels;
       return suite;
     },
-    harness: (decks, spans) => createPriorAuthHarness(decks, spans),
+    harness: (decks, spans, chat) => createPriorAuthHarness(decks, spans, chat),
     finish: (report) =>
       labels === undefined ? report : { ...report, figures: priorAuthFigures(report, labels) },
   };
@@ -244,7 +246,9 @@ async function runSuite<TOutcome>(
         logRecordProcessors: [new SimpleLogRecordProcessor({ exporter: events })],
       });
 
-      const agent = await definition.harness(decks, spans);
+      // One retry on a provider 5xx, then an abort, wherever a retry spends
+      // quota (P1-I). The service's own default is untouched.
+      const agent = await definition.harness(decks, spans, chatOptionsFor(mode, axes));
 
       try {
         logger.info({ msg: 'eval.start', axes: describeAxes(axes), trials, cassettes: mode });

@@ -11,7 +11,7 @@ import {
 } from '@repo/eval-harness';
 import { AppModule } from '../app.module.js';
 import { PriorAuthService, type PriorAuthRun } from '../fhir/prior-auth.service.js';
-import { RunsService } from '../runs/runs.service.js';
+import { RunsService, type ChatClientOptions } from '../runs/runs.service.js';
 import { deckDecorator, type TrialDecks } from './cassette-deps.js';
 import type { SpanCollector } from './span-records.js';
 
@@ -125,20 +125,19 @@ export class PriorAuthHarness implements AgentHarness<PriorAuthOutcome> {
  * reads none, and on the stub model axis every task is skipped before a trial
  * runs. A recording still needs them, because the cassette header pins memory
  * to `live`, and the run checkpoints each case when they are configured.
+ * `chat` is as `createAgentServiceHarness` takes it.
  */
 export async function createPriorAuthHarness(
   decks?: TrialDecks,
   spans?: SpanCollector,
+  chat?: ChatClientOptions,
 ): Promise<PriorAuthHarness> {
   const context = await NestFactory.createApplicationContext(AppModule, {
     abortOnError: false,
     logger: false,
   });
-  return new PriorAuthHarness(
-    context,
-    context.get(PriorAuthService),
-    context.get(RunsService),
-    decks,
-    spans,
-  );
+  const runs = context.get(RunsService);
+  if (chat !== undefined) runs.setChatOptions(chat);
+
+  return new PriorAuthHarness(context, context.get(PriorAuthService), runs, decks, spans);
 }

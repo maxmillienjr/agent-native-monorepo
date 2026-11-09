@@ -90,5 +90,23 @@ export function explainAbort(error: unknown, progress: RunProgress): AbortCause 
     };
   }
 
+  // The bounded chat client's, on the live axis and when recording (P1-I). The
+  // canary's cause, because it is the same answer from the same provider.
+  if (error instanceof Error && error.name === 'ProviderUnavailableError') {
+    const status = (error as { status?: unknown }).status;
+    return {
+      code: 'provider-unavailable',
+      summary:
+        `\`generateContent\` answered ${typeof status === 'number' ? status : '5xx'} on a ` +
+        `request and on its one retry, after ${trialsDone(progress)}. The run stopped there ` +
+        'rather than spend more of the daily quota on retries; a recording keeps the ' +
+        'cassettes of the trials that finished.',
+      remedy:
+        "nothing in this repository is wrong: it is the provider's capacity. Run it again " +
+        'later. `EVAL_TASKS` names the tasks still to record, so a recording need not repeat ' +
+        'the ones that finished.',
+    };
+  }
+
   return undefined;
 }

@@ -17,6 +17,7 @@ import {
   type Trial,
 } from '@repo/eval-harness';
 import { redactDeep } from '@repo/agent-cassette';
+import type { ChatClientOptions } from '../runs/runs.service.js';
 
 /**
  * Every file a run can leave behind, cleared before it starts.
@@ -73,6 +74,21 @@ export interface RunAndReportOptions<TOutcome> {
   readonly explain?: (error: unknown, progress: RunProgress) => AbortCause | undefined;
   readonly onAbort?: (error: unknown, abort: EvalAbort) => void;
   readonly now?: () => Date;
+}
+
+/**
+ * The chat client a `yarn eval` run asks the service for (P1-I).
+ *
+ * A provider 5xx gets one retry and then aborts the run with cause
+ * `provider-unavailable` when the run spends quota: on the live model axis,
+ * and when recording, which is only possible on it. Replay and the stub axis
+ * make no request, so the client is left as a request has it.
+ */
+export function chatOptionsFor(
+  mode: 'off' | 'record' | 'replay',
+  axes: Pick<Axes, 'model'>,
+): ChatClientOptions {
+  return { boundServerErrors: mode === 'record' || axes.model === 'live' };
 }
 
 /**
