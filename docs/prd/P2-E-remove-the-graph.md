@@ -2,7 +2,7 @@
 id: P2-E
 title: "Act on P2-D's outcome: remove the graph (option C, ADR 0012)"
 tier: 2
-status: accepted
+status: in-progress
 size: M
 depends_on: [P2-D]
 blocks: []
@@ -551,23 +551,69 @@ Each criterion names its axis. "Pure" means a unit test with no store and no net
 
 **PR A**
 
-- [ ] `reflect` writes no graph, and `ReflectNodeDeps` has no `neo4jWriter`. **Pure**, with
+- [x] `reflect` writes no graph, and `ReflectNodeDeps` has no `neo4jWriter`. **Pure**, with
       fake writers: `reflect.node.test.ts` asserts the episodic and pgvector writes and that
-      the deps type has no graph writer.
-- [ ] `EXTRACTION_PROMPT` asks for facts only, and `ExtractionSchema` holds `facts` only. The
+      the deps type has no graph writer. "writes each turn to episodic memory and each fact
+      to semantic_facts" checks both writes' keys, and "takes no graph writer (P2-E)" pins
+      `keyof ReflectNodeDeps` with `expectTypeOf`, so a writer added back fails
+      `yarn turbo typecheck`. "ignores the entities a cassette recorded before P2-E still
+      carries" is the replay case.
+- [x] `EXTRACTION_PROMPT` asks for facts only, and `ExtractionSchema` holds `facts` only. The
       seam id is still `distill.extractEntities`, and `cassette-deps.test.ts`'s
-      hash-stability test passes unchanged. **Pure.**
-- [ ] `entity_merged`, `mergedConceptsMin` and `factsPersistedToBothIndices` are gone, and
+      hash-stability test passes unchanged. **Pure.** `extraction.test.ts`, "drops the
+      entities and relationships the extraction no longer asks for (P2-E)": a live response
+      that still carries them is stripped, not refused. The describe block "request hashes
+      across two runs of the same task" is unchanged; only the docstring above it now names
+      `semantic_fact_written`.
+- [x] `entity_merged`, `mergedConceptsMin` and `factsPersistedToBothIndices` are gone, and
       `semantic_fact_written` with `semanticFactRowsMin: 1` is on all three memory-recall
       tasks. **Pure** for the grader's pass and fail. **Model replay / memory live**:
-      `semantic_fact_written` passes on all three tasks.
-- [ ] **Model replay / memory live:** `EVAL_GATE=update` regenerates memory-recall's baseline,
+      `semantic_fact_written` passes on all three tasks. `code.test.ts`, "fails when reflect
+      wrote no semantic_facts row for the run" and "counts rows against the minimum it was
+      given"; `dataset.test.ts`, "asks every task whether the run wrote semantic memory
+      (P2-E)". On replay on 2026-11-09 the three runs wrote 7, 2 and 4 rows, and 0 `:Fact`
+      nodes. The three names survive only as fixture strings in `gate.test.ts`,
+      `history.test.ts` and `compare-replay.test.ts`, as the Inventory says.
+- [x] **Model replay / memory live:** `EVAL_GATE=update` regenerates memory-recall's baseline,
       and its diff is three `entity_merged` cells out and three `semantic_fact_written` cells
       in, with `cassetteDigest` unchanged. A second replay with `EVAL_GATE=replay` reports
       `match`. Red-team and prior-auth report `match` against their unchanged baselines.
+      Run on 2026-11-09 with `GOOGLE_API_KEY=` empty, against fresh `pgvector:pg16` and
+      `neo4j:5-community` containers. The baseline diff is those six lines and nothing else:
+      `cassetteDigest` (`7ba01468…`), `recordedAt` and `gitSha` are unchanged, and all 31
+      cells pass. Memory-recall (3 tasks), red-team (3) and prior-auth (24) each report
+      `match`, with no `CassetteMissError`. `yarn turbo test:integration` with
+      `REQUIRE_INTEGRATION_ENV=1` passes as well, including the other two checks that
+      replay `memory-recall-001`.
 - [ ] A merged before P1-I's memory-recall recording, or its prompt change was held back by
       the sequencing rule. The date of each, and which happened, are recorded here.
       **Reviewer, from `git log`.**
+
+**PR A, as built (2026-11-09).** Four things the Design did not assign to A had to move with
+it:
+
+- `test/audit-replay.integration.test.ts`, "replays a stub run with every checkpoint
+  matching, and derives what it wrote", listed the stub run's derived writes, and two of
+  them were `neo4j.concept` and `neo4j.fact`. A drops them. Typecheck cannot see this: the
+  test names no writer, and it fails only on memory live.
+- `src/eval/provider-unavailable.test.ts` routed its fake model host on the text
+  `Extract entities, relationships`, so under the narrowed prompt `distill` was answered
+  with a plan. It now matches the new prompt.
+- `spans.test.ts`'s "nests the write spans under agent.node.reflect" asserted the graph
+  writer's span. It is now "nests the write span under agent.node.reflect", and
+  CTL-LOG-01's anchor and STATUS row 13 follow it, with `governance/CONTROLS.md`
+  regenerated.
+- The living docs that said `reflect` writes the graph became false with A, not B: STATUS
+  rows 2, 4 and 15, `README.md`, `.context/architecture.md`, `.context/glossary.md` and the
+  harness README. A corrects those sentences and leaves the rest of each graph description
+  to B.
+
+Left for B, by the rule that A changes only what its behaviour needs: `RunsService` still
+injects `NEO4J_WRITER`, unread, so its positional constructions, `run-explanation.ts`'s
+among them, stay as they are. `CapturedWrites` keeps its `neo4jWriter` and the three
+`neo4j.*` write kinds. `ALLOWED_SPAN_ATTRIBUTES` keeps `entity_count` and
+`relationship_count`. `RunInspectionInput.conceptIds` and `MemoryOutcome.factNodesForRun`
+stay, and the harness passes no concept ids.
 
 **PR B**
 

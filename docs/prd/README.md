@@ -16,12 +16,25 @@ alone. The seven nights its rule 3 reads start with the first scheduled canary a
 merges. Stage 2 no longer holds the 2.5 pool, and the variable was deleted at 13:51 UTC on
 2026-11-09, so the scheduled `eval-live` runs again as well.
 
+**[P2-E](P2-E-remove-the-graph.md) is in progress, and its first pull request takes the graph
+out of the run.** `reflect` writes episodes and `semantic_facts` and nothing else, and
+`distill`'s extraction asks for facts alone, under the same seam id, so no recorded request
+hash moved. `entity_merged` became `semantic_fact_written`, and memory-recall's replay
+baseline was regenerated on replay with no key: three cells out, three in, the cassette
+digest unchanged. Red-team and prior-auth match their unchanged baselines. The committed
+cassettes still hold extractions made under the old prompt, which replay serves and
+`reflect` ignores past the facts, until P1-I re-records them on the narrowed one. That is
+why this half has a date: it has to be on `main` before P1-I records memory-recall, or its
+prompt change waits (P2-E, "Sequencing with P1-I"). The second pull request archives both
+measurements and removes Neo4j from the code, the stack and CI.
+
 **Twenty-five PRDs are shipped and the system they describe is running.** The service answers
 `POST /runs` and `POST /runs/stream`; `memory-core` is constructed by the app rather than
 sitting beside it; the graph compiles with a checkpointer and a retry policy on every node
 that performs I/O; and `packages/eval-harness` measures the result. Verified against live
-stores from an empty database: one run leaves episodic rows, `:Concept` and `:Fact` nodes,
-`semantic_facts` rows and checkpoints under the runId its own response returned.
+stores from an empty database: one run leaves episodic rows, `semantic_facts` rows and
+checkpoints under the runId its own response returned. It wrote `:Concept` and `:Fact` nodes
+as well until P2-E's first pull request.
 
 **`docs/STATUS.md` is the authority on any capability sentence, including the ones above.**
 Thirty-seven rows, each with a status and evidence cited by name — thirty-one `implemented`,
@@ -498,18 +511,18 @@ ahead of that date.
 
 The three-tier memory model is instantiated and the graph is checkpointed. The hybrid
 premise was measured by P2-B and did not hold, and ADR 0009 made retrieval vector-only. What
-remains is the knowledge graph that `reflect` still writes. P2-D measured its one remaining
-role, explanation, and it did not meet the rule, so ADR 0012 removes the graph and P2-E does
-the removal. The standard vocabulary for reporting either is in place: P2-C emits the
+remains is the knowledge graph, still provisioned, which no run has written since P2-E's
+first pull request. P2-D measured its one remaining role, explanation, and it did not meet
+the rule, so ADR 0012 removes the graph and P2-E does the removal. The standard vocabulary for reporting either is in place: P2-C emits the
 OpenTelemetry GenAI conventions.
 
-| ID                                           | Title                                                                    | Size | Status   |
-| -------------------------------------------- | ------------------------------------------------------------------------ | ---- | -------- |
-| [P2-A](P2-A-wire-memory-core.md)             | Wire memory-core into the service; add checkpointing and retry           | L    | shipped  |
-| [P2-B](P2-B-retrieval-ablation.md)           | Hybrid retrieval evaluation and the graph/vector/hybrid ablation         | L    | shipped  |
-| [P2-C](P2-C-otel-genai-semantics.md)         | OpenTelemetry GenAI semantics, including evaluation events               | L    | shipped  |
-| [P2-D](P2-D-graph-explanation-or-removal.md) | Measure the graph's explanation role, or remove it (ADR 0009's fallback) | M    | shipped  |
-| [P2-E](P2-E-remove-the-graph.md)             | Act on P2-D's outcome: remove the graph (option C, ADR 0012)             | M    | accepted |
+| ID                                           | Title                                                                    | Size | Status      |
+| -------------------------------------------- | ------------------------------------------------------------------------ | ---- | ----------- |
+| [P2-A](P2-A-wire-memory-core.md)             | Wire memory-core into the service; add checkpointing and retry           | L    | shipped     |
+| [P2-B](P2-B-retrieval-ablation.md)           | Hybrid retrieval evaluation and the graph/vector/hybrid ablation         | L    | shipped     |
+| [P2-C](P2-C-otel-genai-semantics.md)         | OpenTelemetry GenAI semantics, including evaluation events               | L    | shipped     |
+| [P2-D](P2-D-graph-explanation-or-removal.md) | Measure the graph's explanation role, or remove it (ADR 0009's fallback) | M    | shipped     |
+| [P2-E](P2-E-remove-the-graph.md)             | Act on P2-D's outcome: remove the graph (option C, ADR 0012)             | M    | in-progress |
 
 ## Tier 3 — Regulated-domain credibility
 
@@ -589,7 +602,7 @@ without depending on either PRD, the way P4-C re-records P4-B's.
 P2-D is drawn under P2-B, whose corpus, recorded embeddings, seeding and bootstrap its
 measurement reuses. It also depends on P1-A directly, for the harness, and on P1-B, whose
 `ModelDeps` seam and recording pattern its conditional answer-level stage uses. Its graph
-session filter is the M1 that P4-B handed over, extended to edges. P2-E, a draft, executes
+session filter is the M1 that P4-B handed over, extended to edges. P2-E, in progress, executes
 the outcome ADR 0012 records, removing the graph, from the specification P2-D wrote under
 "What P2-E inherits". It is not an edge of P1-I, and neither waits for the other. Its one
 change to a model request, the narrowed extraction, is meant to land before P1-I
