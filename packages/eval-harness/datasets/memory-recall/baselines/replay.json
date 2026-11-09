@@ -1,9 +1,9 @@
 {
   "kind": "replay",
   "suite": "memory-recall",
-  "cassetteDigest": "7ba014689eb4111a10cfe8718462e8b78acf7db361401733161804a8f4dc2186",
-  "recordedAt": "2026-11-03T15:30:47.693Z",
-  "gitSha": "5265bb6d9f7f72facfec0025ddf2ffff2d3dd0ff, c6bbd0653f6955f7a98198f3945056b7af7ea117",
+  "cassetteDigest": "75a9f4dbc21264553f41a3c371b3ad896b5311d856728c30e1a84bfbbc266afe",
+  "recordedAt": "2026-11-09T17:21:35.234Z",
+  "gitSha": "4ddbaffa9794d43bf9e75dda323d4e5212b59ece",
   "semconvCommit": "e57c543b4889619eb2a05702471937db5119165d",
   "cells": [
     {"task":"memory-recall-001","trial":0,"grader":"episodic_row_written","label":"pass","value":1},
@@ -22,7 +22,7 @@
     {"task":"tool-use-001","trial":0,"grader":"retrieved_context_min_length","label":"pass","value":1},
     {"task":"tool-use-001","trial":0,"grader":"semantic_fact_written","label":"pass","value":1},
     {"task":"tool-use-001","trial":0,"grader":"token_counts_positive","label":"pass","value":1},
-    {"task":"tool-use-001","trial":0,"grader":"tool_trajectory_precision","label":"pass","value":0.5},
+    {"task":"tool-use-001","trial":0,"grader":"tool_trajectory_precision","label":"pass","value":0.3333333333333333},
     {"task":"tool-use-001","trial":0,"grader":"tool_trajectory_recall","label":"pass","value":1},
     {"task":"tool-use-001","trial":0,"grader":"trajectory_in_order_match","label":"pass","value":1},
     {"task":"tool-use-001","trial":0,"grader":"trajectory_precision","label":"pass","value":0.7777777777777778},
