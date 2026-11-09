@@ -21,19 +21,30 @@ import { GEMINI_MODELS_ENDPOINT, errorDetailsOf } from '../../agent/model/gemini
  *   unchanged   observed equals the baseline
  *   changed     a pinned id answers differently, or has no baseline to match
  *   gone        the id returns 404
- *   moved       the floating alias answers differently — expected, not drift
+ *   moved       a floating or candidate id answers differently, or has no
+ *               baseline to match — expected, not drift
  *   unobserved  the response lacked the field the probe reads
- *   unavailable the floating alias answered a provider-side 5xx, so nothing
- *               was observed — a notice; on a pinned id a 5xx aborts instead
+ *   unavailable a floating or candidate id answered a provider-side 5xx, so
+ *               nothing was observed — a notice; on a pinned id a 5xx aborts
+ *               instead
  */
 export type Verdict = 'unchanged' | 'changed' | 'gone' | 'moved' | 'unobserved' | 'unavailable';
 
-export type ProbeKind = 'metadata' | 'chat-pinned' | 'chat-floating' | 'embedding';
+/**
+ * `chat-candidate` is P1-I's: a migration candidate's nightly availability
+ * series, read like the floating alias and never failing the run. It leaves
+ * with the switch, when the candidate either becomes the pinned id or is not
+ * chosen.
+ */
+export type ChatProbeKind = 'chat-pinned' | 'chat-floating' | 'chat-candidate';
+
+export type ProbeKind = 'metadata' | ChatProbeKind | 'embedding';
 
 export const PROBE_KINDS: readonly ProbeKind[] = [
   'metadata',
   'chat-pinned',
   'chat-floating',
+  'chat-candidate',
   'embedding',
 ];
 
@@ -220,14 +231,19 @@ export async function probeChatVersion(
 /**
  * A missing `modelVersion` is `unobserved`, never `unchanged`: a field that
  * stopped arriving is how a silent fallback starts (P2-A's correction).
+ *
+ * Only `chat-pinned` is pinned. The floating alias and the candidate read the
+ * same verdicts with `moved` where a pinned id would be `changed`, and none of
+ * theirs fails the run (`failingResults`).
  */
 export function chatVerdict(
   observation: ChatVersionObservation,
-  pinned: boolean,
+  probe: ChatProbeKind,
   baseline: string | undefined,
 ): ProbeResult {
+  const pinned = probe === 'chat-pinned';
   const base = {
-    probe: pinned ? ('chat-pinned' as const) : ('chat-floating' as const),
+    probe,
     id: observation.id,
     pinned,
     baseline,
@@ -307,19 +323,21 @@ export function providerUnavailable(error: unknown): ProviderUnavailable | undef
 }
 
 /**
- * The floating chat probe's result when the provider could not serve the
- * alias. Nothing was observed, so the baseline entry is kept, and it is a
- * notice: the alias is a migration input, and its capacity is not drift in
- * the pinned model (P1-E, Verdicts and exit). No retry is made, for the
+ * A floating or candidate chat probe's result when the provider could not
+ * serve the id. Nothing was observed, so the baseline entry is kept, and it is
+ * a notice: both ids are migration inputs, and their capacity is not drift in
+ * the pinned model (P1-E, Verdicts and exit). For the candidate it is also
+ * the night P1-I's rule 3 counts as not answered. No retry is made, for the
  * reason the chat probe makes none.
  */
 export function unavailableVerdict(
+  probe: Exclude<ChatProbeKind, 'chat-pinned'>,
   id: string,
   baseline: string | undefined,
   unavailable: ProviderUnavailable,
 ): ProbeResult {
   return {
-    probe: 'chat-floating',
+    probe,
     id,
     pinned: false,
     verdict: 'unavailable',

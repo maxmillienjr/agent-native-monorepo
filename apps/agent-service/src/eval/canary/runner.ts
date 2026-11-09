@@ -34,6 +34,15 @@ import { renderCanaryAbortSummary, renderCanarySummary } from './render.js';
  */
 export const FLOATING_CHAT_MODEL = 'gemini-flash-latest';
 
+/**
+ * P1-I's candidate, probed nightly so its rule 3 has seven nights of
+ * availability to read (`docs/prd/P1-I-chat-model-migration.md`, step 1a).
+ * Google routes `gemini-2.5-flash` to it from 2026-12-01. Read like the
+ * floating alias: every verdict is a notice. This constant and the
+ * `chat-candidate` probe are removed at the switch.
+ */
+export const CANDIDATE_CHAT_MODEL = 'gemini-3.5-flash-lite';
+
 /** The three ids `models.get` is asked about, and whether each is pinned. */
 export const METADATA_IDS: readonly { readonly id: string; readonly pinned: boolean }[] = [
   { id: PINNED_CHAT_MODEL, pinned: true },
@@ -108,7 +117,7 @@ export interface CanaryOptions {
   readonly outputDir: string;
   readonly apiKey: string | undefined;
   readonly baseline: () => CanaryBaseline;
-  /** Defaults to all four. */
+  /** Defaults to all five. */
   readonly probes?: readonly ProbeKind[];
   /** Defaults to `createGeminiEmbedder(apiKey)`, the production embedder. */
   readonly embed?: (text: string) => Promise<number[]>;
@@ -119,7 +128,7 @@ export interface CanaryOptions {
   readonly now?: () => Date;
 }
 
-/** A pinned probe on one of these exits 1; a floating one never does. */
+/** A pinned probe on one of these exits 1; a floating or candidate one never does. */
 const FAILING: ReadonlySet<ProbeResult['verdict']> = new Set(['changed', 'gone', 'unobserved']);
 
 export function failingResults(results: readonly ProbeResult[]): ProbeResult[] {
@@ -135,9 +144,9 @@ function failingAfterUpdate(results: readonly ProbeResult[]): ProbeResult[] {
 }
 
 /**
- * Reads `CANARY_PROBES`: a comma-separated subset of the four, for a local run
- * on a quota that cannot spare the two `generateContent` calls. Unset, all
- * four run, which is what CI does.
+ * Reads `CANARY_PROBES`: a comma-separated subset of the five, for a local run
+ * on a quota that cannot spare the three `generateContent` calls. Unset, all
+ * five run, which is what CI does.
  */
 export function readProbeSelection(raw: string | undefined): readonly ProbeKind[] {
   if (raw === undefined || raw.trim() === '') return PROBE_KINDS;
@@ -197,7 +206,8 @@ export function explainCanaryAbort(error: unknown): AbortCause | undefined {
       summary: `\`${apiOf(error)}\` answered 429, and the response did not name a per-day quota.`,
     };
   }
-  // Reached only from a probe that must answer: a floating chat 5xx is a result, not an abort.
+  // Reached only from a probe that must answer: a floating or candidate chat
+  // 5xx is a result, not an abort.
   const unavailable = providerUnavailable(error);
   if (unavailable !== undefined) {
     return {
@@ -257,26 +267,29 @@ export async function runCanary(options: CanaryOptions): Promise<'passed' | 'fai
       }
     }
 
-    for (const [kind, id, pinned] of [
-      ['chat-pinned', PINNED_CHAT_MODEL, true],
-      ['chat-floating', FLOATING_CHAT_MODEL, false],
+    for (const [kind, id] of [
+      ['chat-pinned', PINNED_CHAT_MODEL],
+      ['chat-floating', FLOATING_CHAT_MODEL],
+      ['chat-candidate', CANDIDATE_CHAT_MODEL],
     ] as const) {
       if (!probes.includes(kind)) continue;
       let observation: ChatVersionObservation;
       try {
         observation = await probeChatVersion(id, apiKey);
       } catch (error) {
-        // A floating alias the provider cannot serve is a notice and the run
-        // goes on (P1-E, Verdicts and exit). It is left out of `chat`, so an
-        // update keeps its baseline entry. A pinned 5xx still aborts.
-        const unavailable = pinned ? undefined : providerUnavailable(error);
+        // A floating alias or a candidate the provider cannot serve is a
+        // notice and the run goes on (P1-E, Verdicts and exit). It is left out
+        // of `chat`, so an update keeps its baseline entry. A pinned 5xx still
+        // aborts, and so does a 429 on any of them.
+        if (kind === 'chat-pinned') throw error;
+        const unavailable = providerUnavailable(error);
         if (unavailable === undefined) throw error;
-        results.push(unavailableVerdict(id, baseline.chat[id]?.modelVersion, unavailable));
+        results.push(unavailableVerdict(kind, id, baseline.chat[id]?.modelVersion, unavailable));
         continue;
       }
       chat.set(id, observation);
       if (observation.usage !== undefined) usage[id] = observation.usage;
-      results.push(chatVerdict(observation, pinned, baseline.chat[id]?.modelVersion));
+      results.push(chatVerdict(observation, kind, baseline.chat[id]?.modelVersion));
     }
 
     if (probes.includes('embedding')) {

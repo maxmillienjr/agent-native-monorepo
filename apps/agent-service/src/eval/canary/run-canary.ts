@@ -9,14 +9,15 @@ const logger = createLogger('canary');
 /**
  * `yarn canary` — the model-drift canary (P1-E).
  *
- * Four probes against the two pinned ids and the floating alias: `models.get`
- * on all three, one `generateContent` on each chat id for `modelVersion`, and
- * 21 `embedContent` calls compared bit for bit with the vectors the committed
- * cassettes recorded. It needs a key and no stores.
+ * Five probes against the two pinned ids, the floating alias and P1-I's
+ * candidate: `models.get` on the first three, one `generateContent` on each of
+ * the three chat ids for `modelVersion`, and 21 `embedContent` calls compared
+ * bit for bit with the vectors the committed cassettes recorded. It needs a
+ * key and no stores.
  *
  *   GOOGLE_API_KEY       required; there is no stub fallback
  *   CANARY_OUTPUT_DIR    where the files go (default `canary-results`)
- *   CANARY_PROBES        a comma-separated subset of the four probes
+ *   CANARY_PROBES        a comma-separated subset of the five probes
  *   CANARY_BASELINE      `update` rewrites the baseline from what was observed
  *
  * Exit 1 when a pinned probe is `changed`, `gone` or `unobserved`, or the run

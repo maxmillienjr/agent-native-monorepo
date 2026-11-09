@@ -14,6 +14,7 @@ import type { CanaryBaseline } from './baseline.js';
 export const PINNED = 'gemini-2.5-flash';
 export const EMBEDDING = 'gemini-embedding-001';
 export const FLOATING = 'gemini-flash-latest';
+export const CANDIDATE = 'gemini-3.5-flash-lite';
 
 /** Deterministic, distinct per text, and not unit-norm, so `l2Normalize` has work to do. */
 export function rawVector(text: string): number[] {
@@ -48,6 +49,7 @@ export function testBaseline(overrides: Partial<CanaryBaseline> = {}): CanaryBas
     chat: {
       [PINNED]: { modelVersion: 'gemini-2.5-flash', observedAt: '2026-10-01' },
       [FLOATING]: { modelVersion: 'gemini-3.5-flash', observedAt: '2026-10-01' },
+      [CANDIDATE]: { modelVersion: 'gemini-3.5-flash-lite', observedAt: '2026-10-01' },
     },
     embedding: {
       model: EMBEDDING,
@@ -81,7 +83,11 @@ export function healthyState(): FakeApiState {
       [EMBEDDING]: { version: '001', displayName: 'Gemini Embedding 001' },
       [FLOATING]: { version: 'Gemini Flash Latest', displayName: 'Gemini Flash Latest' },
     },
-    modelVersion: { [PINNED]: 'gemini-2.5-flash', [FLOATING]: 'gemini-3.5-flash' },
+    modelVersion: {
+      [PINNED]: 'gemini-2.5-flash',
+      [FLOATING]: 'gemini-3.5-flash',
+      [CANDIDATE]: 'gemini-3.5-flash-lite',
+    },
     vectors: {},
   };
 }
