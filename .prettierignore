@@ -10,7 +10,7 @@ coverage/
 packages/eval-harness/datasets/*/cassettes/
 
 # Recorded embeddings and the ablation's reports, for the same reason: the first
-# is a recording, and the second is compared byte for byte between runs.
+# is a recording, and the second is the archived record P2-E's tag reproduces.
 packages/eval-harness/datasets/*/recorded/
 packages/eval-harness/datasets/retrieval-ablation/reports/
 packages/eval-harness/datasets/retrieval-ablation/adjudication/

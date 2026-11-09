@@ -5,7 +5,7 @@ before making any changes.
 
 ## Key Rules
 
-- Database writes have three owners, and app code never writes to Postgres, Neo4j or
+- Database writes have three owners, and app code never writes to Postgres or
   pgvector directly. packages/memory-core owns memory, the run record and the case table;
   the LangGraph checkpointer owns its own tables; packages/decision-ledger owns the ledger,
   written as an insert-only role. The ledger has its own package because its writer must

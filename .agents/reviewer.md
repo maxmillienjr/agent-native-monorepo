@@ -17,7 +17,7 @@ against the project's conventions.
    to `ALLOWED_SPAN_ATTRIBUTES` in the same change; reject one whose value is content —
    a prompt, a completion, a tool argument or result, or an id the model extracted.
 
-4. **Database Writes Have Three Owners:** No direct database calls (Postgres, Neo4j,
+4. **Database Writes Have Three Owners:** No direct database calls (Postgres,
    pgvector) outside the three packages that own them. `packages/memory-core` owns memory,
    P3-B's run record and P3-E's case table, all written with the service's role; every
    memory write goes through its facade. The LangGraph checkpointer owns its own three
@@ -34,7 +34,7 @@ against the project's conventions.
 6. **No `console.log`:** Use the structured logger from `@repo/telemetry`.
 
 7. **Test Coverage:** New graph nodes must have a corresponding unit test. New memory
-   adapters must have integration tests against real Postgres and Neo4j — provided by
+   adapters must have integration tests against real Postgres — provided by
    `docker-compose.yml` locally and by service containers in CI. (This repo has never used
    testcontainers, despite older wording elsewhere saying so; see `docs/STATUS.md` row 8.)
 

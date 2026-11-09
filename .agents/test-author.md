@@ -49,8 +49,8 @@ You are a specialized agent for writing tests in this monorepo.
 ## Integration Tests (real databases)
 
 - **No mocking of databases.** They come from `docker-compose.yml` locally and from service
-  containers in `e2e.yml`; the suites read `DATABASE_URL` and `NEO4J_URI` and skip when
-  those are unset. This repo has never used `testcontainers`.
+  containers in `e2e.yml`; the suites read `DATABASE_URL` and skip when it is unset. This
+  repo has never used `testcontainers`.
 - Create the schema with `runMigrations(pool)` in `beforeAll` and clean up in `afterAll`.
   It is the only DDL for `episodes` and `semantic_facts`; a suite that creates its own table
   tests a schema production does not have.

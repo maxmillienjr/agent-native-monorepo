@@ -8,9 +8,9 @@
   Retention is currently unbounded. Raw material for Semantic promotion.
 - **Semantic Memory:** Long-term knowledge distilled from the user's turns of each run
   (ADR 0011). `reflect` writes it to one index, the pgvector collection `semantic_facts`,
-  and retrieval reads it (ADR 0009). The Neo4j knowledge graph is still provisioned and
-  nothing writes or reads it on a request: its explanation role was measured and did not
-  meet its rule, so ADR 0012 removes the graph, and P2-E does the removal.
+  and retrieval reads it (ADR 0009). There is no second index: a knowledge graph beside it
+  was measured twice, in retrieval and in explanation, did not meet either rule, and was
+  removed (ADR 0012, P2-E).
 
 ## LangGraph
 
@@ -21,14 +21,6 @@
 - **State:** The accumulated data flowing through the graph. Defined by `AgentStateSchema`.
 - **StateGraph:** The LangGraph class that compiles nodes and edges into a runnable graph.
 - **START / END:** Special sentinel nodes marking graph entry and exit points.
-
-## Neo4j / Cypher
-
-- **Node:** A graph entity with labels and properties (e.g., `(:Concept {id, label})`).
-- **Relationship:** A directed edge between nodes (e.g., `[:RELATES_TO {confidence}]`).
-- **MERGE:** Cypher clause that creates a node/relationship only if it doesn't already exist.
-  Used instead of `CREATE` to ensure idempotent writes.
-- **Pattern matching:** Cypher's `MATCH (a)-[:REL]->(b)` syntax for graph traversal.
 
 ## pgvector
 
@@ -51,12 +43,12 @@
 - **RRF (Reciprocal Rank Fusion):** Merge strategy that combines ranked lists from multiple
   sources. Score = Σ(1 / (k + rank_i)) where k is a smoothing constant (typically 60). It
   merged the graph and vector lists until ADR 0009, keyed on the fact's content hash
-  (ADR 0004). Today `rrfMerge` lives in `@repo/eval-harness`, and only the retrieval
-  ablation calls it.
-- **Hybrid retrieval:** Querying both Neo4j and pgvector, then merging via RRF. The service
-  did this until ADR 0009. P2-B's ablation found it no better than vector search on the
-  deployed path and 0.145 Recall@10 worse with perfect seeds, so it was removed from the
-  request path. `yarn eval:retrieval` still measures it, as history.
+  (ADR 0004). Nothing at HEAD fuses; the ablation that measured it runs at the tag
+  `archive/p2e-graph-measurements`.
+- **Hybrid retrieval:** Querying a knowledge graph and pgvector, then merging via RRF. The
+  service did this until ADR 0009. P2-B's ablation found it no better than vector search on
+  the deployed path and 0.145 Recall@10 worse with perfect seeds, so it was removed from the
+  request path, and P2-E removed the graph.
 
 ## Observability
 

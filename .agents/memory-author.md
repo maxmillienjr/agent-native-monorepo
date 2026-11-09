@@ -10,19 +10,16 @@ You are a specialized agent for adding or modifying memory adapters in `packages
 
 ## Idempotent Write Semantics
 
-This is the most critical constraint. All writes must be replay-safe:
+This is the most critical constraint. All writes must be replay-safe: a re-run of the
+`reflect` node on the same `runId` must leave the stores as the first run left them.
 
-### Neo4j
+### A new store
 
-- **Always use `MERGE`, never `CREATE`.** A re-run of the `reflect` node on the same
-  `runId` must produce identical graph state.
-- Include provenance metadata: `episodeId`, `confidence`, `createdAt`.
-- Example:
-  ```cypher
-  MERGE (c:Concept {id: $id})
-  ON CREATE SET c.label = $label, c.description = $description
-  ON MATCH SET c.label = $label, c.description = $description
-  ```
+Postgres, with pgvector, is the one store. An adapter that adds another — a second index,
+a graph, a cache a request reads — is kept only on a measurement against labels and a
+decision rule fixed before the run (CTL-EVAL-04, `.context/workflows.md`, "Add a New Memory
+Adapter"). The knowledge graph this package used to hold was measured that way and removed
+(ADR 0012, P2-E).
 
 ### pgvector
 
@@ -54,10 +51,10 @@ This is the most critical constraint. All writes must be replay-safe:
 
 ## Testing Requirements
 
-- **Integration tests only** — no mocking Neo4j or Postgres.
-- Real databases, not containers you start yourself: `docker-compose.yml` provides them
-  locally and `e2e.yml` provides them as service containers. The suites read `DATABASE_URL`
-  and `NEO4J_URI` and skip when those are unset. This repo has never used `testcontainers`.
+- **Integration tests only** — no mocking Postgres.
+- A real database, not a container you start yourself: `docker-compose.yml` provides it
+  locally and `e2e.yml` provides it as a service container. The suites read `DATABASE_URL`
+  and skip when it is unset. This repo has never used `testcontainers`.
 - Verify round-trip: write → read → assert expected data.
 - Verify idempotency: write twice with same data → assert no duplicates.
 - Place tests in `packages/memory-core/test/`.

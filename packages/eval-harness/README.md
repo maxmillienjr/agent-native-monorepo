@@ -8,10 +8,8 @@ is the one claim that only a measurement settles, and this is the measurement.
 ## Running it
 
 ```bash
-docker compose up -d postgres neo4j
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/agentdb \
-NEO4J_URI=bolt://localhost:7687 \
-  yarn eval
+docker compose up -d postgres
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/agentdb yarn eval
 ```
 
 `yarn eval` is `turbo eval`, which runs `node dist/eval/run-eval.js` in
@@ -46,7 +44,7 @@ message cannot tell the difference.
 | `trajectory_*`                 | code | node-sequence exact / in-order / any-order / P / R |
 | `tool_trajectory_*`            | code | the same, over the tool calls                      |
 
-Outcome reads go through `packages/memory-core` — `PgNeo4jMemoryInspector` — never through
+Outcome reads go through `packages/memory-core` — `PgMemoryInspector` — never through
 a connection this package opens. Reviewer checklist rule 4 is the rule; the reason is that
 the nightly seed script, deleted in P1-C, recorded what hand-rolled SQL cost the last time.
 
@@ -65,8 +63,8 @@ passes assertions the real system fails.
   value: `EVAL_CASSETTE_MODE=replay` serves every decision from a recorded cassette and the
   axis reads `replay`, which is a value of its own rather than a disguise for `live` —
   a replayed number is a frozen sample, not a measurement of the model.
-- **Memory.** `MemoryModule` resolves every adapter to `null` when `DATABASE_URL` and
-  `NEO4J_URI` are absent, and `RunsService` substitutes no-op writers. Those stubs are
+- **Memory.** `MemoryModule` resolves every adapter to `null` when `DATABASE_URL` is
+  absent, and `RunsService` substitutes no-op writers. Those stubs are
   load-bearing — a clone with no `.env` has to serve the quickstart curls — so the harness
   cannot remove them.
 
@@ -90,10 +88,11 @@ task writes no episodic row at all and its `runId` appears nowhere. Every trial 
 begins with `restoreToSeed` followed by `applySeed`: delete what the last trial wrote, then
 lay the task's seed back down.
 
-The deletion is **database-wide on the Neo4j side**. Neither `:Concept` nor `:Fact` carries
-a session, so "everything this session's trials wrote" cannot be expressed in Cypher —
-"everything the seed does not own" can, and that is what runs. Point an evaluation run at a
-disposable database.
+Both deletes are scoped to the session: every session the task names, the graded input's,
+each prior run's and each seeded fact's. A seed is `semantic_facts` rows alone, each under
+the session it names, and the task format refuses any other seed key (P2-E). Point an
+evaluation run at a disposable database anyway: a fact keeps its first writer, so rows
+another run wrote can decide whose a fact is.
 
 ## Dataset
 
@@ -124,9 +123,8 @@ own episodic rows at all.
 
 **Model `live`, memory `live` — 1 trial of `memory-recall-001`. All eleven graders passed.**
 
-One `POST`-equivalent run wrote 2 `episodes` rows, 17 `semantic_facts` rows and 17
-`(:Fact)` nodes under its own `runId`, and 38 of the 38 concepts it extracted were present
-in the graph afterwards. It made no tool call, which is the same behaviour the stub set
+One `POST`-equivalent run wrote 2 `episodes` rows and 17 `semantic_facts` rows under its
+own `runId`, and, at the time, as many `(:Fact)` nodes in a graph since removed (P2-E). It made no tool call, which is the same behaviour the stub set
 shows and the reason `tool-use-001` exists.
 
 `tool-use-001` has since run on the live model axis, once: one trial on 2026-09-10 passed
@@ -216,46 +214,33 @@ Either way a budget breach also exits non-zero; see the next section.
   −δ, and neither below 15 trials per task per arm. A failed live trial is data, and only
   `regressed` or an abort fails the job.
 
-`stats/` holds the resamplers and nothing that knows what a task is. `pairedBootstrap` is
-shared with P2-B's retrieval ablation.
+`stats/` holds the resamplers and nothing that knows what a task is. `pairedBootstrap` was
+written for P2-B's retrieval ablation, archived since P2-E.
 
-## The retrieval ablation
+## The graph's two measurements, archived
 
-`yarn eval:retrieval` measures the graph/vector/hybrid question ADR 0002 left open (P2-B).
-It measured the design ADR 0009 then retired: `vector` is what a request gets today, and
-`graph` and `hybrid` are kept runnable as history. The fusion they need, `rrfMerge`, lives
-in `src/retrieval/rrf.ts` for that reason, and the runner holds the seed linker and the
-fused path the service used to run.
-It is not a suite and does not use `Grader`. A retrieval benchmark has no trial, no
-transcript and no threshold; its unit is a ranked list per query. What this package holds
-for it is pure:
+P2-B's retrieval ablation measured the graph/vector/hybrid question ADR 0002 left open, and
+P2-D measured the graph's explanation role. Both rules selected against the graph: ADR 0009
+took it out of retrieval and ADR 0012 removed it. P2-E deleted the two runners and the
+modules only they called, `src/retrieval/` among them, after both reproduced their
+committed reports with no key at `df655c0`.
 
-- **Metrics** in `src/retrieval/metrics.ts`: `recallAtK`, `reciprocalRank` and binary
-  `ndcgAtK`.
-- **The seeded paired bootstrap** in `src/stats/paired-bootstrap.ts`, which P1-D's gate
-  shares.
-- **The dataset loader** in `src/retrieval/dataset.ts`. It holds each query to its
-  stratum's construction.
-- **The pooling and adjudication files** in `src/retrieval/adjudication.ts`.
-- **The report** in `src/retrieval/report.ts`. It names the outcome-table row the
-  pre-registered rule selects.
+**To reproduce either, check out the tag `archive/p2e-graph-measurements`.** Its message
+has the commands: bring up Postgres and Neo4j, then `yarn eval:retrieval` and
+`yarn eval:explanation` with `GOOGLE_API_KEY` empty, and compare with the committed reports
+once timestamps and latencies are masked.
 
-The runner is `apps/agent-service/src/eval/run-retrieval-ablation.ts`. Its dataset is
-`datasets/retrieval-ablation/`: 335 facts and 200 labelled queries, frozen before the
-first run, with embeddings recorded so it runs with no key.
+`datasets/retrieval-ablation/` stays as committed, the record of both: 335 facts and 200
+labelled queries frozen before the first run, the adjudication files, the gold explanation
+labels, the recorded embeddings and stage 2's 76 recorded answers, and the reports under
+`reports/`. Nothing at HEAD loads it.
 
-**Result, Recall@10 over all 200 queries.** On the deployed path, `hybrid` and `vector`
-both score 0.940, and `graph` scores 0. The seed linker produced no id the graph holds on
-any of the 200 queries. With gold seeds in place of the linker, `hybrid·oracle` scores
-0.145 below `vector`, interval [−0.195, −0.095]. In the relational stratum it scores 0.180
-against 0.760.
-
-The pre-registered rule selects "neither does". A blind model adjudication of 3,029
-pooled candidates added one label and moved nothing. The reports are under
-`datasets/retrieval-ablation/reports/`, and
-[ADR 0009](../../docs/adr/0009-the-second-store-after-the-retrieval-ablation.md),
-accepted, took the graph out of retrieval. The ablation runs in no CI tier; P2-D owns
-whether it should.
+**Results.** Recall@10 over all 200 queries: on the deployed path `hybrid` and `vector` both
+scored 0.940 and `graph` 0, because the seed linker produced no id the graph held; with gold
+seeds `hybrid·oracle` scored 0.145 below `vector`, interval [−0.195, −0.095]. The rule
+selected "neither does". The explanation's stage 1 was `good`, and stage 2 was `not met`:
+over 38 queries the paths moved `answer_key_present` by −0.079 [−0.184, +0.026], where the
+rule needed +0.10.
 
 ## Budgets, usage and cost
 

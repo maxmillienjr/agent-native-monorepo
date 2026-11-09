@@ -129,27 +129,19 @@
 
 ## Testing
 
-Each tier has one command, and the first five run in CI. Eval runs twice in
+Each tier has one command, and all five run in CI. Eval runs twice in
 `agent-eval.yml`: on the replay axis on every pull request, every push to `main` and
 nightly, and on the live axis nightly and on dispatch when a `GOOGLE_API_KEY` repository
-secret exists. `eval:retrieval` and `eval:explanation` run in no pipeline, by P2-D's
-decision. ADR 0012's outcome is option C, so P2-E archives both when it removes the graph. `eval:retrieval`
-measures the fused retrieval ADR 0009 retired, so it is a historical measurement: its
-`vector` condition is what a request gets, and its `graph` and `hybrid` conditions are not.
-`eval:explanation` is P2-D, the graph's explanation role. Stage 1 reads the graph alone.
-Stage 2 compares `plan`'s answers with and without the graph's paths, and by default it
-replays the committed answer file and makes no request. Stage 2 was `not met`, so the rule
-selected option C: the graph explains, `plan` does not use it, and P2-E removes it.
+secret exists. The two measurements of the graph, P2-B's retrieval ablation and P2-D's
+explanation stages, are archived at a tag and run in no tier (below).
 
-| Tier        | Runner                 | Command                       | Scope                                                    |
-| ----------- | ---------------------- | ----------------------------- | -------------------------------------------------------- |
-| Unit        | Vitest                 | `yarn turbo test:unit`        | `packages/` and pure logic in apps — no I/O              |
-| Service     | Jest + @nestjs/testing | `yarn turbo test:service`     | `apps/agent-service` over HTTP, stub graph deps          |
-| Integration | Vitest, and Jest       | `yarn turbo test:integration` | Real Postgres/Neo4j — never mock a database              |
-| E2E         | Playwright             | `yarn turbo test:e2e`         | Browser against the full `docker compose` stack          |
-| Eval        | `@repo/eval-harness`   | `yarn eval`                   | Agent trials against real stores, model replayed or live |
-| Retrieval   | `@repo/eval-harness`   | `yarn eval:retrieval`         | The P2-B ablation, pre-0009 design: recorded embeddings  |
-| Explanation | `@repo/eval-harness`   | `yarn eval:explanation`       | P2-D: graph paths, then `plan`'s answers, model replayed |
+| Tier        | Runner                 | Command                       | Scope                                                     |
+| ----------- | ---------------------- | ----------------------------- | --------------------------------------------------------- |
+| Unit        | Vitest                 | `yarn turbo test:unit`        | `packages/` and pure logic in apps — no I/O               |
+| Service     | Jest + @nestjs/testing | `yarn turbo test:service`     | `apps/agent-service` over HTTP, stub graph deps           |
+| Integration | Vitest, and Jest       | `yarn turbo test:integration` | Real Postgres — never mock a database                     |
+| E2E         | Playwright             | `yarn turbo test:e2e`         | Browser against the full `docker compose` stack           |
+| Eval        | `@repo/eval-harness`   | `yarn eval`                   | Agent trials against a real store, model replayed or live |
 
 - **Service tests need `--experimental-vm-modules`**, which the `test:service` script
   already carries. Jest's ESM support requires it, and without it every import in a spec
@@ -265,11 +257,11 @@ selected option C: the graph explains, `plan` does not use it, and P2-E removes 
   P1-F's re-recording were run before that variable existed.
 - **Integration needs the stores exported, and says nothing when they are not.** Bring the
   infrastructure up with `docker compose up -d --wait` — no `--profile full`, the suite
-  talks to Postgres and Neo4j directly — and export `DATABASE_URL`, `NEO4J_URI`,
-  `NEO4J_USER` and `NEO4J_PASSWORD` to match `docker-compose.yml`. With any of the first two
-  absent, `test/integration-env.ts` skips every suite so a laptop with no Docker is not a
-  crash, and `yarn turbo test:integration` then reports 75 skipped tests over two
-  workspaces, runs only the unconfigured axis of the review spec, and exits 0. That is a
+  talks to Postgres directly — and export `DATABASE_URL` to match `docker-compose.yml`.
+  With it absent, `test/integration-env.ts` skips every suite so a laptop with no Docker is
+  not a crash, and `yarn turbo test:integration` then reports every database test skipped
+  (119 over three workspaces at P2-E), runs only the unconfigured axis of the review spec,
+  and exits 0. That is a
   pass by shape and a no-op by content. `REQUIRE_INTEGRATION_ENV=1` turns the skip into
   a failure naming each missing variable; the integration job in `e2e.yml` sets it on every
   pull request, and it is the flag to reach for whenever a green integration run needs to
@@ -366,40 +358,16 @@ selected option C: the graph explains, `plan` does not use it, and P2-E removes 
   explicit, because from `@langchain/core` 1.x LangChain's default handler stops on
   Gemini's quota wording. At 1.x the wait is proven by `rate-limit.test.ts` against a
   stubbed `fetch` and has not been observed live (P5-C, "What the implementation found").
-- **Retrieval labels are written, not computed, and they are frozen before the first
-  run.** `yarn eval:retrieval` scores the graph/vector/hybrid ablation against
-  `packages/eval-harness/datasets/retrieval-ablation/queries.json`. Every label there is a
-  human-authored judgement that a fact's text answers the question — never "cosine above a
-  threshold" or "reachable from the seed", which would make one of the measured systems
-  correct by definition. The dataset commit precedes the embedding commit, every report
-  prints the dataset's sha256, and a label is never edited after a run. Missing labels are
-  found by pooling and blind adjudication, which adds to `adjudication/` in its own commit
-  and leaves the pre-registered set untouched. P2-D's gold concept paths are the one
-  deliberate exception, and they are computed from the strata construction the loader
-  already enforces, not from anything the measured explainer returns.
-  `explanation-labels.json` was committed before the explainer existed, and a unit test holds
-  it equal to `deriveGoldPaths`. Its answer keys are written by hand, like the labels above.
-- **An embedding file is recorded against a model, a width and a dataset, and replays
-  nothing else.** `recorded/embeddings.json` pins `EMBEDDING_MODEL`,
-  `EMBEDDING_DIMENSIONS` and the dataset sha256 in its header, and replay refuses a
-  mismatch or a missing vector rather than calling the embedder. Re-record it with
-  `EVAL_EMBEDDINGS_MODE=record yarn eval:retrieval` when any of the three moves — a query
-  or label edit moves the third. The recorder is resumable and stops on the first 429:
-  the free tier allows about 100 `embedContent` requests a minute per model, so a full
-  recording of the 535 texts takes six invocations a minute apart. Its default,
-  `EVAL_EMBEDDINGS_MODE` unset, makes no request to the model host and fails if one is
-  made.
-- **Stage 2's answers are recorded once, a slice a day, and replayed.** All 76 were
-  recorded by 2026-11-09 and are committed, so the recorder has nothing left to ask.
-  `EVAL_ANSWERS_MODE=record yarn eval:explanation` asks the `plan` calls that
-  `recorded/explanation-answers.json` lacks, at most `EVAL_STAGE2_MAX_CALLS` (default 8) and
-  `EVAL_STAGE2_PACE_MS` apart (default 13 seconds, under the free tier's five a minute; the
-  last 47 answers, on a paid key, were paced at 3000). It writes after every call, never asks a recorded answer again, and stops
-  without recording on a per-day 429, exiting 1. Each answer is a format-2 cassette decision,
-  and replay refuses one whose prompt hash is not what the run builds. `EVAL_ANSWERS_FILE`
-  points a dry run elsewhere, so fake answers never land in the committed file. The committed
-  ablation report holds aggregates only, so stage 2 selects its 38 queries by retrieving
-  again, and refuses any other count.
+- **The graph's two measurements are archived, not run.** `yarn eval:retrieval` (P2-B) and
+  `yarn eval:explanation` (P2-D) were deleted with the graph (P2-E), after both reproduced
+  their committed reports at `df655c0`, tagged `archive/p2e-graph-measurements`. To rerun
+  either, check out the tag; its message has the commands. Their datasets, recorded
+  embeddings, recorded answers and reports stay under
+  `packages/eval-harness/datasets/retrieval-ablation/`, with nothing at HEAD that loads
+  them. What they practised is the rule for the next store: labels written by a person
+  and frozen before the first run, never derived from what a measured system returns, and
+  a decision rule fixed before any number exists (`.context/workflows.md`, "Add a New
+  Memory Adapter").
 - **`EVAL_TASKS` narrows `yarn eval` to named tasks.** Recording is per suite, so adding
   one task and recording its cassette otherwise re-records every other cassette and
   spends their `generateContent` calls. An unknown id is refused, and the selection is
@@ -437,13 +405,12 @@ selected option C: the graph explains, `plan` does not use it, and P2-E removes 
   the recording × 1.5 for input and × 2 for output, rounded up to the next hundred, and
   `2 + maxSteps` calls — until the nightly's samples calibrate them. Latency and dollars
   are reported and never budgets: the loader refuses a `latencyMs` key with the reason.
-- **A retriever's `ORDER BY` needs a unique secondary key.** Both semantic readers produce
-  ties by construction — `expandFromSeeds` scores on hop distance, and the eval harness
-  seeds every fact in a task with one vector — and an untied order is decided by whatever
-  order the store holds rows in, which changes across a delete-and-reseed. The vector
-  reader's order reaches `plan`'s prompt through `retrievedContext`, so it is an input to
-  the agent and not a presentation detail; the graph reader's reaches the ablation's
-  `rrfMerge`. Both readers break the tie on the content hash.
+- **A retriever's `ORDER BY` needs a unique secondary key.** The vector reader produces
+  ties by construction — the eval harness seeds every fact in a task with one vector — and
+  an untied order is decided by whatever order the store holds rows in, which changes
+  across a delete-and-reseed. Its order reaches `plan`'s prompt through `retrievedContext`,
+  so it is an input to the agent and not a presentation detail. It breaks the tie on the
+  content hash (ADR 0006).
 - **A script or test that runs git in another directory strips git's environment first.**
   Git exports `GIT_DIR` and `GIT_INDEX_FILE` to hooks and to `git rebase --exec`, and an
   inherited `GIT_DIR` overrides discovery from `cwd`. A fixture test that ran `git init` and
@@ -480,8 +447,8 @@ selected option C: the graph explains, `plan` does not use it, and P2-E removes 
   `docker-compose.yml`: `Authorization: Bearer tck-demo-token` or `console-demo-token` for
   a request to port 3000 or 3001; the console on 8080 adds its own. A second stack beside
   the default one takes the host-port variables — `POSTGRES_HOST_PORT`,
-  `NEO4J_BOLT_HOST_PORT`, `NEO4J_HTTP_HOST_PORT`, `AGENT_SERVICE_HOST_PORT`,
-  `GATEWAY_HOST_PORT`, `CONSOLE_HOST_PORT` — and its own `COMPOSE_PROJECT_NAME`.
+  `AGENT_SERVICE_HOST_PORT`, `GATEWAY_HOST_PORT`, `CONSOLE_HOST_PORT` — and its own
+  `COMPOSE_PROJECT_NAME`.
 - **The A2A TCK runs in the `browser-e2e` job, at a pinned commit, and holds to a list.**
   `scripts/tck-expected.txt` names each test expected to fail with its reason, and
   `scripts/tck-check.mjs` fails the job on a failure not listed, on a listed test that
@@ -571,8 +538,7 @@ axis, and so every recording, builds the chat client with `boundServerErrors`: a
 5xx is retried once, and a second one aborts the run with cause `provider-unavailable`,
 two requests for that call. `IO_RETRY` does not re-run the node. The trials that finished
 keep their cassettes, and `EVAL_TASKS` re-records the rest another day. The bound is off
-for a request, which is better served by waiting, and for P2-D's `yarn eval:explanation`,
-which builds its own `RunsService`. A daily-quota 429 stays terminal on its first request
+for a request, which is better served by waiting. A daily-quota 429 stays terminal on its first request
 and any other 429 keeps its six retries, bound or not.
 
 ## Documentation

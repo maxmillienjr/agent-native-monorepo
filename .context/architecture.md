@@ -12,8 +12,8 @@ template. It exists to demonstrate architectural thinking in two scarce domains 
    architecture and OpenTelemetry instrumentation.
 
 > **This document describes the design. `docs/STATUS.md` records what is wired.** They
-> agree on the memory tiers since P2-A: `MemoryModule` constructs the pool, the driver, the
-> four adapters, the facade and the checkpointer, and `RunsService` injects them. Read the
+> agree on the memory tiers since P2-A: `MemoryModule` constructs the pool, the three
+> adapters, the facade and the checkpointer, and `RunsService` injects them. Read the
 > matrix before you rely on a sentence here anyway — it carries the per-capability status
 > and this document does not.
 
@@ -28,16 +28,15 @@ template. It exists to demonstrate architectural thinking in two scarce domains 
                                           ┌─────────┴─────────┐
                                           │    memory-core     │
                                           │  (unified facade)  │
-                                          └───┬───────┬───────┘
-                                              │       │
-                                   ┌──────────┘       └──────────┐
-                                   ▼                              ▼
-                          ┌────────────────┐           ┌─────────────────┐
-                          │ Postgres 16    │           │   Neo4j 5       │
-                          │ + pgvector     │           │   Community     │
-                          │ (Episodic +    │           │ (Knowledge      │
-                          │  Dense Search) │           │  Graph)         │
-                          └────────────────┘           └─────────────────┘
+                                          └─────────┬─────────┘
+                                                    │
+                                                    ▼
+                                          ┌───────────────────┐
+                                          │   Postgres 16     │
+                                          │   + pgvector      │
+                                          │  (Episodic +      │
+                                          │   Dense Search)   │
+                                          └───────────────────┘
 ```
 
 ## The Three-Brain Memory Model
@@ -45,7 +44,7 @@ template. It exists to demonstrate architectural thinking in two scarce domains 
 The memory system is divided into three tiers with distinct scopes, persistence strategies,
 and access patterns. All three tiers are exposed through `packages/memory-core`, and all
 three are reached by a live request: one `POST /runs` leaves rows in `episodes` and
-`semantic_facts`, and nothing in the graph. See `docs/STATUS.md` rows 1-4.
+`semantic_facts`. See `docs/STATUS.md` rows 1-4.
 
 ### Working Memory (Per-Run)
 
@@ -70,11 +69,14 @@ three are reached by a live request: one `POST /runs` leaves rows in `episodes` 
 ### Semantic Memory (Long-Term)
 
 One index, `semantic_facts` in pgvector, written by the `reflect` node and read on a
-request. Retrieval is vector-only by decision, after a negative measurement: P2-B's ablation
-found that fusing the graph's list with the vector list added nothing on the deployed path
-and lowered Recall@10 by 0.145 with perfect seeds, and ADR 0009 took the graph out of the
-read path. P2-E's first pull request took it out of the write path: `reflect` writes no
-graph, and `distill` extracts facts alone.
+request. There was a second, a Neo4j knowledge graph, and two measurements removed it.
+P2-B's ablation found that fusing the graph's list with the vector list added nothing on the
+deployed path and lowered Recall@10 by 0.145 with perfect seeds, and ADR 0009 took the graph
+out of the read path. P2-D then measured the explanation role it was kept for: its paths
+were right on the corpus, and giving them to `plan` did not improve its answers by the
+pre-registered margin, so ADR 0012 removed it. P2-E executed that: `reflect` writes no
+graph, `distill` extracts facts alone, and the store, its client and its CI service
+containers are gone. Both measurements run at the tag `archive/p2e-graph-measurements`.
 
 - **pgvector Collection:** Dense embeddings, searched by exact cosine distance with the
   content hash as a tiebreaker. This is retrieval: `VectorRetrievalFacade` returns this
@@ -82,22 +84,9 @@ graph, and `distill` extracts facts alone.
   that names no session is refused unless it sets `crossSession: true`, an explicit opt-out
   that no caller outside the tests sets (P4-B). The column carries an HNSW index (`vector_cosine_ops`) that the tiebroken
   query cannot use — ADR 0006 records that trade.
-- **Neo4j Knowledge Graph:** Typed nodes (`:Concept`, `:Fact`) joined by `:MENTIONS`, plus
-  `:RELATES_TO` between concepts. Still provisioned, and written and read by no request:
-  only the evaluation seeds and the two measurement runners touch it. It was kept for an
-  explanation role — which concepts a retrieved fact mentions, and how they connect
-  to the question's — and P2-D measured it. Stage 1 was `good` and stage 2 `not met`, so the
-  rule selected option C: the graph explains, and `plan` does not use it. ADR 0012, accepted,
-  removes the graph, and P2-E executes that; until it does, `docs/STATUS.md` row 15 is
-  `stubbed`.
-  Every graph write carries its session (P2-D's M1). A `:Fact` keeps its first writer's
-  `sessionId`, as pgvector does. `MENTIONS` and `RELATES_TO` carry the session in their
-  merge key. Concepts stay global. Both graph reads take a required session scope, with no
-  cross-session form. `CypherNeo4jReader` serves the ablation, and `CypherNeo4jExplainer`
-  serves the explanation measurement. Both are unwired. Uniqueness constraints on
-  `:Concept(id)` and `:Fact(contentHash)`, and range indexes on `:Fact(sessionId)` and
-  `RELATES_TO(sessionId)`, are installed at boot — `MERGE` is not an upsert without the
-  constraints.
+- **A fact keeps its first writer.** `semantic_facts` is keyed on the content hash, so a
+  fact extracted again in another session lands on the row that already holds it and keeps
+  that row's `session_id`.
 
 The dimension is one exported constant, `EMBEDDING_DIMENSIONS`, and every schema, DDL,
 fixture and stub derives from it. It is 768 because pgvector refuses an HNSW index above
@@ -114,9 +103,9 @@ exactly-once. ADR 0001 explains why.
 traversal fail on different questions, so their union, merged by Reciprocal Rank Fusion,
 recalls more than either. ADR 0004 made that fusion real by giving both readers one universe
 of facts keyed on the content hash. P2-B measured the premise against pre-registered labels
-and it did not hold, so ADR 0009 superseded 0002. The fusion survives only inside
-`yarn eval:retrieval`, which reproduces that measurement; ADR 0004 is moot on the request
-path, and since P2-E `reflect` no longer writes the `:Fact` copy it introduced.
+and it did not hold, so ADR 0009 superseded 0002, and ADR 0012 superseded 0004 when it
+removed the graph. The fusion survives only at the archive tag, where the ablation
+reproduces that measurement.
 
 ```
 Working Memory ──[reflect]──▶ Episodic (Postgres)
@@ -344,8 +333,6 @@ The LangGraph graph is hosted inside a NestJS 11 microservice (`apps/agent-servi
   call; content capture is off and an attribute allowlist holds it off. The pgvector reader
   carries a child span for its search, and `MemoryModule` constructs it, so a live trace on
   the configured memory axis shows `memory.pgvector.search` under `agent.node.retrieve`.
-  The Neo4j reader's `memory.neo4j.expand` span appears in no run, because no request
-  constructs that reader since ADR 0009.
   An inbound `traceparent` parents the run's root, so a caller's trace continues into the
   run; the gateway forwards it and opens no span of its own.
 
