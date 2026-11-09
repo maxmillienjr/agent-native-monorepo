@@ -1,6 +1,6 @@
 # 0004 · One candidate universe for rank fusion
 
-**Status:** accepted
+**Status:** superseded by [0012](0012-the-graphs-explanation-role-stage-one.md)
 **Date:** 2026-08-29
 
 ## Context

@@ -1,8 +1,9 @@
 # 0012 · The graph's explanation role, after both stages: option C
 
-**Status:** proposed
+**Status:** accepted
 **Date:** 2026-10-08, with stage 2 and the row the rule selects added 2026-11-09
-**Supersedes:** [0004](0004-one-candidate-universe-for-fusion.md), on acceptance
+**Decided:** 2026-11-09, by the repository owner: option C, as the rule selected it
+**Supersedes:** [0004](0004-one-candidate-universe-for-fusion.md)
 
 ## Context
 
@@ -29,7 +30,7 @@ existed:
 This record was proposed on 2026-10-08 with stage 1 alone, which selected no row. Stage 2
 was recorded from 2026-11-05 to 2026-11-09, and this revision adds it. **Stage 1 is `good`,
 stage 2 is `not met`, and the row the rule selects is option C: the graph explains, and
-`plan` does not use it.** The record stays `proposed` until the owner accepts it.
+`plan` does not use it.** The owner accepted that outcome on 2026-11-09.
 
 ## The measurement
 
@@ -214,6 +215,13 @@ prompts or the explainer.
   condition for that PRD, not a fix to this measurement, as ADR 0009 recorded its own for
   retrieval.
 
+## Decision
+
+**Option C.** Accepted by the owner on 2026-11-09, as the pre-registered rule selected it.
+The graph's explanation role did not meet P2-D's rule, so ADR 0009's fallback applies: the
+graph is removed. **P2-E** executes the removal, from the specification in P2-D's "What
+P2-E inherits". Until it lands, `reflect` still writes the graph and no request reads it.
+
 ## Whether the two measurements run in CI
 
 **Decided in P2-D: nothing is wired into CI.** Under keep, P2-E adds a reproduction step to
@@ -231,13 +239,12 @@ verified by a run on that commit.
 
 ## Consequences
 
-**On acceptance, this record supersedes ADR 0004.** ADR 0004 put a `:Fact` copy of every
+**This record supersedes ADR 0004.** ADR 0004 put a `:Fact` copy of every
 distilled fact in the graph so that both retrievers returned one universe of candidates.
 ADR 0009 made that moot on the request path. Under C the `:Fact` copy goes with the graph,
 and ADR 0009's Consequences anticipated that a record removing Neo4j supersedes 0004 as
-well. ADR 0004's status line and index row read `superseded by 0012` once this record is
-accepted, as ADR 0002's moved when 0009 was accepted. Until then the index notes that the
-supersession is pending.
+well. ADR 0004's status line and index row read `superseded by 0012`. Its body is left as
+written.
 
 **ADR 0009 is not superseded.** Option C is its stated fallback, and executing it is its
 decision.
