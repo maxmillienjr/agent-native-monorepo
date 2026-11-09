@@ -2,7 +2,7 @@
 id: P1-H
 title: Live coverage of the replay-only suites by nightly rotation
 tier: 1
-status: accepted
+status: in-progress
 size: M
 depends_on: [P1-D, P1-E, P1-I, P3-D, P4-B]
 blocks: []
@@ -16,6 +16,15 @@ _Accepted by the owner on 2026-11-09._ The candidate was raised on 2026-10-26 wi
 This document is its first written form, and the owner accepted it the same day it was
 written. It is tracked in
 [#159](https://github.com/maxmillienjr/agent-native-monorepo/issues/159).
+
+_In progress since 2026-11-09._ Everything checkable with fakes or by reading the YAML is
+built on `feat/p1-h`: the selector, the budget step, pooling under the suite's own name, the
+`tasks-random` floor, the zero-tolerance graders, `promote-live --suite`, `canary:compare`
+with `COMPARE_SUITE`, the `eval-rotation` job and the documentation. No model call was made
+and no `GOOGLE_API_KEY` was read. What is left needs the owner or CI: `L` read from AI Studio
+and recorded (criterion 1), one dispatch with `rotation: true`, and the scheduled nights.
+Until `L` is recorded the job runs nothing and warns, by design. "What the implementation
+found", after the criteria, says what had to be decided that this document did not say.
 
 ## Problem
 
@@ -436,37 +445,77 @@ history, report or transport. **CI, model `live`** means scheduled runs on the f
       quota", with its source and date. The source is AI Studio's rate-limit view for that
       project, or the `quotaValue` of a per-day 429 with its run id. The same number is
       `EVAL_ROTATION_DAILY_LIMIT` in `agent-eval.yml`, whose comment names the source.
-      **Reviewer.**
-- [ ] **Fakes:** `selectSlice` on an empty epoch takes tasks in suite order up to the budget,
+      **Reviewer.** Not met on 2026-11-09. `EVAL_ROTATION_DAILY_LIMIT` is `''` and its
+      comment says where the figure is read; "Live model quota" says where to record it.
+- [x] **Fakes:** `selectSlice` on an empty epoch takes tasks in suite order up to the budget,
       and always takes the zero-cost tasks. A night with no tally returns the same slice
       again. A new digest starts from the first task. A task added to a suite comes first. A
       task costing more than the budget is listed in `skipped`, not taken. A budget that fits
-      no task with a model call returns an empty slice.
-- [ ] **Fakes:** a live run narrowed by `EVAL_TASKS` writes its tally under
+      no task with a model call returns an empty slice. 2026-11-09, `rotation.test.ts` ›
+      `selectSlice`, eight cases, one per sentence here, on a seven-task stand-in for the two
+      suites. Against the suites committed at `HEAD` (`rotationTasks`), prior-auth costs 20
+      over 24 tasks with the four administrative tasks at 0, and the red team costs 3, 3 and
+      6 from its budgets. The compiled `eval:history slice` at `L` = 20, against a fixture
+      report of 3, 5 and 4 calls and a canary that ran, chose six priced prior-auth tasks and
+      the four administrative ones, and named the other seventeen as "did not fit tonight".
+- [x] **Fakes:** a live run narrowed by `EVAL_TASKS` writes its tally under
       `live/<suite>/<digest:12>/`, with `suite` equal to the unnarrowed name. Two such tallies
       with different tasks pool into one `LivePool` holding the union of tasks. The report's
-      `suite` still carries the selection.
-- [ ] **Fakes, seeded simulation:** in `tasks-random` at K = 24 and δ = 0.20 with 2 trials
+      `suite` still carries the selection. 2026-11-09, `gate.test.ts` › "files a run narrowed
+      by EVAL_TASKS under the suite’s own name, and pools its slices": two nights reported as
+      `prior-auth [pa-e0260-ambiguous]` and `prior-auth [pa-e0470-ambiguous]` land in
+      `live/prior-auth/cccccccccccc/`, the second tally's `suite` is `prior-auth`, and the
+      pool holds both tasks from two runs.
+- [x] **Fakes, seeded simulation:** in `tasks-random` at K = 24 and δ = 0.20 with 2 trials
       per task per arm, using the reference above, the unchanged candidate gives `held` ≥ 90%
       and `regressed` ≤ 2%. A candidate 0.25 lower on every task gives `regressed` ≥ 60%.
       Below 2 trials in any arm of any task the verdict is `insufficient-evidence`. Every
       existing `compare-live.test.ts` case passes unchanged, so `tasks-fixed` keeps its
-      15-trial floor.
-- [ ] **Fakes:** under `EVAL_GATE=live`, a report with one failed `no_false_approval` cell
+      15-trial floor. 2026-11-09, `compare-live.test.ts` › "the tasks-random floor at δ =
+      0.20, K = 24, 1,000 simulations", on `mulberry32` and `pairedBootstrap` at 2,000
+      resamples, seeds `20261109 + s`. Measured: unchanged, `held` 97.7%, `regressed` 0.0%,
+      `insufficient-evidence` 2.3%; every task 0.25 lower, `regressed` 71.9%, `held` 1.2%,
+      `insufficient-evidence` 26.9%. Both agree with the numpy sketch to within 1.1 points.
+      One task one trial short in either arm is `insufficient-evidence`, a collapse to Δ = −1
+      included. The file's earlier cases are unchanged and pass.
+- [x] **Fakes:** under `EVAL_GATE=live`, a report with one failed `no_false_approval` cell
       ends `failed` with the task, trial and grader in `eval-gate.json` and the summary. The
       same holds for each `canary_absent_*` grader. A failed `finding_agreement` cell does not
-      change the end.
-- [ ] **Fakes:** the budget step computes `L − S − R` from a fixture `eval-report.json` and
+      change the end. 2026-11-09, `gate.test.ts` › "zero-tolerance graders under live
+      (P1-H)": one failed `no_false_approval` cell on an `incomparable` night ends `failed`,
+      `eval-gate.json` lists `{ task, trial, grader }` under `zeroTolerance.failures`, and the
+      summary's heading reads `` `incomparable` — blocks `` above the cell's row and
+      "Wrongful approvals: 1 of 2". The same for each of the three `canary_absent_*` graders,
+      and a failed `finding_agreement` cell ends `passed`. Under `replay` the list is not
+      applied.
+- [x] **Fakes:** the budget step computes `L − S − R` from a fixture `eval-report.json` and
       a canary result. With `L` empty it writes the "not run" summary and runs no `yarn eval`.
-- [ ] `yarn eval:promote-live --suite prior-auth <digest>` writes
+      2026-11-09, `rotation.test.ts` › "the budget step": 3 + 5 + 4 calls in the report and a
+      canary that ran give `S` = 13 and a budget of 6 at `L` = 20; a skipped canary counts 0;
+      an abort for any other cause takes the ceilings, 17; a per-day 429 gives 0. With `L`
+      empty `runSlice` reads neither the artifact nor the history, writes "Rotation — not
+      run: the free-tier limit is not recorded", and writes `run=false` with empty
+      `prior_auth` and `red_team`, which are the only conditions the two `yarn eval` steps
+      run on.
+- [x] `yarn eval:promote-live --suite prior-auth <digest>` writes
       `datasets/prior-auth/baselines/live.json` from a fixture history. With no `--suite` it
       behaves as today. `canary:compare` with `COMPARE_SUITE=prior-auth` compares a fixture
       slice's cassettes with the committed ones and makes no model request. **Fakes.**
+      2026-11-09, `promote-live.test.ts` › "promotes a prior-auth epoch with --suite, into
+      prior-auth’s baselines" and "reads memory-recall when no --suite is given, as before";
+      `run-compare.test.ts` › "compares a slice’s cassettes with the committed ones and makes
+      no model request", on copies of two committed prior-auth cassettes, with
+      `modelRequests` empty.
 - [ ] The workflow: `eval-rotation` needs `live` and `canary` and shares their concurrency
       group. It is skipped when `EVAL_SCHEDULE_PAUSED` is `true`, `live` or `rotation`, and
       on a dispatch without `rotation: true` or with `chat_model` set. It is in no ruleset.
       `yarn lint:docs` passes. **Reviewer, from the YAML, and one dispatch with
-      `rotation: true`** whose run id is recorded here.
+      `rotation: true`** whose run id is recorded here. The YAML half, 2026-11-09 at
+      `ae6fd2a`: `needs: [gate, live, canary]`, `concurrency.group: eval-live`, and an `if`
+      that is false when `needs.live` was skipped (`true`, `live`), on `rotation`, and on a
+      dispatch without `rotation` or with `chat_model`. `.github/rulesets/main.json` is
+      unchanged, and `yarn lint:docs` passes. actionlint 1.7.7 reports nothing in the new
+      job. The dispatch is still to run.
 - [ ] **CI, model `live`:** on the first scheduled night with `L` recorded, the rotation's
       summary prints `L`, `S`, `R`, the budget, the slice and the calls the slice made. The
       calls made are no more than the budget, plus at most `R`. No job that night aborts on a
@@ -479,7 +528,55 @@ history, report or transport. **CI, model `live`** means scheduled runs on the f
 - [ ] `.context/conventions.md`'s consumer table has a row for `eval-rotation` with its
       formula, and its `EVAL_SCHEDULE_PAUSED` paragraph names `rotation`. `agent-eval.yml`'s
       header comment no longer says the two suites are "not in the live job" without naming
-      the rotation. `docs/STATUS.md` has a row owned by P1-H. **Reviewer.**
+      the rotation. `docs/STATUS.md` has a row owned by P1-H. **Reviewer.** 2026-11-09: the
+      consumer table's third row is `eval-rotation`, `L − S − R`, with the paragraph under
+      it; the `EVAL_SCHEDULE_PAUSED` paragraph names `rotation`; the header comment says the
+      rotation runs the two suites; and STATUS row 38 is `stubbed`, owned by P1-H, because
+      the job runs nothing until `L` is recorded.
+
+## What the implementation found
+
+Dated 2026-11-09, on `feat/p1-h`. Each of these had to be decided, and this document did not
+decide it.
+
+- **The budget step is part of `eval:history slice`, not a step of its own.** The criterion
+  asks for a step that computes `L − S − R`. It is `readNightSpend` and `rotationBudget` in
+  `rotation.ts`, called by `runSlice`, so the arithmetic is tested TypeScript and the
+  workflow has one step that writes the budget, the slice and the summary. Its inputs are
+  `ROTATION_LIVE_DIR` (the downloaded `eval-live` artifact), `ROTATION_CANARY_RESULT`
+  (`needs.canary.result`) and `ROTATION_LIVE_TRIALS` (`inputs.trials`, for the ceiling on a
+  dispatch of more than one trial).
+- **What counts as "the canary ran".** Any result but `skipped` counts its one call. A
+  failed or cancelled canary may have made it, and over-counting only shrinks the slice.
+- **No artifact at all is treated as an abort for another cause.** The download step is
+  `continue-on-error`, and a missing `eval-live` artifact takes memory-recall's ceilings
+  rather than failing the job.
+- **The ceilings are read, not written down.** "17" is `memoryRecallCeiling`, the sum of
+  memory-recall's `budgets.modelCalls`, so a raised budget moves `S` with it.
+- **A task with neither a budget nor a committed cassette is refused** by name, rather than
+  costed at a guess. Recording it, or giving it a `modelCalls` budget, is the fix.
+- **The red-team step does not run after a per-day 429 in the prior-auth step.** Both run
+  whatever the other's verdict, except that one: the day is then spent, and a second
+  request would only be refused. The step fails with an `::error::` that says why.
+- **`canary:compare` needs the committed set back.** The job deletes the selected suites'
+  committed cassettes before it records, as `eval-live` does, but compares in the same
+  checkout. It copies the night's recordings into the artifact and restores the committed
+  files with `git checkout HEAD --` before comparing. Its exit code is a notice, not the
+  job's colour, as the table says.
+- **"Did not fit tonight" lists every skipped task at the lowest coverage.** At a budget of
+  6 on an empty epoch that is seventeen tasks, the red team's three included. A shorter list
+  would hide `rt-003`'s starvation, which the Risks section says the summary must show.
+- **The floor in an `incomparable` verdict follows the regime too.** With no reference, a
+  24-task pool prints "still needed 2" per task, not 15, so the summary counts towards the
+  floor that will apply.
+- **"Wrongful approvals x of n" is computed from the tallies' per-grader arrays**, over the
+  epoch and over the night, for every zero-tolerance grader. It is in the gate section of
+  each suite's summary.
+
+**Gaps in the scaffolding this closed.** `.context/conventions.md` said a narrowed run
+prints its selection in the suite name, and nothing about where its live tally goes; it now
+says both. It did not say that `EVAL_GATE=live` has an exception to "fails only on
+`regressed`"; it now names the zero-tolerance graders and the `tasks-random` floor.
 
 ## Risks and open questions
 
