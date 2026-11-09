@@ -2,8 +2,13 @@
 
 ## Where things stand
 
-_Last updated 2026-11-05. If this section is more than a few weeks stale, trust the code
+_Last updated 2026-11-09. If this section is more than a few weeks stale, trust the code
 over it and update it._
+
+**The chat model shuts down on 2026-12-01.** Google's deprecations page routes
+`gemini-2.5-flash` to `gemini-3.5-flash-lite` from that day under the same id, so P1-I,
+accepted on 2026-11-09, has to put a measured switch on `main` by 2026-11-30. P2-D's stage
+2, pre-registered on the old id, has to finish recording by then too.
 
 **Twenty-four PRDs are shipped and the system they describe is running.** The service answers
 `POST /runs` and `POST /runs/stream`; `memory-core` is constructed by the app rather than
@@ -170,7 +175,9 @@ the rule selects no outcome yet and recommends stage 2 as pre-registered. Stage 
 the prompts are pinned to `planNode`'s, the graders apply the rule, and the answer file is
 recorded resumably and replayed with no key. A dry run on a fake model was killed mid-run,
 resumed, and stopped by a per-day 429, and it ended with 76 answers, none asked twice once
-recorded. What remains is the calls, eight a day for ten days, on the schedule in the PRD.
+recorded. Recording started on 2026-11-05; on 2026-11-09 it had 29 of the 76 answers, at
+about nine a day with the scheduled `eval-live` paused, and it has to finish by 2026-11-30,
+when `gemini-2.5-flash` is routed to another model (P1-I).
 Neither command runs in CI, by decision: P2-E reproduces or archives both, depending on the
 outcome.
 
@@ -454,7 +461,7 @@ shipped, checks each task's tokens and model calls beside the pass rate.
 | [P1-F](P1-F-cost-and-step-budgets.md)  | Cost, latency, and step budgets as CI assertions              | M    | shipped     |
 | [P1-G](P1-G-task-axis-requirements.md) | Task-level axis requirements for the evaluation suite         | S    | shipped     |
 | P1-H                                   | Live coverage of the replay-only suites by nightly rotation   | M    | draft       |
-| [P1-I](P1-I-chat-model-migration.md)   | Migrate off `gemini-2.5-flash`                                | L    | draft       |
+| [P1-I](P1-I-chat-model-migration.md)   | Migrate off `gemini-2.5-flash`                                | L    | accepted    |
 
 P1-H, a draft with no file yet, is a candidate raised on 2026-10-26 and not yet accepted.
 Once the recordings are made, prior-auth and the red team run only on replay at night: they
@@ -467,7 +474,7 @@ open question: on the shared key it takes the nightly to about 18 of the day's 2
 development almost nothing, so it waits for the recording queue to clear and is more
 realistic with a paid key. It depends on P1-D (pooling across nights) and P3-D (the suite).
 
-[P1-I](P1-I-chat-model-migration.md), a draft, moves the chat model off `gemini-2.5-flash`.
+[P1-I](P1-I-chat-model-migration.md), accepted on 2026-11-09, moves the chat model off `gemini-2.5-flash`.
 This paragraph used to say no shutdown date forces it before 2028-05-14. That is the
 embedding model's date. Google's deprecations page, read 2026-11-09, shuts
 `gemini-2.5-flash` down on 2026-12-01 and routes its requests to `gemini-3.5-flash-lite`

@@ -2,7 +2,7 @@
 id: P1-I
 title: Migrate off `gemini-2.5-flash`
 tier: 1
-status: draft
+status: accepted
 size: L
 depends_on: [P1-A, P1-B, P1-E, P1-F]
 blocks: []
@@ -157,7 +157,7 @@ the date, it would be noticed late, if at all.
 - **P2-D's stage 2 keeps its pre-registered model.** Its answer file stays replayable after
   the pin moves.
 - **A bound on 5xx retries** for live and record runs, so a 503 window cannot spend a day's
-  quota on retries. See open question 4.
+  quota on retries. Kept at review (decision 4).
 - **A fresh-clone check**: one live trial on a key from a project that never called
   `gemini-2.5-flash`.
 
@@ -183,6 +183,10 @@ the date, it would be noticed late, if at all.
 - **Re-running P2-D's stage 2 on the new model.** Stage 2 is a pre-registered measurement on
   `gemini-2.5-flash`. Repeating it on another model is a new measurement, and **P2-E**
   decides whether its outcome needs one.
+- **Budgets for the prior-auth tasks.** They have none, though the conventions describe
+  budgets as a property of every task. Adding them is a second change to a suite whose
+  recording this PRD already moves, and the loader's support is unchecked. Decided out at
+  review (decision 3); no PRD owns it yet.
 - **Turning on billing.** The free tier stays the budget. Billing is the owner's decision
   (`.context/conventions.md:532-533`).
 
@@ -201,10 +205,10 @@ days and review. If the switch is not on `main` by 2026-11-30, the fallback is:
    for one call. The result goes into this PRD.
 3. Keep the pause until the switch merges.
 
-P2-D's stage 2 is pre-registered on `gemini-2.5-flash`, and it is eight calls a day for ten
-days (`docs/prd/README.md:170-173`). Its last call has to be made by 2026-11-30 as well.
-That deadline is P2-D's, and this PRD records it there through the index, not by editing
-P2-D.
+P2-D's stage 2 is pre-registered on `gemini-2.5-flash`. On 2026-11-09 it had 29 of its 76
+answers, at about nine a day on the whole 2.5 pool with the schedule paused, so it ends
+around 2026-11-14. Its last call has to be made by 2026-11-30 as well. That deadline is
+P2-D's, and this PRD records it there through the index, not by editing P2-D.
 
 ### Phase 1: measure two candidates
 
@@ -220,7 +224,11 @@ P2-D.
 
 Step 1a is the only code before the choice. It adds a fifth probe to the canary, with the
 floating probe's verdicts: `moved`, `unchanged` and `unavailable` are notices, and nothing it
-returns fails the run. The alias probe already gives a nightly availability series for
+returns fails the run. The same change lets the schedule pause cover `eval-live` alone:
+`EVAL_SCHEDULE_PAUSED=live` skips the scheduled `eval-live` and keeps the scheduled
+`eval-canary`, and `true` still skips both. While P2-D's stage 2 holds the 2.5 pool the
+variable is `live`, so the seven nights can start; the canary then spends one call a night on
+that pool, for `chat-pinned`. The alias probe already gives a nightly availability series for
 `gemini-3.8-flash`, and nothing gives one for `gemini-3.5-flash-lite`. The candidate probe is
 removed at the switch.
 
@@ -233,7 +241,8 @@ artifact.
 
 Step 1d is what the PRD exists for. The 404 on `gemini-2.5-flash` is repeated so that the
 contrast is on the same key and the same day. It needs a key from a project that has never
-called `gemini-2.5-flash`. The owner made one on 2026-10-15.
+called `gemini-2.5-flash`. The owner made one on 2026-10-15, and that project has to be kept
+until phase 3's fresh-clone trial. The owner runs both, or supplies the key for them.
 
 Step 1e answers P1-E's unchecked quota fact (`P1-E-model-drift-canary.md:727-731`): whether
 a model id's free-tier day is its own. The 2026-10-27 dispatch suggests that the alias target
@@ -466,8 +475,7 @@ request leaves the process.
       id is `gemini-3.8-flash`, the 2027-01-01 price is noted.
 - [ ] **Stubbed transport:** with the retry bound, a recording run that meets three
       consecutive 503s makes two requests for that call, writes `eval-abort.json` with cause
-      `provider-unavailable`, and keeps the cassettes of the trials that finished. _Removed
-      if review drops open question 4._
+      `provider-unavailable`, and keeps the cassettes of the trials that finished.
 
 **After the merge**
 
@@ -497,38 +505,29 @@ request leaves the process.
 
 ## Risks and open questions
 
-**Open questions for review.**
+**Decided at review, 2026-11-09.** The draft put six questions. The conductor's decisions,
+made before any call in phase 1:
 
-1. **Which id, and the rule.** The draft's rule is above, with `gemini-3.5-flash-lite`
-   preferred when both pass. The argument against it: the 404 a new user sees names
-   `gemini-3.8-flash`, not `gemini-3.5-flash-lite`, and a "Flash-Lite" model may be a smaller
-   model than the one it replaces. The argument for it: Google routes the pinned id to it
-   on 2026-12-01, it is the same price, and it is what this repository's numbers are
-   compared against if nothing is done. Review may reverse the preference. It may not change
-   the rule after step 1b has run.
-2. **Is P1-E's criterion still the right first measurement?** It runs the suite on the
-   alias, which reads `gemini-3.8-flash` today. If review prefers `gemini-3.5-flash-lite`,
-   the alias run measures the candidate the rule prefers less. The draft keeps it, because
-   it is a handed-over criterion, it costs only the alias target's bucket, and it is the
-   only trial of `gemini-3.8-flash` this plan makes. If the alias is unavailable on every
-   attempt until day 8, the criterion stays unchecked here, and it is moved to the PRD that
-   owns the next migration, by name.
-3. **Should the prior-auth tasks get budgets?** They have none (Problem), although the
-   conventions describe budgets as a property of every task. This recording supplies the
-   figures at no extra call. The draft proposes adding them to the twenty tasks that call
-   the model, with `modelCalls` 1. Whether the prior-auth loader accepts a `budgets` key has
-   not been checked, so the cost is between half a day and a loader change.
-4. **The 5xx retry bound.** It changes production code for an evaluation reason. The draft
-   confines it to `yarn eval` on the live axis and to recording, and keeps the service's
-   default. The alternative is to record only on mornings when the canary's probe answered,
-   and accept that some days are lost. That keeps code out and leaves the 2026-11-09 failure
-   mode open.
-5. **Thinking configuration.** The client sets none, so each candidate runs on its default.
-   `gemini-3.8-flash` supports `low`, `medium` and `high` and errors on `minimal`. The draft
-   keeps the default, so that the migration is one variable, and records the thinking tokens
-   each recording spent. Setting a level would be a second change, measured separately.
-6. **The embedding model has no owner.** The draft proposes none (Non-goals). If review wants
-   a row, it is a draft with a trigger: a shutdown date inside a year, or a new-project 404.
+1. **Which id, and the rule.** The rule stands as written, with `gemini-3.5-flash-lite`
+   preferred when both candidates pass. The argument against it was that the 404 names
+   `gemini-3.8-flash` and that a "Flash-Lite" model may be smaller than the one it replaces.
+   The argument for it decided: Google routes the pinned id to it on 2026-12-01, it lists at
+   the same price, and it is what this repository's numbers are compared against if nothing
+   is done. The rule does not change after step 1b has run.
+2. **P1-E's criterion stays the first measurement.** It is a handed-over criterion, it costs
+   only the alias target's bucket, and it is the only trial of `gemini-3.8-flash` the plan
+   makes. If the alias is unavailable on every attempt until day 8, the criterion stays
+   unchecked here and moves, by name, to the PRD that owns the next migration.
+3. **No budgets for prior-auth in this PRD.** See Non-goals. The migration stays one
+   variable.
+4. **The 5xx retry bound is kept**, confined to `yarn eval` on the live axis and to
+   recording, with the service's default unchanged. On 2026-11-09 retries turned 20
+   requests into 9 answers, and that failure mode would otherwise sit under every recording
+   below.
+5. **Thinking stays on each model's default**, and each recording's thinking tokens are
+   recorded. Setting a level is a second change, measured separately.
+6. **No row for the embedding model.** Its date is 2028-05-14 and new projects can call it.
+   The trigger for a row is a shutdown date inside a year or a new-project 404.
 
 **Risks.**
 
