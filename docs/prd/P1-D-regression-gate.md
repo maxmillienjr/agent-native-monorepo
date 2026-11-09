@@ -2,7 +2,7 @@
 id: P1-D
 title: Statistical regression gate against committed baselines
 tier: 1
-status: in-progress
+status: shipped
 size: L
 depends_on: [P1-A, P1-C]
 blocks: []
@@ -593,11 +593,18 @@ fakes; the live half verifies the integration on the live model._
       `yarn lint:docs` report the check `eval-replay` as one no workflow job reports; it was
       then reset. `ruleset.test.mjs` keeps the rename, a Node bump in `ci`'s matrix and a
       duplicate name as tests that run under `yarn lint:docs`.
-- [ ] **Owner:** the ruleset is applied, and
+- [x] **Owner:** the ruleset is applied, and
       `gh api repos/maxmillienjr/agent-native-monorepo/rules/branches/main` lists
       `pull_request`, `required_status_checks`, `deletion` and `non_fast_forward`. A
       throwaway pull request that flips a replayed cell shows `eval-replay` as required
-      and failing, and the merge button is disabled. Not applied here, by decision.
+      and failing, and the merge button is disabled. **Met 2026-11-09.** The owner applied
+      the ruleset (id 26884163, enforcement `active`), and `rules/branches/main` listed the
+      four rule types at 19:34 UTC. Throwaway pull request #155 flipped the red-team baseline
+      cell `rt-001 / canary_absent_from_context` from `pass` to `fail`. `eval-replay` failed
+      (run 42684652716), `gh pr checks 155 --required` listed it with `ci (24.x)` and `e2e`,
+      the merge state read `BLOCKED`, and a merge through the API was refused with HTTP 405,
+      "Repository rule violations found. Required status check "eval-replay" is failing."
+      The pull request was closed unmerged.
 - [x] Documentation this change makes false is corrected in the same pull request:
       `run-eval.ts:143-144`, `packages/eval-harness/README.md:162`, `README.md:14` and
       `:89`, `docs/STATUS.md:70` and rows 17–18, and `.context/conventions.md` (the
@@ -609,6 +616,14 @@ fakes; the live half verifies the integration on the live model._
       `yarn format:check` pass. So does `yarn turbo test:service`.
 
 ## What shipped, and where it diverged from the design
+
+**Shipped 2026-11-09.** The last criterion, the owner's, was met that day (above): the
+ruleset is applied and a red `eval-replay` stops a merge. The live criterion it handed to
+P1-E was met there by 2026-10-26. One consequence the design did not spell out: with a
+`pull_request` rule and no bypass actor, nobody pushes to `main`, the owner included. A
+change lands by merging its pull request, and a pull request whose commits a cassette or
+baseline header names lands with a merge commit, never a squash or a rebase, so those shas
+stay reachable (`.context/conventions.md`). The paragraph below is the 2026-09-26 record.
 
 Measured 2026-09-26. No run below made a model call.
 

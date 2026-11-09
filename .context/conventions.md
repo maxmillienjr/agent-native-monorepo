@@ -335,7 +335,10 @@ explanation stages, are archived at a tag and run in no tier (below).
   `gitSha`, an answer file's per-answer `gitSha`), and rebasing the branch orphans that
   commit. Before a rebase, tag each named sha that is not on `main` with
   `git tag -a recording/<prd>-<what>-<date> <sha>` and push the tag, as P3-D, P4-B and P2-D
-  did. A contributor without a key cannot re-record;
+  did. Merging has the same hazard: since the ruleset (P1-D) every change lands through its
+  pull request, and a squash or rebase merge rewrites every sha on the branch, so a pull
+  request that carries a recording merges with a merge commit
+  (`gh api -X PUT repos/<owner>/<repo>/pulls/<n>/merge -f merge_method=merge`). A contributor without a key cannot re-record;
   a maintainer with one pushes the new set and baseline to the pull request's branch. A
   cassette in an older format is refused before any store is reset, with the same two
   commands in the message: P1-F's format 2 changed what two seams return and not what they
