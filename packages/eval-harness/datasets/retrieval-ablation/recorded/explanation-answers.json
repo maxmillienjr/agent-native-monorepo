@@ -623,6 +623,38 @@
         "latencyMs": 3004
       }
     },
+    "relational-016/with": {
+      "queryId": "relational-016",
+      "condition": "with",
+      "recordedAt": "2026-11-09T07:04:50.219Z",
+      "gitSha": "60ad0182bc1dc30278d17b3fde33f4631f89bc7f",
+      "invocation": 4,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "ab9da78621c41a845425772d572f718e5c508fa9a91c46007742c02d8502ac60",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How much notice must a doctor give before leaving the Cedarline Essential network?\n\nRelevant context:\n- [pgvector] Summit Crest Network providers must give 90 days notice before leaving the network.\n- [pgvector] Cedarline Essential members have 90 days after a denial notice to file an appeal.\n- [pgvector] Cedarline Essential requires a primary care referral before any specialist visit.\n- [pgvector] Cedarline Essential covers emergency care at any hospital, in network or not.\n- [pgvector] The Cedarline Credentialing Committee recredentials every provider every 36 months.\n- [pgvector] Cedarline Essential sends members a printed provider directory on request.\n- [pgvector] Cedarline Essential members use the Summit Crest Network.\n- [pgvector] A provider turned down by the Cedarline Credentialing Committee may reapply after twelve months.\n- [pgvector] Cedarline Health holds open enrollment from November 1 to December 15.\n- [pgvector] Cedarline Essential covers a yearly eye exam but not glasses.\n\nConnections in memory:\n- context 1: plan_cedarline_essential -[USES_NETWORK]- network_summit_crest\n- context 2: plan_cedarline_essential; plan_cedarline_essential -[OFFERS]- payer_cedarline_health\n- context 3: plan_cedarline_essential; plan_cedarline_essential -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_cedarline_essential -[OFFERS_PROGRAM]- program_mindful_access\n- context 4: plan_cedarline_essential; plan_cedarline_essential -[OFFERS]- payer_cedarline_health\n- context 5: plan_cedarline_essential -[OFFERS]- payer_cedarline_health; plan_cedarline_essential -[OFFERS]- payer_cedarline_health -[BELONGS_TO]- committee_cedarline_credentialing\n- context 6: plan_cedarline_essential; plan_cedarline_essential -[OFFERS]- payer_cedarline_health\n- context 7: plan_cedarline_essential; plan_cedarline_essential -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_cedarline_essential -[OFFERS_PROGRAM]- program_mindful_access\n- context 8: plan_cedarline_essential -[OFFERS]- payer_cedarline_health; plan_cedarline_essential -[OFFERS]- payer_cedarline_health -[BELONGS_TO]- committee_cedarline_credentialing\n- context 9: plan_cedarline_essential -[OFFERS]- payer_cedarline_health\n- context 10: plan_cedarline_essential; plan_cedarline_essential -[OFFERS]- payer_cedarline_health\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "**Plan:**\n\n1. **Identify the network used by Cedarline Essential:** Look for information stating which network Cedarline Essential providers belong to or which network Cedarline Essential uses.\n2. **Find the notice period for providers leaving that specific network:** Search for rules regarding the notice period providers must give before leaving the identified network.\n3. **Combine the information:** State the required notice period based on the findings.\n\n**Execution:**\n\n1. **`pgvector` statement:** \"Cedarline Essential members use the Summit Crest Network.\"\n2. **`Connections in memory`:** \"context 1: plan_cedarline_essential -[USES_NETWORK]- network_summit_crest\" (confirms Cedarline Essential uses Summit Crest Network).\n3. **`pgvector` statement:** \"Summit Crest Network providers must give 90 days notice before leaving the network.\"\n\n**Answer:**\nA doctor must give 90 days notice before leaving the Cedarline Essential network, as Cedarline Essential uses the Summit Crest Network, and providers in that network are required to give 90 days notice.",
+            "tokenCounts": {
+              "prompt": 681,
+              "completion": 507,
+              "reasoning": 277
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 681,
+          "completion": 507,
+          "reasoning": 277
+        },
+        "latencyMs": 10251
+      }
+    },
     "relational-016/without": {
       "queryId": "relational-016",
       "condition": "without",
