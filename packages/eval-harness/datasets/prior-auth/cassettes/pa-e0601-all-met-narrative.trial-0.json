@@ -1,23 +1,24 @@
 {
   "header": {
-    "formatVersion": 2,
+    "formatVersion": 3,
     "taskId": "pa-e0601-all-met-narrative",
     "trialIndex": 0,
-    "recordedAt": "2026-10-12T17:12:32.647Z",
-    "gitSha": "fba57635a195906a13aa663ad253439b319cd19e",
+    "recordedAt": "2026-11-09T17:22:48.541Z",
+    "gitSha": "86f6accdf5c3131da46a58edb611ae7038fecfce",
     "axes": {
       "model": "live",
       "memory": "live"
     },
-    "chatModel": "gemini-2.5-flash",
+    "chatModel": "gemini-3.5-flash-lite",
     "embeddingModel": "gemini-embedding-001",
     "embeddingDimensions": 768
   },
   "decisions": [
     {
       "seam": "assess.criteria",
-      "requestHash": "e6250e4641e9da0f32ba08a59a1e068c4f2cbb127552e7f3d4ea37a8d0d4c5a8",
+      "requestHash": "4501c5f811a7757c0d8c06cf2398e8ee12260f92d9f7fd3a332e0370fcaf73ff",
       "request": {
+        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states something that fails the criterion,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nCite every evidence reference you relied on, exactly as given (for example \"DocumentReference/doc-1\").\nNever cite a reference that is not in the evidence list. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
         "criteria": [
           {
             "id": "e0601-osa-diagnosis",
@@ -60,7 +61,7 @@
             "evidence": [
               "DocumentReference/doc-e0601-all-met-narrative-visit"
             ],
-            "rationale": "The prescriber's clinical note explicitly states that the member has a diagnosis of obstructive sleep apnea based on the home sleep test and history."
+            "rationale": "The clinical note states that the patient has obstructive sleep apnea."
           },
           {
             "criterionId": "e0601-ahi-threshold",
@@ -68,7 +69,7 @@
             "evidence": [
               "DocumentReference/doc-e0601-all-met-narrative-visit"
             ],
-            "rationale": "A home sleep test dated August 2nd (within 12 months of the September 12th visit) reported 24 breathing interruptions an hour, which exceeds the required AHI of 18 events per hour."
+            "rationale": "The home sleep test done on August 2 reported 24 breathing interruptions (events) per hour, which is at least 18."
           },
           {
             "criterionId": "e0601-conservative-trial",
@@ -76,7 +77,7 @@
             "evidence": [
               "DocumentReference/doc-e0601-all-met-narrative-visit"
             ],
-            "rationale": "The member has undergone positional therapy with a foam wedge since the middle of July (close to five weeks), which is more than 21 days, and the symptoms ('pauses have not let up') have not resolved."
+            "rationale": "The patient slept on her side since the middle of July (close to five weeks, which is at least 21 days) with positional therapy, and pauses have not let up."
           },
           {
             "criterionId": "e0601-prescriber-order",
@@ -84,11 +85,11 @@
             "evidence": [
               "DocumentReference/doc-e0601-all-met-narrative-visit"
             ],
-            "rationale": "The prescriber's note confirms an order for a CPAP machine at a fixed pressure of 9 centimetres of water and states the order was signed."
+            "rationale": "The prescriber order names the CPAP machine, a fixed pressure of 9 centimetres of water, and notes that the order was signed."
           }
         ]
       },
-      "latencyMs": 6750
+      "latencyMs": 1286
     }
   ]
 }

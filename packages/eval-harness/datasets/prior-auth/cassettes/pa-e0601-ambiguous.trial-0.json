@@ -1,23 +1,24 @@
 {
   "header": {
-    "formatVersion": 2,
+    "formatVersion": 3,
     "taskId": "pa-e0601-ambiguous",
     "trialIndex": 0,
-    "recordedAt": "2026-10-12T17:12:47.083Z",
-    "gitSha": "fba57635a195906a13aa663ad253439b319cd19e",
+    "recordedAt": "2026-11-09T17:22:51.283Z",
+    "gitSha": "86f6accdf5c3131da46a58edb611ae7038fecfce",
     "axes": {
       "model": "live",
       "memory": "live"
     },
-    "chatModel": "gemini-2.5-flash",
+    "chatModel": "gemini-3.5-flash-lite",
     "embeddingModel": "gemini-embedding-001",
     "embeddingDimensions": 768
   },
   "decisions": [
     {
       "seam": "assess.criteria",
-      "requestHash": "b4a2234c216621d614ffeefb57f0912d35cfbc70106f4368aed5bae0393375b8",
+      "requestHash": "6f21757922b6606d563cdba1a11231430eac7f96df377f7993a32598b85cb5d6",
       "request": {
+        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states something that fails the criterion,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nCite every evidence reference you relied on, exactly as given (for example \"DocumentReference/doc-1\").\nNever cite a reference that is not in the evidence list. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
         "criteria": [
           {
             "id": "e0601-osa-diagnosis",
@@ -68,7 +69,7 @@
             "evidence": [
               "DocumentReference/doc-e0601-ambiguous-visit"
             ],
-            "rationale": "The evidence mentions a past sleep study but does not provide an AHI value or confirm that the study was conducted within the last 12 months."
+            "rationale": "The visit note mentions a sleep study from a few years back that is not available and the exact AHI score is not confirmed or documented within the 12 months before the request."
           },
           {
             "criterionId": "e0601-conservative-trial",
@@ -76,7 +77,7 @@
             "evidence": [
               "DocumentReference/doc-e0601-ambiguous-visit"
             ],
-            "rationale": "The record documents 30 days of positional therapy that did not resolve the symptoms, exceeding the 21-day requirement."
+            "rationale": "Positional therapy with a positional belt for 30 days in August was tried and did not help, fulfilling the 21-day conservative measure requirement."
           },
           {
             "criterionId": "e0601-prescriber-order",
@@ -84,11 +85,11 @@
             "evidence": [
               "DocumentReference/doc-e0601-ambiguous-visit"
             ],
-            "rationale": "A signed prescriber order names the CPAP device and specifies a pressure range of 5 to 15 cm H2O."
+            "rationale": "There is a signed prescriber order for a CPAP device with a pressure range of 5 to 15 cm H2O."
           }
         ]
       },
-      "latencyMs": 5515
+      "latencyMs": 1380
     }
   ]
 }

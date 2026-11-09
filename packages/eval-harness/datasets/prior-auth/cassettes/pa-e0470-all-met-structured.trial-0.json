@@ -1,23 +1,24 @@
 {
   "header": {
-    "formatVersion": 2,
+    "formatVersion": 3,
     "taskId": "pa-e0470-all-met-structured",
     "trialIndex": 0,
-    "recordedAt": "2026-10-15T12:39:19.640Z",
-    "gitSha": "52f43adbb842dd762adc907def389fc307028335",
+    "recordedAt": "2026-11-09T17:22:42.873Z",
+    "gitSha": "86f6accdf5c3131da46a58edb611ae7038fecfce",
     "axes": {
       "model": "live",
       "memory": "live"
     },
-    "chatModel": "gemini-2.5-flash",
+    "chatModel": "gemini-3.5-flash-lite",
     "embeddingModel": "gemini-embedding-001",
     "embeddingDimensions": 768
   },
   "decisions": [
     {
       "seam": "assess.criteria",
-      "requestHash": "bcc634cdb6311ec3fdffe8e6df425baf41bae021e8c5a864dd187eedf2412a27",
+      "requestHash": "322d1baca6f9d9ed95ee815324a3427c195769552f614510226392a7303f30ef",
       "request": {
+        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states something that fails the criterion,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nCite every evidence reference you relied on, exactly as given (for example \"DocumentReference/doc-1\").\nNever cite a reference that is not in the evidence list. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
         "criteria": [
           {
             "id": "e0470-osa-diagnosis",
@@ -66,10 +67,9 @@
             "criterionId": "e0470-osa-diagnosis",
             "status": "met",
             "evidence": [
-              "Condition/condition-e0470-all-met-structured-osa",
-              "DocumentReference/doc-e0470-all-met-structured-study"
+              "Condition/condition-e0470-all-met-structured-osa"
             ],
-            "rationale": "The condition record explicitly states a diagnosis of \"G47.33 Obstructive sleep apnea\", and the sleep study report confirms an \"Impression: severe obstructive sleep apnea.\""
+            "rationale": "The member has a diagnosis of obstructive sleep apnea recorded as a condition."
           },
           {
             "criterionId": "e0470-cpap-failure",
@@ -77,7 +77,7 @@
             "evidence": [
               "DocumentReference/doc-e0470-all-met-structured-trial"
             ],
-            "rationale": "The prescriber's note documents a CPAP trial from 2026-05-01 to 2026-08-15 (107 days), which is longer than 21 days. The prescriber states that \"CPAP has not been tolerated\" due to the member's inability to exhale against the pressure and repeated awakenings, and notes a residual AHI of 21 events per hour."
+            "rationale": "The record documents a trial of CPAP from 2026-05-01 to 2026-08-15 (107 days, which is at least 21 days), and the prescriber states that it was not tolerated and did not control the apnea."
           },
           {
             "criterionId": "e0470-ahi-threshold",
@@ -85,7 +85,7 @@
             "evidence": [
               "DocumentReference/doc-e0470-all-met-structured-study"
             ],
-            "rationale": "A sleep study dated 2026-04-15 reports an apnea-hypopnea index (AHI) of 42 events per hour, which is at least 18 events per hour. This study date is within 12 months of the later documented events."
+            "rationale": "The sleep study dated 2026-04-15 reports an apnea-hypopnea index of 42 events per hour, which is at least 18 events per hour."
           },
           {
             "criterionId": "e0470-bilevel-titration",
@@ -93,11 +93,11 @@
             "evidence": [
               "DocumentReference/doc-e0470-all-met-structured-titration"
             ],
-            "rationale": "A bi-level titration study dated 2026-09-03 documents that at inspiratory 16 / expiratory 10 cm H2O, the residual AHI was 3 events per hour, indicating control of the apnea at these settings."
+            "rationale": "The bi-level titration study documents that bi-level pressure at the ordered settings controlled the apnea with a residual AHI of 3 events per hour."
           }
         ]
       },
-      "latencyMs": 8633
+      "latencyMs": 1333
     }
   ]
 }

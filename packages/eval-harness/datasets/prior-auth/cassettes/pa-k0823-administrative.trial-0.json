@@ -1,15 +1,15 @@
 {
   "header": {
-    "formatVersion": 2,
+    "formatVersion": 3,
     "taskId": "pa-k0823-administrative",
     "trialIndex": 0,
-    "recordedAt": "2026-10-19T21:22:51.573Z",
-    "gitSha": "112e745ee3a51728141b721343a195ac84eb61dc",
+    "recordedAt": "2026-11-09T17:22:55.345Z",
+    "gitSha": "86f6accdf5c3131da46a58edb611ae7038fecfce",
     "axes": {
       "model": "live",
       "memory": "live"
     },
-    "chatModel": "gemini-2.5-flash",
+    "chatModel": "gemini-3.5-flash-lite",
     "embeddingModel": "gemini-embedding-001",
     "embeddingDimensions": 768
   },

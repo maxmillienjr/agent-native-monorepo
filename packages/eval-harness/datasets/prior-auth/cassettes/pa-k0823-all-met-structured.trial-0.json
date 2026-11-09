@@ -1,23 +1,24 @@
 {
   "header": {
-    "formatVersion": 2,
+    "formatVersion": 3,
     "taskId": "pa-k0823-all-met-structured",
     "trialIndex": 0,
-    "recordedAt": "2026-10-19T21:22:59.825Z",
-    "gitSha": "112e745ee3a51728141b721343a195ac84eb61dc",
+    "recordedAt": "2026-11-09T17:22:57.307Z",
+    "gitSha": "86f6accdf5c3131da46a58edb611ae7038fecfce",
     "axes": {
       "model": "live",
       "memory": "live"
     },
-    "chatModel": "gemini-2.5-flash",
+    "chatModel": "gemini-3.5-flash-lite",
     "embeddingModel": "gemini-embedding-001",
     "embeddingDimensions": 768
   },
   "decisions": [
     {
       "seam": "assess.criteria",
-      "requestHash": "17183411d5bba4953cddbb4108aafe6ea8fc598297fffec22349ed538ee0a41d",
+      "requestHash": "908fb2fab499dad5da4f1e39d7c9f25557f19580bda2a62a27d88bebbd2513ed",
       "request": {
+        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states something that fails the criterion,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nCite every evidence reference you relied on, exactly as given (for example \"DocumentReference/doc-1\").\nNever cite a reference that is not in the evidence list. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
         "criteria": [
           {
             "id": "k0823-mobility-limitation",
@@ -73,7 +74,7 @@
             "evidence": [
               "DocumentReference/doc-k0823-all-met-structured-exam"
             ],
-            "rationale": "The mobility examination documents that the member cannot toilet or prepare a meal without help, indicating a limitation that prevents completing daily activities in the home."
+            "rationale": "The mobility examination documents that the member can no longer toilet or prepare a meal without help due to mobility limitations."
           },
           {
             "criterionId": "k0823-cane-walker-insufficient",
@@ -81,7 +82,7 @@
             "evidence": [
               "DocumentReference/doc-k0823-all-met-structured-exam"
             ],
-            "rationale": "The mobility examination explicitly states that 'a walker does not resolve the limitation,' as the member only manages 15 feet with a rolling walker before stopping."
+            "rationale": "The examination states that a walker manages only 15 feet and does not resolve the limitation."
           },
           {
             "criterionId": "k0823-manual-chair-insufficient",
@@ -89,7 +90,7 @@
             "evidence": [
               "DocumentReference/doc-k0823-all-met-structured-exam"
             ],
-            "rationale": "The examination states that the member cannot self-propel a manual wheelchair more than 20 feet, which is insufficient to complete daily activities such as toileting or preparing meals within the home."
+            "rationale": "The examination states that the member cannot self-propel a manual wheelchair more than 20 feet due to grip strength limitations."
           },
           {
             "criterionId": "k0823-home-access",
@@ -97,7 +98,7 @@
             "evidence": [
               "DocumentReference/doc-k0823-all-met-structured-home"
             ],
-            "rationale": "A home assessment dated 2026-08-28 confirms that doorways (34 inches or wider), turning space (5-foot in kitchen and bathroom), and floor surfaces (level vinyl) accommodate a power wheelchair. This assessment date is within 60 days of the mobility examination (2026-09-02)."
+            "rationale": "The home assessment dated August 28, 2026 (within 60 days before the request) confirms doorways, turning space, and floor surfaces accommodate a power wheelchair."
           },
           {
             "criterionId": "k0823-safe-operation",
@@ -105,11 +106,11 @@
             "evidence": [
               "DocumentReference/doc-k0823-all-met-structured-exam"
             ],
-            "rationale": "The examination documents that the member has vision corrected to 20/30, intact judgement, and operated a demonstration joystick safely, indicating the ability to operate controls safely."
+            "rationale": "The examination documents that vision is corrected to 20/30, judgement is intact, and she operated a demonstration joystick safely."
           }
         ]
       },
-      "latencyMs": 9195
+      "latencyMs": 1730
     }
   ]
 }

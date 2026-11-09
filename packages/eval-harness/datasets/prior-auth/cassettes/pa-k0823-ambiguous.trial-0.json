@@ -1,23 +1,24 @@
 {
   "header": {
-    "formatVersion": 2,
+    "formatVersion": 3,
     "taskId": "pa-k0823-ambiguous",
     "trialIndex": 0,
-    "recordedAt": "2026-10-19T21:23:09.045Z",
-    "gitSha": "112e745ee3a51728141b721343a195ac84eb61dc",
+    "recordedAt": "2026-11-09T17:22:59.066Z",
+    "gitSha": "86f6accdf5c3131da46a58edb611ae7038fecfce",
     "axes": {
       "model": "live",
       "memory": "live"
     },
-    "chatModel": "gemini-2.5-flash",
+    "chatModel": "gemini-3.5-flash-lite",
     "embeddingModel": "gemini-embedding-001",
     "embeddingDimensions": 768
   },
   "decisions": [
     {
       "seam": "assess.criteria",
-      "requestHash": "2d4eb8f22151f85095db00a3764ffaf73c29d3054ab6d4a1f9d3f10ca35c9264",
+      "requestHash": "70d3f535c4dc877f0da29ed329c5a76d43c4d80733479178b6d9801b9dec2036",
       "request": {
+        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states something that fails the criterion,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nCite every evidence reference you relied on, exactly as given (for example \"DocumentReference/doc-1\").\nNever cite a reference that is not in the evidence list. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
         "criteria": [
           {
             "id": "k0823-mobility-limitation",
@@ -73,7 +74,7 @@
             "evidence": [
               "DocumentReference/doc-k0823-ambiguous-exam"
             ],
-            "rationale": "The mobility examination documents that the member cannot get to the bathroom or prepare a meal without help, which constitutes a limitation preventing daily activities in the home."
+            "rationale": "The mobility examination explicitly states she cannot get to the bathroom or prepare a meal without help, which prevents her from completing daily activities in the home."
           },
           {
             "criterionId": "k0823-cane-walker-insufficient",
@@ -81,7 +82,7 @@
             "evidence": [
               "DocumentReference/doc-k0823-ambiguous-exam"
             ],
-            "rationale": "The mobility examination explicitly states that a walker does not resolve the limitation."
+            "rationale": "The examination states that a walker does not resolve the limitation, as she stops after 10 feet."
           },
           {
             "criterionId": "k0823-manual-chair-insufficient",
@@ -89,7 +90,7 @@
             "evidence": [
               "DocumentReference/doc-k0823-ambiguous-exam"
             ],
-            "rationale": "The examination states that the member cannot self-propel a manual wheelchair more than 15 feet, which is insufficient to complete daily activities such as getting to the bathroom or preparing a meal."
+            "rationale": "The examination states she cannot self-propel a manual wheelchair more than 15 feet, which is insufficient to complete the daily activity."
           },
           {
             "criterionId": "k0823-home-access",
@@ -97,7 +98,7 @@
             "evidence": [
               "DocumentReference/doc-k0823-ambiguous-home"
             ],
-            "rationale": "The home assessment dated 2026-08-28 confirms that the home accommodates a power wheelchair. This date is within 60 days of the latest clinical note (2026-09-05), thus implying it would be within 60 days of a reasonable request date."
+            "rationale": "The home assessment dated 2026-08-28 (within the 60 days before the request) confirms that doorways, turning space, and floor surfaces accommodate a power wheelchair."
           },
           {
             "criterionId": "k0823-safe-operation",
@@ -105,11 +106,11 @@
             "evidence": [
               "DocumentReference/doc-k0823-ambiguous-exam"
             ],
-            "rationale": "The examination raises concerns about the member's vision and judgment, stating she was unsure of the joystick and the clinician was 'not certain she could stop reliably,' indicating a lack of documentation that she can operate the controls safely."
+            "rationale": "The examination notes that her vision may be deteriorating, she was unsure of the joystick at first, and the examiner is not certain she could stop reliably."
           }
         ]
       },
-      "latencyMs": 7483
+      "latencyMs": 1687
     }
   ]
 }

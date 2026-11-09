@@ -1,23 +1,24 @@
 {
   "header": {
-    "formatVersion": 2,
+    "formatVersion": 3,
     "taskId": "pa-e0470-contradicted",
     "trialIndex": 0,
-    "recordedAt": "2026-10-19T21:22:38.266Z",
-    "gitSha": "112e745ee3a51728141b721343a195ac84eb61dc",
+    "recordedAt": "2026-11-09T17:22:45.649Z",
+    "gitSha": "86f6accdf5c3131da46a58edb611ae7038fecfce",
     "axes": {
       "model": "live",
       "memory": "live"
     },
-    "chatModel": "gemini-2.5-flash",
+    "chatModel": "gemini-3.5-flash-lite",
     "embeddingModel": "gemini-embedding-001",
     "embeddingDimensions": 768
   },
   "decisions": [
     {
       "seam": "assess.criteria",
-      "requestHash": "b35c5180282d6c1c4545311355e350e8c4965706c77e08410b35986d775d5a9b",
+      "requestHash": "51c28b2b50fa8e1bc1c73fe93d9b1c21a8409254cb39c4c4167567079789e6de",
       "request": {
+        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states something that fails the criterion,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nCite every evidence reference you relied on, exactly as given (for example \"DocumentReference/doc-1\").\nNever cite a reference that is not in the evidence list. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
         "criteria": [
           {
             "id": "e0470-osa-diagnosis",
@@ -66,10 +67,9 @@
             "criterionId": "e0470-osa-diagnosis",
             "status": "met",
             "evidence": [
-              "Condition/condition-e0470-contradicted-osa",
-              "DocumentReference/doc-e0470-contradicted-study"
+              "Condition/condition-e0470-contradicted-osa"
             ],
-            "rationale": "The member has a diagnosis of obstructive sleep apnea, as indicated by the condition record and confirmed in the sleep study report."
+            "rationale": "The member has a recorded condition of obstructive sleep apnea."
           },
           {
             "criterionId": "e0470-cpap-failure",
@@ -77,7 +77,7 @@
             "evidence": [
               "DocumentReference/doc-e0470-contradicted-trial"
             ],
-            "rationale": "The continuous positive airway pressure (CPAP) trial lasted only 10 days (from 2026-08-06 to 2026-08-16), which does not meet the requirement of at least 21 days."
+            "rationale": "The record documents a CPAP trial of only 10 days (from 2026-08-06 to 2026-08-16), which does not meet the requirement of at least 21 days."
           },
           {
             "criterionId": "e0470-ahi-threshold",
@@ -85,7 +85,7 @@
             "evidence": [
               "DocumentReference/doc-e0470-contradicted-study"
             ],
-            "rationale": "A sleep study dated 2026-04-15 reports an apnea-hypopnea index (AHI) of 42 events per hour, which is greater than the required threshold of 18 events per hour and is within 12 months of the current date."
+            "rationale": "The sleep study dated within the 12 months before the request reports an AHI of 42 events per hour, which is at least 18."
           },
           {
             "criterionId": "e0470-bilevel-titration",
@@ -93,11 +93,11 @@
             "evidence": [
               "DocumentReference/doc-e0470-contradicted-titration"
             ],
-            "rationale": "A bi-level titration study dated 2026-09-03 documents that at inspiratory 16 / expiratory 10 cm H2O, the residual AHI was 3 events per hour, indicating control of the apnea at the ordered settings."
+            "rationale": "The titration study documents that bi-level pressure at the ordered settings (16/10 cm H2O) controlled the apnea, reducing residual AHI to 3 events per hour."
           }
         ]
       },
-      "latencyMs": 6970
+      "latencyMs": 1505
     }
   ]
 }

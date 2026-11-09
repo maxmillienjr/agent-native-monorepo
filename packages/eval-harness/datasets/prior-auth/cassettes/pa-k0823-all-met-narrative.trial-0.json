@@ -1,23 +1,24 @@
 {
   "header": {
-    "formatVersion": 2,
+    "formatVersion": 3,
     "taskId": "pa-k0823-all-met-narrative",
     "trialIndex": 0,
-    "recordedAt": "2026-10-19T21:22:51.601Z",
-    "gitSha": "112e745ee3a51728141b721343a195ac84eb61dc",
+    "recordedAt": "2026-11-09T17:22:55.375Z",
+    "gitSha": "86f6accdf5c3131da46a58edb611ae7038fecfce",
     "axes": {
       "model": "live",
       "memory": "live"
     },
-    "chatModel": "gemini-2.5-flash",
+    "chatModel": "gemini-3.5-flash-lite",
     "embeddingModel": "gemini-embedding-001",
     "embeddingDimensions": 768
   },
   "decisions": [
     {
       "seam": "assess.criteria",
-      "requestHash": "a78dde3e166a21b3555304f22670e3c48a9e0207992c0eb2525f35973a6fa846",
+      "requestHash": "dd116cd414aa6b8da3a1c54c3022dff8003a9553829d9f0294f9a17c56a38fc5",
       "request": {
+        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states something that fails the criterion,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nCite every evidence reference you relied on, exactly as given (for example \"DocumentReference/doc-1\").\nNever cite a reference that is not in the evidence list. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
         "criteria": [
           {
             "id": "k0823-mobility-limitation",
@@ -65,7 +66,7 @@
             "evidence": [
               "DocumentReference/doc-k0823-all-met-narrative-exam"
             ],
-            "rationale": "The mobility examination documents that the member's knees give way after a few steps, preventing him from getting to the toilet in time and standing at the stove to cook, which are daily activities."
+            "rationale": "The mobility examination documents that the member's knees give way, preventing him from reaching the toilet in time and stopping him from cooking because he cannot stand at the stove."
           },
           {
             "criterionId": "k0823-cane-walker-insufficient",
@@ -73,7 +74,7 @@
             "evidence": [
               "DocumentReference/doc-k0823-all-met-narrative-exam"
             ],
-            "rationale": "The examination states that the member uses a cane and a walker, but with either, he only gets as far as the kitchen door before having to sit down, indicating neither resolves the limitation."
+            "rationale": "The examination states that with a cane or walker he gets as far as the kitchen door and has to sit down, so neither one fixes the limitation."
           },
           {
             "criterionId": "k0823-manual-chair-insufficient",
@@ -81,7 +82,7 @@
             "evidence": [
               "DocumentReference/doc-k0823-all-met-narrative-exam"
             ],
-            "rationale": "The examination documents that the member cannot push himself in his old manual chair past the end of the bed due to prior shoulder replacements, indicating he cannot propel it far enough to complete daily activities."
+            "rationale": "The examination states that due to prior shoulder replacements, he cannot push himself in his old manual chair past the end of the bed."
           },
           {
             "criterionId": "k0823-home-access",
@@ -89,7 +90,7 @@
             "evidence": [
               "DocumentReference/doc-k0823-all-met-narrative-exam"
             ],
-            "rationale": "A home assessment, conducted 'the same week' as the examination (September 4, 2026), confirmed that the house has wide doorways, room to turn in every room, no rugs, and no steps, accommodating a power wheelchair. This date is assumed to be within 60 days of the request."
+            "rationale": "The supplier measured the house the same week as the exam (exam dated 2026-09-04), confirming wide doorways, turning room in every room, no rugs, no steps, and that a power chair will fit."
           },
           {
             "criterionId": "k0823-safe-operation",
@@ -97,11 +98,11 @@
             "evidence": [
               "DocumentReference/doc-k0823-all-met-narrative-exam"
             ],
-            "rationale": "The examination documents that the member reads the paper without glasses (vision), has sound judgment, and drove a demonstration chair around the living room without touching a wall, indicating sufficient hand function to operate controls safely."
+            "rationale": "The examination documents that he reads the paper without glasses, his judgement is sound, and he drove the demonstration chair round the living room without touching a wall."
           }
         ]
       },
-      "latencyMs": 8202
+      "latencyMs": 1903
     }
   ]
 }

@@ -1,23 +1,24 @@
 {
   "header": {
-    "formatVersion": 2,
+    "formatVersion": 3,
     "taskId": "pa-e0601-one-missing",
     "trialIndex": 0,
-    "recordedAt": "2026-10-12T17:12:58.361Z",
-    "gitSha": "fba57635a195906a13aa663ad253439b319cd19e",
+    "recordedAt": "2026-11-09T17:22:54.035Z",
+    "gitSha": "86f6accdf5c3131da46a58edb611ae7038fecfce",
     "axes": {
       "model": "live",
       "memory": "live"
     },
-    "chatModel": "gemini-2.5-flash",
+    "chatModel": "gemini-3.5-flash-lite",
     "embeddingModel": "gemini-embedding-001",
     "embeddingDimensions": 768
   },
   "decisions": [
     {
       "seam": "assess.criteria",
-      "requestHash": "c531e3cd0780b4773a12ae2e7ffa968c9d8d2f2e5f390ed2921a25d909c7a436",
+      "requestHash": "cd4d7c853a5bb9ed8e2c9c31a212db7d4404077a09fb4b89b157f7e24c8e89fa",
       "request": {
+        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states something that fails the criterion,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nCite every evidence reference you relied on, exactly as given (for example \"DocumentReference/doc-1\").\nNever cite a reference that is not in the evidence list. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
         "criteria": [
           {
             "id": "e0601-osa-diagnosis",
@@ -62,11 +63,9 @@
             "criterionId": "e0601-osa-diagnosis",
             "status": "met",
             "evidence": [
-              "Condition/condition-e0601-one-missing-osa",
-              "DocumentReference/doc-e0601-one-missing-study",
-              "DocumentReference/doc-e0601-one-missing-visit"
+              "Condition/condition-e0601-one-missing-osa"
             ],
-            "rationale": "The condition record explicitly states a diagnosis of G47.33 Obstructive sleep apnea. The sleep study report's impression also notes obstructive sleep apnea, and the prescriber's note acknowledges the diagnosis."
+            "rationale": "The member has a diagnosis of obstructive sleep apnea recorded as a condition."
           },
           {
             "criterionId": "e0601-ahi-threshold",
@@ -74,13 +73,13 @@
             "evidence": [
               "DocumentReference/doc-e0601-one-missing-study"
             ],
-            "rationale": "A sleep study dated 2026-08-04 (within 12 months) reports an AHI of 31 events per hour, which meets the requirement of at least 18 events per hour."
+            "rationale": "The sleep study report dated 2026-08-04 reports an AHI of 31 events per hour, which is at least 18."
           },
           {
             "criterionId": "e0601-conservative-trial",
             "status": "insufficient",
             "evidence": [],
-            "rationale": "The provided documents do not contain any information regarding a trial of positional therapy or a weight-management program, their duration, or their outcome."
+            "rationale": "There is no documentation of positional therapy or a weight-management programme for at least 21 days."
           },
           {
             "criterionId": "e0601-prescriber-order",
@@ -88,11 +87,11 @@
             "evidence": [
               "DocumentReference/doc-e0601-one-missing-visit"
             ],
-            "rationale": "The prescriber's follow-up note includes an order for a CPAP device with a fixed pressure of 10 cm H2O, signed electronically by the prescriber on 2026-09-11."
+            "rationale": "A signed prescriber order names the CPAP device and its fixed pressure of 10 cm H2O."
           }
         ]
       },
-      "latencyMs": 5879
+      "latencyMs": 1277
     }
   ]
 }

@@ -1,23 +1,24 @@
 {
   "header": {
-    "formatVersion": 2,
+    "formatVersion": 3,
     "taskId": "pa-e0260-all-met-narrative",
     "trialIndex": 0,
-    "recordedAt": "2026-10-19T21:24:02.093Z",
-    "gitSha": "a29863a4e6a9a705c8d45b233648b6c6884d9212",
+    "recordedAt": "2026-11-09T17:22:34.898Z",
+    "gitSha": "86f6accdf5c3131da46a58edb611ae7038fecfce",
     "axes": {
       "model": "live",
       "memory": "live"
     },
-    "chatModel": "gemini-2.5-flash",
+    "chatModel": "gemini-3.5-flash-lite",
     "embeddingModel": "gemini-embedding-001",
     "embeddingDimensions": 768
   },
   "decisions": [
     {
       "seam": "assess.criteria",
-      "requestHash": "fde9ac791497dba040e78645aa3b7af6e8ed8321d37af5306b2f9d7bb6a10cab",
+      "requestHash": "bc84c03f02e64a4754e74b10226581c4d96e0ccb77b079793e7e4178086187fb",
       "request": {
+        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states something that fails the criterion,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nCite every evidence reference you relied on, exactly as given (for example \"DocumentReference/doc-1\").\nNever cite a reference that is not in the evidence list. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
         "criteria": [
           {
             "id": "e0260-positioning-need",
@@ -55,16 +56,16 @@
             "evidence": [
               "DocumentReference/doc-e0260-all-met-narrative-visit"
             ],
-            "rationale": "The prescriber's note documents that the member has been sleeping propped at 'forty degrees' and states that 'An ordinary bed will not hold him there,' which meets the requirement for head elevation of 35 degrees or more or another position an ordinary bed cannot hold."
+            "rationale": "The prescriber documents that the member must be positioned with the head raised at forty degrees, which an ordinary bed cannot hold."
           },
           {
             "criterionId": "e0260-linked-diagnosis",
             "status": "met",
             "evidence": [
-              "DocumentReference/doc-e0260-all-met-narrative-visit",
-              "Condition/condition-e0260-all-met-narrative-resp"
+              "Condition/condition-e0260-all-met-narrative-resp",
+              "DocumentReference/doc-e0260-all-met-narrative-visit"
             ],
-            "rationale": "The prescriber's note explicitly links the positioning need to 'respiratory failure,' which is supported by the recorded diagnosis of 'Chronic respiratory failure with hypoxia (J96.11).'"
+            "rationale": "The member has a recorded diagnosis of chronic respiratory failure with hypoxia, which the prescriber links to the positioning need ('His lungs are the reason for all of this...')."
           },
           {
             "criterionId": "e0260-frequent-adjustment",
@@ -72,11 +73,11 @@
             "evidence": [
               "DocumentReference/doc-e0260-all-met-narrative-visit"
             ],
-            "rationale": "The prescriber's note indicates that the member 'needs to go up and down repeatedly, sometimes right away' and that 'his wife cannot turn a crank fast enough,' thereby demonstrating the need for motorized adjustments that a manual crank cannot provide."
+            "rationale": "The prescriber's note states that at night he needs to go up and down repeatedly, sometimes right away when he coughs, and his wife cannot turn a crank fast enough."
           }
         ]
       },
-      "latencyMs": 4715
+      "latencyMs": 1481
     }
   ]
 }

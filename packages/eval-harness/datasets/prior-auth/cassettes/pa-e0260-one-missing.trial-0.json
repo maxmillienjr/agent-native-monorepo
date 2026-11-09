@@ -1,23 +1,24 @@
 {
   "header": {
-    "formatVersion": 2,
+    "formatVersion": 3,
     "taskId": "pa-e0260-one-missing",
     "trialIndex": 0,
-    "recordedAt": "2026-10-19T21:24:21.160Z",
-    "gitSha": "a29863a4e6a9a705c8d45b233648b6c6884d9212",
+    "recordedAt": "2026-11-09T17:22:40.318Z",
+    "gitSha": "86f6accdf5c3131da46a58edb611ae7038fecfce",
     "axes": {
       "model": "live",
       "memory": "live"
     },
-    "chatModel": "gemini-2.5-flash",
+    "chatModel": "gemini-3.5-flash-lite",
     "embeddingModel": "gemini-embedding-001",
     "embeddingDimensions": 768
   },
   "decisions": [
     {
       "seam": "assess.criteria",
-      "requestHash": "0c2a3f1e4e429225078568694fc9493a5ab528b560d11cd11184e3f5a40f4b40",
+      "requestHash": "0c898c78199e576b0a20ad69c91378add06a9da84eab13215de01b4c7548501e",
       "request": {
+        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states something that fails the criterion,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nCite every evidence reference you relied on, exactly as given (for example \"DocumentReference/doc-1\").\nNever cite a reference that is not in the evidence list. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
         "criteria": [
           {
             "id": "e0260-positioning-need",
@@ -55,16 +56,15 @@
             "evidence": [
               "DocumentReference/doc-e0260-one-missing-visit"
             ],
-            "rationale": "The prescriber's note states that the member 'must sleep with the head raised at 45 degrees, which pillows cannot hold.' This meets the requirement of needing the head raised 35 degrees or more in a position an ordinary bed cannot hold."
+            "rationale": "The prescriber notes that the member must sleep with the head raised at 45 degrees, which pillows cannot hold."
           },
           {
             "criterionId": "e0260-linked-diagnosis",
             "status": "met",
             "evidence": [
-              "Condition/condition-e0260-one-missing-chf",
               "DocumentReference/doc-e0260-one-missing-visit"
             ],
-            "rationale": "The member has a recorded diagnosis of 'Chronic systolic (congestive) heart failure.' The prescriber's note explicitly links the positioning need by stating, 'The positioning need follows from her heart failure.'"
+            "rationale": "The clinical note explicitly states that the positioning need follows from her heart failure."
           },
           {
             "criterionId": "e0260-frequent-adjustment",
@@ -72,11 +72,11 @@
             "evidence": [
               "DocumentReference/doc-e0260-one-missing-visit"
             ],
-            "rationale": "The prescriber's note mentions a required sleeping position, but it does not state that the position must change several times a day or without delay, nor does it indicate that a manual crank cannot achieve the necessary adjustments."
+            "rationale": "The clinical note mentions that she must sleep with the head raised at 45 degrees, but does not state that the position must change several times a day or without delay in a way a manual crank cannot do."
           }
         ]
       },
-      "latencyMs": 5538
+      "latencyMs": 1165
     }
   ]
 }

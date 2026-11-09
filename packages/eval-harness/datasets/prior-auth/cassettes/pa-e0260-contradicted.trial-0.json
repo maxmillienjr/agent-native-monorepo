@@ -1,23 +1,24 @@
 {
   "header": {
-    "formatVersion": 2,
+    "formatVersion": 3,
     "taskId": "pa-e0260-contradicted",
     "trialIndex": 0,
-    "recordedAt": "2026-10-19T21:24:16.156Z",
-    "gitSha": "a29863a4e6a9a705c8d45b233648b6c6884d9212",
+    "recordedAt": "2026-11-09T17:22:39.032Z",
+    "gitSha": "86f6accdf5c3131da46a58edb611ae7038fecfce",
     "axes": {
       "model": "live",
       "memory": "live"
     },
-    "chatModel": "gemini-2.5-flash",
+    "chatModel": "gemini-3.5-flash-lite",
     "embeddingModel": "gemini-embedding-001",
     "embeddingDimensions": 768
   },
   "decisions": [
     {
       "seam": "assess.criteria",
-      "requestHash": "6f1c99c94c186b404837372ba03d180a342d7ed062d822a01110ecc31459f928",
+      "requestHash": "3f8c72a02f1b29f11024d8d3d8dcc1646398b7361d4d5febfa5d0c4621d828dd",
       "request": {
+        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states something that fails the criterion,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nCite every evidence reference you relied on, exactly as given (for example \"DocumentReference/doc-1\").\nNever cite a reference that is not in the evidence list. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
         "criteria": [
           {
             "id": "e0260-positioning-need",
@@ -55,16 +56,15 @@
             "evidence": [
               "DocumentReference/doc-e0260-contradicted-visit"
             ],
-            "rationale": "The prescriber documents that the member sleeps with the head raised about 20 degrees, which does not meet the requirement of 35 degrees or more. There is no documentation of another position an ordinary bed cannot hold."
+            "rationale": "The evidence states that the member sleeps comfortably with the head raised about 20 degrees, which fails the requirement that the member must be positioned with the head raised 35 degrees or more, or in another position an ordinary bed cannot hold."
           },
           {
             "criterionId": "e0260-linked-diagnosis",
             "status": "met",
             "evidence": [
-              "Condition/condition-e0260-contradicted-chf",
               "DocumentReference/doc-e0260-contradicted-visit"
             ],
-            "rationale": "The member has a recorded diagnosis of chronic systolic heart failure, and the prescriber explicitly states that the positioning need follows from this heart failure."
+            "rationale": "The prescriber's note explicitly states that the positioning need follows from his heart failure."
           },
           {
             "criterionId": "e0260-frequent-adjustment",
@@ -72,11 +72,11 @@
             "evidence": [
               "DocumentReference/doc-e0260-contradicted-visit"
             ],
-            "rationale": "The prescriber's note states the member wants to raise and lower the head several times a night without getting up, immediately when he wakes, and that he cannot work a manual crank."
+            "rationale": "The prescriber's note states that he wants to be able to raise and lower the head several times a night immediately when he wakes and cannot work a manual crank."
           }
         ]
       },
-      "latencyMs": 4892
+      "latencyMs": 1253
     }
   ]
 }

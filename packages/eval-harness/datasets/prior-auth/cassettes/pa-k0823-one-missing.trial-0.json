@@ -1,23 +1,24 @@
 {
   "header": {
-    "formatVersion": 2,
+    "formatVersion": 3,
     "taskId": "pa-k0823-one-missing",
     "trialIndex": 0,
-    "recordedAt": "2026-10-19T21:23:24.141Z",
-    "gitSha": "112e745ee3a51728141b721343a195ac84eb61dc",
+    "recordedAt": "2026-11-09T17:23:02.377Z",
+    "gitSha": "86f6accdf5c3131da46a58edb611ae7038fecfce",
     "axes": {
       "model": "live",
       "memory": "live"
     },
-    "chatModel": "gemini-2.5-flash",
+    "chatModel": "gemini-3.5-flash-lite",
     "embeddingModel": "gemini-embedding-001",
     "embeddingDimensions": 768
   },
   "decisions": [
     {
       "seam": "assess.criteria",
-      "requestHash": "2071e7d98c8da625d9653961fe1455e0462cb1461965597287b482db30088364",
+      "requestHash": "d0a0328e1927a23ef9374434bf83df968bcae20ee2c1454597f5d930608400cc",
       "request": {
+        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states something that fails the criterion,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nCite every evidence reference you relied on, exactly as given (for example \"DocumentReference/doc-1\").\nNever cite a reference that is not in the evidence list. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
         "criteria": [
           {
             "id": "k0823-mobility-limitation",
@@ -69,7 +70,7 @@
             "evidence": [
               "DocumentReference/doc-k0823-one-missing-exam"
             ],
-            "rationale": "The mobility examination explicitly states the member cannot toilet or prepare a meal without help, which are daily activities."
+            "rationale": "The clinical note documents that the member can no longer toilet or prepare a meal without help."
           },
           {
             "criterionId": "k0823-cane-walker-insufficient",
@@ -77,7 +78,7 @@
             "evidence": [
               "DocumentReference/doc-k0823-one-missing-exam"
             ],
-            "rationale": "The mobility examination explicitly states that a walker does not resolve the limitation, as the member only manages 15 feet before stopping with a rolling walker."
+            "rationale": "The examination states that with a rolling walker she manages 15 feet before stopping and that a walker does not resolve the limitation."
           },
           {
             "criterionId": "k0823-manual-chair-insufficient",
@@ -85,13 +86,13 @@
             "evidence": [
               "DocumentReference/doc-k0823-one-missing-exam"
             ],
-            "rationale": "The examination documents that the member cannot self-propel a manual wheelchair more than 20 feet, which is insufficient to complete daily activities like toileting or preparing a meal."
+            "rationale": "The examination notes that with grip strength of 9 kg right and 7 kg left, she cannot self-propel a manual wheelchair more than 20 feet."
           },
           {
             "criterionId": "k0823-home-access",
             "status": "insufficient",
             "evidence": [],
-            "rationale": "No evidence of a home assessment confirming that the home accommodates a power wheelchair was provided."
+            "rationale": "There is no home assessment provided in the evidence to confirm that doorways, turning space, and floor surfaces accommodate a power wheelchair."
           },
           {
             "criterionId": "k0823-safe-operation",
@@ -99,11 +100,11 @@
             "evidence": [
               "DocumentReference/doc-k0823-one-missing-exam"
             ],
-            "rationale": "The mobility examination documents that the member's vision is corrected to 20/30, judgement is intact, and she operated a demonstration joystick safely, indicating sufficient hand function."
+            "rationale": "The examination documents that her vision is corrected to 20/30, judgement is intact, and she operated a demonstration joystick safely."
           }
         ]
       },
-      "latencyMs": 7828
+      "latencyMs": 1356
     }
   ]
 }
