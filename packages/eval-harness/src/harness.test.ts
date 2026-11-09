@@ -76,7 +76,7 @@ function task(
     id: 'memory-recall-001',
     description: 'a task',
     input: {},
-    seeds: { neo4j: [], relationships: [], pgvector: [], graphFacts: [] },
+    seeds: { pgvector: [] },
     graders,
     ...overrides,
   };

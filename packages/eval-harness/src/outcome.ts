@@ -3,7 +3,7 @@
  *
  * An agent can produce a plausible answer while writing nothing, and only an
  * assertion against persisted state catches that. These are counts read from
- * Postgres, Neo4j and pgvector *after* the run, through the read surface in
+ * Postgres and pgvector *after* the run, through the read surface in
  * `packages/memory-core` — the harness never opens a pool of its own. Reviewer
  * checklist rule 4 forbids database calls outside `memory-core`, and the reason
  * is not stylistic: the nightly seed script, since deleted, recorded that
@@ -23,8 +23,6 @@ export interface MemoryOutcome {
   readonly episodeRowsForRun: number;
   /** `semantic_facts` rows whose `episode_id` is this run's id. */
   readonly factRowsForRun: number;
-  /** `(:Fact {episodeId})` nodes for this run. */
-  readonly factNodesForRun: number;
   /**
    * The fact texts `distill` produced on this run: what `reflect` was handed
    * to promote to semantic memory (P4-B).

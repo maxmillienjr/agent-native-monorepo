@@ -30,7 +30,6 @@ function outcome(overrides: Partial<MemoryOutcome> = {}): MemoryOutcome {
     sessionId: '550e8400-e29b-41d4-a716-446655440000',
     episodeRowsForRun: 2,
     factRowsForRun: 1,
-    factNodesForRun: 1,
     extractedFactTexts: ['LangGraph is used for building stateful agent workflows.'],
     ...overrides,
   };

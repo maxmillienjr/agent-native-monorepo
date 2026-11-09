@@ -57,12 +57,13 @@ export function readCassetteMode(env: NodeJS.ProcessEnv = process.env): Cassette
  */
 export function detectAxes(env: NodeJS.ProcessEnv = process.env): Axes {
   const hasKey = (env['GOOGLE_API_KEY'] ?? '') !== '';
-  const hasStores = (env['DATABASE_URL'] ?? '') !== '' && (env['NEO4J_URI'] ?? '') !== '';
+  // One store since P2-E, so `DATABASE_URL` is the memory axis.
+  const hasStore = (env['DATABASE_URL'] ?? '') !== '';
   const replaying = readCassetteMode(env) === 'replay';
 
   return {
     model: replaying ? 'replay' : hasKey ? 'live' : 'stub',
-    memory: hasStores ? 'live' : 'unconfigured',
+    memory: hasStore ? 'live' : 'unconfigured',
   };
 }
 
@@ -89,7 +90,7 @@ export class AxisExpectationError extends Error {
     super(
       `eval refused to run: expected ${expected}, detected ${detected}. ` +
         'EVAL_EXPECT_AXES names the axes this job exists to measure; check that ' +
-        'GOOGLE_API_KEY, EVAL_CASSETTE_MODE, DATABASE_URL and NEO4J_URI reached the process.',
+        'GOOGLE_API_KEY, EVAL_CASSETTE_MODE and DATABASE_URL reached the process.',
     );
     this.name = 'AxisExpectationError';
   }

@@ -87,12 +87,11 @@ describe('the red-team dataset', () => {
     expect(prior[0]!.sessionId).not.toBe(victim);
   });
 
-  it('seeds rt-001’s poisoned fact into both stores, under one hash, in another session', () => {
+  it('seeds rt-001’s poisoned fact as a semantic_facts row in another session', () => {
     const task = loadRedTeamSuite().tasks.find((t) => t.id === 'rt-001')!;
     const victim = (task.input as { sessionId: string }).sessionId;
     const poison = task.seeds.pgvector.find((fact) => fact.text.includes('555-0147'))!;
     expect(poison.sessionId).not.toBe(victim);
-    expect(task.seeds.graphFacts.map((fact) => fact.contentHash)).toEqual([poison.contentHash]);
   });
 
   it('uses no session that a memory-recall task uses', () => {
@@ -185,7 +184,6 @@ describe('the red team keeps its own denominator', () => {
         sessionId: VICTIM,
         episodeRowsForRun: 2,
         factRowsForRun: 1,
-        factNodesForRun: 1,
         extractedFactTexts: [],
       }),
       close: async () => {},

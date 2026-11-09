@@ -17,6 +17,7 @@ import {
   taskFromSpec,
 } from './dataset.js';
 import { skippedTasks } from './axes.js';
+import { TaskSeedsSchema } from './types.js';
 
 const minimalSpec = {
   id: 'minimal',
@@ -41,10 +42,10 @@ describe('the shipped dataset', () => {
   it('loads memory-recall-001, migrated from run-fixture-001.json', () => {
     const suite = loadMemoryRecallSuite();
     const task = suite.tasks.find((t) => t.id === 'memory-recall-001')!;
-    // expectedSeeds is retained exactly as the fixture carried it.
-    expect(task.seeds.neo4j.map((c) => c.id)).toEqual(['concept-a', 'concept-b']);
+    // expectedSeeds is retained as the fixture carried it, less the graph's
+    // seeds, which went with the graph (P2-E).
+    expect(Object.keys(task.seeds)).toEqual(['pgvector']);
     expect(task.seeds.pgvector).toHaveLength(1);
-    expect(task.seeds.relationships).toHaveLength(1);
   });
 
   it('runs five trials per task by default', () => {
@@ -198,7 +199,7 @@ describe('the shipped dataset', () => {
         sessionId: '550e8400-e29b-41d4-a716-446655440000',
         messages: [{ role: 'user', content: 'hello' }],
       },
-      expectedSeeds: { neo4j: [], relationships: [], pgvector: [], graphFacts: [] },
+      expectedSeeds: { pgvector: [] },
       expectedOutcome: 'success',
       assertions: { outcomeMustBe: 'success' },
     });
@@ -206,36 +207,23 @@ describe('the shipped dataset', () => {
     expect(task.graders.map((g) => g.name)).toEqual(['outcome_must_be']);
   });
 
-  it('defaults graphFacts to empty, so a task that predates it parses unchanged', () => {
-    const spec = TaskSpecSchema.parse({
-      ...minimalSpec,
-      expectedSeeds: { neo4j: [], relationships: [], pgvector: [] },
-    });
-    expect(spec.expectedSeeds.graphFacts).toEqual([]);
-    expect(TaskSpecSchema.parse(minimalSpec).expectedSeeds.graphFacts).toEqual([]);
+  it('refuses a task file that still names a graph seed key (P2-E)', () => {
+    // Strict, and `pgvector` is its only key, so every other key is refused,
+    // the graph's included: a graph seed that would otherwise be ignored in
+    // silence fails the load instead.
+    expect(Object.keys(TaskSeedsSchema.shape)).toEqual(['pgvector']);
+    for (const key of ['relationships', 'graphFacts']) {
+      const result = TaskSpecSchema.safeParse({
+        ...minimalSpec,
+        expectedSeeds: { pgvector: [], [key]: [] },
+      });
+      expect(result.success).toBe(false);
+      expect(result.error?.issues[0]).toMatchObject({ code: 'unrecognized_keys', keys: [key] });
+    }
   });
 
-  it('accepts graph facts, each naming at least one concept to mention', () => {
-    const graphFact = {
-      contentHash: 'sha256-graph-fact',
-      text: 'Only the graph holds this.',
-      episodeId: '550e8400-e29b-41d4-a716-446655440010',
-      entityIds: ['langgraph'],
-    };
-    const spec = TaskSpecSchema.parse({
-      ...minimalSpec,
-      expectedSeeds: { graphFacts: [graphFact] },
-    });
-    expect(spec.expectedSeeds.graphFacts).toEqual([graphFact]);
-
-    // A graph fact that mentions nothing is unreachable by `expandFromSeeds`,
-    // so a task that declares one is declaring a seed that cannot be read.
-    expect(() =>
-      TaskSpecSchema.parse({
-        ...minimalSpec,
-        expectedSeeds: { graphFacts: [{ ...graphFact, entityIds: [] }] },
-      }),
-    ).toThrow();
+  it('defaults the seed to an empty pgvector list', () => {
+    expect(TaskSpecSchema.parse(minimalSpec).expectedSeeds).toEqual({ pgvector: [] });
   });
 
   it('narrows the suite to EVAL_TASKS, in suite order', () => {

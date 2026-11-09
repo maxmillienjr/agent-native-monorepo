@@ -21,7 +21,7 @@ import { OutcomeSchema, type Message } from '@repo/shared-types';
  *
  * `RunsService` picks live Gemini dependencies when `GOOGLE_API_KEY` is set and
  * a canned stub set otherwise; `MemoryModule` resolves every adapter to `null`
- * when `DATABASE_URL` and `NEO4J_URI` are absent, and `RunsService` substitutes
+ * when `DATABASE_URL` is absent, and `RunsService` substitutes
  * no-op writers. Both stub paths are load-bearing — a clone with no `.env` has
  * to serve the quickstart curls — so the harness cannot remove them. What it
  * can do is refuse to report a number earned against them.
@@ -276,8 +276,8 @@ export type GraderKind = 'code' | 'model' | 'human';
  *
  * Open by design: what counts as "the environment" belongs to the system under
  * test, and this package holds no opinion beyond insisting that a grader be
- * given one. `MemoryOutcome` is this system's — counts read from Postgres,
- * Neo4j and pgvector after the run. Every generic below defaults to it, so a
+ * given one. `MemoryOutcome` is this system's — counts read from Postgres
+ * and pgvector after the run. Every generic below defaults to it, so a
  * consumer that does not care about outcomes writes `Grader` and not
  * `Grader<unknown>`.
  */
@@ -294,57 +294,26 @@ export interface Grader<TOutcome = Outcome> {
 // --- Task and Suite --------------------------------------------------------
 
 /** The seeded state a task is graded against, restored before every trial. */
-export const TaskSeedsSchema = z.object({
-  neo4j: z
-    .array(z.object({ id: z.string(), label: z.string(), description: z.string().optional() }))
-    .default([]),
-  relationships: z
-    .array(
-      z.object({
-        fromId: z.string(),
-        toId: z.string(),
-        type: z.string(),
-        confidence: z.number().min(0).max(1),
-        episodeId: z.string().uuid(),
-      }),
-    )
-    .default([]),
-  pgvector: z
-    .array(
-      z.object({
-        contentHash: z.string(),
-        text: z.string(),
-        episodeId: z.string().uuid(),
-        sessionId: z.string().uuid(),
-      }),
-    )
-    .default([]),
+export const TaskSeedsSchema = z
+  .object({
+    pgvector: z
+      .array(
+        z.object({
+          contentHash: z.string(),
+          text: z.string(),
+          episodeId: z.string().uuid(),
+          sessionId: z.string().uuid(),
+        }),
+      )
+      .default([]),
+  })
   /**
-   * Facts written to the graph only, each linked by `MENTIONS` to the concepts
-   * in `entityIds`.
-   *
-   * Without it no task can reach the graph retriever: `expandFromSeeds`
-   * returns `:Fact` nodes, and `neo4j` and `relationships` write none. A fact
-   * here and not in `pgvector` is one only the graph can return, which is what
-   * lets a grader attribute it.
+   * Strict, so a seed key nothing writes is refused at load rather than
+   * ignored. The graph's three seed keys went with the graph (P2-E), and a
+   * task file that still names one would otherwise run as though its graph
+   * seed had landed.
    */
-  graphFacts: z
-    .array(
-      z.object({
-        contentHash: z.string(),
-        text: z.string(),
-        episodeId: z.string().uuid(),
-        entityIds: z.array(z.string()).min(1),
-        /**
-         * The session the `:Fact` is written under. Omitted, it is the graded
-         * input's. A cross-session red-team case names the attacker's (P4-B),
-         * because a graph read is scoped to the session a `:Fact` carries.
-         */
-        sessionId: z.string().uuid().optional(),
-      }),
-    )
-    .default([]),
-});
+  .strict();
 export type TaskSeeds = z.infer<typeof TaskSeedsSchema>;
 
 export interface Task<TOutcome = Outcome> {

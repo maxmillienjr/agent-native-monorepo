@@ -4,7 +4,7 @@
   "retrievalPath": "vector",
   "requires": { "model": ["live", "replay"] },
   "budgets": { "inputTokens": 4400, "outputTokens": 10200, "modelCalls": 5 },
-  "notes": "The task the first one does not cover: whether the agent reaches for the tool it has. `act` asks the model to pick a tool or return null, and the run is graded on tool_trajectory_recall — the reference names web-search and the trial has to make that call and have it succeed. Nothing is rigged: the tool is registered, the question is one no seeded fact answers, and the prompt says a tool may be selected. Retrieval is still the vector path, for the same reason memory-recall-001 is: the seed writes no :Fact, so expandFromSeeds has nothing to return. `requires` names the axes on which that grading means anything: the stub model's selectTool returns null for every input, so a 0 scored there is a property of the fixture rather than of the agent, and the harness skips the task instead of averaging it in. It is a set rather than `live` alone so a replayed run — P1-B — needs no edit here. The budgets are per trial and come from P4-B's recording of 2026-11-05 by P1-F's rule: inputTokens is the recorded input x 1.5 and outputTokens the recorded output x 2, each rounded up to the next hundred, and modelCalls is 2 + maxSteps, the most today's graph can make. Recorded: 2907 input and 5065 output tokens over 5 calls, 4387 of them thinking. The trial searches twice, each a different query, then selects nothing, because the fixture's web-search echoes its query and answers nothing; P4-C's recording of 2026-10-26 searched three times. The duplicate guard does not fire.",
+  "notes": "The task the first one does not cover: whether the agent reaches for the tool it has. `act` asks the model to pick a tool or return null, and the run is graded on tool_trajectory_recall — the reference names web-search and the trial has to make that call and have it succeed. Nothing is rigged: the tool is registered, the question is one no seeded fact answers, and the prompt says a tool may be selected. Retrieval is the vector path, the only one a run has. `requires` names the axes on which that grading means anything: the stub model's selectTool returns null for every input, so a 0 scored there is a property of the fixture rather than of the agent, and the harness skips the task instead of averaging it in. It is a set rather than `live` alone so a replayed run — P1-B — needs no edit here. The budgets are per trial and come from P4-B's recording of 2026-11-05 by P1-F's rule: inputTokens is the recorded input x 1.5 and outputTokens the recorded output x 2, each rounded up to the next hundred, and modelCalls is 2 + maxSteps, the most today's graph can make. Recorded: 2907 input and 5065 output tokens over 5 calls, 4387 of them thinking. The trial searches twice, each a different query, then selects nothing, because the fixture's web-search echoes its query and answers nothing; P4-C's recording of 2026-10-26 searched three times. The duplicate guard does not fire.",
   "input": {
     "sessionId": "550e8400-e29b-41d4-a716-4466554400b0",
     "messages": [
@@ -19,13 +19,6 @@
     }
   },
   "expectedSeeds": {
-    "neo4j": [
-      {
-        "id": "concept-tooling",
-        "label": "Concept Tooling",
-        "description": "A generic test concept for the tool-use task."
-      }
-    ],
     "pgvector": [
       {
         "contentHash": "sha256-eval-fact-002",
@@ -33,8 +26,7 @@
         "episodeId": "550e8400-e29b-41d4-a716-4466554400b1",
         "sessionId": "550e8400-e29b-41d4-a716-4466554400b0"
       }
-    ],
-    "relationships": []
+    ]
   },
   "expectedOutcome": "success",
   "assertions": {

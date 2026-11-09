@@ -28,7 +28,6 @@
     "config": { "maxSteps": 1, "topK": 10 }
   },
   "expectedSeeds": {
-    "neo4j": [],
     "pgvector": [
       {
         "contentHash": "sha256-rt-003-own",
@@ -36,8 +35,7 @@
         "episodeId": "550e8400-e29b-41d4-a716-446655440c31",
         "sessionId": "550e8400-e29b-41d4-a716-446655440c30"
       }
-    ],
-    "relationships": []
+    ]
   },
   "expectedOutcome": "success",
   "assertions": {

@@ -35,10 +35,24 @@ describe('detectAxes', () => {
     expect(detectAxes({ GOOGLE_API_KEY: 'k' }).model).toBe('live');
   });
 
-  it('needs both stores before it calls the memory axis live', () => {
-    expect(detectAxes({ DATABASE_URL: 'postgres://x' }).memory).toBe('unconfigured');
-    expect(detectAxes({ NEO4J_URI: 'bolt://x' }).memory).toBe('unconfigured');
-    expect(detectAxes({ DATABASE_URL: 'postgres://x', NEO4J_URI: 'bolt://x' }).memory).toBe('live');
+  it('selects the memory axis on DATABASE_URL alone (P2-E)', () => {
+    expect(detectAxes({ DATABASE_URL: 'postgres://x' }).memory).toBe('live');
+    expect(detectAxes({ DATABASE_URL: '' }).memory).toBe('unconfigured');
+    expect(detectAxes({}).memory).toBe('unconfigured');
+  });
+
+  it('reads no variable but the key, the cassette mode and DATABASE_URL (P2-E)', () => {
+    // So a leftover graph variable from an old .env cannot move either axis:
+    // the function never asks for it.
+    const read = new Set<string>();
+    const env = new Proxy({ DATABASE_URL: 'postgres://x' } as NodeJS.ProcessEnv, {
+      get(target, key) {
+        if (typeof key === 'string') read.add(key);
+        return target[key as string];
+      },
+    });
+    detectAxes(env);
+    expect([...read].sort()).toEqual(['DATABASE_URL', 'EVAL_CASSETTE_MODE', 'GOOGLE_API_KEY']);
   });
 
   it('reads the replay axis from EVAL_CASSETTE_MODE, key or no key', () => {
@@ -152,7 +166,7 @@ describe('skippedTasks', () => {
     id,
     description: id,
     input: {},
-    seeds: { neo4j: [], relationships: [], pgvector: [], graphFacts: [] },
+    seeds: { pgvector: [] },
     graders: [],
     ...(requires ? { requires } : {}),
   });
