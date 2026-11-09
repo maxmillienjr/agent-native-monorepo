@@ -1,6 +1,7 @@
 import { channel } from 'node:diagnostics_channel';
 import { encodeFloat32Base64 } from '@repo/agent-cassette';
 import { EMBEDDING_DIMENSIONS, l2Normalize } from '@repo/memory-core';
+import { PINNED_CHAT_MODEL } from '../../agent/model/model-deps.js';
 import type { CanaryBaseline } from './baseline.js';
 
 /**
@@ -11,10 +12,10 @@ import type { CanaryBaseline } from './baseline.js';
  * request counter is exercised by its subscription rather than bypassed.
  */
 
-export const PINNED = 'gemini-2.5-flash';
+/** The runner probes `PINNED_CHAT_MODEL`, so the stand-in answers for the same id. */
+export const PINNED = PINNED_CHAT_MODEL;
 export const EMBEDDING = 'gemini-embedding-001';
 export const FLOATING = 'gemini-flash-latest';
-export const CANDIDATE = 'gemini-3.5-flash-lite';
 
 /** Deterministic, distinct per text, and not unit-norm, so `l2Normalize` has work to do. */
 export function rawVector(text: string): number[] {
@@ -34,7 +35,7 @@ export function testBaseline(overrides: Partial<CanaryBaseline> = {}): CanaryBas
   return {
     formatVersion: 1,
     metadata: {
-      [PINNED]: { version: '001', displayName: 'Gemini 2.5 Flash', observedAt: '2026-10-01' },
+      [PINNED]: { version: '001', displayName: 'Gemini 3.5 Flash Lite', observedAt: '2026-10-01' },
       [EMBEDDING]: {
         version: '001',
         displayName: 'Gemini Embedding 001',
@@ -47,9 +48,8 @@ export function testBaseline(overrides: Partial<CanaryBaseline> = {}): CanaryBas
       },
     },
     chat: {
-      [PINNED]: { modelVersion: 'gemini-2.5-flash', observedAt: '2026-10-01' },
+      [PINNED]: { modelVersion: 'gemini-3.5-flash-lite', observedAt: '2026-10-01' },
       [FLOATING]: { modelVersion: 'gemini-3.5-flash', observedAt: '2026-10-01' },
-      [CANDIDATE]: { modelVersion: 'gemini-3.5-flash-lite', observedAt: '2026-10-01' },
     },
     embedding: {
       model: EMBEDDING,
@@ -79,15 +79,11 @@ export interface FakeApiState {
 export function healthyState(): FakeApiState {
   return {
     metadata: {
-      [PINNED]: { version: '001', displayName: 'Gemini 2.5 Flash' },
+      [PINNED]: { version: '001', displayName: 'Gemini 3.5 Flash Lite' },
       [EMBEDDING]: { version: '001', displayName: 'Gemini Embedding 001' },
       [FLOATING]: { version: 'Gemini Flash Latest', displayName: 'Gemini Flash Latest' },
     },
-    modelVersion: {
-      [PINNED]: 'gemini-2.5-flash',
-      [FLOATING]: 'gemini-3.5-flash',
-      [CANDIDATE]: 'gemini-3.5-flash-lite',
-    },
+    modelVersion: { [PINNED]: 'gemini-3.5-flash-lite', [FLOATING]: 'gemini-3.5-flash' },
     vectors: {},
   };
 }

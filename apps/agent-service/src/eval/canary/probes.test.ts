@@ -49,26 +49,20 @@ describe('probeChatVersion', () => {
 
     // Whatever the baseline holds — including nothing — a missing field is
     // not a match.
-    for (const baseline of ['gemini-2.5-flash', undefined]) {
-      expect(chatVerdict(observation, 'chat-pinned', baseline).verdict).toBe('unobserved');
-      expect(chatVerdict(observation, 'chat-floating', baseline).verdict).toBe('unobserved');
-      expect(chatVerdict(observation, 'chat-candidate', baseline).verdict).toBe('unobserved');
+    for (const baseline of ['gemini-3.5-flash-lite', undefined]) {
+      expect(chatVerdict(observation, true, baseline).verdict).toBe('unobserved');
+      expect(chatVerdict(observation, false, baseline).verdict).toBe('unobserved');
     }
   });
 
-  it('reads a 404 as gone, and a string that differs as changed when pinned, moved otherwise', () => {
-    expect(chatVerdict({ id: PINNED, found: false }, 'chat-pinned', 'x').verdict).toBe('gone');
-    const observed = { id: PINNED, found: true, modelVersion: 'gemini-2.5-flash-002' };
-    expect(chatVerdict(observed, 'chat-pinned', 'gemini-2.5-flash').verdict).toBe('changed');
-    expect(chatVerdict(observed, 'chat-floating', 'gemini-2.5-flash').verdict).toBe('moved');
-    expect(chatVerdict(observed, 'chat-candidate', 'gemini-2.5-flash')).toMatchObject({
-      probe: 'chat-candidate',
-      pinned: false,
-      verdict: 'moved',
-    });
-    expect(chatVerdict(observed, 'chat-pinned', 'gemini-2.5-flash-002').verdict).toBe('unchanged');
+  it('reads a 404 as gone, and a string that differs as changed when pinned, moved when floating', () => {
+    expect(chatVerdict({ id: PINNED, found: false }, true, 'x').verdict).toBe('gone');
+    const observed = { id: PINNED, found: true, modelVersion: 'gemini-3.5-flash-lite-002' };
+    expect(chatVerdict(observed, true, 'gemini-3.5-flash-lite').verdict).toBe('changed');
+    expect(chatVerdict(observed, false, 'gemini-3.5-flash-lite').verdict).toBe('moved');
+    expect(chatVerdict(observed, true, 'gemini-3.5-flash-lite-002').verdict).toBe('unchanged');
     // The first observation has nothing to match: red until a baseline is committed.
-    expect(chatVerdict(observed, 'chat-pinned', undefined).verdict).toBe('changed');
+    expect(chatVerdict(observed, true, undefined).verdict).toBe('changed');
   });
 });
 
@@ -86,12 +80,7 @@ describe('providerUnavailable', () => {
         'UNAVAILABLE: This model is currently experiencing high demand. Spikes in demand are ' +
         'usually temporary. Please try again later.',
     });
-    const result = unavailableVerdict(
-      'chat-floating',
-      FLOATING,
-      'gemini-3.5-flash',
-      providerUnavailable(error)!,
-    );
+    const result = unavailableVerdict(FLOATING, 'gemini-3.5-flash', providerUnavailable(error)!);
     expect(result).toMatchObject({
       probe: 'chat-floating',
       pinned: false,
@@ -135,7 +124,7 @@ describe('providerUnavailable', () => {
 });
 
 describe('metadataVerdict', () => {
-  const baseline = { version: '001', displayName: 'Gemini 2.5 Flash' };
+  const baseline = { version: '001', displayName: 'Gemini 3.5 Flash Lite' };
 
   it('reads a 404 on a pinned id as gone, and a version that moved as changed', () => {
     expect(metadataVerdict(PINNED, true, baseline, 'not-found').verdict).toBe('gone');

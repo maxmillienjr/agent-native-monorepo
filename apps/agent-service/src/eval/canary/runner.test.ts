@@ -4,7 +4,6 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CanaryBaseline } from './baseline.js';
 import {
-  CANDIDATE,
   DAILY_QUOTA_BODY,
   EMBEDDING,
   FLOATING,
@@ -60,19 +59,19 @@ const verdictOf = (probe: string, id: string): string | undefined =>
   report().results.find((result) => result.probe === probe && result.id === id)?.verdict;
 
 describe('one canary run', () => {
-  it('makes 3 metadata, 3 generateContent and 21 embedContent requests, and prints the counts', async () => {
+  it('makes 3 metadata, 2 generateContent and 21 embedContent requests, and prints the counts', async () => {
     const { end, api } = await run(healthyState());
 
     expect(end).toBe('passed');
     expect(report().requests).toEqual({
       metadata: 3,
-      generateContent: 3,
+      generateContent: 2,
       embedContent: 21,
       other: 0,
     });
-    expect(api.requests).toHaveLength(27);
+    expect(api.requests).toHaveLength(26);
     expect(summary()).toContain(
-      '**Requests:** 3 `models.get`, 3 `generateContent`, 21 `embedContent`.',
+      '**Requests:** 3 `models.get`, 2 `generateContent`, 21 `embedContent`.',
     );
     expect(summary()).toMatch(/^## Canary — unchanged/);
     expect(summary()).toContain(
@@ -96,7 +95,7 @@ describe('the verdict table', () => {
 
   it('metadata: a pinned version that moved is changed, and exits 1', async () => {
     const state = healthyState();
-    state.metadata[PINNED] = { version: '002', displayName: 'Gemini 2.5 Flash' };
+    state.metadata[PINNED] = { version: '002', displayName: 'Gemini 3.5 Flash Lite' };
     const { end } = await run(state);
 
     expect(end).toBe('failed');
@@ -106,7 +105,7 @@ describe('the verdict table', () => {
 
   it('chat, pinned: a changed modelVersion exits 1', async () => {
     const state = healthyState();
-    state.modelVersion[PINNED] = 'gemini-2.5-flash-preview-11-2026';
+    state.modelVersion[PINNED] = 'gemini-3.5-flash-lite-preview-11-2026';
     const { end } = await run(state);
 
     expect(end).toBe('failed');
@@ -177,7 +176,7 @@ describe('the verdict table', () => {
     expect(verdictOf('embedding', EMBEDDING)).toBe('unchanged');
     expect(report().requests).toEqual({
       metadata: 3,
-      generateContent: 3,
+      generateContent: 2,
       embedContent: 21,
       other: 0,
     });
@@ -185,65 +184,6 @@ describe('the verdict table', () => {
       `the provider could not serve the floating alias \`${FLOATING}\` (HTTP 503)`,
     );
     expect(summary()).not.toContain('information about the next model');
-  });
-
-  it('chat, candidate: a 503 exits 0 with a notice, and the embedding probe still runs', async () => {
-    const state = healthyState();
-    state.failWith = {
-      match: new RegExp(`/${CANDIDATE}:generateContent$`),
-      status: 503,
-      body: HIGH_DEMAND_BODY,
-    };
-    const { end } = await run(state);
-
-    expect(end).toBe('passed');
-    expect(existsSync(join(dir, 'canary-abort.json'))).toBe(false);
-    const candidate = report().results.find((result) => result.probe === 'chat-candidate');
-    expect(candidate).toMatchObject({
-      id: CANDIDATE,
-      pinned: false,
-      verdict: 'unavailable',
-      status: 503,
-      baseline: 'gemini-3.5-flash-lite',
-    });
-    expect(verdictOf('embedding', EMBEDDING)).toBe('unchanged');
-    expect(summary()).toMatch(/^## Canary — unchanged/);
-    expect(summary()).toContain(
-      `**Notice:** the provider could not serve P1-I's candidate \`${CANDIDATE}\` (HTTP 503)`,
-    );
-    // The floating alias's notice is its own; the candidate is not called floating.
-    expect(summary()).not.toContain('floating alias');
-    expect(summary()).toContain(`\`${CANDIDATE}\` (candidate)`);
-  });
-
-  it('chat, candidate: a changed modelVersion exits 0 with a notice', async () => {
-    const state = healthyState();
-    state.modelVersion[CANDIDATE] = 'gemini-3.5-flash-lite-002';
-    const { end } = await run(state);
-
-    expect(end).toBe('passed');
-    expect(report().result).toBe('passed');
-    expect(verdictOf('chat-candidate', CANDIDATE)).toBe('moved');
-    expect(summary()).toMatch(/^## Canary — unchanged/);
-    expect(summary()).toContain(
-      `**Notice:** P1-I's candidate \`${CANDIDATE}\` is \`moved\`: it answered \`modelVersion\` ` +
-        '`gemini-3.5-flash-lite-002` where the baseline has `gemini-3.5-flash-lite`',
-    );
-    expect(summary()).not.toContain('### Back to green');
-  });
-
-  it('chat, candidate: with no baseline entry, as committed, an answer is an observation and exits 0', async () => {
-    const baseline = testBaseline();
-    const { [CANDIDATE]: _candidate, ...chat } = baseline.chat;
-    const { end } = await run(healthyState(), { baseline: { ...baseline, chat } });
-
-    expect(end).toBe('passed');
-    expect(verdictOf('chat-candidate', CANDIDATE)).toBe('moved');
-    expect(summary()).toContain(
-      `**Notice:** P1-I's candidate \`${CANDIDATE}\` answered, \`modelVersion\` ` +
-        '`gemini-3.5-flash-lite`. The baseline has no entry for it, so this is an observation, ' +
-        'not a comparison.',
-    );
   });
 
   it('embedding: one changed vector exits 1 and reports its cosine', async () => {
@@ -362,13 +302,13 @@ describe('an abort', () => {
 describe('CANARY_BASELINE=update', () => {
   it('writes what was observed, dated, keeps an unchanged embedding date, and goes green', async () => {
     const state = healthyState();
-    state.modelVersion[PINNED] = 'gemini-2.5-flash-002';
+    state.modelVersion[PINNED] = 'gemini-3.5-flash-lite-002';
     let written: CanaryBaseline | undefined;
     const { end } = await run(state, { update: (baseline) => (written = baseline) });
 
     expect(end).toBe('passed');
     expect(written?.chat[PINNED]).toEqual({
-      modelVersion: 'gemini-2.5-flash-002',
+      modelVersion: 'gemini-3.5-flash-lite-002',
       observedAt: '2026-10-08',
     });
     // Unchanged entries keep the date they were first observed.
@@ -385,12 +325,12 @@ describe('CANARY_BASELINE=update', () => {
     const { end } = await run(state, { update: (baseline) => (written = baseline) });
 
     expect(end).toBe('failed');
-    expect(written?.chat[PINNED]?.modelVersion).toBe('gemini-2.5-flash');
+    expect(written?.chat[PINNED]?.modelVersion).toBe('gemini-3.5-flash-lite');
   });
 
   it('keeps the floating entry when the alias was unavailable, and goes green', async () => {
     const state = healthyState();
-    state.modelVersion[PINNED] = 'gemini-2.5-flash-002';
+    state.modelVersion[PINNED] = 'gemini-3.5-flash-lite-002';
     state.failWith = {
       match: new RegExp(`/${FLOATING}:generateContent$`),
       status: 503,
@@ -402,7 +342,44 @@ describe('CANARY_BASELINE=update', () => {
     expect(end).toBe('passed');
     expect(written?.chat[FLOATING]).toEqual(testBaseline().chat[FLOATING]);
     // The rest of the run is still accepted.
-    expect(written?.chat[PINNED]?.modelVersion).toBe('gemini-2.5-flash-002');
+    expect(written?.chat[PINNED]?.modelVersion).toBe('gemini-3.5-flash-lite-002');
+  });
+
+  /**
+   * The state P1-I's switch commits: the pin moved, and the baseline has no
+   * entry for the new id until someone with a key observes it. Without the
+   * update that is drift by the canary's own rule, red, because "nothing to
+   * compare with" on a pinned id is not "unchanged". The metadata and chat
+   * probes only, which is the update the switch's PR runs.
+   */
+  it('reads a pinned id with no baseline entry as changed until an update writes it', async () => {
+    const { [PINNED]: _metadata, ...metadata } = testBaseline().metadata;
+    const { [PINNED]: _chat, ...chat } = testBaseline().chat;
+    const switched = testBaseline({ metadata, chat });
+
+    const { end } = await run(healthyState(), { baseline: switched });
+    expect(end).toBe('failed');
+    expect(verdictOf('metadata', PINNED)).toBe('changed');
+    expect(verdictOf('chat-pinned', PINNED)).toBe('changed');
+    expect(report().results.find((result) => result.probe === 'chat-pinned')?.detail).toBe(
+      'no baseline to compare with',
+    );
+
+    let written: CanaryBaseline | undefined;
+    const updated = await run(healthyState(), {
+      baseline: switched,
+      update: (baseline) => (written = baseline),
+    });
+    expect(updated.end).toBe('passed');
+    expect(written?.chat[PINNED]).toEqual({
+      modelVersion: 'gemini-3.5-flash-lite',
+      observedAt: '2026-10-08',
+    });
+    expect(written?.metadata[PINNED]).toEqual({
+      version: '001',
+      displayName: 'Gemini 3.5 Flash Lite',
+      observedAt: '2026-10-08',
+    });
   });
 
   it('takes a first observation into an empty chat baseline', async () => {
@@ -414,9 +391,8 @@ describe('CANARY_BASELINE=update', () => {
 
     expect(end).toBe('passed');
     expect(written?.chat).toEqual({
-      [PINNED]: { modelVersion: 'gemini-2.5-flash', observedAt: '2026-10-08' },
+      [PINNED]: { modelVersion: 'gemini-3.5-flash-lite', observedAt: '2026-10-08' },
       [FLOATING]: { modelVersion: 'gemini-3.5-flash', observedAt: '2026-10-08' },
-      [CANDIDATE]: { modelVersion: 'gemini-3.5-flash-lite', observedAt: '2026-10-08' },
     });
   });
 });
@@ -427,11 +403,9 @@ describe('CANARY_PROBES', () => {
       'metadata',
       'chat-pinned',
       'chat-floating',
-      'chat-candidate',
       'embedding',
     ]);
     expect(readProbeSelection('embedding, metadata')).toEqual(['metadata', 'embedding']);
-    expect(readProbeSelection('chat-candidate')).toEqual(['chat-candidate']);
     expect(() => readProbeSelection('embedding,chat')).toThrow(/`chat`/);
 
     const api = fakeFetch(healthyState());
@@ -445,9 +419,7 @@ describe('CANARY_PROBES', () => {
 
     expect(end).toBe('passed');
     expect(report().requests.generateContent).toBe(0);
-    expect(report().notRun).toEqual(['chat-pinned', 'chat-floating', 'chat-candidate']);
-    expect(summary()).toContain(
-      '**Not run (CANARY_PROBES):** chat-pinned, chat-floating, chat-candidate',
-    );
+    expect(report().notRun).toEqual(['chat-pinned', 'chat-floating']);
+    expect(summary()).toContain('**Not run (CANARY_PROBES):** chat-pinned, chat-floating');
   });
 });

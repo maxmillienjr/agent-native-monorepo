@@ -15,18 +15,13 @@ function describeRequests(requests: RequestCounts): string {
   );
 }
 
-function label(result: ProbeResult): string {
-  if (result.pinned) return '';
-  return result.probe === 'chat-candidate' ? ' (candidate)' : ' (floating)';
-}
-
 function table(results: readonly ProbeResult[]): string[] {
   return [
     '| Probe | Id | Verdict | Baseline | Observed |',
     '| ----- | -- | ------- | -------- | -------- |',
     ...results.map(
       (result) =>
-        `| ${result.probe} | \`${result.id}\`${label(result)} | ` +
+        `| ${result.probe} | \`${result.id}\`${result.pinned ? '' : ' (floating)'} | ` +
         `**${result.verdict}** | ${cell(result.baseline)} | ${cell(result.observed)} |`,
     ),
   ];
@@ -80,8 +75,7 @@ export function renderCanarySummary(report: CanaryReport, baseline: CanaryBaseli
   }
 
   const floating = report.results.filter(
-    (result) =>
-      !result.pinned && result.probe !== 'chat-candidate' && result.verdict !== 'unchanged',
+    (result) => !result.pinned && result.verdict !== 'unchanged',
   );
   for (const result of floating) {
     if (result.verdict === 'unavailable') {
@@ -101,11 +95,6 @@ export function renderCanarySummary(report: CanaryReport, baseline: CanaryBaseli
         '. This is information about the next model, not drift in the pinned one, and it ' +
         'does not fail the run.',
     );
-  }
-
-  for (const result of report.results) {
-    if (result.probe !== 'chat-candidate' || result.verdict === 'unchanged') continue;
-    lines.push('', candidateNotice(result));
   }
 
   const usage = Object.entries(report.usage);
@@ -140,39 +129,6 @@ export function renderCanarySummary(report: CanaryReport, baseline: CanaryBaseli
   }
 
   return `${lines.join('\n')}\n`;
-}
-
-/**
- * P1-I's candidate, said in the terms its rule 3 reads: did it answer tonight.
- * With no baseline entry, which is how the candidate starts, the verdict is
- * `moved` and the notice says there was nothing to compare with, rather than
- * implying the id was somewhere else before.
- */
-function candidateNotice(result: ProbeResult): string {
-  const tail =
-    ' It is a migration input (P1-I), not drift in the pinned model, and it does not fail the run.';
-  const subject = `P1-I's candidate \`${result.id}\``;
-  switch (result.verdict) {
-    case 'unavailable':
-      return (
-        `> **Notice:** the provider could not serve ${subject}` +
-        (result.status === undefined ? '' : ` (HTTP ${result.status})`) +
-        ', so it did not answer tonight and its baseline entry, if any, stands.' +
-        tail
-      );
-    case 'gone':
-      return `> **Notice:** ${subject} answered 404, so this key cannot call it.${tail}`;
-    case 'unobserved':
-      return `> **Notice:** ${subject} answered without a \`modelVersion\`.${tail}`;
-    default:
-      return result.baseline === undefined
-        ? `> **Notice:** ${subject} answered, \`modelVersion\` ${cell(result.observed)}. The ` +
-            'baseline has no entry for it, so this is an observation, not a comparison.' +
-            tail
-        : `> **Notice:** ${subject} is \`${result.verdict}\`: it answered ` +
-            `\`modelVersion\` ${cell(result.observed)} where the baseline has ` +
-            `${cell(result.baseline)}.${tail}`;
-  }
 }
 
 /** A fence longer than any run of backticks in the text, so a message cannot close it. */
