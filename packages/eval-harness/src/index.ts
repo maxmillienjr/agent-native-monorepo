@@ -220,7 +220,10 @@ export {
 export {
   LIVE_DELTA,
   TASKS_RANDOM_FROM,
+  TASKS_RANDOM_TRIAL_FLOOR,
   compareLive,
+  liveRegime,
+  regimeFloor,
   trialFloor,
   type CompareLiveOptions,
   type LiveComparison,
