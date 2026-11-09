@@ -494,6 +494,166 @@
         },
         "latencyMs": 1355
       }
+    },
+    "relational-014/with": {
+      "queryId": "relational-014",
+      "condition": "with",
+      "recordedAt": "2026-11-09T01:18:58.601Z",
+      "gitSha": "1c74b1e01c50e26cbe74f9e7329e4672268af484",
+      "invocation": 3,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "7f41e526094151ee5b506cdc0e9df33eaf4ad36181352d4f1abd1b9f7b44a1c4",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How often is the provider directory refreshed for Cedarline Gold Access?\n\nRelevant context:\n- [pgvector] Summit Crest Network updates its online provider directory every 30 days.\n- [pgvector] The Cedarline Credentialing Committee recredentials every provider every 36 months.\n- [pgvector] Cedarline Essential sends members a printed provider directory on request.\n- [pgvector] Cedarline Health reviews prior authorization requests for Gold Access in house rather than through a vendor.\n- [pgvector] Cedarline Gold Access decides standard prior authorization requests within seven calendar days.\n- [pgvector] Cedarline Gold Access does not require prior authorization for the first twelve physical therapy visits.\n- [pgvector] Cedarline Gold Access members can view their authorization history in the member portal.\n- [pgvector] Cedarline Gold Access covers out-of-network services at 60 percent after a separate deductible.\n- [pgvector] Cedarline Gold Access members use the Summit Crest Network for in-network care.\n- [pgvector] Cedarline Gold Access charges a 30 dollar copay for a specialist visit, with no referral needed.\n\nConnections in memory:\n- context 1: plan_cedarline_gold_access -[USES_NETWORK]- network_summit_crest\n- context 2: plan_cedarline_gold_access -[OFFERS]- payer_cedarline_health; plan_cedarline_gold_access -[OFFERS]- payer_cedarline_health -[BELONGS_TO]- committee_cedarline_credentialing\n- context 3: plan_cedarline_gold_access -[OFFERS]- payer_cedarline_health; plan_cedarline_gold_access -[OFFERS]- payer_cedarline_health -[OFFERS]- plan_cedarline_essential; plan_cedarline_gold_access -[USES_NETWORK]- network_summit_crest -[USES_NETWORK]- plan_cedarline_essential\n- context 4: plan_cedarline_gold_access; plan_cedarline_gold_access -[OFFERS]- payer_cedarline_health; plan_cedarline_gold_access -[PHARMACY_BENEFIT_BY]- vendor_pinegate_pharmacy\n- context 5: plan_cedarline_gold_access; plan_cedarline_gold_access -[OFFERS]- payer_cedarline_health\n- context 6: plan_cedarline_gold_access; plan_cedarline_gold_access -[OFFERS]- payer_cedarline_health\n- context 7: plan_cedarline_gold_access; plan_cedarline_gold_access -[OFFERS]- payer_cedarline_health\n- context 8: plan_cedarline_gold_access; plan_cedarline_gold_access -[OFFERS]- payer_cedarline_health; plan_cedarline_gold_access -[PHARMACY_BENEFIT_BY]- vendor_pinegate_pharmacy\n- context 9: plan_cedarline_gold_access; plan_cedarline_gold_access -[OFFERS]- payer_cedarline_health; plan_cedarline_gold_access -[PHARMACY_BENEFIT_BY]- vendor_pinegate_pharmacy\n- context 10: plan_cedarline_gold_access; plan_cedarline_gold_access -[OFFERS]- payer_cedarline_health; plan_cedarline_gold_access -[PHARMACY_BENEFIT_BY]- vendor_pinegate_pharmacy\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "Cedarline Gold Access members use the Summit Crest Network for in-network care. The Summit Crest Network updates its online provider directory every 30 days.",
+            "tokenCounts": {
+              "prompt": 840,
+              "completion": 519,
+              "reasoning": 488
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 840,
+          "completion": 519,
+          "reasoning": 488
+        },
+        "latencyMs": 2689
+      }
+    },
+    "relational-014/without": {
+      "queryId": "relational-014",
+      "condition": "without",
+      "recordedAt": "2026-11-09T01:18:42.871Z",
+      "gitSha": "1c74b1e01c50e26cbe74f9e7329e4672268af484",
+      "invocation": 3,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "ebd169db18ab57369755cb40cdef92d6f51d191290bf26fb8a749ff951f99b2f",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How often is the provider directory refreshed for Cedarline Gold Access?\n\nRelevant context:\n- [pgvector] Summit Crest Network updates its online provider directory every 30 days.\n- [pgvector] The Cedarline Credentialing Committee recredentials every provider every 36 months.\n- [pgvector] Cedarline Essential sends members a printed provider directory on request.\n- [pgvector] Cedarline Health reviews prior authorization requests for Gold Access in house rather than through a vendor.\n- [pgvector] Cedarline Gold Access decides standard prior authorization requests within seven calendar days.\n- [pgvector] Cedarline Gold Access does not require prior authorization for the first twelve physical therapy visits.\n- [pgvector] Cedarline Gold Access members can view their authorization history in the member portal.\n- [pgvector] Cedarline Gold Access covers out-of-network services at 60 percent after a separate deductible.\n- [pgvector] Cedarline Gold Access members use the Summit Crest Network for in-network care.\n- [pgvector] Cedarline Gold Access charges a 30 dollar copay for a specialist visit, with no referral needed.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "The user is asking about the refresh frequency of the provider directory specifically for \"Cedarline Gold Access\".\n\nHere's the plan to address this:\n\n1.  **Identify the relevant information:**\n    *   \"Summit Crest Network updates its online provider directory every 30 days.\"\n    *   \"Cedarline Gold Access members use the Summit Crest Network for in-network care.\"\n\n2.  **Connect the information:** Since Cedarline Gold Access members use the Summit Crest Network for their in-network care, the provider directory they rely on is the one maintained by Summit Crest Network.\n\n3.  **Formulate the answer:** State that the provider directory for Cedarline Gold Access (which uses the Summit Crest Network) is updated every 30 days.",
+            "tokenCounts": {
+              "prompt": 271,
+              "completion": 402,
+              "reasoning": 244
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 271,
+          "completion": 402,
+          "reasoning": 244
+        },
+        "latencyMs": 4844
+      }
+    },
+    "relational-015/with": {
+      "queryId": "relational-015",
+      "condition": "with",
+      "recordedAt": "2026-11-09T01:19:40.079Z",
+      "gitSha": "1c74b1e01c50e26cbe74f9e7329e4672268af484",
+      "invocation": 3,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "e17adf1fcc62248d1fe424acc82e9cde32acc0a98159419a47edaeac27aefb04",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How soon can an Orrin Valley Premier member expect a routine primary care appointment?\n\nRelevant context:\n- [pgvector] Orrin Valley Premier charges a 15 dollar copay for primary care.\n- [pgvector] Orrin Valley Community Plan charges no copays for primary care.\n- [pgvector] Summit Crest Network guarantees a routine primary care appointment within ten business days.\n- [pgvector] Orrin Valley Premier requires claims within 90 days of the date of service.\n- [pgvector] Orrin Valley Health Plan pays clean claims within 15 days.\n- [pgvector] Orrin Valley Premier caps annual out-of-pocket costs at 4,000 dollars.\n- [pgvector] Orrin Valley Premier covers acupuncture for up to twelve visits a year.\n- [pgvector] Orrin Valley Community Plan requires claims within 120 days of the date of service.\n- [pgvector] Orrin Valley Premier covers a yearly vision exam with a 10 dollar copay.\n- [pgvector] Orrin Valley Premier charges a 35 dollar specialist copay.\n\nConnections in memory:\n- context 1: plan_orrin_valley_premier; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley -[CLAIMS_ROUTED_THROUGH]- vendor_corvane_claims\n- context 2: plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley -[OFFERS]- plan_orrin_valley_community\n- context 3: plan_orrin_valley_premier -[USES_NETWORK]- network_summit_crest\n- context 4: plan_orrin_valley_premier; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley -[CLAIMS_ROUTED_THROUGH]- vendor_corvane_claims\n- context 5: plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley -[SERVES]- region_inland_valley\n- context 6: plan_orrin_valley_premier; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley -[CLAIMS_ROUTED_THROUGH]- vendor_corvane_claims\n- context 7: plan_orrin_valley_premier; plan_orrin_valley_premier -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley\n- context 8: plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley -[OFFERS]- plan_orrin_valley_community\n- context 9: plan_orrin_valley_premier; plan_orrin_valley_premier -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley\n- context 10: plan_orrin_valley_premier; plan_orrin_valley_premier -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_orrin_valley_premier -[OFFERS]- payer_orrin_valley\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "**Plan:**\n\n1. **Identify the specific plan:** The user is asking about \"Orrin Valley Premier\" members.\n2. **Search for appointment wait time information:** Scan the `pgvector` context for keywords like \"appointment,\" \"wait time,\" \"guarantee,\" or \"routine primary care.\"\n3. **Connect the plan to a network:** Check the \"Connections in memory\" to see if \"Orrin Valley Premier\" utilizes any network that specifies appointment guarantees.\n    * `context 3: plan_orrin_valley_premier -[USES_NETWORK]- network_summit_crest` establishes that Orrin Valley Premier uses the Summit Crest Network.\n4. **Extract the relevant guarantee:** From the `pgvector` context, locate the guarantee provided by the identified network:\n    * `[pgvector] Summit Crest Network guarantees a routine primary care appointment within ten business days.`\n5. **Formulate the answer:** Combine the information to directly answer how soon an Orrin Valley Premier member can expect a routine primary care appointment.",
+            "tokenCounts": {
+              "prompt": 871,
+              "completion": 441,
+              "reasoning": 223
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 871,
+          "completion": 441,
+          "reasoning": 223
+        },
+        "latencyMs": 12459
+      }
+    },
+    "relational-015/without": {
+      "queryId": "relational-015",
+      "condition": "without",
+      "recordedAt": "2026-11-09T01:19:14.614Z",
+      "gitSha": "1c74b1e01c50e26cbe74f9e7329e4672268af484",
+      "invocation": 3,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "23f0a83425cd990b7aeb0352e49a029483a8c61e84cdd1aeac4836d8d2624265",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How soon can an Orrin Valley Premier member expect a routine primary care appointment?\n\nRelevant context:\n- [pgvector] Orrin Valley Premier charges a 15 dollar copay for primary care.\n- [pgvector] Orrin Valley Community Plan charges no copays for primary care.\n- [pgvector] Summit Crest Network guarantees a routine primary care appointment within ten business days.\n- [pgvector] Orrin Valley Premier requires claims within 90 days of the date of service.\n- [pgvector] Orrin Valley Health Plan pays clean claims within 15 days.\n- [pgvector] Orrin Valley Premier caps annual out-of-pocket costs at 4,000 dollars.\n- [pgvector] Orrin Valley Premier covers acupuncture for up to twelve visits a year.\n- [pgvector] Orrin Valley Community Plan requires claims within 120 days of the date of service.\n- [pgvector] Orrin Valley Premier covers a yearly vision exam with a 10 dollar copay.\n- [pgvector] Orrin Valley Premier charges a 35 dollar specialist copay.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "Unfortunately, the provided context does not contain information on how soon an Orrin Valley Premier member can expect a routine primary care appointment. The available details for Orrin Valley Premier cover copays, claim submission deadlines, out-of-pocket maximums, and coverage for specific services like acupuncture and vision exams.\n\nThe context mentions a guarantee for routine primary care appointments within ten business days, but this applies to the **Summit Crest Network**, not Orrin Valley Premier.\n\nTherefore, more information is needed to answer your request.",
+            "tokenCounts": {
+              "prompt": 268,
+              "completion": 559,
+              "reasoning": 454
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 268,
+          "completion": 559,
+          "reasoning": 454
+        },
+        "latencyMs": 3004
+      }
+    },
+    "relational-016/without": {
+      "queryId": "relational-016",
+      "condition": "without",
+      "recordedAt": "2026-11-09T01:19:57.731Z",
+      "gitSha": "1c74b1e01c50e26cbe74f9e7329e4672268af484",
+      "invocation": 3,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "fd393d85ce414cd1795876244d1194ad047f6c481b7bec971a675827fec87c51",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How much notice must a doctor give before leaving the Cedarline Essential network?\n\nRelevant context:\n- [pgvector] Summit Crest Network providers must give 90 days notice before leaving the network.\n- [pgvector] Cedarline Essential members have 90 days after a denial notice to file an appeal.\n- [pgvector] Cedarline Essential requires a primary care referral before any specialist visit.\n- [pgvector] Cedarline Essential covers emergency care at any hospital, in network or not.\n- [pgvector] The Cedarline Credentialing Committee recredentials every provider every 36 months.\n- [pgvector] Cedarline Essential sends members a printed provider directory on request.\n- [pgvector] Cedarline Essential members use the Summit Crest Network.\n- [pgvector] A provider turned down by the Cedarline Credentialing Committee may reapply after twelve months.\n- [pgvector] Cedarline Health holds open enrollment from November 1 to December 15.\n- [pgvector] Cedarline Essential covers a yearly eye exam but not glasses.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "*   **Step 1: Identify the notice period for providers leaving the relevant network.**\n    *   The context states: \"Summit Crest Network providers must give 90 days notice before leaving the network.\"\n\n*   **Step 2: Determine Cedarline Essential's relationship with this network.**\n    *   The context states: \"Cedarline Essential members use the Summit Crest Network.\" This implies that doctors providing services under Cedarline Essential are part of the Summit Crest Network.\n\n*   **Step 3: Conclude the required notice period for a doctor leaving the Cedarline Essential network.**\n    *   Based on the above, a doctor associated with Cedarline Essential (and thus the Summit Crest Network) must give **90 days notice** before leaving the network.",
+            "tokenCounts": {
+              "prompt": 255,
+              "completion": 906,
+              "reasoning": 746
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 255,
+          "completion": 906,
+          "reasoning": 746
+        },
+        "latencyMs": 4641
+      }
     }
   }
 }
