@@ -16,17 +16,19 @@ alone. The seven nights its rule 3 reads start with the first scheduled canary a
 merges. Stage 2 no longer holds the 2.5 pool, and the variable was deleted at 13:51 UTC on
 2026-11-09, so the scheduled `eval-live` runs again as well.
 
-**[P2-E](P2-E-remove-the-graph.md) is in progress, and its first pull request takes the graph
-out of the run.** `reflect` writes episodes and `semantic_facts` and nothing else, and
-`distill`'s extraction asks for facts alone, under the same seam id, so no recorded request
-hash moved. `entity_merged` became `semantic_fact_written`, and memory-recall's replay
-baseline was regenerated on replay with no key: three cells out, three in, the cassette
-digest unchanged. Red-team and prior-auth match their unchanged baselines. The committed
-cassettes still hold extractions made under the old prompt, which replay serves and
-`reflect` ignores past the facts, until P1-I re-records them on the narrowed one. That is
-why this half has a date: it has to be on `main` before P1-I records memory-recall, or its
-prompt change waits (P2-E, "Sequencing with P1-I"). The second pull request archives both
-measurements and removes Neo4j from the code, the stack and CI.
+**[P2-E](P2-E-remove-the-graph.md) is in progress, and its second pull request removes the
+graph.** The first, #152, merged as `df655c0` on 2026-11-09, ahead of P1-I's memory-recall
+recording: `reflect` writes episodes and `semantic_facts` and nothing else, `distill`
+extracts facts alone, and `entity_merged` became `semantic_fact_written`. The second is
+pushed on `feat/p2-e-b` and its pull request is not open. Both measurements reproduced at
+`df655c0` with no key, and that commit is tagged `archive/p2e-graph-measurements`. Then the
+Neo4j client, writer, reader and explainer went, with `neo4j-driver`, the compose service,
+the CI service containers, both runners and everything only they called; the retrieval
+contracts narrowed to `'pgvector'`, the task format refuses a graph seed, and the memory
+axis is `DATABASE_URL` alone. All three suites replay to `match` against unchanged
+baselines with no Neo4j container, and the unit, service and integration tiers pass on
+Postgres alone. What is left is the one criterion that needs CI: the `e2e` and
+`browser-e2e` jobs and `eval-replay` on the pull request. P2-E ships when they pass.
 
 **Twenty-five PRDs are shipped and the system they describe is running.** The service answers
 `POST /runs` and `POST /runs/stream`; `memory-core` is constructed by the app rather than
@@ -34,11 +36,11 @@ sitting beside it; the graph compiles with a checkpointer and a retry policy on 
 that performs I/O; and `packages/eval-harness` measures the result. Verified against live
 stores from an empty database: one run leaves episodic rows, `semantic_facts` rows and
 checkpoints under the runId its own response returned. It wrote `:Concept` and `:Fact` nodes
-as well until P2-E's first pull request.
+as well until P2-E's first pull request, and P2-E's second removes the store.
 
 **`docs/STATUS.md` is the authority on any capability sentence, including the ones above.**
-Thirty-seven rows, each with a status and evidence cited by name — thirty-one `implemented`,
-two `planned`, three `stubbed`, one `removed`, none `broken`. The rule that keeps it true is in
+Thirty-seven rows, each with a status and evidence cited by name — thirty `implemented`,
+two `planned`, two `stubbed`, three `removed`, none `broken`. The rule that keeps it true is in
 `.context/conventions.md`: a change that moves a row moves it there in the same pull
 request. `yarn lint:docs` fails CI when a PRD's status disagrees with its row below.
 
@@ -197,8 +199,8 @@ said before the run that 38 pairs have low power for +0.10. Replay with no key r
 every grader result and makes no request.
 [ADR 0012](../adr/0012-the-graphs-explanation-role-stage-one.md), accepted by the owner on
 2026-11-09, records option C: the graph explains, and `plan` does not use it. It supersedes
-ADR 0004. Neither command runs in CI, by decision, and P2-E archives both when it removes
-the graph.
+ADR 0004. Neither command ran in CI, by decision. P2-E archived both at the tag
+`archive/p2e-graph-measurements`, where both reproduced with no key, and removed the graph.
 
 **[P2-C](P2-C-otel-genai-semantics.md) has shipped**, tracked in
 [#74](https://github.com/maxmillienjr/agent-native-monorepo/issues/74). A run is now one
@@ -510,10 +512,10 @@ ahead of that date.
 ## Tier 2 — Make the architecture real
 
 The three-tier memory model is instantiated and the graph is checkpointed. The hybrid
-premise was measured by P2-B and did not hold, and ADR 0009 made retrieval vector-only. What
-remains is the knowledge graph, still provisioned, which no run has written since P2-E's
-first pull request. P2-D measured its one remaining role, explanation, and it did not meet
-the rule, so ADR 0012 removes the graph and P2-E does the removal. The standard vocabulary for reporting either is in place: P2-C emits the
+premise was measured by P2-B and did not hold, and ADR 0009 made retrieval vector-only. P2-D
+measured the graph's one remaining role, explanation, and it did not meet the rule, so
+ADR 0012 removes the graph. P2-E's first pull request took it out of the run, and its second
+removes the store from the code, the stack and CI. The standard vocabulary for reporting either is in place: P2-C emits the
 OpenTelemetry GenAI conventions.
 
 | ID                                           | Title                                                                    | Size | Status      |

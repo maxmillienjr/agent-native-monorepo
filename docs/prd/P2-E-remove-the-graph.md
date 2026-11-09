@@ -585,9 +585,12 @@ Each criterion names its axis. "Pure" means a unit test with no store and no net
       `match`, with no `CassetteMissError`. `yarn turbo test:integration` with
       `REQUIRE_INTEGRATION_ENV=1` passes as well, including the other two checks that
       replay `memory-recall-001`.
-- [ ] A merged before P1-I's memory-recall recording, or its prompt change was held back by
+- [x] A merged before P1-I's memory-recall recording, or its prompt change was held back by
       the sequencing rule. The date of each, and which happened, are recorded here.
-      **Reviewer, from `git log`.**
+      **Reviewer, from `git log`.** A merged first, prompt change included: PR #152 merged
+      to `main` as `df655c0` at 2026-11-09 14:51 UTC. P1-I's memory-recall recording is
+      planned for about 2026-11-17 and had not happened, so its recordings will carry the
+      narrowed extraction.
 
 **PR A, as built (2026-11-09).** Four things the Design did not assign to A had to move with
 it:
@@ -617,40 +620,108 @@ stay, and the harness passes no concept ids.
 
 **PR B**
 
-- [ ] On the commit B starts from, with `GOOGLE_API_KEY=` empty, `yarn eval:retrieval` and
+- [x] On the commit B starts from, with `GOOGLE_API_KEY=` empty, `yarn eval:retrieval` and
       `yarn eval:explanation` reproduce their committed reports once timestamps and
       latencies are masked. Stage 2 replays all 76 answers and makes no request to the
       model host. The sha is tagged `archive/p2e-graph-measurements`, the tag is pushed, and
-      the sha is recorded here. **Memory live, embeddings recorded, model replay.**
-- [ ] `git grep -il neo4j -- . ':!*.md' ':!yarn.lock'` prints nothing, and
-      `yarn why neo4j-driver` finds no dependent. **Reviewer.**
-- [ ] `TaskSeedsSchema` refuses a task file with a `neo4j`, `relationships` or `graphFacts`
-      key. **Pure.**
-- [ ] `readMemoryConfig` and `detectAxes` select the memory axis on `DATABASE_URL` alone,
-      and ignore `NEO4J_URI`. **Pure.**
-- [ ] `RetrievedContextItemSchema.source` and `RetrievalCandidateSchema.source` are
+      the sha is recorded here. **Memory live, embeddings recorded, model replay.** The
+      sha is `df655c0`, and the tag is pushed. Run twice on 2026-11-09 against fresh
+      `pgvector/pgvector:pg16` and `neo4j:5-community` containers: `ablation-report.json`
+      equals `reports/adjudicated/` and both pool files equal `adjudication/` once
+      `startedAt`, `finishedAt` and `latencyMs` are masked, and all four explanation reports
+      equal `reports/explanation/` once timestamps are masked. Stage 2 logged 76 of 76
+      recorded, outcome `not met`, and the runner's request watcher, which fails the run on
+      any request to the model host, let it exit 0. `ablation-summary.md` differs from the
+      committed one in its latency columns and in one heading, reworded by `84b42b5`
+      (ADR 0009) after the report was committed; the JSON is the comparison ADR 0012
+      names.
+- [x] `git grep -il neo4j -- . ':!*.md' ':!yarn.lock'` prints nothing, and
+      `yarn why neo4j-driver` finds no dependent. **Reviewer.** Both hold at B's head, and
+      `yarn.lock` no longer resolves `neo4j-driver`. The archived reports under
+      `datasets/retrieval-ablation/` name the graph's conditions but not the store, so the
+      grep needs no exception.
+- [x] `TaskSeedsSchema` refuses a task file with a `neo4j`, `relationships` or `graphFacts`
+      key. **Pure.** `dataset.test.ts`, "refuses a task file that still names a graph seed
+      key (P2-E)": the schema is strict and `pgvector` is its only key, which refuses all
+      three, and the test parses the two whose names the grep criterion allows and reads
+      `unrecognized_keys` back.
+- [x] `readMemoryConfig` and `detectAxes` select the memory axis on `DATABASE_URL` alone,
+      and ignore `NEO4J_URI`. **Pure.** `memory.config.test.ts`, "selects the memory axis on
+      DATABASE_URL alone (P2-E)" and "reads no variable but DATABASE_URL, so a leftover graph
+      variable is ignored (P2-E)"; `axes.test.ts`, "selects the memory axis on DATABASE_URL
+      alone (P2-E)" and "reads no variable but the key, the cassette mode and DATABASE_URL
+      (P2-E)". Each reads the environment through a proxy that records every key asked for,
+      so the variable is shown ignored without being named.
+- [x] `RetrievedContextItemSchema.source` and `RetrievalCandidateSchema.source` are
       `z.literal('pgvector')`, and neither schema has `entityId`. `plan.node.test.ts`'s
       pinned bytes, which include `[pgvector]`, are unchanged. **Pure.**
-- [ ] **Model replay / memory live, with no Neo4j container:** all three suites report
+      `memory.schema.test.ts`, "rejects any source but pgvector, the one store (P2-E)" and
+      "carries no entityId, which no store sets (P2-E)"; `retrieval-facade.test.ts`,
+      `RetrievalCandidateSchema`, the same two. `plan.node.test.ts` is not in B's diff.
+- [x] **Model replay / memory live, with no Neo4j container:** all three suites report
       `match` against their baselines, and two consecutive replays give identical reports
-      with timestamps masked.
-- [ ] **Model stub / memory live:** on a scratch tree that forces `crossSession: true` in
+      with timestamps masked. 2026-11-09, `GOOGLE_API_KEY=` empty, a fresh
+      `pgvector/pgvector:pg16` container and none other, and
+      `EVAL_CASSETTE_MODE=replay EVAL_GATE=replay` per suite: memory-recall, red-team and
+      prior-auth each `match`, with no baseline changed. Two consecutive replays give identical `eval-report.json`,
+      `eval-gate.json` and `eval-summary.md` per suite once timestamps, run and span ids and
+      wall-clock latencies (`latencyMs`, `prior_auth.elapsed_ms`) are masked.
+- [x] **Model stub / memory live:** on a scratch tree that forces `crossSession: true` in
       `retrieve`, `rt-001` fails `canary_absent_from_context`, as P4-B showed for the
       graph-seeded version. So the case still bites without the graph. The scratch change
-      is not committed.
+      is not committed. 2026-11-09, `EVAL_SUITE=red-team EVAL_TASKS=rt-001`: with the
+      scratch change, `canary_absent_from_context` 0%, "canary in retrieved candidate 10 of
+      10"; reverted, 100%.
 - [ ] `e2e.yml`'s integration job passes with a Postgres service and no other, and its
       `browser-e2e` job passes against `docker compose --profile full` with no `neo4j`
       service. `agent-eval.yml`'s `replay` job passes with one service container. **In CI.**
-- [ ] CTL-EVAL-04 is `procedural` under its new title with doc anchors only, and CTL-MEM-02
+      Not yet run in CI: B's branch is pushed and its pull request is not open. Locally on
+      2026-11-09, what each job runs passes with Postgres alone: the integration tier (the
+      last criterion below), the three replays (above), and
+      `docker compose --profile full up --build --wait`, which came up healthy with no
+      `neo4j` service, with Playwright's suite passing 7 of 7 against it. The A2A TCK step
+      of `browser-e2e` was not run locally. Owned by P2-E, and ticked from the pull
+      request's checks.
+- [x] CTL-EVAL-04 is `procedural` under its new title with doc anchors only, and CTL-MEM-02
       cites the session-scoping test. `yarn lint:docs` passes, with `governance/CONTROLS.md`
-      regenerated. **Reviewer.**
-- [ ] STATUS rows 15 and 23 are `removed` under the widened legend. Rows 2, 4, 8, 13, 17, 18
+      regenerated. **Reviewer.** CTL-EVAL-04's anchors are `.context/workflows.md`, "Add a New
+      Memory Adapter", whose first step is now the rule, ADR 0009's "The measurement" and
+      ADR 0012's "Decision", and its note names the tag. The matrix reads 23 implemented, 4
+      procedural, 0 planned, 1 not-applicable.
+- [x] STATUS rows 15 and 23 are `removed` under the widened legend. Rows 2, 4, 8, 13, 17, 18
       and 27 name no graph. The ten living docs describe one semantic index. P4-B carries a
       dated note, and P1-I carries a dated amendment for its step 2 and its stage-2 criterion.
-      **Reviewer.**
-- [ ] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
+      **Reviewer.** Rows 2 and 4 named none after A. The matrix is 30 `implemented`, 2
+      `planned`, 2 `stubbed` and 3 `removed`.
+- [x] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
       pass, and so do `yarn turbo test:unit`, `yarn turbo test:service` and
-      `yarn turbo test:integration`.
+      `yarn turbo test:integration`. 2026-11-09, `GOOGLE_API_KEY=` empty; integration with
+      `REQUIRE_INTEGRATION_ENV=1` against Postgres alone: 14 ledger, 63 `memory-core`, 42
+      service Vitest and 61 Jest tests, none skipped.
+
+**PR B, as built (2026-11-09).** What the Design did not say, and what B did about it:
+
+- **One more runner-only module.** `apps/agent-service/src/eval/embedding-file.ts` and its
+  test were called by the two runners alone, and `answer-file.ts` for one helper. The
+  Inventory missed them. They are deleted with the rest.
+- **The grep criterion and two pure criteria pull against each other.** A test that names
+  the `neo4j` seed key or `NEO4J_URI` is a hit. The tests prove the property without the
+  name: the seed schema's key set is exactly `pgvector` and strict, and the two config
+  readers are shown, through a proxy over the environment, to read no variable they do not
+  need.
+- **`PgSeedManager` is session-scoped throughout.** With the graph half gone, both deletes
+  name the session, and a seed lays every row in one call, each under the session it
+  names, so `rt-001`'s attacker row needs no call of its own. `inspect.integration.test.ts`
+  gained "leaves another session’s rows alone".
+- **Test titles that named the graph were renamed**, and their citations followed:
+  "makes no write to Postgres" (STATUS row 27), "returns the vector reader’s list for the
+  session". `semantic.integration.test.ts` keeps its pgvector cases only, and
+  `retrieval-order.integration.test.ts` the vector reader's.
+- **`RunsService` lost its second constructor argument**, so every positional
+  construction in the tests moved by one.
+- **`.context/conventions.md`'s integration bullet was stale before B**: it counted 75
+  skipped tests over two workspaces, and the ledger had made it three. It now says 119 over
+  three, at P2-E.
 
 ## Risks and open questions
 
