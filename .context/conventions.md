@@ -300,7 +300,10 @@ selected option C: the graph explains, `plan` does not use it, and P2-E removes 
   a record made from a working tree with uncommitted changes is replayed against the commit
   and says the tree was dirty, and an image must be built with
   `--build-arg GIT_SHA=$(git rev-parse HEAD)` for its records to name a commit at all.
-  ADR 0007 says why.
+  ADR 0007 says why. **A change to what `reflect` writes moves an integration assertion.**
+  `audit-replay.integration.test.ts` › "replays a stub run with every checkpoint matching,
+  and derives what it wrote" lists the stores a stub run's writes go to, in order. It names
+  no writer type, so typecheck passes and only memory live fails it (P2-E).
 - **A cassette is recorded against a commit, a prompt and a model, and replays nothing
   else.** `EVAL_CASSETTE_MODE=record` writes one cassette per trial to
   `packages/eval-harness/datasets/<suite>/cassettes/<taskId>.trial-<n>.json`, holding
@@ -325,7 +328,9 @@ selected option C: the graph explains, `plan` does not use it, and P2-E removes 
   or `ASSESS_PROMPT` replays cleanly, with answers to the old instruction. On 2026-11-09 a
   scratch tree that replaced `EXTRACTION_PROMPT` replayed all three suites with no miss
   (P2-E). The other is the canary reporting `changed`: the id is the same, so the cassettes
-  replay cleanly with the old model's answers. Nothing else notices either one. The
+  replay cleanly with the old model's answers. Nothing else notices either one, except by
+  accident: `provider-unavailable.test.ts`'s fake model host routes on each prompt's opening
+  words, so rewording the start of a JSON seam's prompt fails that unit test. The
   cost is real and it falls on prompt changes, which are common here; the alternative,
   keying on a normalized shape, serves the old answer to the new prompt and calls it a
   pass. Re-recording needs a live key and about eleven `generateContent` calls for the
