@@ -2,7 +2,7 @@
 id: P3-G
 title: 'Prior-auth assessment on `gemini-3.5-flash-lite`: hedged evidence and citations'
 tier: 3
-status: accepted
+status: shipped
 size: S
 depends_on: [P1-I, P3-D]
 blocks: []
@@ -488,71 +488,156 @@ the owner's key, locally, run by the conductor.
 
 **Option B (lands first)**
 
-- [ ] **Unit:** `normalizeFindings` turns a `met` finding citing one resolving and one
+- [x] **Unit:** `normalizeFindings` turns a `met` finding citing one resolving and one
       unresolved reference into `insufficient`, keeping the resolving reference and prefixing
       the rationale with `UNRESOLVED_BESIDE`; `decideDisposition` refers that request. A test in
-      `disposition.test.ts` with that title.
-- [ ] **Unit:** a `not-met` or `insufficient` finding with an unresolved citation keeps its
-      status, loses the citation, and carries the dropped-citation sentence.
-- [ ] **Unit:** the enumeration over a two-criterion policy, 144 cases, asserts that every
+      `disposition.test.ts` with that title. 2026-11-09, `16d62e3`: `disposition.test.ts` ›
+      "refers when a met finding cites one resolving and one unresolved reference" asserts the
+      whole normalized finding, the resolving reference kept and the sentence in full, and that
+      the other criterion's `met` is untouched.
+- [x] **Unit:** a `not-met` or `insufficient` finding with an unresolved citation keeps its
+      status, loses the citation, and carries the dropped-citation sentence. 2026-11-09,
+      `16d62e3`: `disposition.test.ts` › "keeps a not-met or insufficient finding’s status, drops
+      its unresolved citation and says so", one case per status, and a second test that a
+      finding whose citations all resolve keeps the model's rationale unprefixed.
+- [x] **Unit:** the enumeration over a two-criterion policy, 144 cases, asserts that every
       request the new rule approves the old rule approved, and that they disagree only where
       every criterion is `met` with a resolving citation and one also cites an unresolved
-      reference.
-- [ ] **Unit:** `dispose`'s span carries `prior_auth.unresolved_citations`, 0 when every
+      reference. 2026-11-09, `16d62e3`: `disposition.test.ts` › "the citation rule, against the
+      one it replaced". The old rule is restated in the test as P3-D wrote it; the
+      disagreements are exactly three, `met/resolving + met/both`, `met/both + met/resolving`
+      and `met/both + met/both`, all old-approve and new-refer.
+- [x] **Unit:** `dispose`'s span carries `prior_auth.unresolved_citations`, 0 when every
       citation resolves and the count when not, and the key is in `ALLOWED_SPAN_ATTRIBUTES`.
-- [ ] **Model `replay`:** with Option B and the cassettes at `3406593`, the prior-auth replay
+      2026-11-09, `555df3c`: `prior-auth.service.test.ts` asserts 0 beside the existing
+      `prior_auth.disposition` assertion (the stub cites nothing), and "counts on the dispose
+      span the citations that name no resource in the request (P3-G)" swaps in an assessment
+      citing one real and two invented references and reads 2, with `unlistedAttributeKeys`
+      empty.
+- [x] **Model `replay`:** with Option B and the cassettes at `3406593`, the prior-auth replay
       reports `match` against `8aef2c2`'s baseline, `pa-k0823-contradicted`'s
       `citations_resolve` cell still `fail`. This shows the grader still reads the model's
-      citations.
-- [ ] CTL-OUT-02 is `implemented`, with `normalizeFindings` and both new tests as anchors, and
-      `yarn lint:docs` passes.
+      citations. 2026-11-09 at `81f108e`, no key, Postgres on a non-default port: verdict
+      `match`, 96 cells against 96, no differences, cassette digest `aedeba57d338`.
+      `pa-k0823-contradicted` › `citations_resolve` is 0, `fail`, "1 citation(s) name nothing
+      in the bundle: DocumentReference/doc-k0823-home-assessment", and `pa-e0260-ambiguous` ›
+      `finding_agreement` is still 0.667, `fail`. The same run's `dispose` span on
+      K0823-contradicted reads `prior_auth.unresolved_citations` 1, and 0 on the other 23.
+      memory-recall (31 cells) and red-team (7 cells) replayed to `match` on the same commit,
+      every budget `within`.
+- [x] CTL-OUT-02 is `implemented`, with `normalizeFindings` and both new tests as anchors, and
+      `yarn lint:docs` passes. 2026-11-09, `81f108e`: the row's anchors are the symbol, the
+      mixed-citation test and the enumeration test, `owner` removed; the lint reports 24
+      implemented and 0 planned, every anchor resolving.
 
 **Option A**
 
-- [ ] `ASSESS_PROMPT` defines `not-met` as a stated fact, says an uncertain, conditional or
+- [x] `ASSESS_PROMPT` defines `not-met` as a stated fact, says an uncertain, conditional or
       second-hand statement is `insufficient`, and says a reference is copied, never
-      composed. **Reviewer.**
-- [ ] **Unit:** no run of four words from any of the 24 bundles' `DocumentReference` texts
-      appears in `ASSESS_PROMPT`.
+      composed. **Reviewer.** 2026-11-09, `f552ef7`: the constant is byte-identical to the
+      code block under Option A, compared by script. From this commit the prior-auth replay
+      aborts with `CassetteMissError` at the first `assess.criteria` seam, as step 2 says.
+- [x] **Unit:** no run of four words from any of the 24 bundles' `DocumentReference` texts
+      appears in `ASSESS_PROMPT`. 2026-11-09, `f552ef7`: `assessment.test.ts` › "shares no run
+      of four words with any prior-auth bundle’s note text". It decodes the 41 attachments of
+      the 24 bundles, lowercases them and breaks words on anything not a letter or digit,
+      which gives the 1,082 runs this PRD counted, and the prompt shares none.
 
 **The probe and the recording**
 
-- [ ] **Model `live`, paid key:** the step-3 probe, five trials each of `pa-e0260-ambiguous`,
+- [x] **Model `live`, paid key:** the step-3 probe, five trials each of `pa-e0260-ambiguous`,
       `pa-k0823-ambiguous` and `pa-k0823-contradicted`, meets every row of its table:
       E0260 `finding_agreement` in at least 4 of 5, both K0823 tasks' `finding_agreement`
       in 5 of 5, `no_false_approval` in 15 of 15. The table of results, the K0823-ambiguous
       cell values and the K0823-contradicted `citations_resolve` count are recorded here,
-      with the date, the commit and the call count.
-- [ ] **Model `live`, paid key:** 24 cassettes recorded in step 4, each with `formatVersion`
+      with the date, the commit and the call count. **Met 2026-11-09 at `7a1332a`, 15
+      `generateContent` calls, none errored, $0.020.** E0260 `finding_agreement` 5 of 5
+      (0 of 5 before). K0823-ambiguous 5 of 5, every cell 1.0 ("5/5 criteria agree with
+      the label"), so `k0823-safe-operation` read `insufficient` every time.
+      K0823-contradicted `finding_agreement` 5 of 5 and `citations_resolve` 4 of 5: trial 5
+      cited `DocumentReference/doc-k0823-home`, which no bundle holds. `no_false_approval`
+      15 of 15. The probe holds no approval-labelled task, which is why it did not see what
+      the recording found (below).
+- [x] **Model `live`, paid key:** 24 cassettes recorded in step 4, each with `formatVersion`
       3, `chatModel` `gemini-3.5-flash-lite`, axes `live`/`live`, and a `gitSha` at which
       `ASSESS_PROMPT` is Option A's. **Reviewer:** `jq` over the headers, and the recorded
       `instruction` equals the constant. The date, commit and `generateContent` count are
-      tabled here.
-- [ ] **Blocking, on the recording run:** wrongful approvals 0 of 16 and unnecessary
-      referrals 0 of 8.
-- [ ] **On the recording run:** `pa-e0260-ambiguous` passes all four graders.
-- [ ] **On the recording run:** `pa-k0823-contradicted` passes `citations_resolve`. If it does
+      tabled here. **Met with wording B** (Option A plus the owner-approved sentence),
+      2026-11-09: all 24 headers read format 3, `gemini-3.5-flash-lite`, `live`/`live`,
+      `gitSha` `5b35f94`; every recorded `instruction` equals the constant at that commit.
+      20 `generateContent` calls, none errored, $0.025 (`78d4ca0`).
+- [x] **Blocking, on the recording run:** wrongful approvals 0 of 16 and unnecessary
+      referrals 0 of 8. **Not met by wording A, 2026-11-09:** wrongful approvals 0 of 16,
+      unnecessary referrals 1 of 8 (`pa-k0823-all-met-narrative`). See "Wording A, as run".
+      **Met by wording B, 2026-11-09:** 0 of 16 and 0 of 8.
+- [x] **On the recording run:** `pa-e0260-ambiguous` passes all four graders. Wording B,
+      2026-11-09: it does.
+- [x] **On the recording run:** `pa-k0823-contradicted` passes `citations_resolve`. Wording B,
+      2026-11-09: it does, every citation resolving. If it does
       not, the cassette is committed as recorded, the failure stays a known failure in the
       baseline, and this box stays unchecked with the result written beside it.
-- [ ] **On the recording run:** every task that passed every grader in `8aef2c2`'s baseline
+- [x] **On the recording run:** every task that passed every grader in `8aef2c2`'s baseline
       still does. Any that does not is a regression this PRD names and explains before it
-      ships.
-- [ ] **Model `replay`:** the baseline regenerated from the new set, then two
+      ships. Wording B, 2026-11-09: all 24 pass every grader.
+- [x] **Model `replay`:** the baseline regenerated from the new set, then two
       `EVAL_GATE=replay` runs reporting `match` with identical summaries, timestamps masked,
-      and no request to `generativelanguage.googleapis.com`.
-- [ ] **Model `replay`:** memory-recall and red-team replay to `match` against their
+      and no request to `generativelanguage.googleapis.com`. 2026-11-09 (`31bbb50`): 96
+      cells, none failing; both replays `match`, summaries identical after masking, run with
+      `GOOGLE_API_KEY` unset.
+- [x] **Model `replay`:** memory-recall and red-team replay to `match` against their
       unchanged baselines with every budget `within`; no prior-auth task file gains a
-      `budgets` key.
-- [ ] The recording's sha is tagged `recording/p3g-prior-auth-<date>` and the tag is pushed.
+      `budgets` key. 2026-11-09: both `match`, `budgetBreaches` 0.
+- [x] The recording's sha is tagged `recording/p3g-prior-auth-<date>` and the tag is pushed.
+      `recording/p3g-prior-auth-2026-11-09` → `5b35f94`, pushed. Wording A's set is kept on
+      `recording/p3g-wording-a-2026-11-09`.
 
 **Documentation and gates**
 
-- [ ] `docs/STATUS.md` row 26 carries the new recording's figures and drops the two known
+- [x] `docs/STATUS.md` row 26 carries the new recording's figures and drops the two known
       failures, or names whichever remain. P1-I's known-failure paragraph gains a dated note
       pointing here. The index row, its paragraph and "Where things stand" say where P3-G
       stands.
-- [ ] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs`, `yarn format:check`,
-      `yarn turbo test:unit` and `yarn turbo test:service` pass.
+      2026-11-09: row 26 names the new recording and no known failure; P1-I's paragraph has
+      the dated note; index row, paragraph and "Where things stand" say shipped.
+- [x] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs`, `yarn format:check`,
+      `yarn turbo test:unit` and `yarn turbo test:service` pass. 2026-11-09, on the
+      merged branch at `bf420ec`: all six pass (service tests against Postgres on a spare port).
+
+## Wording A, as run (2026-11-09)
+
+The recording, step 4, ran at `7a1332a` on the owner's paid key: 24 tasks, 20
+`generateContent` calls, 23 passing every grader. Both known failures are fixed in it:
+`pa-e0260-ambiguous` and `pa-k0823-contradicted` pass all four graders. **One task that
+passed in `8aef2c2`'s baseline now fails:** `pa-k0823-all-met-narrative` is labelled
+`automated-approval` and referred. Its note is dated 2026-09-04 and says "The supplier
+measured the house the same week". The model read `k0823-home-access` as `insufficient`:
+"no specific date is provided to confirm it was within the 60 days before the request". The
+label is `met`. A date given relative to a dated document is a date, and the new line
+"Evidence that does not confirm a criterion is `insufficient`", beside the existing
+"without a date", pushed the model to demand an absolute one.
+
+**It is the wording, not one unlucky sample.** Five live trials of that task alone, not
+recorded, 10 calls: under wording A it referred in 2 of 5, and under the prompt on `main`
+it approved in 5 of 5. With the recording, wording A refers this task in 3 of 6 trials.
+
+**The recording is not committed to `main`.** It fails a blocking criterion, so it is kept
+as evidence on the tag `recording/p3g-wording-a-2026-11-09` (`eb2ee5e`, cassettes with
+`gitSha` `7a1332a`). Step 3 says a second wording is the owner's call, and this stops there
+for the same reason. The candidate is one added sentence, naming the class rather than the
+fixture: _a time stated relative to a dated document, such as a visit in the same week as a
+dated note, is dated_. A second wording costs another probe, with
+`pa-k0823-all-met-narrative` added to it (20 calls), and another recording (20 calls), about
+$0.06 on the paid key. Option B stands on its own and needs no recording.
+
+## Wording B (owner's choice, 2026-11-09)
+
+The owner chose a second wording. Wording B is wording A plus one sentence after the
+`insufficient` line: _"A time stated relative to a dated document, such as days or a week
+before or after it, is dated."_ The four-word test passes on it. **Its probe, fixed before
+any call:** five trials each of the three step-3 tasks and `pa-k0823-all-met-narrative`, 20
+calls. The recording goes ahead only if step 3's four rows hold and
+`pa-k0823-all-met-narrative` passes `disposition_kind` in 5 of 5. Then step 4 as written,
+and the blocking criterion applies unchanged. If it fails, this stops at the owner again.
 
 ## Risks and open questions
 

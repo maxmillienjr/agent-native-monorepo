@@ -21,10 +21,13 @@ export interface AssessDeps {
 export const ASSESS_PROMPT = `You review a prior-authorization request against a medical policy's criteria.
 For each criterion, decide from the evidence alone whether it is:
 - "met": the evidence states that the criterion is satisfied,
-- "not-met": the evidence states something that fails the criterion,
+- "not-met": the evidence states a fact that fails the criterion, such as a value outside a threshold or a date outside a window,
 - "insufficient": the evidence does not say, or says it only vaguely, without a date, or as hearsay.
-Cite every evidence reference you relied on, exactly as given (for example "DocumentReference/doc-1").
-Never cite a reference that is not in the evidence list. Do not recommend an outcome.
+A time stated relative to a dated document, such as days or a week before or after it, is dated.
+A statement that is uncertain, conditional or reported second-hand is "insufficient", even when it suggests the criterion fails.
+Evidence that does not confirm a criterion is "insufficient", not "not-met".
+Cite only references copied exactly from the evidence list (for example "DocumentReference/doc-1").
+Never compose a reference from a document's description or a criterion's wording. Do not recommend an outcome.
 Respond with JSON only:
 {"findings": [{"criterionId": "...", "status": "met" | "not-met" | "insufficient", "evidence": ["..."], "rationale": "..."}]}`;
 

@@ -247,11 +247,21 @@ controls:
 
   - id: CTL-OUT-02
     title: An automated approval rests only on criteria whose every citation names a resource in the request
-    status: planned
-    owner: P3-G
+    status: implemented
     maps:
       - { framework: owasp-llm-2025, ref: 'LLM05:2025' }
       - { framework: nist-ai-rmf-1.0, ref: MEASURE 2.6 }
+    evidence:
+      - { kind: symbol, file: packages/prior-auth/src/disposition.ts, name: normalizeFindings }
+      - kind: test
+        file: packages/prior-auth/src/disposition.test.ts
+        name: refers when a met finding cites one resolving and one unresolved reference
+        tier: unit
+      - kind: test
+        file: packages/prior-auth/src/disposition.test.ts
+        name: approves only what the old rule approved, and differs exactly on a met citing beside an invented id
+        tier: unit
+    note: Delivered by P3-G, on top of P3-D's rule. dispose drops every citation that names no resource in the bundle, and a met finding that cited one becomes insufficient, so it refers, even when a real citation is left beside it. The rule runs in dispose, not assess, so citations_resolve still grades what the model cited. The count of unresolved citations is on dispose's span as prior_auth.unresolved_citations, the one signal of a fabricated citation on the service path.
 
   - id: CTL-SEC-01
     title: Committed model recordings carry no credential
