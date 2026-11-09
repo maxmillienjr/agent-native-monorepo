@@ -3,8 +3,8 @@
     "formatVersion": 3,
     "taskId": "pa-e0260-one-missing",
     "trialIndex": 0,
-    "recordedAt": "2026-11-09T17:22:40.318Z",
-    "gitSha": "86f6accdf5c3131da46a58edb611ae7038fecfce",
+    "recordedAt": "2026-11-09T19:59:38.280Z",
+    "gitSha": "7a1332a38e4f0f32fa415b008009ac55c7bf5dab",
     "axes": {
       "model": "live",
       "memory": "live"
@@ -16,9 +16,9 @@
   "decisions": [
     {
       "seam": "assess.criteria",
-      "requestHash": "0c898c78199e576b0a20ad69c91378add06a9da84eab13215de01b4c7548501e",
+      "requestHash": "166b8934aaa10393a199afe39b8a7351c4276913e21d4eff37316daedd625d0f",
       "request": {
-        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states something that fails the criterion,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nCite every evidence reference you relied on, exactly as given (for example \"DocumentReference/doc-1\").\nNever cite a reference that is not in the evidence list. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
+        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states a fact that fails the criterion, such as a value outside a threshold or a date outside a window,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nA statement that is uncertain, conditional or reported second-hand is \"insufficient\", even when it suggests the criterion fails.\nEvidence that does not confirm a criterion is \"insufficient\", not \"not-met\".\nCite only references copied exactly from the evidence list (for example \"DocumentReference/doc-1\").\nNever compose a reference from a document's description or a criterion's wording. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
         "criteria": [
           {
             "id": "e0260-positioning-need",
@@ -56,7 +56,7 @@
             "evidence": [
               "DocumentReference/doc-e0260-one-missing-visit"
             ],
-            "rationale": "The prescriber notes that the member must sleep with the head raised at 45 degrees, which pillows cannot hold."
+            "rationale": "The prescriber notes that the member must sleep with the head raised at 45 degrees, which satisfies the requirement for the head raised 35 degrees or more."
           },
           {
             "criterionId": "e0260-linked-diagnosis",
@@ -64,19 +64,17 @@
             "evidence": [
               "DocumentReference/doc-e0260-one-missing-visit"
             ],
-            "rationale": "The clinical note explicitly states that the positioning need follows from her heart failure."
+            "rationale": "The prescriber's note explicitly states that the positioning need follows from her heart failure, linking the diagnosis to the need."
           },
           {
             "criterionId": "e0260-frequent-adjustment",
             "status": "insufficient",
-            "evidence": [
-              "DocumentReference/doc-e0260-one-missing-visit"
-            ],
-            "rationale": "The clinical note mentions that she must sleep with the head raised at 45 degrees, but does not state that the position must change several times a day or without delay in a way a manual crank cannot do."
+            "evidence": [],
+            "rationale": "The provided evidence does not mention whether the position must change several times a day or without delay in a way that a manual crank cannot do."
           }
         ]
       },
-      "latencyMs": 1165
+      "latencyMs": 1226
     }
   ]
 }

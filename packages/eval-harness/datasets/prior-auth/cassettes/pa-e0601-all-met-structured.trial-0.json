@@ -3,8 +3,8 @@
     "formatVersion": 3,
     "taskId": "pa-e0601-all-met-structured",
     "trialIndex": 0,
-    "recordedAt": "2026-11-09T17:22:49.854Z",
-    "gitSha": "86f6accdf5c3131da46a58edb611ae7038fecfce",
+    "recordedAt": "2026-11-09T19:59:47.822Z",
+    "gitSha": "7a1332a38e4f0f32fa415b008009ac55c7bf5dab",
     "axes": {
       "model": "live",
       "memory": "live"
@@ -16,9 +16,9 @@
   "decisions": [
     {
       "seam": "assess.criteria",
-      "requestHash": "f5d487135aed80975f1bd3adab6c1fc3972ed58ca429ff18a55578afda48ee42",
+      "requestHash": "f7335d46c4f05812348d4fa78496a5971ca7945aa8db4d04b6e5a289458ee526",
       "request": {
-        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states something that fails the criterion,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nCite every evidence reference you relied on, exactly as given (for example \"DocumentReference/doc-1\").\nNever cite a reference that is not in the evidence list. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
+        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states a fact that fails the criterion, such as a value outside a threshold or a date outside a window,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nA statement that is uncertain, conditional or reported second-hand is \"insufficient\", even when it suggests the criterion fails.\nEvidence that does not confirm a criterion is \"insufficient\", not \"not-met\".\nCite only references copied exactly from the evidence list (for example \"DocumentReference/doc-1\").\nNever compose a reference from a document's description or a criterion's wording. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
         "criteria": [
           {
             "id": "e0601-osa-diagnosis",
@@ -65,7 +65,7 @@
             "evidence": [
               "Condition/condition-e0601-all-met-structured-osa"
             ],
-            "rationale": "The member has a recorded condition of obstructive sleep apnea."
+            "rationale": "The member has a recorded diagnosis of obstructive sleep apnea."
           },
           {
             "criterionId": "e0601-ahi-threshold",
@@ -73,7 +73,7 @@
             "evidence": [
               "DocumentReference/doc-e0601-all-met-structured-study"
             ],
-            "rationale": "The sleep study dated 2026-07-01 (within the 12 months before the request) reports an AHI of 31 events per hour, which is at least 18."
+            "rationale": "The sleep study dated 2026-07-01 reports an AHI of 31 events per hour, which is at least 18."
           },
           {
             "criterionId": "e0601-conservative-trial",
@@ -81,7 +81,7 @@
             "evidence": [
               "DocumentReference/doc-e0601-all-met-structured-visit"
             ],
-            "rationale": "The record documents positional therapy from 2026-07-10 to 2026-08-14 (35 days), which is at least 21 days, and symptoms persisted."
+            "rationale": "Positional therapy was tried from 2026-07-10 to 2026-08-14 (35 days), which exceeds the 21-day requirement and did not resolve symptoms."
           },
           {
             "criterionId": "e0601-prescriber-order",
@@ -89,11 +89,11 @@
             "evidence": [
               "DocumentReference/doc-e0601-all-met-structured-visit"
             ],
-            "rationale": "A signed prescriber order names the CPAP device and a pressure range of 6 to 14 cm H2O."
+            "rationale": "There is a signed prescriber order naming the device (CPAP) and its pressure range (6 to 14 cm H2O)."
           }
         ]
       },
-      "latencyMs": 1403
+      "latencyMs": 1414
     }
   ]
 }

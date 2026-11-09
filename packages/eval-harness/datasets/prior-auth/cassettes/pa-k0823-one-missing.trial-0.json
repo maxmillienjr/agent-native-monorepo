@@ -3,8 +3,8 @@
     "formatVersion": 3,
     "taskId": "pa-k0823-one-missing",
     "trialIndex": 0,
-    "recordedAt": "2026-11-09T17:23:02.377Z",
-    "gitSha": "86f6accdf5c3131da46a58edb611ae7038fecfce",
+    "recordedAt": "2026-11-09T19:59:59.451Z",
+    "gitSha": "7a1332a38e4f0f32fa415b008009ac55c7bf5dab",
     "axes": {
       "model": "live",
       "memory": "live"
@@ -16,9 +16,9 @@
   "decisions": [
     {
       "seam": "assess.criteria",
-      "requestHash": "d0a0328e1927a23ef9374434bf83df968bcae20ee2c1454597f5d930608400cc",
+      "requestHash": "278186682f1ab569f6b3b866f735d241637384b3745f3705752a0391d669b8d2",
       "request": {
-        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states something that fails the criterion,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nCite every evidence reference you relied on, exactly as given (for example \"DocumentReference/doc-1\").\nNever cite a reference that is not in the evidence list. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
+        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states a fact that fails the criterion, such as a value outside a threshold or a date outside a window,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nA statement that is uncertain, conditional or reported second-hand is \"insufficient\", even when it suggests the criterion fails.\nEvidence that does not confirm a criterion is \"insufficient\", not \"not-met\".\nCite only references copied exactly from the evidence list (for example \"DocumentReference/doc-1\").\nNever compose a reference from a document's description or a criterion's wording. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
         "criteria": [
           {
             "id": "k0823-mobility-limitation",
@@ -70,7 +70,7 @@
             "evidence": [
               "DocumentReference/doc-k0823-one-missing-exam"
             ],
-            "rationale": "The clinical note documents that the member can no longer toilet or prepare a meal without help."
+            "rationale": "The clinical note documents that she can no longer toilet or prepare a meal without help due to mobility limitations."
           },
           {
             "criterionId": "k0823-cane-walker-insufficient",
@@ -78,7 +78,7 @@
             "evidence": [
               "DocumentReference/doc-k0823-one-missing-exam"
             ],
-            "rationale": "The examination states that with a rolling walker she manages 15 feet before stopping and that a walker does not resolve the limitation."
+            "rationale": "The examination states that a walker does not resolve the limitation."
           },
           {
             "criterionId": "k0823-manual-chair-insufficient",
@@ -86,13 +86,13 @@
             "evidence": [
               "DocumentReference/doc-k0823-one-missing-exam"
             ],
-            "rationale": "The examination notes that with grip strength of 9 kg right and 7 kg left, she cannot self-propel a manual wheelchair more than 20 feet."
+            "rationale": "The examination states she cannot self-propel a manual wheelchair more than 20 feet, which is insufficient to complete the daily activity."
           },
           {
             "criterionId": "k0823-home-access",
             "status": "insufficient",
             "evidence": [],
-            "rationale": "There is no home assessment provided in the evidence to confirm that doorways, turning space, and floor surfaces accommodate a power wheelchair."
+            "rationale": "There is no home assessment provided in the evidence to confirm doorways, turning space, and floor surfaces."
           },
           {
             "criterionId": "k0823-safe-operation",
@@ -100,11 +100,11 @@
             "evidence": [
               "DocumentReference/doc-k0823-one-missing-exam"
             ],
-            "rationale": "The examination documents that her vision is corrected to 20/30, judgement is intact, and she operated a demonstration joystick safely."
+            "rationale": "The examination documents that vision is corrected to 20/30, judgement is intact, and she operated a demonstration joystick safely."
           }
         ]
       },
-      "latencyMs": 1356
+      "latencyMs": 1354
     }
   ]
 }

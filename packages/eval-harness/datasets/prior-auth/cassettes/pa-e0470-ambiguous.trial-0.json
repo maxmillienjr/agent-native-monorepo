@@ -3,8 +3,8 @@
     "formatVersion": 3,
     "taskId": "pa-e0470-ambiguous",
     "trialIndex": 0,
-    "recordedAt": "2026-11-09T17:22:44.238Z",
-    "gitSha": "86f6accdf5c3131da46a58edb611ae7038fecfce",
+    "recordedAt": "2026-11-09T19:59:42.079Z",
+    "gitSha": "7a1332a38e4f0f32fa415b008009ac55c7bf5dab",
     "axes": {
       "model": "live",
       "memory": "live"
@@ -16,9 +16,9 @@
   "decisions": [
     {
       "seam": "assess.criteria",
-      "requestHash": "53b6d7c1e01c52741dd969750be12aaf87675b319c0df9fb7b5021bf4ec1a492",
+      "requestHash": "870ca09d3b9885fda42673267277fedd0fce76a55433b65610c95a1064bf03af",
       "request": {
-        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states something that fails the criterion,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nCite every evidence reference you relied on, exactly as given (for example \"DocumentReference/doc-1\").\nNever cite a reference that is not in the evidence list. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
+        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states a fact that fails the criterion, such as a value outside a threshold or a date outside a window,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nA statement that is uncertain, conditional or reported second-hand is \"insufficient\", even when it suggests the criterion fails.\nEvidence that does not confirm a criterion is \"insufficient\", not \"not-met\".\nCite only references copied exactly from the evidence list (for example \"DocumentReference/doc-1\").\nNever compose a reference from a document's description or a criterion's wording. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
         "criteria": [
           {
             "id": "e0470-osa-diagnosis",
@@ -77,7 +77,7 @@
             "evidence": [
               "DocumentReference/doc-e0470-ambiguous-trial"
             ],
-            "rationale": "The record mentions uncertainty about whether a CPAP machine was tried and for how long, failing to document a definitive trial of at least 21 days."
+            "rationale": "The trial is uncertain and reported second-hand ('She may have tried a CPAP machine for a while at some point; the family were not sure when or for how long... Possibly did not get on with it'), which does not confirm a trial of at least 21 days."
           },
           {
             "criterionId": "e0470-ahi-threshold",
@@ -85,7 +85,7 @@
             "evidence": [
               "DocumentReference/doc-e0470-ambiguous-study"
             ],
-            "rationale": "The sleep study dated within the 12 months before the request reports an AHI of 42 events per hour, which is at least 18."
+            "rationale": "A sleep study report dated 2026-04-15 reports an AHI of 42 events per hour, which is at least 18 events per hour."
           },
           {
             "criterionId": "e0470-bilevel-titration",
@@ -93,11 +93,11 @@
             "evidence": [
               "DocumentReference/doc-e0470-ambiguous-titration"
             ],
-            "rationale": "The titration study documents that bi-level pressure at the ordered settings (16/10 cm H2O) controlled the apnea (residual AHI 3 events per hour)."
+            "rationale": "The bi-level titration study documents that bi-level pressure at the ordered settings (16/10 cm H2O) controlled the apnea (residual AHI 3 events per hour)."
           }
         ]
       },
-      "latencyMs": 1381
+      "latencyMs": 1583
     }
   ]
 }

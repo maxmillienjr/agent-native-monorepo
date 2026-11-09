@@ -3,8 +3,8 @@
     "formatVersion": 3,
     "taskId": "pa-e0260-contradicted",
     "trialIndex": 0,
-    "recordedAt": "2026-11-09T17:22:39.032Z",
-    "gitSha": "86f6accdf5c3131da46a58edb611ae7038fecfce",
+    "recordedAt": "2026-11-09T19:59:37.136Z",
+    "gitSha": "7a1332a38e4f0f32fa415b008009ac55c7bf5dab",
     "axes": {
       "model": "live",
       "memory": "live"
@@ -16,9 +16,9 @@
   "decisions": [
     {
       "seam": "assess.criteria",
-      "requestHash": "3f8c72a02f1b29f11024d8d3d8dcc1646398b7361d4d5febfa5d0c4621d828dd",
+      "requestHash": "2debfa7df64998bbc0fca948d90a843ffac91ebb003522446b35337fd73a9c51",
       "request": {
-        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states something that fails the criterion,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nCite every evidence reference you relied on, exactly as given (for example \"DocumentReference/doc-1\").\nNever cite a reference that is not in the evidence list. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
+        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states a fact that fails the criterion, such as a value outside a threshold or a date outside a window,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nA statement that is uncertain, conditional or reported second-hand is \"insufficient\", even when it suggests the criterion fails.\nEvidence that does not confirm a criterion is \"insufficient\", not \"not-met\".\nCite only references copied exactly from the evidence list (for example \"DocumentReference/doc-1\").\nNever compose a reference from a document's description or a criterion's wording. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
         "criteria": [
           {
             "id": "e0260-positioning-need",
@@ -56,7 +56,7 @@
             "evidence": [
               "DocumentReference/doc-e0260-contradicted-visit"
             ],
-            "rationale": "The evidence states that the member sleeps comfortably with the head raised about 20 degrees, which fails the requirement that the member must be positioned with the head raised 35 degrees or more, or in another position an ordinary bed cannot hold."
+            "rationale": "The evidence states that the member sleeps comfortably with the head raised about 20 degrees, which fails the requirement of 35 degrees or more."
           },
           {
             "criterionId": "e0260-linked-diagnosis",
@@ -72,11 +72,11 @@
             "evidence": [
               "DocumentReference/doc-e0260-contradicted-visit"
             ],
-            "rationale": "The prescriber's note states that he wants to be able to raise and lower the head several times a night immediately when he wakes and cannot work a manual crank."
+            "rationale": "The prescriber's note states that he wants to be able to raise and lower the head several times a night without getting up, immediately when he wakes, and cannot work a manual crank."
           }
         ]
       },
-      "latencyMs": 1253
+      "latencyMs": 1113
     }
   ]
 }

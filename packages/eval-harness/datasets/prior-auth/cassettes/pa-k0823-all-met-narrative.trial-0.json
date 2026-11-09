@@ -3,8 +3,8 @@
     "formatVersion": 3,
     "taskId": "pa-k0823-all-met-narrative",
     "trialIndex": 0,
-    "recordedAt": "2026-11-09T17:22:55.375Z",
-    "gitSha": "86f6accdf5c3131da46a58edb611ae7038fecfce",
+    "recordedAt": "2026-11-09T19:59:53.298Z",
+    "gitSha": "7a1332a38e4f0f32fa415b008009ac55c7bf5dab",
     "axes": {
       "model": "live",
       "memory": "live"
@@ -16,9 +16,9 @@
   "decisions": [
     {
       "seam": "assess.criteria",
-      "requestHash": "dd116cd414aa6b8da3a1c54c3022dff8003a9553829d9f0294f9a17c56a38fc5",
+      "requestHash": "1579ab774b1a16d45d183436cf6a45bc159e12833a824df5ea742d7690976b19",
       "request": {
-        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states something that fails the criterion,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nCite every evidence reference you relied on, exactly as given (for example \"DocumentReference/doc-1\").\nNever cite a reference that is not in the evidence list. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
+        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states a fact that fails the criterion, such as a value outside a threshold or a date outside a window,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nA statement that is uncertain, conditional or reported second-hand is \"insufficient\", even when it suggests the criterion fails.\nEvidence that does not confirm a criterion is \"insufficient\", not \"not-met\".\nCite only references copied exactly from the evidence list (for example \"DocumentReference/doc-1\").\nNever compose a reference from a document's description or a criterion's wording. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
         "criteria": [
           {
             "id": "k0823-mobility-limitation",
@@ -66,7 +66,7 @@
             "evidence": [
               "DocumentReference/doc-k0823-all-met-narrative-exam"
             ],
-            "rationale": "The mobility examination documents that the member's knees give way, preventing him from reaching the toilet in time and stopping him from cooking because he cannot stand at the stove."
+            "rationale": "The mobility examination documents a limitation that prevents the member from completing daily activities in the home such as toileting and cooking."
           },
           {
             "criterionId": "k0823-cane-walker-insufficient",
@@ -74,7 +74,7 @@
             "evidence": [
               "DocumentReference/doc-k0823-all-met-narrative-exam"
             ],
-            "rationale": "The examination states that with a cane or walker he gets as far as the kitchen door and has to sit down, so neither one fixes the limitation."
+            "rationale": "The examination states that neither a cane nor a walker resolves the limitation."
           },
           {
             "criterionId": "k0823-manual-chair-insufficient",
@@ -82,15 +82,15 @@
             "evidence": [
               "DocumentReference/doc-k0823-all-met-narrative-exam"
             ],
-            "rationale": "The examination states that due to prior shoulder replacements, he cannot push himself in his old manual chair past the end of the bed."
+            "rationale": "The examination states that the member cannot push himself in his manual chair past the end of the bed, which is not far enough to complete the daily activity."
           },
           {
             "criterionId": "k0823-home-access",
-            "status": "met",
+            "status": "insufficient",
             "evidence": [
               "DocumentReference/doc-k0823-all-met-narrative-exam"
             ],
-            "rationale": "The supplier measured the house the same week as the exam (exam dated 2026-09-04), confirming wide doorways, turning room in every room, no rugs, no steps, and that a power chair will fit."
+            "rationale": "The home assessment states the house was measured the same week, but no specific date is provided to confirm it was within the 60 days before the request."
           },
           {
             "criterionId": "k0823-safe-operation",
@@ -98,11 +98,11 @@
             "evidence": [
               "DocumentReference/doc-k0823-all-met-narrative-exam"
             ],
-            "rationale": "The examination documents that he reads the paper without glasses, his judgement is sound, and he drove the demonstration chair round the living room without touching a wall."
+            "rationale": "The examination documents that the member reads without glasses (vision), has sound judgement, and drove the demonstration chair around the living room without touching a wall (hand function/operation)."
           }
         ]
       },
-      "latencyMs": 1903
+      "latencyMs": 1567
     }
   ]
 }

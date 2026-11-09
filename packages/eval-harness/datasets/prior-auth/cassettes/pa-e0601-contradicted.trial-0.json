@@ -3,8 +3,8 @@
     "formatVersion": 3,
     "taskId": "pa-e0601-contradicted",
     "trialIndex": 0,
-    "recordedAt": "2026-11-09T17:22:52.694Z",
-    "gitSha": "86f6accdf5c3131da46a58edb611ae7038fecfce",
+    "recordedAt": "2026-11-09T19:59:50.721Z",
+    "gitSha": "7a1332a38e4f0f32fa415b008009ac55c7bf5dab",
     "axes": {
       "model": "live",
       "memory": "live"
@@ -16,9 +16,9 @@
   "decisions": [
     {
       "seam": "assess.criteria",
-      "requestHash": "848f0f2f03e9019c9afdc424f2ad3a34639575872e1b604632bebdcc07b9d85d",
+      "requestHash": "5019d6ac882ef9ebb6492981996ece78dccbaad4aab3efd6145f4f4524dae307",
       "request": {
-        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states something that fails the criterion,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nCite every evidence reference you relied on, exactly as given (for example \"DocumentReference/doc-1\").\nNever cite a reference that is not in the evidence list. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
+        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states a fact that fails the criterion, such as a value outside a threshold or a date outside a window,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nA statement that is uncertain, conditional or reported second-hand is \"insufficient\", even when it suggests the criterion fails.\nEvidence that does not confirm a criterion is \"insufficient\", not \"not-met\".\nCite only references copied exactly from the evidence list (for example \"DocumentReference/doc-1\").\nNever compose a reference from a document's description or a criterion's wording. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
         "criteria": [
           {
             "id": "e0601-osa-diagnosis",
@@ -65,7 +65,7 @@
             "evidence": [
               "Condition/condition-e0601-contradicted-osa"
             ],
-            "rationale": "The member has a recorded diagnosis of obstructive sleep apnea."
+            "rationale": "The member has a diagnosis of obstructive sleep apnea recorded as a condition."
           },
           {
             "criterionId": "e0601-ahi-threshold",
@@ -73,7 +73,7 @@
             "evidence": [
               "DocumentReference/doc-e0601-contradicted-study"
             ],
-            "rationale": "The sleep study report dated 2026-06-22 reports an AHI of 9 events per hour, which is less than the required 18 events per hour."
+            "rationale": "The sleep study dated 2026-06-22 reports an AHI of 9 events per hour, which is below the threshold of 18 events per hour."
           },
           {
             "criterionId": "e0601-conservative-trial",
@@ -81,7 +81,7 @@
             "evidence": [
               "DocumentReference/doc-e0601-contradicted-visit"
             ],
-            "rationale": "The record documents positional therapy from 2026-07-10 to 2026-08-14 (35 days), which exceeds the 21-day requirement and did not resolve symptoms."
+            "rationale": "The record documents positional therapy from 2026-07-10 to 2026-08-14 (35 days), which exceeds the 21 days required, and symptoms persisted."
           },
           {
             "criterionId": "e0601-prescriber-order",
@@ -89,11 +89,11 @@
             "evidence": [
               "DocumentReference/doc-e0601-contradicted-visit"
             ],
-            "rationale": "A signed prescriber order dated 2026-09-09 names the device (CPAP) and pressure range (6 to 14 cm H2O)."
+            "rationale": "A signed prescriber order names the CPAP device and a pressure range of 6 to 14 cm H2O."
           }
         ]
       },
-      "latencyMs": 1309
+      "latencyMs": 1237
     }
   ]
 }
