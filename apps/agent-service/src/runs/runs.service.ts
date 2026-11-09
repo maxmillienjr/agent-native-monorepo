@@ -22,6 +22,7 @@ import type { AgentState } from '../agent/graph/state.js';
 import { createGeminiEmbedder } from '../agent/model/gemini-embedder.js';
 import { invokeChat, type ChatRequest } from '../agent/model/gemini-chat.js';
 import { stopOnDailyQuota } from '../agent/model/rate-limit.js';
+import { retryServerErrorOnce, stopOnServerError } from '../agent/model/server-errors.js';
 import { EXTRACTION_PROMPT, parseExtraction } from '../agent/model/extraction.js';
 import {
   EPISODIC_REPOSITORY,
@@ -112,6 +113,37 @@ export interface ChatRun {
  */
 export const AGENT_NAME = 'agent-service';
 
+/** How the chat client is built. */
+export interface GeminiChatOptions {
+  /** Gemini's `responseMimeType: application/json`. */
+  readonly json?: boolean;
+  /**
+   * A provider 5xx is retried once and then thrown as
+   * `ProviderUnavailableError`: two requests for the call, where the default
+   * makes seven. Off unless passed, and passed only by `yarn eval` on the live
+   * model axis and when recording (P1-I). A request is better served by waiting
+   * than by failing; a recording is not, because each retry spends one of the
+   * day's twenty requests.
+   */
+  readonly boundServerErrors?: boolean;
+}
+
+/** What a caller of `RunsService` may change about the chat client. */
+export type ChatClientOptions = Pick<GeminiChatOptions, 'boundServerErrors'>;
+
+/**
+ * The bounded client: the same class, with `invoke` making at most one retry
+ * on a 5xx. The retry is around the call rather than in `onFailedAttempt`,
+ * because LangChain hands that handler the error and not the attempt number.
+ */
+class ServerErrorBoundedChat extends ChatGoogleGenerativeAI {
+  override invoke(
+    ...args: Parameters<ChatGoogleGenerativeAI['invoke']>
+  ): ReturnType<ChatGoogleGenerativeAI['invoke']> {
+    return retryServerErrorOnce('generateContent', () => super.invoke(...args));
+  }
+}
+
 /**
  * The chat client, constructed in one place so the retry behaviour is the same
  * on both instances and a test can build exactly what a request uses.
@@ -119,18 +151,22 @@ export const AGENT_NAME = 'agent-service';
  * `onFailedAttempt` reaches LangChain's `AsyncCaller`, which retries every
  * status outside a short list — 429 included — up to six times. A daily-quota
  * 429 cannot succeed on any of them, so `stopOnDailyQuota` makes it terminal
- * and leaves every other failure to the default handler.
+ * and leaves every other failure to the default handler. With
+ * `boundServerErrors`, a 5xx is terminal there too, and the one retry it gets
+ * is `ServerErrorBoundedChat`'s.
  */
 export function createGeminiChat(
   apiKey: string,
-  options: { json?: boolean } = {},
+  options: GeminiChatOptions = {},
 ): ChatGoogleGenerativeAI {
-  return new ChatGoogleGenerativeAI({
+  const fields = {
     model: CHAT_MODEL,
     apiKey,
     ...(options.json === true ? { json: true } : {}),
-    onFailedAttempt: stopOnDailyQuota,
-  });
+  };
+  return options.boundServerErrors === true
+    ? new ServerErrorBoundedChat({ ...fields, onFailedAttempt: stopOnServerError })
+    : new ChatGoogleGenerativeAI({ ...fields, onFailedAttempt: stopOnDailyQuota });
 }
 
 /**
@@ -168,6 +204,7 @@ export class RunsService {
   private graphDeps: GraphDeps | undefined;
   private decorateModel: ((deps: ModelDeps) => ModelDeps) | undefined;
   private decoratedAxis: RecordedModelAxis | undefined;
+  private chatOptions: ChatClientOptions = {};
   private readonly recorder: RunRecorder;
 
   // Tokens are explicit: these are interfaces with no runtime value to infer,
@@ -215,6 +252,17 @@ export class RunsService {
   setModelDecorator(decorate: (deps: ModelDeps) => ModelDeps, servedBy?: RecordedModelAxis): void {
     this.decorateModel = decorate;
     this.decoratedAxis = servedBy;
+  }
+
+  /**
+   * Changes how the chat client is built for every run after this call.
+   *
+   * Only `yarn eval` calls it, to bound 5xx retries on the live model axis and
+   * when recording (P1-I). A request, and P2-D's stage 2 recorder, which builds
+   * its own `RunsService`, keep LangChain's default retries.
+   */
+  setChatOptions(options: ChatClientOptions): void {
+    this.chatOptions = options;
   }
 
   /** What serves the model half of a run now, as its record states it. */
@@ -282,8 +330,8 @@ export class RunsService {
     // `responseMimeType: application/json`, which is what stops it wrapping a
     // JSON answer in a ```json fence. `plan` wants prose and must not have it;
     // the two callers that parse a response must.
-    const prose = createGeminiChat(apiKey);
-    const json = createGeminiChat(apiKey, { json: true });
+    const prose = createGeminiChat(apiKey, this.chatOptions);
+    const json = createGeminiChat(apiKey, { ...this.chatOptions, json: true });
 
     // Each call names its seam, so the inference span says which decision it
     // paid for — the cassette's vocabulary, which is what P1-F attributes by.
