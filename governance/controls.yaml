@@ -187,44 +187,28 @@ controls:
     note: Delivered by P1-C, and gated by P1-D. This is the replay axis, which grades a recorded sample rather than the live model. The job's exit is the regression gate's verdict against the committed baselines/replay.json, so a skipped task, a deleted assertion or a moved score fails it and a failure accepted in the baseline does not. The live job runs nightly and on dispatch, and is skipped until a GOOGLE_API_KEY repository secret exists. A red job blocks a merge only once the owner applies .github/rulesets/main.json.
 
   - id: CTL-EVAL-04
-    title: Each retrieval store's contribution is measured against labels and a decision rule fixed before the run
-    status: implemented
+    # Retitled and made procedural by P2-E. The measurement's runner, rule
+    # functions and their tests were deleted with the graph, so nothing in the
+    # tree runs it; the rule is now a step a person applies.
+    title: A memory store is kept only on a measurement against labels and a decision rule fixed before the run
+    status: procedural
     maps:
       - { framework: nist-ai-rmf-1.0, ref: MEASURE 2.3 }
       - { framework: nist-ai-rmf-1.0, ref: MANAGE 1.1 }
       - { framework: iso-iec-42001-2023, ref: A.6.2.4 }
     evidence:
-      - kind: symbol
-        file: apps/agent-service/src/eval/run-retrieval-ablation.ts
-        name: runConditions
-      - {
-          kind: symbol,
-          file: packages/eval-harness/src/retrieval/evaluate.ts,
-          name: applyDecisionRule,
-        }
-      - kind: test
-        file: packages/eval-harness/src/retrieval/dataset.test.ts
-        name: holds 200 queries, 50 per stratum, fixed before the first run
-        tier: unit
-      - kind: test
-        file: packages/eval-harness/src/retrieval/evaluate.test.ts
-        name: maps each pair of outcomes onto a row of the PRD table
-        tier: unit
-      - {
-          kind: symbol,
-          file: packages/eval-harness/src/retrieval/explanation.ts,
-          name: applyExplanationRule,
-        }
-      - kind: test
-        file: packages/eval-harness/src/retrieval/explanation-labels.test.ts
-        name: load, validate, and equal the derivation from the dataset
-        tier: unit
+      - { kind: doc, file: .context/workflows.md, heading: Add a New Memory Adapter }
       - {
           kind: doc,
           file: docs/adr/0009-the-second-store-after-the-retrieval-ablation.md,
           heading: The measurement,
         }
-    note: Delivered by P2-B. The unit tests hold the dataset to its pre-registered shape and the rule to the PRD's outcome table; they do not re-run the ablation. yarn eval:retrieval runs in no CI pipeline, because P2-B left the tier to P1-C and P1-C shipped first, so a change to a reader is not re-measured until someone runs it. The result it recorded is that the graph does not earn its place in retrieval, and ADR 0009, accepted, took the graph out of the read path. The ablation now measures that retired design as history. P2-D measured the graph's remaining role, explanation, the same way, with gold paths committed before the explainer, a rule fixed before the run, and yarn eval:explanation applying it. Stage 1 was good. Stage 2, which compared plan's answers with and without the graph's paths over 38 queries, was not met, at -0.079 [-0.184, +0.026] against a rule that needed +0.10. The rule selected option C, the graph explains and plan does not use it, and ADR 0012, accepted on 2026-11-09, removes the graph. P2-D wired neither command into CI, and P2-E archives both when it removes the graph.
+      - {
+          kind: doc,
+          file: docs/adr/0012-the-graphs-explanation-role-stage-one.md,
+          heading: Decision,
+        }
+    note: Delivered by P2-B and P2-D, and made procedural by P2-E. P2-B measured the graph's place in retrieval against pre-registered labels and a rule fixed before the run, and ADR 0009 took the graph out of the read path. P2-D measured its remaining role, explanation, the same way. Stage 1 was good and stage 2 was not met, at -0.079 [-0.184, +0.026] against a rule that needed +0.10, so ADR 0012 removed the graph and P2-E executed it. Both measurements reproduced their committed reports at df655c0, tagged archive/p2e-graph-measurements, which is where they run; the datasets and reports stay under packages/eval-harness/datasets/retrieval-ablation/. No check enforces the rule for the next store, so the row is procedural, a step in .context/workflows.md, Add a New Memory Adapter.
 
   - id: CTL-EVAL-05
     title: A change to the model behind a pinned model id, or its retirement, turns a scheduled job red
@@ -401,7 +385,7 @@ controls:
         tier: integration
       - kind: test
         file: packages/memory-core/test/retrieval-facade.integration.test.ts
-        name: does not return a fact only the graph holds, though the graph reaches it
+        name: does not return a fact written in another session
         tier: integration
       - kind: test
         file: apps/agent-service/src/agent/nodes/distill.node.test.ts
@@ -413,7 +397,7 @@ controls:
           file: docs/adr/0011-the-agent-does-not-promote-its-own-output.md,
           heading: Decision,
         }
-    note: Delivered by P4-B. Retrieval refuses a query that names no session (M2), and distill reads the user's turns only, so the agent does not promote its own output (M3, ADR 0011). The red team, EVAL_SUITE=red-team, runs three canary cases — rt-001 another session's fact, rt-002 laundering through the answer, rt-003 a query-only injection through reflect — and the replay job runs it on every pull request. rt-001 passes on the stub model; rt-002 and rt-003 need the model to write, and their cassettes were not yet recorded when this row moved, so until they are that step aborts naming the missing cassette. The graph's session filter (M1) moved to P2-D, which has built it. Every graph write carries its session and both graph reads require one.
+    note: Delivered by P4-B. Retrieval refuses a query that names no session (M2), and distill reads the user's turns only, so the agent does not promote its own output (M3, ADR 0011). The red team, EVAL_SUITE=red-team, runs three canary cases — rt-001 another session's fact, rt-002 laundering through the answer, rt-003 a query-only injection through reflect — and the replay job runs it on every pull request. rt-001 passes on the stub model; rt-002 and rt-003 need the model to write, and their cassettes were not yet recorded when this row moved, so until they are that step aborts naming the missing cassette. The graph's session filter (M1), which P2-D built, was deleted with the graph by P2-E; retrieval is the session-scoped vector search alone, held by the session-scoping test.
 
   - id: CTL-AGY-01
     # Retitled by P4-C. The planned title asked for irreversible calls to be

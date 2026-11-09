@@ -207,24 +207,32 @@ request carries every tool's description, tier and schema.
 
 ## Add a New Memory Adapter
 
-1. Create the adapter under `packages/memory-core/src/<tier>/`.
-2. Implement the relevant interface:
+1. **A new store is kept only on a measurement fixed before the run** (CTL-EVAL-04). An
+   adapter over a store the repository already has is an ordinary change. One that adds
+   a store — a second index, a graph, a cache that a request reads — needs a PRD that
+   commits, before any number exists, to the labels it is scored against, the conditions
+   it compares, and the decision rule that keeps or removes it, and the store stays only
+   if the rule says so. Labels are written by a person, never derived from what one of
+   the measured systems returns. ADR 0009, "The measurement", and ADR 0012, "Decision",
+   are the worked examples: both measured the graph this way, and the rule removed it
+   (P2-E). Their runners are at the tag `archive/p2e-graph-measurements`.
+2. Create the adapter under `packages/memory-core/src/<tier>/`.
+3. Implement the relevant interface:
    - Episodic: `EpisodicRepository`
-   - Neo4j: `Neo4jWriter`, `Neo4jReader`
    - pgvector: `PgvectorWriter`, `PgvectorReader`
    - Retrieval: `RetrievalFacade`
-3. Enforce idempotent write semantics:
-   - Neo4j: Always use `MERGE`, never `CREATE`.
-   - pgvector: Always upsert on `content_hash`, never bare `INSERT`.
-4. Export from `packages/memory-core/src/index.ts`.
-5. Add integration tests in `packages/memory-core/test/`:
+4. Enforce idempotent write semantics: upsert on a natural key, never a bare `INSERT`.
+   pgvector upserts on `content_hash`, and `episodes` writes `ON CONFLICT DO NOTHING` on
+   `(session_id, turn_index)`.
+5. Export from `packages/memory-core/src/index.ts`.
+6. Add integration tests in `packages/memory-core/test/`:
    - Run against real databases, never mocks. They come from `docker-compose.yml` locally
-     and from service containers in `e2e.yml`; the suites read `DATABASE_URL` and
-     `NEO4J_URI` and skip when those are unset. This repo has never used `testcontainers`,
-     despite older wording that said so.
+     and from service containers in `e2e.yml`; the suites read `DATABASE_URL` and skip
+     when it is unset. This repo has never used `testcontainers`, despite older wording
+     that said so.
    - Verify write/read round-trip.
    - Verify idempotency (run twice, assert no duplicates).
-6. Run `yarn turbo test:integration` to verify.
+7. Run `yarn turbo test:integration` to verify.
 
 ## Add an HTTP Route to agent-service
 
