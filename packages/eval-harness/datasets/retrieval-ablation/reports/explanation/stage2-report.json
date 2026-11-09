@@ -1,0 +1,682 @@
+{
+  "formatVersion": 1,
+  "startedAt": "2026-11-09T13:51:53.554Z",
+  "finishedAt": "2026-11-09T13:51:57.835Z",
+  "axes": {
+    "memory": "live",
+    "model": "replay",
+    "embeddings": "recorded"
+  },
+  "dataset": {
+    "sha256": "46e6f4b5bdbee3641de2bc9f04169e5f1dd77452e4700e019d7b53fe64617bdc",
+    "labelsSha256": "582b43de6e0e9a9508ae4387cd5ee51a4b1a48d5c4c450d16da3c93ed7252334"
+  },
+  "answers": {
+    "file": "recorded/explanation-answers.json",
+    "sha256": "48d503b6dae81ddf270928e0979f9f10786ed9aa1453651118323ee8d18d89b4",
+    "chatModel": "gemini-2.5-flash",
+    "recorded": 76,
+    "expected": 76,
+    "invocations": 6,
+    "recordedFrom": "2026-11-05T20:32:06.144Z",
+    "recordedTo": "2026-11-09T13:51:14.343Z",
+    "requestsThisRun": 0
+  },
+  "config": {
+    "topK": 10,
+    "margin": 0.1,
+    "bootstrap": {
+      "resamples": 10000,
+      "seed": 24301,
+      "confidence": 0.95
+    }
+  },
+  "queries": [
+    {
+      "queryId": "relational-003",
+      "explainedFacts": 10,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-005",
+      "explainedFacts": 10,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-009",
+      "explainedFacts": 10,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": false,
+          "bridgeNamed": false
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-010",
+      "explainedFacts": 10,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": false,
+          "bridgeNamed": true
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-011",
+      "explainedFacts": 10,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-012",
+      "explainedFacts": 10,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-013",
+      "explainedFacts": 10,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": false,
+          "bridgeNamed": false
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-014",
+      "explainedFacts": 10,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-015",
+      "explainedFacts": 10,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-016",
+      "explainedFacts": 10,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        }
+      },
+      "split": [
+        3,
+        4
+      ]
+    },
+    {
+      "queryId": "relational-018",
+      "explainedFacts": 10,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-020",
+      "explainedFacts": 9,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": false,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": false,
+          "bridgeNamed": false
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-021",
+      "explainedFacts": 10,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-022",
+      "explainedFacts": 10,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-023",
+      "explainedFacts": 10,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": false,
+          "bridgeNamed": false
+        }
+      },
+      "split": [
+        5,
+        6
+      ]
+    },
+    {
+      "queryId": "relational-024",
+      "explainedFacts": 10,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-025",
+      "explainedFacts": 10,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": false,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": false,
+          "bridgeNamed": false
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-026",
+      "explainedFacts": 10,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-027",
+      "explainedFacts": 10,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-028",
+      "explainedFacts": 10,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-029",
+      "explainedFacts": 10,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-030",
+      "explainedFacts": 10,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-031",
+      "explainedFacts": 10,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-032",
+      "explainedFacts": 10,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-033",
+      "explainedFacts": 10,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-034",
+      "explainedFacts": 10,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-035",
+      "explainedFacts": 10,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-036",
+      "explainedFacts": 10,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-038",
+      "explainedFacts": 10,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": false,
+          "bridgeNamed": false
+        },
+        "with": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-039",
+      "explainedFacts": 10,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-040",
+      "explainedFacts": 10,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-041",
+      "explainedFacts": 10,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-042",
+      "explainedFacts": 10,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-046",
+      "explainedFacts": 4,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": false,
+          "bridgeNamed": false
+        },
+        "with": {
+          "answerKeyPresent": false,
+          "bridgeNamed": false
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-047",
+      "explainedFacts": 9,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-048",
+      "explainedFacts": 7,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-049",
+      "explainedFacts": 4,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        }
+      },
+      "split": null
+    },
+    {
+      "queryId": "relational-050",
+      "explainedFacts": 4,
+      "answerFactExplained": true,
+      "grades": {
+        "without": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        },
+        "with": {
+          "answerKeyPresent": true,
+          "bridgeNamed": true
+        }
+      },
+      "split": null
+    }
+  ],
+  "graders": {
+    "answerKeyPresent": {
+      "without": 0.8947368421052632,
+      "with": 0.8157894736842105,
+      "difference": {
+        "n": 38,
+        "mean": -0.07894736842105263,
+        "sd": 0.3587952022464205,
+        "lower": -0.18421052631578946,
+        "upper": 0.02631578947368421,
+        "resamples": 10000,
+        "seed": 24301,
+        "confidence": 0.95
+      }
+    },
+    "bridgeNamed": {
+      "without": 0.9473684210526315,
+      "with": 0.8421052631578947,
+      "difference": {
+        "n": 38,
+        "mean": -0.10526315789473684,
+        "sd": 0.38830704514427367,
+        "lower": -0.23684210526315788,
+        "upper": 0,
+        "resamples": 10000,
+        "seed": 24301,
+        "confidence": 0.95
+      }
+    }
+  },
+  "outcome": "not met",
+  "reason": "every answer is recorded; the rule reads answer_key_present, with − without"
+}

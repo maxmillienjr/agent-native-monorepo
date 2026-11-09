@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
-  "startedAt": "2026-10-08T19:07:30.608Z",
-  "finishedAt": "2026-10-08T19:07:34.261Z",
+  "startedAt": "2026-11-09T13:51:48.254Z",
+  "finishedAt": "2026-11-09T13:51:57.843Z",
   "axes": {
     "memory": "live",
     "model": "none",
@@ -13935,9 +13935,9 @@
     }
   },
   "stage2": {
-    "ran": false,
-    "generateContentCalls": 0,
-    "reason": "stage 1 is good; stage 2 is scheduled separately against the free-tier quota and has not run"
+    "ran": true,
+    "generateContentCalls": 76,
+    "reason": "stage 2 is recorded in full and scored from the answer file (stage2-summary.md)"
   },
-  "outcome": null
+  "outcome": "option C"
 }

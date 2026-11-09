@@ -5,7 +5,7 @@
 - **Labels sha256:** `582b43de6e0e9a9508ae4387cd5ee51a4b1a48d5c4c450d16da3c93ed7252334` (`explanation-labels.json`)
 - **Pairs:** 201 (paraphrase 50, relational 50, entity-distractor 50, no-entity 51)
 - **Configuration:** at most 3 paths per fact, at most 2 hops, bootstrap 10000 resamples seed 24301, 95% percentile
-- **Run:** 2026-10-08T19:07:30.608Z to 2026-10-08T19:07:34.261Z
+- **Run:** 2026-11-09T13:51:48.254Z to 2026-11-09T13:51:57.843Z
 
 ## Construction check
 
@@ -76,6 +76,6 @@ Pre-registered in P2-D, on `explain`, relational stratum: `good` if recall@3's 9
 
 **Stage 1: good.**
 
-**Stage 2: did not run** — stage 1 is good; stage 2 is scheduled separately against the free-tier quota and has not run. It made 0 `generateContent` calls.
+**Stage 2: ran** — stage 2 is recorded in full and scored from the answer file (stage2-summary.md). It made 76 `generateContent` calls.
 
-**Outcome: decided by stage 2.**
+**Outcome: option C.**
