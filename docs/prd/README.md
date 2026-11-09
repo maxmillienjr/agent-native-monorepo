@@ -5,16 +5,22 @@
 _Last updated 2026-11-09. If this section is more than a few weeks stale, trust the code
 over it and update it._
 
-**The chat model shuts down on 2026-12-01.** Google's deprecations page routes
-`gemini-2.5-flash` to `gemini-3.5-flash-lite` from that day under the same id, so P1-I,
-accepted on 2026-11-09, has to put a measured switch on `main` by 2026-11-30. P2-D's stage
-2, pre-registered on the old id, finished recording on 2026-11-09. P1-I is in progress,
-tracked in [#147](https://github.com/maxmillienjr/agent-native-monorepo/issues/147). Its step
-1a, the only code before the choice, adds the canary's `chat-candidate` probe on
-`gemini-3.5-flash-lite` and lets `EVAL_SCHEDULE_PAUSED=live` skip the scheduled `eval-live`
-alone. The seven nights its rule 3 reads start with the first scheduled canary after that
-merges. Stage 2 no longer holds the 2.5 pool, and the variable was deleted at 13:51 UTC on
-2026-11-09, so the scheduled `eval-live` runs again as well.
+**The chat model shuts down on 2026-12-01, and the switch is built.** Google's deprecations
+page routes `gemini-2.5-flash` to `gemini-3.5-flash-lite` from that day under the same id.
+On 2026-11-09 the owner chose `gemini-3.5-flash-lite` directly: "migrate it to the latest
+flash lite. paid for dev work, free on ci." [ADR 0018](../adr/0018-the-chat-model-is-a-pinned-stable-id.md)
+records it. P1-I's selection rule and seven-night series no longer choose the id. P1-I is
+still in progress, tracked in
+[#147](https://github.com/maxmillienjr/agent-native-monorepo/issues/147). The branch
+`feat/p1-i-switch` pins the new id and removes the canary's candidate probe. On that branch
+the three JSON seams hash their instruction, at cassette format 3, and the price and the
+docs follow the pin. **Next, on the same branch:** the conductor re-records all three suites
+on the owner's paid key, regenerates the replay baselines and the six budgets, commits the
+canary baseline for the new id, and confirms the price. Replay and `agent-cassette`'s
+committed-set tests fail on the branch until then. Merging without the canary baseline turns
+the scheduled canary red, because a pinned id with no baseline entry reads as `changed`.
+P1-E's alias dispatch is queued for 2026-11-10 and is informational now. Step 1d and phase
+3's fresh-clone trial need the owner's new-project key. The deadline is 2026-11-30.
 
 **[P2-E](P2-E-remove-the-graph.md) is shipped: the graph is gone.** ADR 0012's option C
 landed in two pull requests on 2026-11-09. #152 (`df655c0`) stopped `reflect` writing the
@@ -502,7 +508,12 @@ at least twelve days, with the switch due on `main` by 2026-11-30. It owns P1-E'
 criterion, the suite on the floating alias, as its first measurement; three dispatches and
 a probe from 2026-10-26 to 2026-11-03 ran into the alias's 503s and its own daily quota.
 P2-D's stage 2, pre-registered on `gemini-2.5-flash`, made its last call on 2026-11-09,
-ahead of that date.
+ahead of that date. _Amended 2026-11-09:_ the owner chose `gemini-3.5-flash-lite` directly
+(ADR 0018), so the rule and the candidate measurement no longer choose the id. The
+recordings run on the owner's paid key, and CI keeps the free secret, so the free tier's
+daily quota no longer sets the schedule. What remains is the re-record of the three suites
+and the canary baseline on the switch branch, the alias dispatch as an informational
+measurement, and the new-project checks.
 
 ## Tier 2 — Make the architecture real
 
