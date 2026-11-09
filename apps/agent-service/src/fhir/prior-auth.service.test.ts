@@ -93,6 +93,46 @@ describe('the prior-authorization graph', () => {
     expect(attribute(exporter.getFinishedSpans(), 'dispose', 'prior_auth.disposition')).toBe(
       'refer-to-clinician',
     );
+    // The stub model cites nothing, so nothing it cites can fail to resolve.
+    expect(
+      attribute(exporter.getFinishedSpans(), 'dispose', 'prior_auth.unresolved_citations'),
+    ).toBe(0);
+  });
+
+  it('counts on the dispose span the citations that name no resource in the request (P3-G)', async () => {
+    const runs = new RunsService(null, null, null, null, null);
+    const stub = runs.modelDeps();
+    // One real citation and two invented ones, across a `met` and a `not-met`;
+    // the policy's other criteria cite nothing.
+    const cited: string[][] = [
+      ['DocumentReference/doc-e0601-all-met-structured-study', 'DocumentReference/doc-invented-1'],
+      ['DocumentReference/doc-invented-2'],
+    ];
+    runs.modelDeps = () => ({
+      ...stub,
+      assess: {
+        assessCriteria: async (criteria) =>
+          criteria.map((criterion, index) => ({
+            criterionId: criterion.id,
+            status: index === 0 ? ('met' as const) : ('not-met' as const),
+            evidence: cited[index] ?? [],
+            rationale: 'synthetic',
+          })),
+      },
+    });
+    const subject = new PriorAuthService(
+      runs,
+      null,
+      { now: () => FIXED },
+      null,
+      new InMemoryCaseRepository(),
+    );
+
+    const run = await subject.submit(bundle('pa-e0601-all-met-structured'), 'corr-pa-9');
+    const spans = exporter.getFinishedSpans();
+    expect(run.state.disposition?.kind).toBe('refer-to-clinician');
+    expect(attribute(spans, 'dispose', 'prior_auth.unresolved_citations')).toBe(2);
+    expect(unlistedAttributeKeys(spans)).toEqual([]);
   });
 
   it('skips assess when the coverage is not active on the date of service', async () => {
