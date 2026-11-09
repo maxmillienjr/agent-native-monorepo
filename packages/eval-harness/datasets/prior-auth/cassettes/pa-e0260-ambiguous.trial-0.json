@@ -3,8 +3,8 @@
     "formatVersion": 3,
     "taskId": "pa-e0260-ambiguous",
     "trialIndex": 0,
-    "recordedAt": "2026-11-09T17:22:37.726Z",
-    "gitSha": "86f6accdf5c3131da46a58edb611ae7038fecfce",
+    "recordedAt": "2026-11-09T22:27:16.012Z",
+    "gitSha": "5b35f9439bfac0fff9cb71211b1cbda39f2689ab",
     "axes": {
       "model": "live",
       "memory": "live"
@@ -16,9 +16,9 @@
   "decisions": [
     {
       "seam": "assess.criteria",
-      "requestHash": "4695bffba69c0fef0db9574e90a3f84e3ad03216907b1afb6e33c900a84af287",
+      "requestHash": "77067dd7b73d5284063691b841168430928208c5f9297f1cdfd5ad8a21c45e40",
       "request": {
-        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states something that fails the criterion,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nCite every evidence reference you relied on, exactly as given (for example \"DocumentReference/doc-1\").\nNever cite a reference that is not in the evidence list. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
+        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states a fact that fails the criterion, such as a value outside a threshold or a date outside a window,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nA time stated relative to a dated document, such as days or a week before or after it, is dated.\nA statement that is uncertain, conditional or reported second-hand is \"insufficient\", even when it suggests the criterion fails.\nEvidence that does not confirm a criterion is \"insufficient\", not \"not-met\".\nCite only references copied exactly from the evidence list (for example \"DocumentReference/doc-1\").\nNever compose a reference from a document's description or a criterion's wording. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
         "criteria": [
           {
             "id": "e0260-positioning-need",
@@ -56,7 +56,7 @@
             "evidence": [
               "DocumentReference/doc-e0260-ambiguous-visit"
             ],
-            "rationale": "The prescriber notes that the member must sleep with the head raised at 45 degrees to breathe, which pillows cannot hold."
+            "rationale": "The prescriber documented that the member must sleep with the head raised at 45 degrees to breathe, which pillows cannot hold."
           },
           {
             "criterionId": "e0260-linked-diagnosis",
@@ -64,19 +64,19 @@
             "evidence": [
               "DocumentReference/doc-e0260-ambiguous-visit"
             ],
-            "rationale": "The prescriber's note explicitly states that the positioning need follows from her heart failure."
+            "rationale": "The clinical note states that the positioning need follows from her heart failure."
           },
           {
             "criterionId": "e0260-frequent-adjustment",
-            "status": "not-met",
+            "status": "insufficient",
             "evidence": [
               "DocumentReference/doc-e0260-ambiguous-visit"
             ],
-            "rationale": "The note states that her son thinks she might need to change position at night now and then, but nobody has kept track of how often, which does not confirm that the position must change several times a day or without delay in a way a manual crank cannot do."
+            "rationale": "The evidence regarding the frequency of position changes is reported second-hand and uncertain ('Her son thinks she might need to change position at night now and then, possibly; nobody has kept track of how often, and she has not said whether a crank would do')."
           }
         ]
       },
-      "latencyMs": 1276
+      "latencyMs": 1111
     }
   ]
 }

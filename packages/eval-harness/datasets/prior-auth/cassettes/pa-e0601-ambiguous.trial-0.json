@@ -3,8 +3,8 @@
     "formatVersion": 3,
     "taskId": "pa-e0601-ambiguous",
     "trialIndex": 0,
-    "recordedAt": "2026-11-09T17:22:51.283Z",
-    "gitSha": "86f6accdf5c3131da46a58edb611ae7038fecfce",
+    "recordedAt": "2026-11-09T22:27:29.654Z",
+    "gitSha": "5b35f9439bfac0fff9cb71211b1cbda39f2689ab",
     "axes": {
       "model": "live",
       "memory": "live"
@@ -16,9 +16,9 @@
   "decisions": [
     {
       "seam": "assess.criteria",
-      "requestHash": "6f21757922b6606d563cdba1a11231430eac7f96df377f7993a32598b85cb5d6",
+      "requestHash": "e1996f711f0b01b978823c4c9d14cb52d9208cecefbe25a92f399f4c3c5caa6d",
       "request": {
-        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states something that fails the criterion,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nCite every evidence reference you relied on, exactly as given (for example \"DocumentReference/doc-1\").\nNever cite a reference that is not in the evidence list. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
+        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states a fact that fails the criterion, such as a value outside a threshold or a date outside a window,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nA time stated relative to a dated document, such as days or a week before or after it, is dated.\nA statement that is uncertain, conditional or reported second-hand is \"insufficient\", even when it suggests the criterion fails.\nEvidence that does not confirm a criterion is \"insufficient\", not \"not-met\".\nCite only references copied exactly from the evidence list (for example \"DocumentReference/doc-1\").\nNever compose a reference from a document's description or a criterion's wording. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
         "criteria": [
           {
             "id": "e0601-osa-diagnosis",
@@ -61,7 +61,7 @@
             "evidence": [
               "Condition/condition-e0601-ambiguous-osa"
             ],
-            "rationale": "The member has a recorded diagnosis of obstructive sleep apnea (G47.33)."
+            "rationale": "The member has a recorded condition of obstructive sleep apnea."
           },
           {
             "criterionId": "e0601-ahi-threshold",
@@ -69,7 +69,7 @@
             "evidence": [
               "DocumentReference/doc-e0601-ambiguous-visit"
             ],
-            "rationale": "The visit note mentions a sleep study from a few years back that is not available and the exact AHI score is not confirmed or documented within the 12 months before the request."
+            "rationale": "The clinical note mentions a sleep study from a few years back that could not be confirmed, and there is no sleep study report dated within the 12 months before the request reporting an AHI of at least 18 events per hour."
           },
           {
             "criterionId": "e0601-conservative-trial",
@@ -77,7 +77,7 @@
             "evidence": [
               "DocumentReference/doc-e0601-ambiguous-visit"
             ],
-            "rationale": "Positional therapy with a positional belt for 30 days in August was tried and did not help, fulfilling the 21-day conservative measure requirement."
+            "rationale": "The clinical note documents positional therapy for 30 days that did not help."
           },
           {
             "criterionId": "e0601-prescriber-order",
@@ -85,11 +85,11 @@
             "evidence": [
               "DocumentReference/doc-e0601-ambiguous-visit"
             ],
-            "rationale": "There is a signed prescriber order for a CPAP device with a pressure range of 5 to 15 cm H2O."
+            "rationale": "The order names the CPAP device, specifies a pressure range of 5 to 15 cm H2O, and is signed electronically by the prescriber."
           }
         ]
       },
-      "latencyMs": 1380
+      "latencyMs": 1312
     }
   ]
 }

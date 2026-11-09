@@ -3,8 +3,8 @@
     "formatVersion": 3,
     "taskId": "pa-k0823-ambiguous",
     "trialIndex": 0,
-    "recordedAt": "2026-11-09T17:22:59.066Z",
-    "gitSha": "86f6accdf5c3131da46a58edb611ae7038fecfce",
+    "recordedAt": "2026-11-09T22:27:36.651Z",
+    "gitSha": "5b35f9439bfac0fff9cb71211b1cbda39f2689ab",
     "axes": {
       "model": "live",
       "memory": "live"
@@ -16,9 +16,9 @@
   "decisions": [
     {
       "seam": "assess.criteria",
-      "requestHash": "70d3f535c4dc877f0da29ed329c5a76d43c4d80733479178b6d9801b9dec2036",
+      "requestHash": "ea7db55782332bda9090c49c50bb11531b8d7dc73ed6a05e1d3feceac1d421fc",
       "request": {
-        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states something that fails the criterion,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nCite every evidence reference you relied on, exactly as given (for example \"DocumentReference/doc-1\").\nNever cite a reference that is not in the evidence list. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
+        "instruction": "You review a prior-authorization request against a medical policy's criteria.\nFor each criterion, decide from the evidence alone whether it is:\n- \"met\": the evidence states that the criterion is satisfied,\n- \"not-met\": the evidence states a fact that fails the criterion, such as a value outside a threshold or a date outside a window,\n- \"insufficient\": the evidence does not say, or says it only vaguely, without a date, or as hearsay.\nA time stated relative to a dated document, such as days or a week before or after it, is dated.\nA statement that is uncertain, conditional or reported second-hand is \"insufficient\", even when it suggests the criterion fails.\nEvidence that does not confirm a criterion is \"insufficient\", not \"not-met\".\nCite only references copied exactly from the evidence list (for example \"DocumentReference/doc-1\").\nNever compose a reference from a document's description or a criterion's wording. Do not recommend an outcome.\nRespond with JSON only:\n{\"findings\": [{\"criterionId\": \"...\", \"status\": \"met\" | \"not-met\" | \"insufficient\", \"evidence\": [\"...\"], \"rationale\": \"...\"}]}",
         "criteria": [
           {
             "id": "k0823-mobility-limitation",
@@ -74,7 +74,7 @@
             "evidence": [
               "DocumentReference/doc-k0823-ambiguous-exam"
             ],
-            "rationale": "The mobility examination explicitly states she cannot get to the bathroom or prepare a meal without help, which prevents her from completing daily activities in the home."
+            "rationale": "The mobility examination documents that the member cannot get to the bathroom or prepare a meal without help."
           },
           {
             "criterionId": "k0823-cane-walker-insufficient",
@@ -82,7 +82,7 @@
             "evidence": [
               "DocumentReference/doc-k0823-ambiguous-exam"
             ],
-            "rationale": "The examination states that a walker does not resolve the limitation, as she stops after 10 feet."
+            "rationale": "The examination states that a walker does not resolve the limitation as she stops after 10 feet."
           },
           {
             "criterionId": "k0823-manual-chair-insufficient",
@@ -90,7 +90,7 @@
             "evidence": [
               "DocumentReference/doc-k0823-ambiguous-exam"
             ],
-            "rationale": "The examination states she cannot self-propel a manual wheelchair more than 15 feet, which is insufficient to complete the daily activity."
+            "rationale": "The examination states that she cannot self-propel a manual wheelchair more than 15 feet."
           },
           {
             "criterionId": "k0823-home-access",
@@ -98,19 +98,19 @@
             "evidence": [
               "DocumentReference/doc-k0823-ambiguous-home"
             ],
-            "rationale": "The home assessment dated 2026-08-28 (within the 60 days before the request) confirms that doorways, turning space, and floor surfaces accommodate a power wheelchair."
+            "rationale": "A home assessment dated 2026-08-28 (within 60 days before the request) confirms that doorways, turning space and floor surfaces accommodate a power wheelchair."
           },
           {
             "criterionId": "k0823-safe-operation",
-            "status": "not-met",
+            "status": "insufficient",
             "evidence": [
               "DocumentReference/doc-k0823-ambiguous-exam"
             ],
-            "rationale": "The examination notes that her vision may be deteriorating, she was unsure of the joystick at first, and the examiner is not certain she could stop reliably."
+            "rationale": "The examination states that her vision may be deteriorating, she was unsure of the joystick at first, and the clinician is not certain she could stop reliably, making the evidence uncertain and insufficient."
           }
         ]
       },
-      "latencyMs": 1687
+      "latencyMs": 1365
     }
   ]
 }
