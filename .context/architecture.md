@@ -45,8 +45,7 @@ template. It exists to demonstrate architectural thinking in two scarce domains 
 The memory system is divided into three tiers with distinct scopes, persistence strategies,
 and access patterns. All three tiers are exposed through `packages/memory-core`, and all
 three are reached by a live request: one `POST /runs` leaves rows in `episodes` and
-`semantic_facts` and `:Concept` and `:Fact` nodes in the graph. See `docs/STATUS.md`
-rows 1-4.
+`semantic_facts`, and nothing in the graph. See `docs/STATUS.md` rows 1-4.
 
 ### Working Memory (Per-Run)
 
@@ -70,11 +69,12 @@ rows 1-4.
 
 ### Semantic Memory (Long-Term)
 
-Two indices, both written by the `reflect` node. **Only pgvector is read on a request.**
-Retrieval is vector-only by decision, after a negative measurement: P2-B's ablation found
-that fusing the graph's list with the vector list added nothing on the deployed path and
-lowered Recall@10 by 0.145 with perfect seeds, and ADR 0009 took the graph out of the read
-path.
+One index, `semantic_facts` in pgvector, written by the `reflect` node and read on a
+request. Retrieval is vector-only by decision, after a negative measurement: P2-B's ablation
+found that fusing the graph's list with the vector list added nothing on the deployed path
+and lowered Recall@10 by 0.145 with perfect seeds, and ADR 0009 took the graph out of the
+read path. P2-E's first pull request took it out of the write path: `reflect` writes no
+graph, and `distill` extracts facts alone.
 
 - **pgvector Collection:** Dense embeddings, searched by exact cosine distance with the
   content hash as a tiebreaker. This is retrieval: `VectorRetrievalFacade` returns this
@@ -83,8 +83,9 @@ path.
   that no caller outside the tests sets (P4-B). The column carries an HNSW index (`vector_cosine_ops`) that the tiebroken
   query cannot use — ADR 0006 records that trade.
 - **Neo4j Knowledge Graph:** Typed nodes (`:Concept`, `:Fact`) joined by `:MENTIONS`, plus
-  `:RELATES_TO` between concepts. Written on every run and read by no request. It was kept
-  for an explanation role — which concepts a retrieved fact mentions, and how they connect
+  `:RELATES_TO` between concepts. Still provisioned, and written and read by no request:
+  only the evaluation seeds and the two measurement runners touch it. It was kept for an
+  explanation role — which concepts a retrieved fact mentions, and how they connect
   to the question's — and P2-D measured it. Stage 1 was `good` and stage 2 `not met`, so the
   rule selected option C: the graph explains, and `plan` does not use it. ADR 0012, accepted,
   removes the graph, and P2-E executes that; until it does, `docs/STATUS.md` row 15 is
@@ -103,8 +104,8 @@ fixture and stub derives from it. It is 768 because pgvector refuses an HNSW ind
 2000 dimensions, so `gemini-embedding-001` is asked for a truncated output and the result
 is L2-normalized — a Matryoshka vector below its native width is not unit-norm.
 
-The two writes are sequential, not atomic: `reflect` loops over Postgres, then Neo4j, then
-pgvector. Each write is individually replay-safe and `reflect` is a function of
+The two writes are sequential, not atomic: `reflect` loops over the episodes in Postgres,
+then the facts in pgvector. Each write is individually replay-safe and `reflect` is a function of
 `state.extraction`, so a retried attempt writes exactly what the first attempt wrote. The
 set of them is still not one transaction — the guarantee is convergence under replay, not
 exactly-once. ADR 0001 explains why.
@@ -115,13 +116,12 @@ recalls more than either. ADR 0004 made that fusion real by giving both readers 
 of facts keyed on the content hash. P2-B measured the premise against pre-registered labels
 and it did not hold, so ADR 0009 superseded 0002. The fusion survives only inside
 `yarn eval:retrieval`, which reproduces that measurement; ADR 0004 is moot on the request
-path, and `reflect` still writes the `:Fact` copy it introduced.
+path, and since P2-E `reflect` no longer writes the `:Fact` copy it introduced.
 
 ```
 Working Memory ──[reflect]──▶ Episodic (Postgres)
                               │
                               └──[reflect]──▶ Semantic
-                                               ├── Neo4j (entities + relationships; not read)
                                                └── pgvector (distilled fact embeddings)
                                                      │
                               retrieve ◀──[cosine]───┘
@@ -176,8 +176,8 @@ compensate ──▶ compensate | distill                   (graph/edges.ts#shou
   that gets resumed and audited, and putting a session's runs on one thread would make each
   run resume into the previous one's channel values.
 - A state machine (not a chain) was chosen for fault tolerance: nodes are the unit a
-  checkpointer can resume from, and the write adapters are idempotent (Cypher MERGE,
-  pgvector upsert on content hash) so that a resumed node is safe to re-run.
+  checkpointer can resume from, and the write adapters are idempotent (the episodic natural
+  key, the pgvector upsert on content hash) so that a resumed node is safe to re-run.
 - **Both halves are switched on.** `buildAgentGraph` compiles with the `PostgresSaver` when
   one is configured (`graph/graph.ts:84`) and `IO_RETRY` is attached to the five I/O nodes.
   ADR 0001 records the choice of checkpointer and why it is not the same thing as durable

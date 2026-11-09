@@ -32,7 +32,7 @@ request, and on the live axis nightly when a `GOOGLE_API_KEY` repository secret 
 ## What it grades
 
 A grader receives the transcript **and the outcome**, and the ones that matter assert
-against the outcome — the state of Postgres, Neo4j and pgvector after the run. An agent
+against the outcome — the state of Postgres and pgvector after the run. An agent
 can produce a plausible answer while writing nothing, and pattern-matching the final
 message cannot tell the difference.
 
@@ -42,7 +42,7 @@ message cannot tell the difference.
 | `outcome_must_be`              | code | the run reported the expected outcome              |
 | `token_counts_positive`        | code | prompt and completion counts are both above zero   |
 | `episodic_row_written`         | code | `episodes` rows exist carrying **this run's** id   |
-| `entity_merged`                | code | the concepts _this run_ extracted are in the graph |
+| `semantic_fact_written`        | code | `semantic_facts` rows exist carrying this run's id |
 | `trajectory_*`                 | code | node-sequence exact / in-order / any-order / P / R |
 | `tool_trajectory_*`            | code | the same, over the tool calls                      |
 
@@ -50,9 +50,9 @@ Outcome reads go through `packages/memory-core` — `PgNeo4jMemoryInspector` —
 a connection this package opens. Reviewer checklist rule 4 is the rule; the reason is that
 the nightly seed script, deleted in P1-C, recorded what hand-rolled SQL cost the last time.
 
-`entity_merged` is keyed on the run's own extraction rather than a count of `:Concept`
-nodes, because `mergeEntity` writes no episode onto a concept: a count cannot attribute one
-to a run and would pass on the seeded concepts alone.
+`semantic_fact_written` replaced `entity_merged` when `reflect` stopped writing the graph
+(P2-E). It is keyed on the row's `episode_id`, so a seeded fact never counts, and it is the
+positive control ADR 0011 names: the agent still promotes what the user said.
 
 ## Which axis a trial ran on
 

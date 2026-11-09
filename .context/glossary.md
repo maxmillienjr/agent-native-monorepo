@@ -7,10 +7,10 @@
 - **Episodic Memory:** Session-scoped turn history persisted in Postgres via Drizzle ORM.
   Retention is currently unbounded. Raw material for Semantic promotion.
 - **Semantic Memory:** Long-term knowledge distilled from the user's turns of each run
-  (ADR 0011). `reflect` writes it to two indices, a pgvector collection and a Neo4j
-  knowledge graph, and retrieval reads only the pgvector collection (ADR 0009). The graph's
-  explanation role was measured and did not meet its rule, so ADR 0012 removes the graph,
-  and P2-E does the removal.
+  (ADR 0011). `reflect` writes it to one index, the pgvector collection `semantic_facts`,
+  and retrieval reads it (ADR 0009). The Neo4j knowledge graph is still provisioned and
+  nothing writes or reads it on a request: its explanation role was measured and did not
+  meet its rule, so ADR 0012 removes the graph, and P2-E does the removal.
 
 ## LangGraph
 
