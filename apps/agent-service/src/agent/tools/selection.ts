@@ -104,8 +104,16 @@ export class SelectionFormatError extends Error {
   }
 }
 
+/**
+ * `{"toolName": null}` is read as `null`. `gemini-3.5-flash-lite` says "none"
+ * that way, where the prompt asks for a bare `null` (P1-I, 2026-11-09: it
+ * aborted a five-trial live run with `SelectionFormatError`). It is the same
+ * decision in another spelling, so refusing it would abort a run over form.
+ * Any other shape is still refused.
+ */
 const SelectionSchema = z.union([
   z.null(),
+  z.object({ toolName: z.null(), input: z.unknown().optional() }).transform(() => null),
   z.object({ toolName: z.string().min(1), input: z.unknown() }),
 ]);
 

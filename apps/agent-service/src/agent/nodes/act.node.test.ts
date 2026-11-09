@@ -164,6 +164,13 @@ describe('parseSelection', () => {
     });
   });
 
+  it('reads {"toolName": null} as no tool, the way gemini-3.5-flash-lite says none (P1-I)', () => {
+    expect(parseSelection('{"toolName": null}')).toBeNull();
+    expect(parseSelection('{"toolName": null, "input": {}}')).toBeNull();
+    expect(() => parseSelection('{"toolName": ""}')).toThrow(SelectionFormatError);
+    expect(() => parseSelection('{"toolName": 3}')).toThrow(SelectionFormatError);
+  });
+
   it('is retried by IO_RETRY in the graph, where a null used to end the loop as success', async () => {
     const { registry, executed } = countedSearch();
     const { deps } = scriptedDeps(registry, []);

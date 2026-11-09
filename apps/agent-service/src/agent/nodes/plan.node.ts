@@ -2,7 +2,17 @@ import { withNodeSpan } from '@repo/telemetry';
 import type { AgentState } from '../graph/state.js';
 import { addUsage, type CallUsage } from '../model/usage.js';
 
-export const PLAN_SYSTEM_PROMPT = 'You are a helpful research assistant.';
+/**
+ * The second sentence is P1-I's. On `gemini-2.5-flash` the plan for a request
+ * the context could not answer said to search; on `gemini-3.5-flash-lite`, with
+ * the first sentence alone, it planned to answer from the context in 2 of 3
+ * samples, `act.selectTool` read that plan and chose `null`, and `tool-use-001`
+ * failed 5 of 5 live trials. Thinking at `low` or `medium` did not change it.
+ * With this sentence the plan named a search step in 5 of 5 samples on
+ * 2026-11-09. It names no tool, because the registry decides what exists.
+ */
+export const PLAN_SYSTEM_PROMPT =
+  'You are a helpful research assistant. After you plan, tools carry the plan out, so name a tool step wherever the plan needs information that is not in the conversation or the retrieved context.';
 
 /** The last line of `plan`'s user prompt, after the transcript and the context. */
 export const PLAN_INSTRUCTION = "Based on the above, create a plan to address the user's request.";
