@@ -210,6 +210,9 @@ P2-D's stage 2 is pre-registered on `gemini-2.5-flash`. On 2026-11-09 it had 29 
 answers, at about nine a day on the whole 2.5 pool with the schedule paused, so it ends
 around 2026-11-14. Its last call has to be made by 2026-11-30 as well. That deadline is
 P2-D's, and this PRD records it there through the index, not by editing P2-D.
+_Updated 2026-11-09:_ stage 2 recorded its last answer at 13:51 UTC that day, the last 47
+on the owner's paid key under the same model id, so the deadline is met
+(`P2-D-graph-explanation-or-removal.md#Stage 2, as run`).
 
 ### Phase 1: measure two candidates
 
@@ -228,7 +231,8 @@ floating probe's verdicts: `moved`, `unchanged` and `unavailable` are notices, a
 returns fails the run. The same change lets the schedule pause cover `eval-live` alone:
 `EVAL_SCHEDULE_PAUSED=live` skips the scheduled `eval-live` and keeps the scheduled
 `eval-canary`, and `true` still skips both. While P2-D's stage 2 holds the 2.5 pool the
-variable is `live`, so the seven nights can start; the canary then spends one call a night on
+variable is `live`, so the seven nights can start (_updated 2026-11-09:_ stage 2 finished
+that afternoon, and the variable was deleted at 13:51 UTC); the canary then spends one call a night on
 that pool, for `chat-pinned`. The alias probe already gives a nightly availability series for
 `gemini-3.8-flash`, and nothing gives one for `gemini-3.5-flash-lite`. The candidate probe is
 removed at the switch.
