@@ -8,8 +8,9 @@
   Retention is currently unbounded. Raw material for Semantic promotion.
 - **Semantic Memory:** Long-term knowledge distilled from the user's turns of each run
   (ADR 0011). `reflect` writes it to two indices, a pgvector collection and a Neo4j
-  knowledge graph, and retrieval reads only the pgvector collection (ADR 0009). The graph is
-  kept for an explanation role not yet measured.
+  knowledge graph, and retrieval reads only the pgvector collection (ADR 0009). The graph's
+  explanation role was measured and did not meet its rule, so ADR 0012 removes the graph,
+  and P2-E does the removal.
 
 ## LangGraph
 
