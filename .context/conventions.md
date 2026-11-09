@@ -389,11 +389,16 @@ replays the committed answer file and makes no request.
   by a commit.** `yarn canary` (P1-E) reads `models.get` for `gemini-2.5-flash`,
   `gemini-embedding-001` and `gemini-flash-latest`, makes one direct `generateContent` per
   chat id for `modelVersion`, and embeds the 21 baseline texts, comparing each vector bit for
-  bit with `packages/eval-harness/datasets/canary/baseline.json`. It needs a key and no
+  bit with `packages/eval-harness/datasets/canary/baseline.json`. The chat ids are the pinned
+  one, the floating alias and, until P1-I's switch, P1-I's candidate `gemini-3.5-flash-lite`
+  (`chat-candidate`, `CANDIDATE_CHAT_MODEL` in `eval/canary/runner.ts`). It needs a key and no
   stores, refuses to run without `GOOGLE_API_KEY`, and exits 1 when a pinned id is
-  `changed`, `gone` or `unobserved`; a moved floating alias is a notice, and so is one the
-  provider answers with a 5xx (`unavailable`). A 5xx on any other probe aborts with cause
-  `provider-unavailable`: re-dispatch later, nothing in the repository is wrong. Accepting a change
+  `changed`, `gone` or `unobserved`. Nothing the floating alias or the candidate returns
+  fails the run: a moved one is a notice, and so is one the provider answers with a 5xx
+  (`unavailable`). The candidate has no baseline entry, so its answer is reported as `moved`
+  with "no baseline to compare with" until one is committed. A 5xx on any other probe aborts
+  with cause `provider-unavailable`: re-dispatch later, nothing in the repository is wrong.
+  Accepting a change
   is `CANARY_BASELINE=update yarn canary` with a key and a committed baseline diff, never a
   re-run, and a pinned `changed` usually means a re-record as well. `CANARY_PROBES` runs a
   subset (`metadata,embedding` spends no `generateContent`), and the summary names what was
@@ -525,8 +530,12 @@ canary with a 503, and the dispatch's calls took minutes each, so the suite ran 
 live job's 30-minute timeout with no report. A recording longer than a few days can have
 the whole pool instead: `gh variable set EVAL_SCHEDULE_PAUSED --body true` skips the
 scheduled `eval-live` and `eval-canary` jobs (replay and dispatch still run), and
-`gh variable delete EVAL_SCHEDULE_PAUSED` brings them back. The nights it was set are
-nights with no tally on `eval-history`, so the PRD that set it says which. Turbo buffers
+`gh variable delete EVAL_SCHEDULE_PAUSED` brings them back. `--body live` skips the
+scheduled `eval-live` alone and keeps the scheduled `eval-canary`, for a recording that can
+spare the canary's one call on this pool but not the nightly's twelve: P1-I sets it while
+P2-D's stage 2 holds the pool, so the canary's candidate probe keeps its nights. Any other
+value pauses nothing. The nights it was set are nights with no tally on `eval-history`, so
+the PRD that set it says which. Turbo buffers
 `yarn eval`'s output until the task ends, so a cancelled run's log is empty; its recorded
 cassettes are the evidence. A
 project with billing on would leave the free tier (no 20-a-day cap, a charge per token),
