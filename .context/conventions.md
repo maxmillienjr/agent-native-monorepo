@@ -181,7 +181,8 @@ replays the committed answer file and makes no request.
 - **A report file exists only if the suite completed.** A graded failure writes
   `eval-report.json`, `eval-report.xml` and `eval-summary.md` and exits 1. Anything that
   stops the run — a stale cassette, an axis refusal, a request that reached the model
-  during replay, an exhausted quota, an unreachable store — writes `eval-abort.json` and an
+  during replay, an exhausted quota, a 503 on a live call and its one retry, an
+  unreachable store — writes `eval-abort.json` and an
   `eval-summary.md` headed `aborted`, names the error and the trials that finished, and
   also exits 1. The runner clears all five files before it starts, so read the directory,
   never the exit code.
@@ -540,6 +541,17 @@ the PRD that set it says which. Turbo buffers
 cassettes are the evidence. A
 project with billing on would leave the free tier (no 20-a-day cap, a charge per token),
 which is the owner's decision.
+
+**A 503 spends quota, so `yarn eval` gets one retry for it.** On 2026-11-09 a live recording
+made 20 requests and got 9 answers: LangChain's client retries a 503 up to six times, and
+each retry is a request against the day's 20. Since P1-I, `yarn eval` on the live model
+axis, and so every recording, builds the chat client with `boundServerErrors`: a provider
+5xx is retried once, and a second one aborts the run with cause `provider-unavailable`,
+two requests for that call. `IO_RETRY` does not re-run the node. The trials that finished
+keep their cassettes, and `EVAL_TASKS` re-records the rest another day. The bound is off
+for a request, which is better served by waiting, and for P2-D's `yarn eval:explanation`,
+which builds its own `RunsService`. A daily-quota 429 stays terminal on its first request
+and any other 429 keeps its six retries, bound or not.
 
 ## Documentation
 
