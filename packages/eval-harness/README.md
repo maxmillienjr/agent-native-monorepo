@@ -129,10 +129,14 @@ shows and the reason `tool-use-001` exists.
 
 `tool-use-001` has since run on the live model axis, once: one trial on 2026-09-10 passed
 on three `web-search` selections (P1-G), and the recording run for P1-B's cassettes passed
-one trial of each task the same day. That is one trial per task. The 5×2 suite needs
-roughly forty `generateContent` calls against this key's free-tier quota of 20 for
-`gemini-2.5-flash`, and has not been run, so none of these numbers is the suite's live pass
-rate, and none is presented as one.
+one trial of each task the same day. That is one trial per task. The 5×2 suite needed
+roughly forty `generateContent` calls against the free-tier quota of 20 a day for
+`gemini-2.5-flash`, and was never run, so none of these numbers is the suite's live pass
+rate, and none is presented as one. Every number in this section was measured on
+`gemini-2.5-flash`. The pin has been `gemini-3.5-flash-lite` since P1-I (ADR 0018), whose
+recording run is the first measurement on it:
+RECORDING-PENDING (P1-I: each suite's recording-run result on `gemini-3.5-flash-lite`, its
+date and commit; see the PRD's recording table).
 
 P2-B added a third task, `graph-recall-001`, which proved that a fact only the graph held
 reached `plan`'s prompt, graded by a `retrieved_from_source` grader. ADR 0009 made retrieval
@@ -159,7 +163,10 @@ single sample as a reliability measurement. Every report names the set's `record
 `gitSha`, because a replayed rate is a property of the recording as much as of the code.
 
 `.context/conventions.md` lists what invalidates a set. The short version: a prompt edit
-moves the request hash, every replay misses, and `CassetteMissError` prints the diff.
+moves the request hash, every replay misses, and `CassetteMissError` prints the diff. That
+includes the instruction of each JSON seam, which its request carries from cassette format
+3 (P1-I). A set in an older format, or recorded on another chat model id, is refused before
+any store is reset.
 
 ## Evaluation events
 
