@@ -454,7 +454,7 @@ shipped, checks each task's tokens and model calls beside the pass rate.
 | [P1-F](P1-F-cost-and-step-budgets.md)  | Cost, latency, and step budgets as CI assertions              | M    | shipped     |
 | [P1-G](P1-G-task-axis-requirements.md) | Task-level axis requirements for the evaluation suite         | S    | shipped     |
 | P1-H                                   | Live coverage of the replay-only suites by nightly rotation   | M    | draft       |
-| P1-I                                   | Migrate off `gemini-2.5-flash`                                | L    | draft       |
+| [P1-I](P1-I-chat-model-migration.md)   | Migrate off `gemini-2.5-flash`                                | L    | draft       |
 
 P1-H, a draft with no file yet, is a candidate raised on 2026-10-26 and not yet accepted.
 Once the recordings are made, prior-auth and the red team run only on replay at night: they
@@ -528,7 +528,7 @@ The dependency spine, not a schedule:
 
 ```
 P0-A ──▶ P2-A ──▶ P1-A ──┬──▶ P1-B ──┬──▶ P1-C ──┬──▶ P1-D
-                         │           │           ├──▶ P1-E
+                         │           │           ├──▶ P1-E ──▶ P1-I
                          │           │           └──▶ P1-F
                          │           ├──▶ P2-B ──┬──▶ P4-B
                          │           │           └──▶ P2-D ──▶ P2-E
@@ -559,6 +559,12 @@ because its replay-axis design reads the cassette's recorded usage. All three ar
 P1-E is drawn under P1-C, whose nightly live job it reads, but it also depends on P1-B
 directly: its embedding baseline is the committed cassettes' vectors, and its decision
 comparison reads the cassette format.
+
+P1-I is drawn under P1-E, whose canary, `EVAL_CHAT_MODEL` and `chat_model` dispatch it
+measures with, and whose last criterion it owns. It also depends on P1-F, whose rule
+re-derives the budgets, and on P1-A and P1-B directly, for the harness and the cassettes it
+re-records. Neither edge is drawn a second time. It re-records P3-D's and P4-B's suites
+without depending on either PRD, the way P4-C re-records P4-B's.
 
 P2-D is drawn under P2-B, whose corpus, recorded embeddings, seeding and bootstrap its
 measurement reuses. It also depends on P1-A directly, for the harness, and on P1-B, whose

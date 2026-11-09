@@ -5,7 +5,7 @@ tier: 1
 status: shipped
 size: M
 depends_on: [P1-A, P1-B, P1-C, P2-C]
-blocks: []
+blocks: [P1-I]
 issue: 85
 superseded_by: null
 controls: [CTL-COST-01]
