@@ -299,7 +299,8 @@ file, reviewed in the pull request that needs it.
 - **CI.** The workflow is `agent-eval.yml` (P1-C); this package has no script of its own for
   it and needs none.
 - **Applying the merge gate.** The gate decides the verdict; `.github/rulesets/main.json`
-  is what makes `eval-replay` a required check, and applying it is the repository owner's.
+  is what makes `eval-replay` a required check. The owner applied it on 2026-11-09, and a
+  change to it is a pull request like any other.
 - **Asserting latency or dollars.** Both are reported. A latency gate needs many live
   samples against a baseline, which is P1-D's machinery; a dollar ceiling means nothing
   until two model ids with different prices are compared, which is P1-E's.

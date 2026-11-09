@@ -14,9 +14,9 @@ A Yarn 4 monorepo containing a NestJS 11 microservice that runs a LangGraph stat
 > graph is gone ([ADR 0012](docs/adr/0012-the-graphs-explanation-role-stage-one.md)).
 > `packages/eval-harness` measures the agent, and `agent-eval.yml` runs it on every pull
 > request on replayed model decisions and compares every grader result with a committed
-> baseline, so any change in behaviour turns `eval-replay` red (P1-D). What this repository
-> cannot claim yet is that red stops a merge: the ruleset that makes `eval-replay` a
-> required check is `.github/rulesets/main.json`, and applying it is the owner's.
+> baseline, so any change in behaviour turns `eval-replay` red (P1-D), and red stops a
+> merge: `.github/rulesets/main.json`, applied to `main` on 2026-11-09, makes `eval-replay`,
+> `ci (24.x)` and `e2e` required checks and every change a pull request.
 > [`docs/STATUS.md`](docs/STATUS.md) is the per-capability matrix, and it is the file to
 > trust when this README and the code disagree.
 
@@ -89,8 +89,8 @@ comparison says `regressed`, `held` or — until enough nights exist — `insuff
 Beside the pass rate, each task file sets per-trial ceilings on input tokens, output tokens
 and model calls, and a breach fails the run without counting as a failed trial; the report
 also prints each trial's usage and a list-price cost, and on the live axis its latency,
-neither of them asserted. Red blocks a merge once the owner applies
-`.github/rulesets/main.json`. See [`docs/STATUS.md`](docs/STATUS.md) before quoting this
+neither of them asserted. Red blocks a merge: `.github/rulesets/main.json` makes
+`eval-replay` a required check. See [`docs/STATUS.md`](docs/STATUS.md) before quoting this
 section back at the code.
 
 The agent's domain logic is intentionally trivial (a single system prompt: _"You are a helpful research assistant."_). The value is in the chassis — how the pieces connect, how memory is structured, how observability is wired, and how the monorepo scales.

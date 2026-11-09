@@ -184,7 +184,7 @@ controls:
         file: packages/eval-harness/src/gate/compare-replay.test.ts
         name: names every cell of a task that stopped running, and a deleted assertion, as missing
         tier: unit
-    note: Delivered by P1-C, and gated by P1-D. This is the replay axis, which grades a recorded sample rather than the live model. The job's exit is the regression gate's verdict against the committed baselines/replay.json, so a skipped task, a deleted assertion or a moved score fails it and a failure accepted in the baseline does not. The live job runs nightly and on dispatch, and is skipped until a GOOGLE_API_KEY repository secret exists. A red job blocks a merge only once the owner applies .github/rulesets/main.json.
+    note: Delivered by P1-C, and gated by P1-D. This is the replay axis, which grades a recorded sample rather than the live model. The job's exit is the regression gate's verdict against the committed baselines/replay.json, so a skipped task, a deleted assertion or a moved score fails it and a failure accepted in the baseline does not. The live job runs nightly and on dispatch, and is skipped until a GOOGLE_API_KEY repository secret exists. A red job blocks a merge, because .github/rulesets/main.json, applied on 2026-11-09, makes eval-replay a required check.
 
   - id: CTL-EVAL-04
     # Retitled and made procedural by P2-E. The measurement's runner, rule
