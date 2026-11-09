@@ -32,3 +32,4 @@ every branch has used: `git fetch origin && git log --all --format=%s -- 'docs/a
 | [0015](0015-a-timer-whose-action-is-one-local-transaction-stays-in-the-case-layer.md) | A timer whose action is one local transaction stays in the case layer             | accepted           |
 | [0016](0016-langgraph-rather-than-adk-with-a2a-as-the-seam.md)                        | LangGraph rather than ADK, with A2A as the integration seam                       | accepted           |
 | [0017](0017-every-surface-derives-its-session-from-the-caller.md)                     | Every surface derives its session from the caller                                 | accepted           |
+| [0018](0018-the-chat-model-is-a-pinned-stable-id.md)                                  | The chat model is a pinned stable id: `gemini-3.5-flash-lite`                     | accepted           |
