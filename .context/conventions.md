@@ -132,7 +132,9 @@
 Each tier has one command, and all five run in CI. Eval runs twice in
 `agent-eval.yml`: on the replay axis on every pull request, every push to `main` and
 nightly, and on the live axis nightly and on dispatch when a `GOOGLE_API_KEY` repository
-secret exists. The two measurements of the graph, P2-B's retrieval ablation and P2-D's
+secret exists. The live run is memory-recall alone; `eval-rotation` would add a nightly
+slice of prior-auth and the red team, and runs nothing until the free tier's daily limit is
+recorded ("Live model quota", below). The two measurements of the graph, P2-B's retrieval ablation and P2-D's
 explanation stages, are archived at a tag and run in no tier (below).
 
 | Tier        | Runner                 | Command                       | Scope                                                     |
@@ -184,7 +186,11 @@ explanation stages, are archived at a tag and run in no tier (below).
   `packages/eval-harness/datasets/memory-recall/baselines/replay.json` and fails on any
   difference, an improvement included, or on an abort; a committed trial that is known to
   fail is fine as long as the baseline says so. `EVAL_GATE=live` pools nights of one
-  cassette set and fails only on `regressed`. **A pull request that changes a grader
+  cassette set and fails only on `regressed`, with one exception: a single failed cell of a
+  suite's zero-tolerance graders, `no_false_approval` for prior-auth and the three
+  `canary_absent_from_*` for the red team, fails the run whatever the pooled verdict
+  (`SuiteDefinition.zeroTolerance`, P1-H). From twenty tasks the comparison resamples tasks,
+  and its floor is 2 trials per task in each arm rather than `⌈3/δ⌉`. **A pull request that changes a grader
   result, a task, an assertion or the cassette set regenerates the baseline in the same
   change:** `EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval`, against the stores, with
   no key. The baseline diff is how a reviewer sees the behaviour that changed; never re-run
@@ -380,7 +386,10 @@ explanation stages, are archived at a tag and run in no tier (below).
 - **`EVAL_TASKS` narrows `yarn eval` to named tasks.** Recording is per suite, so adding
   one task and recording its cassette otherwise re-records every other cassette and
   spends their `generateContent` calls. An unknown id is refused, and the selection is
-  printed in the suite name.
+  printed in the suite name. Under `EVAL_GATE=live` the tally is filed under the suite's
+  own name, not the printed one, so two narrowed runs of one suite in one epoch pool
+  (`live/<suite>/<digest:12>/`), and the night's tasks are the keys of the tally's `tasks`.
+  Before P1-H each narrowed run opened an epoch directory of its own.
 - **The drift canary watches the model behind the pinned ids, and its baseline moves only
   by a commit.** `yarn canary` (P1-E) reads `models.get` for the pinned chat id
   (`PINNED_CHAT_MODEL`, `gemini-3.5-flash-lite` since P1-I, ADR 0018),
@@ -497,7 +506,12 @@ allowed **20 `generateContent` requests per day and 5 per minute, per project an
 `embedContent` is a separate quota with its own per-minute limit. The figures for
 `gemini-3.5-flash-lite`, the pin since P1-I, are AI Studio's to state per project, and this
 section has not recorded them yet: read them there before planning a free-key run against
-them. The day resets at midnight Pacific.
+them. The day resets at midnight Pacific. **The daily figure is `L` for P1-H's rotation.**
+Record it here with its source and date — AI Studio's rate-limit view for the secret's
+project, or the `quotaValue` of a per-day 429 with its run id — and set the same number as
+`EVAL_ROTATION_DAILY_LIMIT` in `agent-eval.yml`'s `eval-rotation` job, whose comment names
+the source. Until then that variable is empty and the job runs nothing: it never falls back
+to a guessed number.
 
 **A key from a new project could not call the old pin.** On 2026-10-15 the secret moved to
 a key in a new, unbilled project, to give CI a pool of its own. From the next night every
@@ -512,10 +526,22 @@ show, with the owner's key: step 1d and the fresh-clone trial.
 
 Standing consumers of the free key, before any development spends a call:
 
-| Consumer                                     | `generateContent` per day |
-| -------------------------------------------- | ------------------------- |
-| `agent-eval.yml` `eval-live`, one trial each | about 12                  |
-| `agent-eval.yml` `eval-canary` (P1-E)        | 2                         |
+| Consumer                                     | `generateContent` per day                                                         |
+| -------------------------------------------- | --------------------------------------------------------------------------------- |
+| `agent-eval.yml` `eval-live`, one trial each | about 12                                                                          |
+| `agent-eval.yml` `eval-canary` (P1-E)        | 2                                                                                 |
+| `agent-eval.yml` `eval-rotation` (P1-H)      | what is left: `L − S − R`, and nothing while `EVAL_ROTATION_DAILY_LIMIT` is empty |
+
+`eval-rotation` runs last, after `eval-live` and `eval-canary`, and spends what they left.
+`L` is the recorded daily limit above. `S` is what the night spent on the pinned pool: the
+sum of `usage.trials[].modelCalls` in `eval-live`'s report, plus one if the canary ran. If
+`eval-live` aborted on a per-day 429 the budget is 0, and for any other abort `S` takes
+memory-recall's `modelCalls` ceilings, 17 a trial, in place of the report. `R` is 1, for the
+one provider-5xx retry `yarn eval` makes. The budget buys the least-covered prior-auth and
+red-team tasks on `eval-history` that fit, one trial each. A prior-auth task costs 1 and an
+administrative one 0; `rt-001` and `rt-002` cost 3 and `rt-003` 6. One trial of every task in
+both suites is 32. `yarn workspace @repo/agent-service eval:history slice` makes the choice
+and writes it to the job summary (`rotation.ts`).
 
 `eval-live` runs every memory-recall task: 3 calls for `memory-recall-001`, 5 for
 `tool-use-001` and 4 for P4-C's `tool-use-002`, as recorded on `gemini-2.5-flash` by P4-B on
@@ -542,8 +568,12 @@ the scheduled `eval-live` and `eval-canary` jobs (replay and dispatch still run)
 `gh variable delete EVAL_SCHEDULE_PAUSED` brings them back. `--body live` skips the
 scheduled `eval-live` alone and keeps the scheduled `eval-canary`: P1-I set it on 2026-11-09
 while P2-D's stage 2 held the pool, and it was deleted that afternoon once stage 2's last
-answer was recorded. Any other value pauses nothing. The nights it was set are nights with
-no tally on `eval-history`, so the PRD that set it says which. Turbo buffers `yarn eval`'s
+answer was recorded. Both values also skip the scheduled `eval-rotation`, which needs the
+live job. `--body rotation` skips the scheduled `eval-rotation` alone and keeps `eval-live`
+and `eval-canary`. Set it on a day a free-key dispatch is planned: `S` cannot see a
+dispatch earlier the same Pacific day, and a dispatch later in the day would find the
+rotation had spent what it planned to use. Any other value pauses nothing. The nights it was
+set are nights with no tally on `eval-history`, so the PRD that set it says which. Turbo buffers `yarn eval`'s
 output until the task ends, so a cancelled run's log is empty; its recorded cassettes are
 the evidence.
 
