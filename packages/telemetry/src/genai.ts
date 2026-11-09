@@ -148,8 +148,6 @@ export const ALLOWED_SPAN_ATTRIBUTES: ReadonlySet<string> = new Set<string>([
   'session_id',
   'step_count',
   'message_count',
-  'entity_count',
-  'relationship_count',
   'fact_count',
   'candidateCount',
   'outcome',
@@ -198,20 +196,12 @@ export const ALLOWED_SPAN_ATTRIBUTES: ReadonlySet<string> = new Set<string>([
   'queryLength',
   'crossSession',
   'resultCount',
-  'seedEntityCount',
-  'hopDepth',
   'fact.contentHash',
-  'fact.entityCount',
   // The harness's own seed and inspection spans, which are not part of a run.
-  'conceptCount',
-  'relationshipCount',
   'factCount',
-  'graphFactCount',
-  'seedConceptCount',
   'seedFactCount',
   'episodeRowsForRun',
   'factRowsForRun',
-  'factNodesForRun',
 ]);
 
 /** The keys on these spans that are not in `ALLOWED_SPAN_ATTRIBUTES`, sorted and distinct. */
