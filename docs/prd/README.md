@@ -28,6 +28,14 @@ half moves `ASSESS_PROMPT`, so it re-records prior-auth on the owner's paid key.
 conductor runs a 15-call probe first, and the 20-call recording only if the probe meets the
 thresholds the PRD fixed before any call.
 
+**[P1-H](P1-H-live-rotation.md) is accepted, and no issue is open yet.** The owner
+accepted it on 2026-11-09. It brings prior-auth and the red team onto the live model at night,
+on the free CI secret, through an `eval-rotation` job that runs last and spends what
+`eval-live` and the canary left. **Its first step costs no call:** read the free-tier
+`generateContent` requests per day for `gemini-3.5-flash-lite` on the secret's project from
+AI Studio, and record it in `.context/conventions.md`. Google's rate-limits page does not
+publish that figure, and the job is built to run nothing until it is recorded.
+
 **[P2-E](P2-E-remove-the-graph.md) is shipped: the graph is gone.** ADR 0012's option C
 landed in two pull requests on 2026-11-09. #152 (`df655c0`) stopped `reflect` writing the
 graph and narrowed the extraction to facts, ahead of P1-I's memory-recall recording. #153
@@ -640,6 +648,13 @@ re-derives the budgets, and on P1-A and P1-B directly, for the harness and the c
 re-records. Neither edge is drawn a second time. It re-records P3-D's and P4-B's suites
 without depending on either PRD, the way P4-C re-records P4-B's.
 
+P1-H is drawn under P1-D. It extends P1-D's history, pooling, live comparison and
+promotion to two more suites, and it sets P1-D's floor for the `tasks-random` regime. It
+also depends on P1-E, whose canary runs before it and whose `canary:compare` it extends to a
+suite; on P1-I, whose pin sets the free-tier day it budgets and whose recordings open the
+epochs it pools; and on P3-D and P4-B, whose suites it runs. None of these is drawn a second
+time.
+
 P2-D is drawn under P2-B, whose corpus, recorded embeddings, seeding and bootstrap its
 measurement reuses. It also depends on P1-A directly, for the harness, and on P1-B, whose
 `ModelDeps` seam and recording pattern its conditional answer-level stage uses. Its graph
@@ -648,13 +663,6 @@ the outcome ADR 0012 records, removing the graph, from the specification P2-D wr
 "What P2-E inherits". It is not an edge of P1-I, and neither waits for the other. Its one
 change to a model request, the narrowed extraction, is meant to land before P1-I
 re-records memory-recall and red-team, so those suites are recorded once. P2-E's
-P1-H is drawn under P1-D. It extends P1-D's history, pooling, live comparison and
-promotion to two more suites, and it sets P1-D's floor for the `tasks-random` regime. It
-also depends on P1-E, whose canary runs before it and whose `canary:compare` it extends to a
-suite; on P1-I, whose pin sets the free-tier day it budgets and whose recordings open the
-epochs it pools; and on P3-D and P4-B, whose suites it runs. None of these is drawn a second
-time.
-
 "Sequencing with P1-I" has the rule and its fallback.
 
 P4-B is drawn under P2-B, whose `graphFacts` seed format its cross-session case needs (the
