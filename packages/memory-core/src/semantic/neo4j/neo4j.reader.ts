@@ -43,10 +43,10 @@ export interface Neo4jReader {
  * `RELATES_TO` and `MENTIONS` edges the session wrote. P2-B's corpus is one
  * session, so the scope leaves the ablation's numbers as they were.
  *
- * Its future follows P2-D's outcome (ADR 0012). Stage 1 is `good` and stage 2
- * decides: under removal it goes with the graph, and the ablation is archived
- * at the last commit that reproduced it; under keep it stays for the ablation,
- * which P2-E then reproduces in CI. Until then no pipeline runs it.
+ * P2-D's outcome is option C (ADR 0012, accepted): stage 1 was `good` and
+ * stage 2 `not met`, so the graph explains and `plan` does not use it. P2-E
+ * removes this class with the graph and archives the ablation at the last
+ * commit that reproduced it. No pipeline runs it.
  */
 export class CypherNeo4jReader implements Neo4jReader {
   constructor(private readonly driver: Driver) {}

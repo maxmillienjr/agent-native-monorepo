@@ -83,10 +83,12 @@ path.
   that no caller outside the tests sets (P4-B). The column carries an HNSW index (`vector_cosine_ops`) that the tiebroken
   query cannot use — ADR 0006 records that trade.
 - **Neo4j Knowledge Graph:** Typed nodes (`:Concept`, `:Fact`) joined by `:MENTIONS`, plus
-  `:RELATES_TO` between concepts. Written on every run and read by no request. It is kept
+  `:RELATES_TO` between concepts. Written on every run and read by no request. It was kept
   for an explanation role — which concepts a retrieved fact mentions, and how they connect
-  to the question's — so `docs/STATUS.md` row 15 is `stubbed`. P2-D measures that role.
-  Stage 1 is `good` and stage 2 decides whether the graph stays or goes (ADR 0012, proposed).
+  to the question's — and P2-D measured it. Stage 1 was `good` and stage 2 `not met`, so the
+  rule selected option C: the graph explains, and `plan` does not use it. ADR 0012, accepted,
+  removes the graph, and P2-E executes that; until it does, `docs/STATUS.md` row 15 is
+  `stubbed`.
   Every graph write carries its session (P2-D's M1). A `:Fact` keeps its first writer's
   `sessionId`, as pgvector does. `MENTIONS` and `RELATES_TO` carry the session in their
   merge key. Concepts stay global. Both graph reads take a required session scope, with no

@@ -133,13 +133,13 @@ Each tier has one command, and the first five run in CI. Eval runs twice in
 `agent-eval.yml`: on the replay axis on every pull request, every push to `main` and
 nightly, and on the live axis nightly and on dispatch when a `GOOGLE_API_KEY` repository
 secret exists. `eval:retrieval` and `eval:explanation` run in no pipeline, by P2-D's
-decision. Under ADR 0012's outcome, P2-E either adds a reproduction step for both to the
-replay job, if the graph is kept, or archives both, if it is removed. `eval:retrieval`
+decision. ADR 0012's outcome is option C, so P2-E archives both when it removes the graph. `eval:retrieval`
 measures the fused retrieval ADR 0009 retired, so it is a historical measurement: its
 `vector` condition is what a request gets, and its `graph` and `hybrid` conditions are not.
 `eval:explanation` is P2-D, the graph's explanation role. Stage 1 reads the graph alone.
 Stage 2 compares `plan`'s answers with and without the graph's paths, and by default it
-replays the committed answer file and makes no request.
+replays the committed answer file and makes no request. Stage 2 was `not met`, so the rule
+selected option C: the graph explains, `plan` does not use it, and P2-E removes it.
 
 | Tier        | Runner                 | Command                       | Scope                                                    |
 | ----------- | ---------------------- | ----------------------------- | -------------------------------------------------------- |
@@ -373,10 +373,12 @@ replays the committed answer file and makes no request.
   recording of the 535 texts takes six invocations a minute apart. Its default,
   `EVAL_EMBEDDINGS_MODE` unset, makes no request to the model host and fails if one is
   made.
-- **Stage 2's answers are recorded once, a slice a day, and replayed.**
+- **Stage 2's answers are recorded once, a slice a day, and replayed.** All 76 were
+  recorded by 2026-11-09 and are committed, so the recorder has nothing left to ask.
   `EVAL_ANSWERS_MODE=record yarn eval:explanation` asks the `plan` calls that
   `recorded/explanation-answers.json` lacks, at most `EVAL_STAGE2_MAX_CALLS` (default 8) and
-  13 seconds apart. It writes after every call, never asks a recorded answer again, and stops
+  `EVAL_STAGE2_PACE_MS` apart (default 13 seconds, under the free tier's five a minute; the
+  last 47 answers, on a paid key, were paced at 3000). It writes after every call, never asks a recorded answer again, and stops
   without recording on a per-day 429, exiting 1. Each answer is a format-2 cassette decision,
   and replay refuses one whose prompt hash is not what the run builds. `EVAL_ANSWERS_FILE`
   points a dry run elsewhere, so fake answers never land in the committed file. The committed
@@ -536,8 +538,9 @@ the whole pool instead: `gh variable set EVAL_SCHEDULE_PAUSED --body true` skips
 scheduled `eval-live` and `eval-canary` jobs (replay and dispatch still run), and
 `gh variable delete EVAL_SCHEDULE_PAUSED` brings them back. `--body live` skips the
 scheduled `eval-live` alone and keeps the scheduled `eval-canary`, for a recording that can
-spare the canary's one call on this pool but not the nightly's twelve: P1-I sets it while
-P2-D's stage 2 holds the pool, so the canary's candidate probe keeps its nights. Any other
+spare the canary's one call on this pool but not the nightly's twelve: P1-I set it on
+2026-11-09 while P2-D's stage 2 held the pool, so the canary's candidate probe kept its
+nights, and it was deleted that afternoon once stage 2's last answer was recorded. Any other
 value pauses nothing. The nights it was set are nights with no tally on `eval-history`, so
 the PRD that set it says which. Turbo buffers
 `yarn eval`'s output until the task ends, so a cancelled run's log is empty; its recorded
