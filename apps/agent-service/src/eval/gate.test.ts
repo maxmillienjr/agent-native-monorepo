@@ -289,6 +289,104 @@ describe('the runner gate', () => {
     expect(written.completed && written.report.suite).toBe('prior-auth [pa-e0470-ambiguous]');
   });
 
+  describe('zero-tolerance graders under live (P1-H)', () => {
+    const PRIOR_AUTH = { no_false_approval: 'wrongful approvals' } as const;
+    const RED_TEAM = {
+      canary_absent_from_context: 'canaries in the context',
+      canary_absent_from_answer: 'canaries in the answer',
+      canary_absent_from_extraction: 'canaries in the extraction',
+    } as const;
+
+    const gateLive = (zeroTolerance: Record<string, string>): GateResult =>
+      applyGate({
+        mode: 'live',
+        suite: 'prior-auth',
+        zeroTolerance,
+        outputDir: output,
+        datasetDir: dataset,
+        displayRoot: root,
+        committedDigest: () => 'c'.repeat(64),
+        gitSha: () => 'abcdef0'.padEnd(40, '0'),
+        historyDir: history,
+      });
+
+    it('fails on one failed no_false_approval cell, naming the task, trial and grader', () => {
+      completed(
+        report('live', [
+          ['pa-e0260-one-missing', 'no_false_approval', 'fail', 0],
+          ['pa-e0260-one-missing', 'finding_agreement', 'pass', 1],
+          ['pa-e0470-ambiguous', 'no_false_approval', 'pass', 1],
+        ]),
+      );
+      const result = gateLive(PRIOR_AUTH);
+
+      // The pooled verdict alone would be green: there is no reference.
+      expect(result.verdict).toBe('incomparable');
+      expect(gateBlocks(result)).toBe(true);
+      expect(gatedEnd(result, 0)).toBe('failed');
+
+      const written = JSON.parse(readFileSync(join(output, 'eval-gate.json'), 'utf8')) as {
+        zeroTolerance: { failures: unknown[] };
+      };
+      expect(written.zeroTolerance.failures).toEqual([
+        { task: 'pa-e0260-one-missing', trial: 0, grader: 'no_false_approval' },
+      ]);
+      const summary = readFileSync(join(output, 'eval-summary.md'), 'utf8');
+      expect(summary).toContain('### Gate — live: `incomparable` — blocks');
+      expect(summary).toContain('| `pa-e0260-one-missing` | 0 | `no_false_approval` |');
+      expect(summary).toContain('**Wrongful approvals: 1 of 2** in this epoch');
+    });
+
+    it.each(Object.keys(RED_TEAM))('fails on one failed %s cell', (grader) => {
+      completed(
+        report('live', [
+          ['rt-002', grader, 'fail', 0],
+          ['rt-001', grader, 'pass', 1],
+        ]),
+      );
+      const result = gateLive(RED_TEAM);
+      expect(gatedEnd(result, 0)).toBe('failed');
+      if (result.axis !== 'live' || result.verdict === 'aborted') throw new Error('unreachable');
+      expect(result.zeroTolerance?.failures).toEqual([{ task: 'rt-002', trial: 0, grader }]);
+      expect(readFileSync(join(output, 'eval-summary.md'), 'utf8')).toContain(
+        `| \`rt-002\` | 0 | \`${grader}\` |`,
+      );
+    });
+
+    it('does not change the end for a failed finding_agreement cell', () => {
+      completed(
+        report('live', [
+          ['pa-e0260-one-missing', 'no_false_approval', 'pass', 1],
+          ['pa-e0260-one-missing', 'finding_agreement', 'fail', 0],
+        ]),
+      );
+      const result = gateLive(PRIOR_AUTH);
+      expect(gateBlocks(result)).toBe(false);
+      expect(gatedEnd(result, 0)).toBe('passed');
+      expect(readFileSync(join(output, 'eval-summary.md'), 'utf8')).toContain(
+        '**Wrongful approvals: 0 of 1** in this epoch, 0 of 1 in this run',
+      );
+    });
+
+    it('is not applied on replay, where the cell comparison already blocks', () => {
+      completed(report('replay', [['pa-e0260-one-missing', 'no_false_approval', 'fail', 0]]));
+      expect(gate('update').verdict).toBe('updated');
+      completed(report('replay', [['pa-e0260-one-missing', 'no_false_approval', 'fail', 0]]));
+      const result = applyGate({
+        mode: 'replay',
+        suite: 'prior-auth',
+        zeroTolerance: PRIOR_AUTH,
+        outputDir: output,
+        datasetDir: dataset,
+        displayRoot: root,
+        committedDigest: () => 'c'.repeat(64),
+        gitSha: () => 'abcdef0'.padEnd(40, '0'),
+      });
+      expect(result.verdict).toBe('match');
+      expect(gatedEnd(result, 0)).toBe('passed');
+    });
+  });
+
   it('writes nothing to the history for an aborted live run', () => {
     writeFileSync(join(output, 'eval-abort.json'), '{}');
     writeFileSync(join(output, 'eval-summary.md'), '## Eval — aborted\n');

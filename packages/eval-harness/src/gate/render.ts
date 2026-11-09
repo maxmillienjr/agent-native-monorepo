@@ -5,6 +5,7 @@ import {
   type ReplayComparison,
   type ReplayDifference,
 } from './compare-replay.js';
+import type { ZeroToleranceCheck } from './zero-tolerance.js';
 
 /**
  * What the gate decided, as `eval-gate.json` holds it and the job summary
@@ -37,6 +38,8 @@ export type GateResult =
       readonly tally: string;
       readonly pool: LivePool;
       readonly comparison: LiveComparison;
+      /** P1-H: the suite's zero-tolerance graders, when it names any. */
+      readonly zeroTolerance?: ZeroToleranceCheck;
     }
   | {
       readonly axis: 'replay' | 'live';
@@ -53,12 +56,13 @@ export type GateVerdict = GateResult['verdict'];
  * `regressed` and `aborted` do: a failed live trial is an expected sample on a
  * stochastic axis, and a nightly that goes red on one is the job people learn
  * to ignore. `insufficient-evidence` and `incomparable` are green with a
- * notice, and are never printed as passing.
+ * notice, and are never printed as passing. The one exception is a failed cell
+ * of a zero-tolerance grader, which blocks whatever the verdict (P1-H).
  */
 export function gateBlocks(result: GateResult): boolean {
   if (result.verdict === 'aborted') return true;
   if (result.axis === 'replay') return result.verdict === 'differs';
-  return result.verdict === 'regressed';
+  return result.verdict === 'regressed' || (result.zeroTolerance?.failures.length ?? 0) > 0;
 }
 
 export function renderGateJson(result: GateResult): string {
@@ -172,6 +176,7 @@ function renderLive(
     '',
     comparison.reason.charAt(0).toUpperCase() + comparison.reason.slice(1) + '.',
   ];
+  if (result.zeroTolerance !== undefined) lines.push('', renderZeroTolerance(result.zeroTolerance));
 
   if (comparison.regime !== undefined && comparison.estimate !== undefined) {
     const k = comparison.tasks.length;
@@ -217,6 +222,36 @@ function renderLive(
     '',
   );
   return lines.join('\n');
+}
+
+/**
+ * The zero-tolerance graders' counts, and every failed cell by task, trial and
+ * grader, so the summary names what to read in the recorded cassette.
+ */
+export function renderZeroTolerance(check: ZeroToleranceCheck): string {
+  const lines = check.counts.map(
+    (count) =>
+      `- **${count.label.charAt(0).toUpperCase()}${count.label.slice(1)}: ` +
+      `${count.epoch.failed} of ${count.epoch.cells}** in this epoch, ` +
+      `${count.run.failed} of ${count.run.cells} in this run (\`${count.grader}\`)`,
+  );
+  if (check.failures.length === 0) {
+    return [
+      '**Zero tolerance:** one live failure of these graders blocks, whatever the verdict. None failed.',
+      '',
+      ...lines,
+    ].join('\n');
+  }
+  return [
+    `**Zero tolerance — blocks:** ${check.failures.length} failed cell(s) of a grader whose ` +
+      'tolerated rate is zero. One is enough, whatever the pooled verdict.',
+    '',
+    '| Task | Trial | Grader |',
+    '| ---- | ----- | ------ |',
+    ...check.failures.map((f) => `| \`${f.task}\` | ${f.trial} | \`${f.grader}\` |`),
+    '',
+    ...lines,
+  ].join('\n');
 }
 
 /**

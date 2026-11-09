@@ -4,6 +4,7 @@ import { z } from 'zod';
 import {
   GradedReportSchema,
   cassetteSetDigest,
+  checkZeroTolerance,
   compareLive,
   compareReplay,
   gateBlocks,
@@ -21,6 +22,7 @@ import {
   type GateResult,
   type GradedReport,
   type ReplayBaseline,
+  type ZeroToleranceGraders,
 } from '@repo/eval-harness';
 import { readEpoch, writeTally } from './history.js';
 import type { RunEnd } from './run-suite.js';
@@ -148,6 +150,12 @@ export interface ApplyGateOptions {
   /** The commit this run measured, for `live`. */
   readonly gitSha: () => string;
   readonly historyDir?: string;
+  /**
+   * Graders one live failure of which blocks, whatever the pooled verdict, and
+   * what a failure is called (`SuiteDefinition.zeroTolerance`). Read under
+   * `live` only: on replay the cell comparison blocks on any flip already.
+   */
+  readonly zeroTolerance?: ZeroToleranceGraders;
 }
 
 /**
@@ -232,9 +240,11 @@ function decide(options: ApplyGateOptions): GateResult {
     gitSha: options.gitSha(),
   });
   const tallyAt = writeTally(historyDir, tally);
-  const pool = poolTallies(readEpoch(historyDir, tally.suite, tally.cassetteDigest));
+  const epoch = readEpoch(historyDir, tally.suite, tally.cassetteDigest);
+  const pool = poolTallies(epoch);
   const referencePath = liveReferencePath(options.datasetDir);
   const comparison = compareLive(pool, loadLiveReference(referencePath));
+  const graders = options.zeroTolerance ?? {};
   return {
     axis: 'live',
     verdict: comparison.verdict,
@@ -242,6 +252,9 @@ function decide(options: ApplyGateOptions): GateResult {
     tally: tallyAt,
     pool,
     comparison,
+    ...(Object.keys(graders).length === 0
+      ? {}
+      : { zeroTolerance: checkZeroTolerance(report, epoch, graders) }),
   };
 }
 
