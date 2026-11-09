@@ -136,12 +136,11 @@ describe.skipIf(SKIP)('audit:replay (integration)', () => {
       'embed',
       'memory.retrieve',
     ]);
+    // No graph write: `reflect` writes episodes and semantic_facts alone (P2-E).
     expect(report.writes.map((write) => write.store)).toEqual([
       'episodes',
       'episodes',
-      'neo4j.concept',
       'semantic_facts',
-      'neo4j.fact',
     ]);
   });
 
