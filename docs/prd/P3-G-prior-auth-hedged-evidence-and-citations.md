@@ -616,6 +616,16 @@ dated note, is dated_. A second wording costs another probe, with
 `pa-k0823-all-met-narrative` added to it (20 calls), and another recording (20 calls), about
 $0.06 on the paid key. Option B stands on its own and needs no recording.
 
+## Wording B (owner's choice, 2026-11-09)
+
+The owner chose a second wording. Wording B is wording A plus one sentence after the
+`insufficient` line: _"A time stated relative to a dated document, such as days or a week
+before or after it, is dated."_ The four-word test passes on it. **Its probe, fixed before
+any call:** five trials each of the three step-3 tasks and `pa-k0823-all-met-narrative`, 20
+calls. The recording goes ahead only if step 3's four rows hold and
+`pa-k0823-all-met-narrative` passes `disposition_kind` in 5 of 5. Then step 4 as written,
+and the blocking criterion applies unchanged. If it fails, this stops at the owner again.
+
 ## Risks and open questions
 
 **Decided when the file was written, 2026-11-09.**
