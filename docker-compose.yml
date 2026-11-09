@@ -15,22 +15,6 @@ services:
       timeout: 5s
       retries: 10
 
-  neo4j:
-    image: neo4j:5-community
-    environment:
-      NEO4J_AUTH: neo4j/password
-      NEO4J_PLUGINS: '[]'
-    ports:
-      - '${NEO4J_HTTP_HOST_PORT:-7474}:7474'
-      - '${NEO4J_BOLT_HOST_PORT:-7687}:7687'
-    volumes:
-      - neo4jdata:/data
-    healthcheck:
-      test: ['CMD', 'neo4j', 'status']
-      interval: 10s
-      timeout: 10s
-      retries: 10
-
   # One-shot: writes the Agent Card's signing key into a named volume the first
   # time the stack comes up, and leaves it there after (P5-A). No private key is
   # in the repository; this is where the stack's comes from.
@@ -55,9 +39,6 @@ services:
       - '${AGENT_SERVICE_HOST_PORT:-3000}:3000'
     environment:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/agentdb
-      NEO4J_URI: bolt://neo4j:7687
-      NEO4J_USER: neo4j
-      NEO4J_PASSWORD: password
       GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
       OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
       OTEL_SERVICE_NAME: agent-service
@@ -73,8 +54,6 @@ services:
       - a2a-keys:/keys:ro
     depends_on:
       postgres:
-        condition: service_healthy
-      neo4j:
         condition: service_healthy
       a2a-keygen:
         condition: service_completed_successfully
@@ -131,5 +110,4 @@ services:
 
 volumes:
   pgdata:
-  neo4jdata:
   a2a-keys:
