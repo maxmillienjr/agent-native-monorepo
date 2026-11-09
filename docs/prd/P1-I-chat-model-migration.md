@@ -5,7 +5,7 @@ tier: 1
 status: in-progress
 size: L
 depends_on: [P1-A, P1-B, P1-E, P1-F]
-blocks: []
+blocks: [P3-G]
 issue: 147
 superseded_by: null
 ---
@@ -534,10 +534,12 @@ about $0.03. No call spent a thinking token: the new pin does not think by defau
 client sets no thinking level (review decision 5).
 
 **Prior-auth's two failures are committed into the replay baseline as known failures,
-owned by P3-G.** Both tasks still referred to a clinician, as labelled.
+owned by [P3-G](P3-G-prior-auth-hedged-evidence-and-citations.md).** Both tasks still
+referred to a clinician, as labelled.
 
 - `pa-e0260-ambiguous` fails `finding_agreement`, 2 of 3 criteria agreeing with the label:
-  the model reads hedged evidence as `not-met` where the label says `unclear`. A five-trial
+  the model reads hedged evidence as `not-met` where the label says `insufficient`
+  (_corrected 2026-11-09:_ this said `unclear`, which is not a status). A five-trial
   live check failed it 5 of 5, so it is the model's reading, not noise.
 - `pa-k0823-contradicted` fails `citations_resolve`: it cited
   `DocumentReference/doc-k0823-home-assessment`, which is not in the bundle. The same
