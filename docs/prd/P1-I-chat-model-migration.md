@@ -121,7 +121,8 @@ on two nights of seven (`P1-E-model-drift-canary.md:435-437`).
 other failure to LangChain's default handler (`apps/agent-service/src/agent/model/rate-limit.ts:106-111`),
 which retries up to six times (`runs.service.ts:119-122`). Each retry is a request against
 the day's 20. On 2026-11-09 a live run made 20 requests and got 9 answers. That observation
-was reported to this draft and is not yet written into the repository.
+was reported to this draft, and since the retry bound below it is in `.context/conventions.md`'s
+live-quota section.
 
 **No decision record covers model choice.** No ADR names a chat model id or a pinning
 policy: `grep -n -i "flash\|CHAT_MODEL\|model id" docs/adr/*.md` returns nothing. ADR 0005
@@ -482,9 +483,13 @@ request leaves the process.
       (`.context/conventions.md:335-345`), pass on the new set.
 - [ ] `GEMINI_PRICES` prices the chosen id, with the page and the date it was read. If the
       id is `gemini-3.8-flash`, the 2027-01-01 price is noted.
-- [ ] **Stubbed transport:** with the retry bound, a recording run that meets three
+- [x] **Stubbed transport:** with the retry bound, a recording run that meets three
       consecutive 503s makes two requests for that call, writes `eval-abort.json` with cause
-      `provider-unavailable`, and keeps the cassettes of the trials that finished.
+      `provider-unavailable`, and keeps the cassettes of the trials that finished. Met on 2026-11-09:
+      `apps/agent-service/src/eval/provider-unavailable.test.ts` drives the memory-recall
+      harness, `RunsService` and the graph with `IO_RETRY` on a stubbed `fetch`, and fails
+      if `IO_RETRY`'s exclusion is removed. The node-level retry was a third layer the design
+      had not named; it re-ran the node on a 5xx, and now skips `ProviderUnavailableError`.
 
 **After the merge**
 
