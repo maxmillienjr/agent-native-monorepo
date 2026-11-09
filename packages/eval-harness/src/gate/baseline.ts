@@ -299,10 +299,22 @@ export function loadLiveReference(path: string): LiveReference | undefined {
   return LiveReferenceSchema.parse(JSON.parse(readFileSync(path, 'utf8')));
 }
 
-/** The tally a completed live run appends. */
+/**
+ * The tally a completed live run appends, filed under `suite`.
+ *
+ * The suite is the definition's name and never the report's. A run narrowed by
+ * `EVAL_TASKS` reports `prior-auth [pa-…, pa-…]`, which is right for a summary
+ * and wrong for a directory: every slice would open an epoch of its own, and
+ * `poolTallies` refuses to pool across names (P1-H). The night's tasks are the
+ * keys of `tasks`, so the narrowing is still on record.
+ */
 export function liveTally(
   report: GradedReport,
-  provenance: { readonly cassetteDigest: string; readonly gitSha: string },
+  provenance: {
+    readonly suite: string;
+    readonly cassetteDigest: string;
+    readonly gitSha: string;
+  },
 ): LiveTally {
   if (report.axes.model !== 'live') {
     throw new Error(
@@ -323,7 +335,7 @@ export function liveTally(
   }
   return {
     kind: 'live-tally',
-    suite: report.suite,
+    suite: provenance.suite,
     cassetteDigest: provenance.cassetteDigest,
     gitSha: provenance.gitSha,
     startedAt: report.startedAt,

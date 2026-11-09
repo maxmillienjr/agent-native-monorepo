@@ -84,9 +84,10 @@ describe('the runner gate', () => {
     writeFileSync(join(output, 'eval-summary.md'), '## Eval — memory-recall\n');
   };
 
-  const gate = (mode: GateMode): GateResult =>
+  const gate = (mode: GateMode, suite = 'memory-recall'): GateResult =>
     applyGate({
       mode,
+      suite,
       outputDir: output,
       datasetDir: dataset,
       displayRoot: root,
@@ -251,6 +252,41 @@ describe('the runner gate', () => {
     const result = gate('live');
     expect(result.verdict).toBe('insufficient-evidence');
     expect(readFileSync(join(output, 'eval-summary.md'), 'utf8')).toContain('14 / 14');
+  });
+
+  it('files a run narrowed by EVAL_TASKS under the suite’s own name, and pools its slices', () => {
+    // Two nights, each a different slice of one suite in one epoch, as the
+    // rotation runs them (P1-H). The report's name carries the selection.
+    const night = (startedAt: string, task: string): GradedReport => ({
+      ...report('live', [[task, 'no_false_approval', 'pass', 1]]),
+      suite: `prior-auth [${task}]`,
+      startedAt,
+    });
+
+    completed(night('2026-11-10T08:00:00.000Z', 'pa-e0260-ambiguous'));
+    const first = gate('live', 'prior-auth');
+    completed(night('2026-11-11T08:00:00.000Z', 'pa-e0470-ambiguous'));
+    const second = gate('live', 'prior-auth');
+    if (first.axis !== 'live' || first.verdict === 'aborted') throw new Error('unreachable');
+    if (second.axis !== 'live' || second.verdict === 'aborted') throw new Error('unreachable');
+
+    const epoch = `live/prior-auth/${'c'.repeat(12)}/`;
+    expect(first.tally.startsWith(epoch)).toBe(true);
+    expect(second.tally.startsWith(epoch)).toBe(true);
+    const tally = LiveTallySchema.parse(
+      JSON.parse(readFileSync(join(history, second.tally), 'utf8')),
+    );
+    expect(tally.suite).toBe('prior-auth');
+    expect(Object.keys(tally.tasks)).toEqual(['pa-e0470-ambiguous']);
+
+    expect(second.pool.suite).toBe('prior-auth');
+    expect(second.pool.runs).toHaveLength(2);
+    expect(Object.keys(second.pool.tasks).sort()).toEqual([
+      'pa-e0260-ambiguous',
+      'pa-e0470-ambiguous',
+    ]);
+    const written = readRunOutput(output);
+    expect(written.completed && written.report.suite).toBe('prior-auth [pa-e0470-ambiguous]');
   });
 
   it('writes nothing to the history for an aborted live run', () => {

@@ -133,6 +133,12 @@ export function readRunOutput(outputDir: string): RunOutput {
 
 export interface ApplyGateOptions {
   readonly mode: GateMode;
+  /**
+   * The suite definition's name, which a live tally is filed under. Not the
+   * report's: a run narrowed by `EVAL_TASKS` carries its selection in that
+   * name, and filing under it would give every slice an epoch of its own.
+   */
+  readonly suite: string;
   readonly outputDir: string;
   readonly datasetDir: string;
   /** Paths in the summary are printed relative to this, so they read as repository paths. */
@@ -221,6 +227,7 @@ function decide(options: ApplyGateOptions): GateResult {
     throw new Error('EVAL_HISTORY_DIR is not set');
   }
   const tally = liveTally(report, {
+    suite: options.suite,
     cassetteDigest: options.committedDigest(),
     gitSha: options.gitSha(),
   });

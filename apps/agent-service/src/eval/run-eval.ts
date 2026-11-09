@@ -376,7 +376,7 @@ async function runSuite<TOutcome>(
     },
   });
 
-  return gateTheRun(end, outputDir, definition.datasetDir);
+  return gateTheRun(end, outputDir, definition);
 }
 
 /**
@@ -387,7 +387,12 @@ async function runSuite<TOutcome>(
  * output directory the way CI does — an abort file, or a report — and so
  * judges an aborted run by the same rule as a completed one.
  */
-function gateTheRun(end: RunEnd, outputDir: string, datasetDir: string): RunEnd {
+function gateTheRun<TOutcome>(
+  end: RunEnd,
+  outputDir: string,
+  definition: SuiteDefinition<TOutcome>,
+): RunEnd {
+  const { datasetDir } = definition;
   let mode: GateMode | undefined;
   try {
     mode = readGateMode();
@@ -400,6 +405,9 @@ function gateTheRun(end: RunEnd, outputDir: string, datasetDir: string): RunEnd 
   const historyDir = process.env['EVAL_HISTORY_DIR'];
   const result = applyGate({
     mode,
+    // The definition's name, so a slice narrowed by EVAL_TASKS pools into the
+    // suite's one epoch; the report keeps printing the narrowed name (P1-H).
+    suite: definition.name,
     outputDir,
     datasetDir,
     displayRoot: resolve(process.cwd(), '..', '..'),
