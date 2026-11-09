@@ -517,10 +517,13 @@ memory-recall task: 3 calls for `memory-recall-001`, 5 for `tool-use-001` and 4 
 `tool-use-002`, as recorded on 2026-10-26 and 2026-10-27 and again by P4-B on 2026-11-03
 and 2026-11-05. It was about 8 before P4-C added the third task, which left 9–10 a day. Both nightly jobs are scheduled for 03:00
 UTC, but GitHub has started them between 07:30 and 10:15 UTC on every night since
-2026-10-03: after the quota resets at 07:00 UTC, not before it. So the nightly spends from
+2026-10-03: after the quota resets, not before it. The quota resets at midnight Pacific
+time: 07:00 UTC while the US is on daylight time, and 08:00 UTC from the first Sunday in
+November to the second Sunday in March. On 2026-11-09 a batch started at 07:04 UTC got one
+answer from the previous day's remainder before the per-day 429. So the nightly spends from
 the Pacific day that has just begun, and a recording made later that day spends what the
 nightly left. Start a recording after the day's nightly has finished; one started between
-07:00 UTC and the nightly takes calls the nightly will need. Anything else that uses the
+the reset and the nightly takes calls the nightly will need. Anything else that uses the
 developer key spends the same pool: on 2026-10-15 the day's 20 were gone by 12:40 UTC with
 two of them spent by a recording. A PRD that needs live calls states its count and how it
 splits across days; whoever schedules the run checks this table first and does not start a
