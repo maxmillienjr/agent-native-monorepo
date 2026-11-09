@@ -20,13 +20,15 @@ owns. **Next:** the 2026-11-10 nightly is the first scheduled canary and live ru
 id, and step 1d and phase 3's fresh-clone trial need the owner's new-project key. The
 deadline is 2026-11-30.
 
-**[P3-G](P3-G-prior-auth-hedged-evidence-and-citations.md) is accepted, and owns what
+**[P3-G](P3-G-prior-auth-hedged-evidence-and-citations.md) is in progress, and owns what
 P1-I's prior-auth recording left failing.** The owner accepted it on 2026-11-09, tracked in
 [#157](https://github.com/maxmillienjr/agent-native-monorepo/issues/157). Its code half makes `dispose` refer any `met` that cites a document outside the
-request. It needs no key and replays to `match` against the current baseline. Its prompt
-half moves `ASSESS_PROMPT`, so it re-records prior-auth on the owner's paid key. The
-conductor runs a 15-call probe first, and the 20-call recording only if the probe meets the
-thresholds the PRD fixed before any call.
+request. Its prompt half moves `ASSESS_PROMPT`, so it re-records prior-auth on the owner's
+paid key. Steps 1 and 2 are on `feat/p3-g`: the code half replayed to `match` against the
+current baseline with `pa-k0823-contradicted`'s `citations_resolve` still `fail`, CTL-OUT-02
+is implemented, and the prompt is committed, so the prior-auth replay misses from that
+commit until the recording. **Next:** the conductor runs the 15-call probe, and the 20-call
+recording only if the probe meets the thresholds the PRD fixed before any call.
 
 **[P2-E](P2-E-remove-the-graph.md) is shipped: the graph is gone.** ADR 0012's option C
 landed in two pull requests on 2026-11-09. #152 (`df655c0`) stopped `reflect` writing the
@@ -546,15 +548,15 @@ OpenTelemetry GenAI conventions.
 Optional vertical. Demonstrates that the chassis holds up under the constraints a payer or
 provider actually operates under. Uses synthetic data only.
 
-| ID                                                       | Title                                                                           | Size | Status   |
-| -------------------------------------------------------- | ------------------------------------------------------------------------------- | ---- | -------- |
-| [P3-A](P3-A-clinician-gate.md)                           | Clinician-gate invariant enforced in the type system                            | S    | shipped  |
-| [P3-B](P3-B-audit-replay.md)                             | Deterministic replay for audit reconstruction                                   | L    | shipped  |
-| [P3-C](P3-C-decision-ledger.md)                          | Hash-chained, tamper-evident decision ledger                                    | L    | shipped  |
-| [P3-D](P3-D-payer-dataset-fhir-prior-auth.md)            | Synthetic payer dataset and FHIR prior-authorization surface                    | L    | shipped  |
-| [P3-E](P3-E-clinician-review-queue.md)                   | Clinician review queue, `$inquire` and the decision clock                       | M    | shipped  |
-| [P3-F](P3-F-appeals-reconsideration.md)                  | Appeals: reconsideration lifecycle for adverse determinations                   | M    | shipped  |
-| [P3-G](P3-G-prior-auth-hedged-evidence-and-citations.md) | Prior-auth assessment on `gemini-3.5-flash-lite`: hedged evidence and citations | S    | accepted |
+| ID                                                       | Title                                                                           | Size | Status      |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------- | ---- | ----------- |
+| [P3-A](P3-A-clinician-gate.md)                           | Clinician-gate invariant enforced in the type system                            | S    | shipped     |
+| [P3-B](P3-B-audit-replay.md)                             | Deterministic replay for audit reconstruction                                   | L    | shipped     |
+| [P3-C](P3-C-decision-ledger.md)                          | Hash-chained, tamper-evident decision ledger                                    | L    | shipped     |
+| [P3-D](P3-D-payer-dataset-fhir-prior-auth.md)            | Synthetic payer dataset and FHIR prior-authorization surface                    | L    | shipped     |
+| [P3-E](P3-E-clinician-review-queue.md)                   | Clinician review queue, `$inquire` and the decision clock                       | M    | shipped     |
+| [P3-F](P3-F-appeals-reconsideration.md)                  | Appeals: reconsideration lifecycle for adverse determinations                   | M    | shipped     |
+| [P3-G](P3-G-prior-auth-hedged-evidence-and-citations.md) | Prior-auth assessment on `gemini-3.5-flash-lite`: hedged evidence and citations | S    | in-progress |
 
 [P3-G](P3-G-prior-auth-hedged-evidence-and-citations.md), accepted on 2026-11-09, owns the
 two known failures P1-I's prior-auth recording on `gemini-3.5-flash-lite` committed into the
@@ -568,9 +570,9 @@ citation rule is enforced in `dispose`, not `assess`, so that `citations_resolve
 grading the model: a `met` that cites anything outside the bundle refers, which can never
 turn a referral into an approval. The prompt change re-records prior-auth on the owner's
 paid key, run by the conductor: a 15-call probe with its thresholds fixed in the PRD, then
-the 20-call recording. It also adds CTL-OUT-02, planned. Budgets for the prior-auth tasks
-stay unowned: they have none, and the `assess.criteria` seam records no usage to derive one
-from.
+the 20-call recording. It also adds CTL-OUT-02, implemented with the code half. Budgets for
+the prior-auth tasks stay unowned: they have none, and the `assess.criteria` seam records no
+usage to derive one from.
 
 ## Tier 4 — Governance and agent security as code
 

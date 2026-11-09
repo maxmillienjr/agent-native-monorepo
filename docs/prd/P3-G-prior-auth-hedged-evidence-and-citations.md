@@ -2,7 +2,7 @@
 id: P3-G
 title: 'Prior-auth assessment on `gemini-3.5-flash-lite`: hedged evidence and citations'
 tier: 3
-status: accepted
+status: in-progress
 size: S
 depends_on: [P1-I, P3-D]
 blocks: []
@@ -488,32 +488,60 @@ the owner's key, locally, run by the conductor.
 
 **Option B (lands first)**
 
-- [ ] **Unit:** `normalizeFindings` turns a `met` finding citing one resolving and one
+- [x] **Unit:** `normalizeFindings` turns a `met` finding citing one resolving and one
       unresolved reference into `insufficient`, keeping the resolving reference and prefixing
       the rationale with `UNRESOLVED_BESIDE`; `decideDisposition` refers that request. A test in
-      `disposition.test.ts` with that title.
-- [ ] **Unit:** a `not-met` or `insufficient` finding with an unresolved citation keeps its
-      status, loses the citation, and carries the dropped-citation sentence.
-- [ ] **Unit:** the enumeration over a two-criterion policy, 144 cases, asserts that every
+      `disposition.test.ts` with that title. 2026-11-09, `16d62e3`: `disposition.test.ts` ›
+      "refers when a met finding cites one resolving and one unresolved reference" asserts the
+      whole normalized finding, the resolving reference kept and the sentence in full, and that
+      the other criterion's `met` is untouched.
+- [x] **Unit:** a `not-met` or `insufficient` finding with an unresolved citation keeps its
+      status, loses the citation, and carries the dropped-citation sentence. 2026-11-09,
+      `16d62e3`: `disposition.test.ts` › "keeps a not-met or insufficient finding’s status, drops
+      its unresolved citation and says so", one case per status, and a second test that a
+      finding whose citations all resolve keeps the model's rationale unprefixed.
+- [x] **Unit:** the enumeration over a two-criterion policy, 144 cases, asserts that every
       request the new rule approves the old rule approved, and that they disagree only where
       every criterion is `met` with a resolving citation and one also cites an unresolved
-      reference.
-- [ ] **Unit:** `dispose`'s span carries `prior_auth.unresolved_citations`, 0 when every
+      reference. 2026-11-09, `16d62e3`: `disposition.test.ts` › "the citation rule, against the
+      one it replaced". The old rule is restated in the test as P3-D wrote it; the
+      disagreements are exactly three, `met/resolving + met/both`, `met/both + met/resolving`
+      and `met/both + met/both`, all old-approve and new-refer.
+- [x] **Unit:** `dispose`'s span carries `prior_auth.unresolved_citations`, 0 when every
       citation resolves and the count when not, and the key is in `ALLOWED_SPAN_ATTRIBUTES`.
-- [ ] **Model `replay`:** with Option B and the cassettes at `3406593`, the prior-auth replay
+      2026-11-09, `555df3c`: `prior-auth.service.test.ts` asserts 0 beside the existing
+      `prior_auth.disposition` assertion (the stub cites nothing), and "counts on the dispose
+      span the citations that name no resource in the request (P3-G)" swaps in an assessment
+      citing one real and two invented references and reads 2, with `unlistedAttributeKeys`
+      empty.
+- [x] **Model `replay`:** with Option B and the cassettes at `3406593`, the prior-auth replay
       reports `match` against `8aef2c2`'s baseline, `pa-k0823-contradicted`'s
       `citations_resolve` cell still `fail`. This shows the grader still reads the model's
-      citations.
-- [ ] CTL-OUT-02 is `implemented`, with `normalizeFindings` and both new tests as anchors, and
-      `yarn lint:docs` passes.
+      citations. 2026-11-09 at `81f108e`, no key, Postgres on a non-default port: verdict
+      `match`, 96 cells against 96, no differences, cassette digest `aedeba57d338`.
+      `pa-k0823-contradicted` › `citations_resolve` is 0, `fail`, "1 citation(s) name nothing
+      in the bundle: DocumentReference/doc-k0823-home-assessment", and `pa-e0260-ambiguous` ›
+      `finding_agreement` is still 0.667, `fail`. The same run's `dispose` span on
+      K0823-contradicted reads `prior_auth.unresolved_citations` 1, and 0 on the other 23.
+      memory-recall (31 cells) and red-team (7 cells) replayed to `match` on the same commit,
+      every budget `within`.
+- [x] CTL-OUT-02 is `implemented`, with `normalizeFindings` and both new tests as anchors, and
+      `yarn lint:docs` passes. 2026-11-09, `81f108e`: the row's anchors are the symbol, the
+      mixed-citation test and the enumeration test, `owner` removed; the lint reports 24
+      implemented and 0 planned, every anchor resolving.
 
 **Option A**
 
-- [ ] `ASSESS_PROMPT` defines `not-met` as a stated fact, says an uncertain, conditional or
+- [x] `ASSESS_PROMPT` defines `not-met` as a stated fact, says an uncertain, conditional or
       second-hand statement is `insufficient`, and says a reference is copied, never
-      composed. **Reviewer.**
-- [ ] **Unit:** no run of four words from any of the 24 bundles' `DocumentReference` texts
-      appears in `ASSESS_PROMPT`.
+      composed. **Reviewer.** 2026-11-09, `f552ef7`: the constant is byte-identical to the
+      code block under Option A, compared by script. From this commit the prior-auth replay
+      aborts with `CassetteMissError` at the first `assess.criteria` seam, as step 2 says.
+- [x] **Unit:** no run of four words from any of the 24 bundles' `DocumentReference` texts
+      appears in `ASSESS_PROMPT`. 2026-11-09, `f552ef7`: `assessment.test.ts` › "shares no run
+      of four words with any prior-auth bundle’s note text". It decodes the 41 attachments of
+      the 24 bundles, lowercases them and breaks words on anything not a letter or digit,
+      which gives the 1,082 runs this PRD counted, and the prompt shares none.
 
 **The probe and the recording**
 
