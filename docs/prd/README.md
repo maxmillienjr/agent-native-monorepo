@@ -16,27 +16,22 @@ alone. The seven nights its rule 3 reads start with the first scheduled canary a
 merges. Stage 2 no longer holds the 2.5 pool, and the variable was deleted at 13:51 UTC on
 2026-11-09, so the scheduled `eval-live` runs again as well.
 
-**[P2-E](P2-E-remove-the-graph.md) is in progress, and its second pull request removes the
-graph.** The first, #152, merged as `df655c0` on 2026-11-09, ahead of P1-I's memory-recall
-recording: `reflect` writes episodes and `semantic_facts` and nothing else, `distill`
-extracts facts alone, and `entity_merged` became `semantic_fact_written`. The second is
-pushed on `feat/p2-e-b` and its pull request is not open. Both measurements reproduced at
-`df655c0` with no key, and that commit is tagged `archive/p2e-graph-measurements`. Then the
-Neo4j client, writer, reader and explainer went, with `neo4j-driver`, the compose service,
-the CI service containers, both runners and everything only they called; the retrieval
-contracts narrowed to `'pgvector'`, the task format refuses a graph seed, and the memory
-axis is `DATABASE_URL` alone. All three suites replay to `match` against unchanged
-baselines with no Neo4j container, and the unit, service and integration tiers pass on
-Postgres alone. What is left is the one criterion that needs CI: the `e2e` and
-`browser-e2e` jobs and `eval-replay` on the pull request. P2-E ships when they pass.
+**[P2-E](P2-E-remove-the-graph.md) is shipped: the graph is gone.** ADR 0012's option C
+landed in two pull requests on 2026-11-09. #152 (`df655c0`) stopped `reflect` writing the
+graph and narrowed the extraction to facts, ahead of P1-I's memory-recall recording. #153
+removed Neo4j: the client, writer, reader and explainer, `neo4j-driver`, the compose service,
+the CI service containers, and both measurement runners, after both measurements reproduced
+at `df655c0` with no key, which is tagged `archive/p2e-graph-measurements`. The retrieval
+contracts are `'pgvector'` alone, the task format refuses a graph seed, and the memory axis
+is `DATABASE_URL` alone. All three suites replay to `match` against unchanged baselines.
 
-**Twenty-five PRDs are shipped and the system they describe is running.** The service answers
+**Twenty-six PRDs are shipped and the system they describe is running.** The service answers
 `POST /runs` and `POST /runs/stream`; `memory-core` is constructed by the app rather than
 sitting beside it; the graph compiles with a checkpointer and a retry policy on every node
 that performs I/O; and `packages/eval-harness` measures the result. Verified against live
 stores from an empty database: one run leaves episodic rows, `semantic_facts` rows and
 checkpoints under the runId its own response returned. It wrote `:Concept` and `:Fact` nodes
-as well until P2-E's first pull request, and P2-E's second removes the store.
+as well until P2-E, which removed the store on 2026-11-09.
 
 **`docs/STATUS.md` is the authority on any capability sentence, including the ones above.**
 Thirty-seven rows, each with a status and evidence cited by name — thirty `implemented`,
@@ -518,13 +513,13 @@ ADR 0012 removes the graph. P2-E's first pull request took it out of the run, an
 removes the store from the code, the stack and CI. The standard vocabulary for reporting either is in place: P2-C emits the
 OpenTelemetry GenAI conventions.
 
-| ID                                           | Title                                                                    | Size | Status      |
-| -------------------------------------------- | ------------------------------------------------------------------------ | ---- | ----------- |
-| [P2-A](P2-A-wire-memory-core.md)             | Wire memory-core into the service; add checkpointing and retry           | L    | shipped     |
-| [P2-B](P2-B-retrieval-ablation.md)           | Hybrid retrieval evaluation and the graph/vector/hybrid ablation         | L    | shipped     |
-| [P2-C](P2-C-otel-genai-semantics.md)         | OpenTelemetry GenAI semantics, including evaluation events               | L    | shipped     |
-| [P2-D](P2-D-graph-explanation-or-removal.md) | Measure the graph's explanation role, or remove it (ADR 0009's fallback) | M    | shipped     |
-| [P2-E](P2-E-remove-the-graph.md)             | Act on P2-D's outcome: remove the graph (option C, ADR 0012)             | M    | in-progress |
+| ID                                           | Title                                                                    | Size | Status  |
+| -------------------------------------------- | ------------------------------------------------------------------------ | ---- | ------- |
+| [P2-A](P2-A-wire-memory-core.md)             | Wire memory-core into the service; add checkpointing and retry           | L    | shipped |
+| [P2-B](P2-B-retrieval-ablation.md)           | Hybrid retrieval evaluation and the graph/vector/hybrid ablation         | L    | shipped |
+| [P2-C](P2-C-otel-genai-semantics.md)         | OpenTelemetry GenAI semantics, including evaluation events               | L    | shipped |
+| [P2-D](P2-D-graph-explanation-or-removal.md) | Measure the graph's explanation role, or remove it (ADR 0009's fallback) | M    | shipped |
+| [P2-E](P2-E-remove-the-graph.md)             | Act on P2-D's outcome: remove the graph (option C, ADR 0012)             | M    | shipped |
 
 ## Tier 3 — Regulated-domain credibility
 

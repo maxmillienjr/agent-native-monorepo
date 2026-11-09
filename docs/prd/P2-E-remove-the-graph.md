@@ -2,7 +2,7 @@
 id: P2-E
 title: "Act on P2-D's outcome: remove the graph (option C, ADR 0012)"
 tier: 2
-status: in-progress
+status: shipped
 size: M
 depends_on: [P2-D]
 blocks: []
@@ -672,16 +672,18 @@ stay, and the harness passes no concept ids.
       is not committed. 2026-11-09, `EVAL_SUITE=red-team EVAL_TASKS=rt-001`: with the
       scratch change, `canary_absent_from_context` 0%, "canary in retrieved candidate 10 of
       10"; reverted, 100%.
-- [ ] `e2e.yml`'s integration job passes with a Postgres service and no other, and its
+- [x] `e2e.yml`'s integration job passes with a Postgres service and no other, and its
       `browser-e2e` job passes against `docker compose --profile full` with no `neo4j`
       service. `agent-eval.yml`'s `replay` job passes with one service container. **In CI.**
-      Not yet run in CI: B's branch is pushed and its pull request is not open. Locally on
+      Met on #153's checks, 2026-11-09: `e2e` (run 42644406611, job 129253660662), the
+      Playwright job against the full compose stack (job 129253659956, the A2A TCK step
+      included) and `eval-replay` (run 42644406493, job 129253711973) passed, with
+      `ci (24.x)`. Before that, locally on
       2026-11-09, what each job runs passes with Postgres alone: the integration tier (the
       last criterion below), the three replays (above), and
       `docker compose --profile full up --build --wait`, which came up healthy with no
       `neo4j` service, with Playwright's suite passing 7 of 7 against it. The A2A TCK step
-      of `browser-e2e` was not run locally. Owned by P2-E, and ticked from the pull
-      request's checks.
+      of `browser-e2e` was not run locally; CI ran it.
 - [x] CTL-EVAL-04 is `procedural` under its new title with doc anchors only, and CTL-MEM-02
       cites the session-scoping test. `yarn lint:docs` passes, with `governance/CONTROLS.md`
       regenerated. **Reviewer.** CTL-EVAL-04's anchors are `.context/workflows.md`, "Add a New
