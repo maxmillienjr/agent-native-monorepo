@@ -328,7 +328,11 @@ selected option C: the graph explains, `plan` does not use it, and P2-E removes 
   regenerate the replay baseline** with `EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval`,
   with `EVAL_SUITE` set as it was for the recording, and commit both: the baseline is tied
   to the set by a digest, and a new set with the old baseline fails the gate as
-  `stale-digest`. A contributor without a key cannot re-record;
+  `stale-digest`. **A recording names the commit it was made at** (a cassette header's
+  `gitSha`, an answer file's per-answer `gitSha`), and rebasing the branch orphans that
+  commit. Before a rebase, tag each named sha that is not on `main` with
+  `git tag -a recording/<prd>-<what>-<date> <sha>` and push the tag, as P3-D, P4-B and P2-D
+  did. A contributor without a key cannot re-record;
   a maintainer with one pushes the new set and baseline to the pull request's branch. A
   cassette in an older format is refused before any store is reset, with the same two
   commands in the message: P1-F's format 2 changed what two seams return and not what they

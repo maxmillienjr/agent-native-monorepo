@@ -3,6 +3,8 @@
 One file per decision, numbered sequentially, in the format popularized by Michael Nygard:
 context, decision, consequences. A record is never edited after it reaches `accepted` —
 if the decision changes, write a new record and mark the old one `superseded by NNNN`.
+The old record is marked in the commit that accepts the new one, never while the new one is
+`proposed`: a proposed record's header reads "Supersedes: NNNN, on acceptance".
 
 The bar for writing one: a reviewer would reasonably ask "why did you do it that way,"
 and the answer is not obvious from the code.
