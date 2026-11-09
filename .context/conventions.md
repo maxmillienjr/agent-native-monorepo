@@ -314,20 +314,19 @@ explanation stages, are archived at a tag and run in no tier (below).
   pinned id. Most of these are mechanical. A moved request, `plan`'s prompt strings or the
   registry moves the request hash, every replay misses, and `CassetteMissError` prints the
   diff. A chat or embedding id or width that differs from a cassette's header is refused by
-  the player. **Two are not mechanical.** The three JSON seams, `distill`, `act.selectTool`
-  and `assess.criteria`, hash the content they send and not their instruction (`calls` in
-  `agent/model/decision-seam.ts`). So a change to `EXTRACTION_PROMPT`, `SELECT_TOOL_PROMPT`
-  or `ASSESS_PROMPT` replays cleanly, with answers to the old instruction. On 2026-11-09 a
-  scratch tree that replaced `EXTRACTION_PROMPT` replayed all three suites with no miss
-  (P2-E). The other is the canary reporting `changed`: the id is the same, so the cassettes
-  replay cleanly with the old model's answers. Nothing else notices either one, except by
-  accident: `provider-unavailable.test.ts`'s fake model host routes on each prompt's opening
-  words, so rewording the start of a JSON seam's prompt fails that unit test. The
-  cost is real and it falls on prompt changes, which are common here; the alternative,
-  keying on a normalized shape, serves the old answer to the new prompt and calls it a
-  pass. Re-recording needs a live key and about eleven `generateContent` calls for the
-  three tasks against a 20-request daily free tier, so it is a deliberate act rather than a
-  step in a loop.
+  the player. Each of the three JSON seams, `distill`, `act.selectTool` and
+  `assess.criteria`, hashes its instruction beside the content it sends, so a change to
+  `EXTRACTION_PROMPT`, `SELECT_TOOL_PROMPT` or `ASSESS_PROMPT` misses like any other prompt
+  edit (`calls` in `agent/model/decision-seam.ts`, `decision-seam.test.ts`). Before cassette
+  format 3 (P1-I) they hashed only the content: on 2026-11-09 a scratch tree that replaced
+  `EXTRACTION_PROMPT` replayed all three suites with no miss (P2-E). **One is not
+  mechanical:** the canary reporting `changed` on a pinned id. The id is the same, so the
+  cassettes replay cleanly with the old model's answers, and nothing but the canary
+  notices. The cost is real and it falls on prompt changes, which are common here; the
+  alternative, keying on a normalized shape, serves the old answer to the new prompt and
+  calls it a pass. Re-recording needs a live key and about twelve `generateContent` calls
+  for memory-recall's three tasks, so it is a deliberate act rather than a step in a loop;
+  "Live model quota" below says which key.
   ADR 0005 records the seam choice and what replay stops measuring. **After a re-record,
   regenerate the replay baseline** with `EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval`,
   with `EVAL_SUITE` set as it was for the recording, and commit both: the baseline is tied
@@ -340,7 +339,9 @@ explanation stages, are archived at a tag and run in no tier (below).
   a maintainer with one pushes the new set and baseline to the pull request's branch. A
   cassette in an older format is refused before any store is reset, with the same two
   commands in the message: P1-F's format 2 changed what two seams return and not what they
-  ask, so an old set would otherwise match and replay the wrong shape.
+  ask, so an old set would otherwise match and replay the wrong shape, and P1-I's format 3
+  added each JSON seam's instruction to what it asks, so an old set would otherwise miss
+  seam by seam with a diff that blames the prompt.
 - **Three checks replay the committed memory-recall cassettes, not one.** `eval-replay`
   runs the suite. In the `e2e` job's integration step, `audit-replay.integration.test.ts`
   › "replays a run whose decisions came from the committed cassettes, with no request to
@@ -373,19 +374,19 @@ explanation stages, are archived at a tag and run in no tier (below).
   spends their `generateContent` calls. An unknown id is refused, and the selection is
   printed in the suite name.
 - **The drift canary watches the model behind the pinned ids, and its baseline moves only
-  by a commit.** `yarn canary` (P1-E) reads `models.get` for `gemini-2.5-flash`,
+  by a commit.** `yarn canary` (P1-E) reads `models.get` for the pinned chat id
+  (`PINNED_CHAT_MODEL`, `gemini-3.5-flash-lite` since P1-I, ADR 0018),
   `gemini-embedding-001` and `gemini-flash-latest`, makes one direct `generateContent` per
   chat id for `modelVersion`, and embeds the 21 baseline texts, comparing each vector bit for
   bit with `packages/eval-harness/datasets/canary/baseline.json`. The chat ids are the pinned
-  one, the floating alias and, until P1-I's switch, P1-I's candidate `gemini-3.5-flash-lite`
-  (`chat-candidate`, `CANDIDATE_CHAT_MODEL` in `eval/canary/runner.ts`). It needs a key and no
-  stores, refuses to run without `GOOGLE_API_KEY`, and exits 1 when a pinned id is
-  `changed`, `gone` or `unobserved`. Nothing the floating alias or the candidate returns
-  fails the run: a moved one is a notice, and so is one the provider answers with a 5xx
-  (`unavailable`). The candidate has no baseline entry, so its answer is reported as `moved`
-  with "no baseline to compare with" until one is committed. A 5xx on any other probe aborts
-  with cause `provider-unavailable`: re-dispatch later, nothing in the repository is wrong.
-  Accepting a change
+  one and the floating alias. It needs a key and no stores, refuses to run without
+  `GOOGLE_API_KEY`, and exits 1 when a pinned id is `changed`, `gone` or `unobserved`.
+  Nothing the floating alias returns fails the run: a moved one is a notice, and so is one
+  the provider answers with a 5xx (`unavailable`). A 5xx on any other probe aborts with
+  cause `provider-unavailable`: re-dispatch later, nothing in the repository is wrong.
+  **A pinned id with no baseline entry is `changed`**, so moving the pin is red until the new
+  id's entries are committed: `CANARY_BASELINE=update CANARY_PROBES=metadata,chat-pinned
+  yarn canary` with a key writes them for one `generateContent`. Accepting a change
   is `CANARY_BASELINE=update yarn canary` with a key and a committed baseline diff, never a
   re-run, and a pinned `changed` usually means a re-record as well. `CANARY_PROBES` runs a
   subset (`metadata,embedding` spends no `generateContent`), and the summary names what was
@@ -474,62 +475,68 @@ explanation stages, are archived at a tag and run in no tier (below).
 
 ### Live model quota
 
-One budget, shared by everything that calls the model live. The free tier allows **20
-`generateContent` requests per day and 5 per minute, per Google Cloud project and model**
-(`gemini-2.5-flash`); `embedContent` is a separate quota with its own per-minute limit. The
-day resets at midnight Pacific. The `GOOGLE_API_KEY` repository secret and the developer
-key in `.env` are in the **same project**, so CI and local work draw on one pool.
+**Two keys, and each has one job (ADR 0018).** The owner's paid key is for local
+development and recordings: it is billed per token and has no daily cap. CI keeps the free
+`GOOGLE_API_KEY` repository secret, for the nightly `eval-live` and `eval-canary` jobs and
+for dispatches. Billing is per Google Cloud project, so the two keys are in different
+projects and neither spends the other's quota. A contributor without the paid key records
+nothing; a maintainer with it records and pushes the set and its baseline to the branch.
+Which key a run used goes in the PRD that records it, beside the figures.
 
-**A key from a new project cannot call the pinned model.** On 2026-10-15 the secret moved to
+**The free tier is one budget for everything CI calls live.** On `gemini-2.5-flash` it
+allowed **20 `generateContent` requests per day and 5 per minute, per project and model**;
+`embedContent` is a separate quota with its own per-minute limit. The figures for
+`gemini-3.5-flash-lite`, the pin since P1-I, are AI Studio's to state per project, and this
+section has not recorded them yet: read them there before planning a free-key run against
+them. The day resets at midnight Pacific.
+
+**A key from a new project could not call the old pin.** On 2026-10-15 the secret moved to
 a key in a new, unbilled project, to give CI a pool of its own. From the next night every
 live job failed: `generateContent` on `gemini-2.5-flash` answered 404, "no longer available
 to new users. Please update your code to use models/gemini-3.8-flash". `models.get` still
 answered 200 for the same key, so a metadata check does not catch it. The canary reported
 the pinned chat id `gone`, which is what it is for. The secret went back to the original
-project on 2026-10-19, after four red nights. A second pool for this model is therefore not
-available, and the pinned id is closed to anyone starting fresh: the migration off it is
-coming whether or not the canary sees drift.
+project on 2026-10-19, after four red nights. That 404 is why P1-I moved the pin. On
+2026-11-09 `gemini-3.5-flash-lite` answered on the paid key and on the repository secret.
+Whether a key from a project that never called `gemini-2.5-flash` can call it is P1-I's to
+show, with the owner's key: step 1d and the fresh-clone trial.
 
-Standing consumers, before any development spends a call:
+Standing consumers of the free key, before any development spends a call:
 
 | Consumer                                     | `generateContent` per day |
 | -------------------------------------------- | ------------------------- |
 | `agent-eval.yml` `eval-live`, one trial each | about 12                  |
-| `agent-eval.yml` `eval-canary` (P1-E)        | 2–3                       |
+| `agent-eval.yml` `eval-canary` (P1-E)        | 2                         |
 
-That leaves roughly 5–6 a day for recordings and live criteria. `eval-live` runs every
-memory-recall task: 3 calls for `memory-recall-001`, 5 for `tool-use-001` and 4 for P4-C's
-`tool-use-002`, as recorded on 2026-10-26 and 2026-10-27 and again by P4-B on 2026-11-03
-and 2026-11-05. It was about 8 before P4-C added the third task, which left 9–10 a day. Both nightly jobs are scheduled for 03:00
+`eval-live` runs every memory-recall task: 3 calls for `memory-recall-001`, 5 for
+`tool-use-001` and 4 for P4-C's `tool-use-002`, as recorded on `gemini-2.5-flash` by P4-B on
+2026-11-03 and 2026-11-05. P1-I's recording on the new pin replaces those counts in each
+task's `notes`. The canary spends one call on the pinned id and one on the floating alias,
+each on its own model's limit. Both nightly jobs are scheduled for 03:00
 UTC, but GitHub has started them between 07:30 and 10:15 UTC on every night since
 2026-10-03: after the quota resets, not before it. The quota resets at midnight Pacific
 time: 07:00 UTC while the US is on daylight time, and 08:00 UTC from the first Sunday in
 November to the second Sunday in March. On 2026-11-09 a batch started at 07:04 UTC got one
 answer from the previous day's remainder before the per-day 429. So the nightly spends from
-the Pacific day that has just begun, and a recording made later that day spends what the
-nightly left. Start a recording after the day's nightly has finished; one started between
-the reset and the nightly takes calls the nightly will need. Anything else that uses the
-developer key spends the same pool: on 2026-10-15 the day's 20 were gone by 12:40 UTC with
-two of them spent by a recording. A PRD that needs live calls states its count and how it
-splits across days; whoever schedules the run checks this table first and does not start a
-recording that the day's remainder cannot finish. A dispatch with `chat_model` spends about
-eight calls on the alias target's own limit, plus the canary's two on this pool. Check first
-that the night's floating chat probe answered: on 2026-10-26 the alias was answering the
-canary with a 503, and the dispatch's calls took minutes each, so the suite ran into the
-live job's 30-minute timeout with no report. A recording longer than a few days can have
-the whole pool instead: `gh variable set EVAL_SCHEDULE_PAUSED --body true` skips the
-scheduled `eval-live` and `eval-canary` jobs (replay and dispatch still run), and
+the Pacific day that has just begun. A live run on the free key that is not the nightly, a
+dispatch or a criterion that has to be met "in CI", spends what the nightly left, so start
+it after the day's nightly has finished. A PRD that needs live calls on the free key states
+its count and how it splits across days; whoever schedules the run checks this table first.
+A recording on the paid key needs no split.
+
+A dispatch with `chat_model` spends about twelve calls on that id's own limit, plus the
+canary's two. Check first that the night's floating chat probe answered: on 2026-10-26 the
+alias was answering the canary with a 503, and the dispatch's calls took minutes each, so
+the suite ran into the live job's 30-minute timeout with no report. A free-key run that
+needs the whole day can have it: `gh variable set EVAL_SCHEDULE_PAUSED --body true` skips
+the scheduled `eval-live` and `eval-canary` jobs (replay and dispatch still run), and
 `gh variable delete EVAL_SCHEDULE_PAUSED` brings them back. `--body live` skips the
-scheduled `eval-live` alone and keeps the scheduled `eval-canary`, for a recording that can
-spare the canary's one call on this pool but not the nightly's twelve: P1-I set it on
-2026-11-09 while P2-D's stage 2 held the pool, so the canary's candidate probe kept its
-nights, and it was deleted that afternoon once stage 2's last answer was recorded. Any other
-value pauses nothing. The nights it was set are nights with no tally on `eval-history`, so
-the PRD that set it says which. Turbo buffers
-`yarn eval`'s output until the task ends, so a cancelled run's log is empty; its recorded
-cassettes are the evidence. A
-project with billing on would leave the free tier (no 20-a-day cap, a charge per token),
-which is the owner's decision.
+scheduled `eval-live` alone and keeps the scheduled `eval-canary`: P1-I set it on 2026-11-09
+while P2-D's stage 2 held the pool, and it was deleted that afternoon once stage 2's last
+answer was recorded. Any other value pauses nothing. The nights it was set are nights with
+no tally on `eval-history`, so the PRD that set it says which. Turbo buffers `yarn eval`'s
+output until the task ends, so a cancelled run's log is empty; its recorded cassettes are
+the evidence.
 
 **A 503 spends quota, so `yarn eval` gets one retry for it.** On 2026-11-09 a live recording
 made 20 requests and got 9 answers: LangChain's client retries a 503 up to six times, and
