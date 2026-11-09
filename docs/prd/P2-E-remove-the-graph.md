@@ -2,11 +2,11 @@
 id: P2-E
 title: "Act on P2-D's outcome: remove the graph (option C, ADR 0012)"
 tier: 2
-status: draft
+status: accepted
 size: M
 depends_on: [P2-D]
 blocks: []
-issue: null
+issue: 150
 superseded_by: null
 ---
 
@@ -608,27 +608,25 @@ Each criterion names its axis. "Pure" means a unit test with no store and no net
 
 ## Risks and open questions
 
-**Open questions for review.**
+**Decided at review, 2026-11-09.** The draft put four questions. The conductor's decisions:
 
-1. **If A's prompt change misses P1-I's day 8, re-record or decline?** Re-recording
-   memory-recall and red-team after P1-I costs 24 `generateContent` calls on the chosen id
-   and a recording session, on the owner's key. Declining keeps an extraction that is
-   three-quarters or more entities and relationships nothing reads. This draft proposes
-   re-recording, because the alternative is the ignored-output defect ADR 0009 named. The
-   owner's key makes it the owner's call.
-2. **CTL-EVAL-04 as `procedural`, with a new written rule** in `workflows.md`: "a store, or a
-   request-path read of one, is kept only on a measurement against labels and a decision
-   rule committed before the first number". The alternative is `not-applicable`, on the
-   ground that one store has nothing to compare. This draft keeps the control, because the
-   practice is what the repository showed, and it applies to the next store anyone
-   proposes.
-3. **No ADR of its own.** ADR 0012 decides the removal. The narrowed extraction, the
-   narrowed contract and the grader swap are consequences of it, and this PRD records them.
-   A reviewer who reads the narrowed extraction as a decision about what semantic memory is,
-   rather than a consequence, would want a short ADR. Its number is taken when written
-   (`docs/adr/README.md`).
-4. **The STATUS legend.** Widening `removed` changes a definition every row is read
-   against. The alternative is a sixth status, `archived`, for row 23 alone.
+1. **If A's prompt change misses P1-I's day 8, re-record.** Memory-recall and red-team are
+   24 `generateContent` calls on the chosen id, and the owner's paid key now serves local
+   recordings, so the cost is minutes. An extraction that is mostly output nothing reads is
+   the ignored-output defect ADR 0009 named.
+2. **CTL-EVAL-04 becomes `procedural`**, anchored to the written rule in `workflows.md`. The
+   practice applies to the next store anyone proposes.
+3. **No ADR of its own.** The narrowed extraction, contract and grader are consequences of
+   ADR 0012, recorded here.
+4. **Widen `removed`** in the STATUS legend to cover "taken out by decision", rather than a
+   sixth status for one row.
+
+One finding of this draft is handed on rather than built here. The three JSON seams hash the
+content they send and not their instruction (`.context/conventions.md`, corrected in this
+pull request), so a prompt change replays silently. Adding the instruction to those hashes
+moves every committed cassette's request hash, so in A it would make all three suites miss
+until a re-record. **P1-I builds it in its phase 2, before it records**, because it
+re-records every suite anyway; P1-I's dated amendment of 2026-11-09 says so.
 
 **Risks.**
 

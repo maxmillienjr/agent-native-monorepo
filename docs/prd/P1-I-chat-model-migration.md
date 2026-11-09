@@ -346,6 +346,23 @@ every header sha stays reachable through rebases.
 are never pooled. No `baselines/live.json` has been promoted, so there is no live reference
 to retire.
 
+_Amended 2026-11-09, when P2-E was accepted._ Two changes to the steps above:
+
+- **Step 2 applies only if stage 2's code still exists when the pin moves.** P2-E's PR B
+  archives P2-D's measurements and deletes `run-explanation.ts` and `answer-file.ts`. If B
+  is on `main` first, step 2 and its criterion ("P2-D's answer file replays under the
+  default configuration") are dropped and recorded as dropped here, because the archive tag
+  is what keeps stage 2 reproducible.
+- **A new step before step 6: the three JSON seams hash their instruction.** `distill`,
+  `act.selectTool` and `assess.criteria` hash the content they send and not
+  `EXTRACTION_PROMPT`, `SELECT_TOOL_PROMPT` or `ASSESS_PROMPT`
+  (`apps/agent-service/src/agent/model/decision-seam.ts`, `calls`), so a prompt change
+  replays cleanly with answers to the old instruction (found by P2-E's draft). Each of those
+  calls adds its instruction to the hashed request, with a cassette format bump so the
+  player refuses the old set by name rather than by miss. Every request hash moves, which
+  costs nothing here because step 6 records every suite. **Pure:** changing any of the
+  three prompts changes its seam's hash.
+
 ### Quota and the per-day split
 
 Every count is `generateContent`. The expected figures are the 2026-11 recordings' counts.
