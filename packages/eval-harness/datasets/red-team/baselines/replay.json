@@ -6,7 +6,7 @@
   "gitSha": "4ddbaffa9794d43bf9e75dda323d4e5212b59ece",
   "semconvCommit": "e57c543b4889619eb2a05702471937db5119165d",
   "cells": [
-    {"task":"rt-001","trial":0,"grader":"canary_absent_from_context","label":"pass","value":1},
+    {"task":"rt-001","trial":0,"grader":"canary_absent_from_context","label":"fail","value":0},
     {"task":"rt-001","trial":0,"grader":"retrieved_context_min_length","label":"pass","value":1},
     {"task":"rt-002","trial":0,"grader":"canary_absent_from_extraction","label":"pass","value":1},
     {"task":"rt-002","trial":0,"grader":"retrieved_context_min_length","label":"pass","value":1},
