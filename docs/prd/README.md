@@ -5,22 +5,20 @@
 _Last updated 2026-11-09. If this section is more than a few weeks stale, trust the code
 over it and update it._
 
-**The chat model shuts down on 2026-12-01, and the switch is built.** Google's deprecations
+**The chat model shuts down on 2026-12-01, and `main` is already off it.** Google's deprecations
 page routes `gemini-2.5-flash` to `gemini-3.5-flash-lite` from that day under the same id.
 On 2026-11-09 the owner chose `gemini-3.5-flash-lite` directly: "migrate it to the latest
 flash lite. paid for dev work, free on ci." [ADR 0018](../adr/0018-the-chat-model-is-a-pinned-stable-id.md)
 records it. P1-I's selection rule and seven-night series no longer choose the id. P1-I is
 still in progress, tracked in
-[#147](https://github.com/maxmillienjr/agent-native-monorepo/issues/147). The branch
-`feat/p1-i-switch` pins the new id and removes the canary's candidate probe. On that branch
-the three JSON seams hash their instruction, at cassette format 3, and the price and the
-docs follow the pin. **Next, on the same branch:** the conductor re-records all three suites
-on the owner's paid key, regenerates the replay baselines and the six budgets, commits the
-canary baseline for the new id, and confirms the price. Replay and `agent-cassette`'s
-committed-set tests fail on the branch until then. Merging without the canary baseline turns
-the scheduled canary red, because a pinned id with no baseline entry reads as `changed`.
-P1-E's alias dispatch is queued for 2026-11-10 and is informational now. Step 1d and phase
-3's fresh-clone trial need the owner's new-project key. The deadline is 2026-11-30.
+[#147](https://github.com/maxmillienjr/agent-native-monorepo/issues/147). #154 (`3baae0d`)
+pins the new id, removes the canary's candidate probe, makes the three JSON seams hash their
+instruction at cassette format 3, and carries all three suites re-recorded on the owner's
+paid key, with their replay baselines, the six budgets and the canary baseline for the new
+id. Prior-auth replays 22 of 24 with two known failures, which P3-G
+owns. **Next:** the 2026-11-10 nightly is the first scheduled canary and live run on the new
+id, and step 1d and phase 3's fresh-clone trial need the owner's new-project key. The
+deadline is 2026-11-30.
 
 **[P2-E](P2-E-remove-the-graph.md) is shipped: the graph is gone.** ADR 0012's option C
 landed in two pull requests on 2026-11-09. #152 (`df655c0`) stopped `reflect` writing the
@@ -31,7 +29,7 @@ at `df655c0` with no key, which is tagged `archive/p2e-graph-measurements`. The 
 contracts are `'pgvector'` alone, the task format refuses a graph seed, and the memory axis
 is `DATABASE_URL` alone. All three suites replay to `match` against unchanged baselines.
 
-**Twenty-six PRDs are shipped and the system they describe is running.** The service answers
+**Twenty-seven PRDs are shipped and the system they describe is running.** The service answers
 `POST /runs` and `POST /runs/stream`; `memory-core` is constructed by the app rather than
 sitting beside it; the graph compiles with a checkpointer and a retry policy on every node
 that performs I/O; and `packages/eval-harness` measures the result. Verified against live
@@ -104,7 +102,7 @@ against a real free-tier 429 (run 37812971653): one request, `daily-quota`, `abo
 real `errorDetails` in the artifact. The two criteria that need a nightly run with the
 secret present passed to P1-E, by name, and both were met there by 2026-10-26.
 
-**[P1-D](P1-D-regression-gate.md) is in progress**, tracked in
+**[P1-D](P1-D-regression-gate.md) has shipped**, tracked in
 [#76](https://github.com/maxmillienjr/agent-native-monorepo/issues/76). `eval-replay` now
 exits on a verdict, not a pass rate: every one of the 21 replayed grader results is compared
 exactly with a committed `baselines/replay.json`, and any difference blocks, an improvement
@@ -116,9 +114,11 @@ at δ = 0.20. It has pushed a tally on every night its live job finished since 2
 fourteen in one epoch by 2026-10-26, so the pooled 5×2 criterion it handed to P1-E is met.
 Its verdict is `incomparable` every night, because no `baselines/live.json` has been
 promoted to compare with.
-**Nothing blocks a merge until the owner applies
-`.github/rulesets/main.json`**, which requires `eval-replay`; `yarn lint:docs` keeps its
-check names equal to real jobs.
+**Red stops a merge.** The owner applied `.github/rulesets/main.json` on 2026-11-09: every
+change to `main` is a pull request, and `eval-replay`, `ci (24.x)` and `e2e` are required.
+Throwaway pull request #155 flipped one replayed cell and its merge was refused.
+`yarn lint:docs` keeps the required check names equal to real jobs. A pull request that
+carries a recording merges with a merge commit, so the shas its headers name stay on `main`.
 
 **[P1-E](P1-E-model-drift-canary.md) has shipped**, tracked in
 [#86](https://github.com/maxmillienjr/agent-native-monorepo/issues/86). `yarn canary` asks
@@ -468,8 +468,9 @@ standing rule in `.context/conventions.md`, not a piece of work.
 The repository's stated thesis. P1-A is shipped: `yarn eval` runs trials against the real
 application context and reports `pass@k` and `pass^k` per axis. P1-C, shipped, runs it
 from `.github/workflows/agent-eval.yml`: on replayed model decisions on every pull request,
-and on the live model nightly under the repository secret. P1-D, in progress, gates
-both on committed baselines. Nothing blocks a merge until the owner applies its ruleset.
+and on the live model nightly under the repository secret. P1-D, shipped, gates
+both on committed baselines, and its ruleset makes a red
+`eval-replay` block the merge.
 P1-E, shipped, watches whether the model behind the pinned ids has changed. P1-F,
 shipped, checks each task's tokens and model calls beside the pass rate.
 
@@ -478,7 +479,7 @@ shipped, checks each task's tokens and model calls beside the pass rate.
 | [P1-A](P1-A-eval-harness.md)           | `packages/eval-harness` — evaluation as a first-class package | L    | shipped     |
 | [P1-B](P1-B-agent-cassette.md)         | `packages/agent-cassette` — decision-level record and replay  | L    | shipped     |
 | [P1-C](P1-C-tiered-eval-pipeline.md)   | Tiered evaluation pipeline replacing the nightly stub         | M    | shipped     |
-| [P1-D](P1-D-regression-gate.md)        | Statistical regression gate against committed baselines       | L    | in-progress |
+| [P1-D](P1-D-regression-gate.md)        | Statistical regression gate against committed baselines       | L    | shipped     |
 | [P1-E](P1-E-model-drift-canary.md)     | Model-drift canary against pinned and floating model ids      | M    | shipped     |
 | [P1-F](P1-F-cost-and-step-budgets.md)  | Cost, latency, and step budgets as CI assertions              | M    | shipped     |
 | [P1-G](P1-G-task-axis-requirements.md) | Task-level axis requirements for the evaluation suite         | S    | shipped     |
@@ -620,7 +621,7 @@ without depending on either PRD, the way P4-C re-records P4-B's.
 P2-D is drawn under P2-B, whose corpus, recorded embeddings, seeding and bootstrap its
 measurement reuses. It also depends on P1-A directly, for the harness, and on P1-B, whose
 `ModelDeps` seam and recording pattern its conditional answer-level stage uses. Its graph
-session filter is the M1 that P4-B handed over, extended to edges. P2-E, in progress, executes
+session filter is the M1 that P4-B handed over, extended to edges. P2-E, shipped, executed
 the outcome ADR 0012 records, removing the graph, from the specification P2-D wrote under
 "What P2-E inherits". It is not an edge of P1-I, and neither waits for the other. Its one
 change to a model request, the narrowed extraction, is meant to land before P1-I
