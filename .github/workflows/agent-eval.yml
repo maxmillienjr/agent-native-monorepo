@@ -22,15 +22,19 @@ name: Agent Eval
 # Two more jobs watch the model itself (P1-E), under the same secret gate:
 #
 #   canary  nightly and on dispatch. `yarn canary` asks the API what serves
-#           the pinned ids and the floating alias, and embeds the 21 baseline
-#           texts. Red when anything behind a pinned id changed; the way back
-#           to green is a committed baseline update. 2 generateContent calls.
+#           the pinned ids, the floating alias and P1-I's candidate, and embeds
+#           the 21 baseline texts. Red when anything behind a pinned id
+#           changed; the way back to green is a committed baseline update. 3
+#           generateContent calls, one per chat id, each on its model's quota.
 #   compare after the live job. The night's recorded decisions against the
 #           committed cassettes, read from the live artifact. No model call.
 #
-# The repository variable EVAL_SCHEDULE_PAUSED=true skips the scheduled live and
-# canary jobs and leaves dispatch alone, so a day's twenty calls can go to a
-# recording. Replay still runs nightly: it makes no model call.
+# The repository variable EVAL_SCHEDULE_PAUSED pauses the schedule and leaves
+# dispatch alone. `true` skips the scheduled live and canary jobs, so a day's
+# twenty calls can go to a recording. `live` skips the scheduled live job alone
+# and keeps the canary, which spends one call on the pinned pool (P1-I, while
+# P2-D's stage 2 holds that pool and the candidate probe needs its nights).
+# Replay still runs nightly: it makes no model call.
 #
 # What goes red is the regression gate's verdict (P1-D), not "a trial failed":
 #
@@ -213,11 +217,13 @@ jobs:
     name: eval-live
     needs: gate
     # Skipped, never passed, when there is no key: a green job that measured
-    # nothing is the failure REQUIRE_INTEGRATION_ENV was written to stop.
+    # nothing is the failure REQUIRE_INTEGRATION_ENV was written to stop. The
+    # schedule is paused by EVAL_SCHEDULE_PAUSED `true` or `live`.
     if: >-
       needs.gate.outputs.has_key == 'true' &&
       (github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'schedule' && vars.EVAL_SCHEDULE_PAUSED != 'true'))
+      (github.event_name == 'schedule' && vars.EVAL_SCHEDULE_PAUSED != 'true' &&
+      vars.EVAL_SCHEDULE_PAUSED != 'live'))
     # One run at a time: two overlapping runs on one daily quota make it
     # impossible to tell which of them exhausted it.
     concurrency:
@@ -357,7 +363,8 @@ jobs:
           if-no-files-found: warn
 
   # The model behind the ids (P1-E). Skipped, never passed, without the key,
-  # for the reason the live job is.
+  # for the reason the live job is. Only EVAL_SCHEDULE_PAUSED=true pauses its
+  # schedule; `live` keeps it.
   canary:
     name: eval-canary
     needs: gate
@@ -404,15 +411,16 @@ jobs:
 
       # A moved alias is news about the next model and does not fail the run,
       # so it has to be visible some other way than a colour. So is an alias
-      # the provider could not serve (`unavailable`), with its 5xx as the text.
-      - name: Floating-alias notice
+      # the provider could not serve (`unavailable`), with its 5xx as the text,
+      # and so is anything but `unchanged` on P1-I's candidate.
+      - name: Floating-alias and candidate notice
         if: always()
         run: |
           report="$CANARY_OUTPUT_DIR/canary-report.json"
           [ -f "$report" ] || exit 0
-          jq -r '.results[] | select(.pinned == false and .verdict != "unchanged") | "\(.id) \(.verdict) \(.observed // .detail // "")"' "$report" |
-            while read -r id verdict observed; do
-              echo "::notice title=Floating alias $verdict::$id is $verdict ($observed). A migration input, not drift."
+          jq -r '.results[] | select(.pinned == false and .verdict != "unchanged") | "\(if .probe == "chat-candidate" then "Candidate" else "Floating alias" end)|\(.id)|\(.verdict)|\(.observed // .detail // "")"' "$report" |
+            while IFS='|' read -r kind id verdict observed; do
+              echo "::notice title=$kind $verdict::$id is $verdict ($observed). A migration input, not drift."
             done
 
       - uses: actions/upload-artifact@v7
