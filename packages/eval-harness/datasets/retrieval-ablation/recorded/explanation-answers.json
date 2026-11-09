@@ -943,6 +943,38 @@
         "latencyMs": 2432
       }
     },
+    "relational-023/with": {
+      "queryId": "relational-023",
+      "condition": "with",
+      "recordedAt": "2026-11-09T13:47:18.763Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "420d2e2ac268321c83fca3ade9914a873f05381f3b7511ffafbd6f7696e405ae",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: When can an Orrin Valley Community Plan member refill a prescription early?\n\nRelevant context:\n- [pgvector] Orrin Valley Community Plan requires members to fill prescriptions at in-network pharmacies.\n- [pgvector] Orrin Valley Community Plan sends renewal packets 45 days before eligibility ends.\n- [pgvector] Orrin Valley Community Plan renews eligibility every twelve months.\n- [pgvector] Orrin Valley Community Plan covers eyeglasses once every two years.\n- [pgvector] Orrin Valley Community Plan charges a 3 dollar copay for brand-name prescriptions.\n- [pgvector] Orrin Valley Community Plan pharmacy benefits are managed by Pinegate Pharmacy Solutions.\n- [pgvector] Orrin Valley Community Plan requires claims within 120 days of the date of service.\n- [pgvector] Pinegate Pharmacy Solutions allows an early refill once the member has used 75 percent of a supply.\n- [pgvector] Orrin Valley Community Plan charges no copays for primary care.\n- [pgvector] Orrin Valley Community Plan covers two adult dental cleanings a year.\n\nConnections in memory:\n- context 1: plan_orrin_valley_community; plan_orrin_valley_community -[OFFERS]- payer_orrin_valley\n- context 2: plan_orrin_valley_community; plan_orrin_valley_community -[OFFERS]- payer_orrin_valley\n- context 3: plan_orrin_valley_community; plan_orrin_valley_community -[OFFERS]- payer_orrin_valley\n- context 4: plan_orrin_valley_community; plan_orrin_valley_community -[OFFERS]- payer_orrin_valley\n- context 5: plan_orrin_valley_community; plan_orrin_valley_community -[OFFERS]- payer_orrin_valley\n- context 6: plan_orrin_valley_community; plan_orrin_valley_community -[NURSE_LINE_BY]- vendor_tallowood_nurse_line; plan_orrin_valley_community -[OFFERS_PROGRAM]- program_homeward_transitions\n- context 7: plan_orrin_valley_community; plan_orrin_valley_community -[OFFERS]- payer_orrin_valley\n- context 8: plan_orrin_valley_community -[PHARMACY_BENEFIT_BY]- vendor_pinegate_pharmacy\n- context 9: plan_orrin_valley_community; plan_orrin_valley_community -[NURSE_LINE_BY]- vendor_tallowood_nurse_line; plan_orrin_valley_community -[OFFERS_PROGRAM]- program_homeward_transitions\n- context 10: plan_orrin_valley_community; plan_orrin_valley_community -[OFFERS]- payer_orrin_valley\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "To determine when an Orrin Valley Community Plan member can refill a prescription early, I will:\n\n1.  Identify which entity manages the pharmacy benefits for the Orrin Valley Community Plan.\n2.  Locate the specific rule or policy from that entity regarding early prescription refills.\n3.  Synthesize this information to directly answer the user's question.",
+            "tokenCounts": {
+              "prompt": 667,
+              "completion": 234,
+              "reasoning": 160
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 667,
+          "completion": 234,
+          "reasoning": 160
+        },
+        "latencyMs": 1692
+      }
+    },
     "relational-023/without": {
       "queryId": "relational-023",
       "condition": "without",
@@ -973,6 +1005,1478 @@
           "reasoning": 163
         },
         "latencyMs": 4035
+      }
+    },
+    "relational-024/with": {
+      "queryId": "relational-024",
+      "condition": "with",
+      "recordedAt": "2026-11-09T13:47:28.712Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "deb6c9d3ec0ef11fbdd17f083c4b79c70aea1f2ccae7db1d05b8e6a549ba9064",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: Is there a pharmacist available overnight for Quillmark Senior Advantage members?\n\nRelevant context:\n- [pgvector] Quillmark Senior Advantage pharmacy benefits run through Pinegate Pharmacy Solutions.\n- [pgvector] Quillmark Senior Advantage includes a nurse advice line operated by Tallowood Nurse Advice.\n- [pgvector] Quillmark Senior Advantage gives members a 50 dollar quarterly allowance for over-the-counter items.\n- [pgvector] Quillmark Senior Advantage issues an expedited appeal decision within 72 hours.\n- [pgvector] Pinegate Pharmacy Solutions runs a pharmacist help line around the clock.\n- [pgvector] Quillmark Senior Advantage members use the Riverbend Care Alliance network.\n- [pgvector] Quillmark Health Partners completes an annual health risk assessment for every Senior Advantage member.\n- [pgvector] Quillmark Senior Advantage has no deductible for medical services.\n- [pgvector] Quillmark Senior Advantage charges a 20 dollar specialist copay.\n- [pgvector] Quillmark Senior Advantage members can switch primary care physicians once a month.\n\nConnections in memory:\n- context 1: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[NURSE_LINE_BY]- vendor_tallowood_nurse_line; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n- context 2: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[NURSE_LINE_BY]- vendor_tallowood_nurse_line; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n- context 3: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[OFFERS_PROGRAM]- program_homeward_transitions; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n- context 4: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[OFFERS_PROGRAM]- program_homeward_transitions; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n- context 5: plan_quillmark_senior_advantage -[PHARMACY_BENEFIT_BY]- vendor_pinegate_pharmacy\n- context 6: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[NURSE_LINE_BY]- vendor_tallowood_nurse_line; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n- context 7: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark -[SERVES]- region_coastal_north\n- context 8: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[NURSE_LINE_BY]- vendor_tallowood_nurse_line; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n- context 9: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[NURSE_LINE_BY]- vendor_tallowood_nurse_line; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n- context 10: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[OFFERS_PROGRAM]- program_homeward_transitions; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "Yes, Quillmark Senior Advantage members have access to a pharmacist overnight. Their pharmacy benefits run through Pinegate Pharmacy Solutions, which operates a pharmacist help line around the clock.",
+            "tokenCounts": {
+              "prompt": 852,
+              "completion": 190,
+              "reasoning": 156
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 852,
+          "completion": 190,
+          "reasoning": 156
+        },
+        "latencyMs": 1424
+      }
+    },
+    "relational-024/without": {
+      "queryId": "relational-024",
+      "condition": "without",
+      "recordedAt": "2026-11-09T13:47:24.286Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "94f017f2ced31c956d94045f15d2e7043b90ad04de5a7d18acc3cd86439631bc",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: Is there a pharmacist available overnight for Quillmark Senior Advantage members?\n\nRelevant context:\n- [pgvector] Quillmark Senior Advantage pharmacy benefits run through Pinegate Pharmacy Solutions.\n- [pgvector] Quillmark Senior Advantage includes a nurse advice line operated by Tallowood Nurse Advice.\n- [pgvector] Quillmark Senior Advantage gives members a 50 dollar quarterly allowance for over-the-counter items.\n- [pgvector] Quillmark Senior Advantage issues an expedited appeal decision within 72 hours.\n- [pgvector] Pinegate Pharmacy Solutions runs a pharmacist help line around the clock.\n- [pgvector] Quillmark Senior Advantage members use the Riverbend Care Alliance network.\n- [pgvector] Quillmark Health Partners completes an annual health risk assessment for every Senior Advantage member.\n- [pgvector] Quillmark Senior Advantage has no deductible for medical services.\n- [pgvector] Quillmark Senior Advantage charges a 20 dollar specialist copay.\n- [pgvector] Quillmark Senior Advantage members can switch primary care physicians once a month.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "Here's a plan to address the user's request:\n\n1.  **Identify the key entity:** The user is asking about \"Quillmark Senior Advantage members.\"\n2.  **Identify the core question:** Availability of a \"pharmacist available overnight.\"\n3.  **Scan the provided context for \"pharmacist,\" \"overnight,\" \"around the clock,\" or \"24/7\":**\n    *   \"[pgvector] Quillmark Senior Advantage pharmacy benefits run through Pinegate Pharmacy Solutions.\" (Establishes the pharmacy provider)\n    *   \"[pgvector] Pinegate Pharmacy Solutions runs a pharmacist help line around the clock.\" (Directly answers the availability question for the pharmacy provider)\n4.  **Formulate the answer:** Combine these two pieces of information to directly address the user's question.\n\n**Answer:** Yes, Quillmark Senior Advantage pharmacy benefits run through Pinegate Pharmacy Solutions, and Pinegate Pharmacy Solutions operates a pharmacist help line around the clock.",
+            "tokenCounts": {
+              "prompt": 252,
+              "completion": 426,
+              "reasoning": 220
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 252,
+          "completion": 426,
+          "reasoning": 220
+        },
+        "latencyMs": 2509
+      }
+    },
+    "relational-025/with": {
+      "queryId": "relational-025",
+      "condition": "with",
+      "recordedAt": "2026-11-09T13:47:39.751Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "b565ca2c6cce4ea5b94c78e73143ceae39924e0ad8408ffc8ebf06dc7bc9892a",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How fast is an expedited drug exception decided for Orrin Valley Community Plan?\n\nRelevant context:\n- [pgvector] Orrin Valley Community Plan requires claims within 120 days of the date of service.\n- [pgvector] Orrin Valley Premier resolves an urgent appeal within 24 hours.\n- [pgvector] Orrin Valley Community Plan requires members to fill prescriptions at in-network pharmacies.\n- [pgvector] Orrin Valley Community Plan renews eligibility every twelve months.\n- [pgvector] Orrin Valley Community Plan charges a 3 dollar copay for brand-name prescriptions.\n- [pgvector] Orrin Valley Health Plan pays clean claims within 15 days.\n- [pgvector] Pinegate Pharmacy Solutions decides an expedited formulary exception within 24 hours.\n- [pgvector] Orrin Valley Community Plan pharmacy benefits are managed by Pinegate Pharmacy Solutions.\n- [pgvector] Orrin Valley Community Plan covers eyeglasses once every two years.\n- [pgvector] Orrin Valley Community Plan sends renewal packets 45 days before eligibility ends.\n\nConnections in memory:\n- context 1: plan_orrin_valley_community; plan_orrin_valley_community -[OFFERS]- payer_orrin_valley\n- context 2: plan_orrin_valley_community -[OFFERS]- payer_orrin_valley; plan_orrin_valley_community -[OFFERS]- payer_orrin_valley -[CLAIMS_ROUTED_THROUGH]- vendor_corvane_claims; plan_orrin_valley_community -[OFFERS]- payer_orrin_valley -[OFFERS]- plan_orrin_valley_premier\n- context 3: plan_orrin_valley_community; plan_orrin_valley_community -[OFFERS]- payer_orrin_valley\n- context 4: plan_orrin_valley_community; plan_orrin_valley_community -[OFFERS]- payer_orrin_valley\n- context 5: plan_orrin_valley_community; plan_orrin_valley_community -[OFFERS]- payer_orrin_valley\n- context 6: plan_orrin_valley_community -[OFFERS]- payer_orrin_valley; plan_orrin_valley_community -[OFFERS]- payer_orrin_valley -[SERVES]- region_inland_valley; plan_orrin_valley_community -[USES_NETWORK]- network_riverbend -[COVERS]- region_inland_valley\n- context 7: plan_orrin_valley_community -[PHARMACY_BENEFIT_BY]- vendor_pinegate_pharmacy\n- context 8: plan_orrin_valley_community; plan_orrin_valley_community -[NURSE_LINE_BY]- vendor_tallowood_nurse_line; plan_orrin_valley_community -[OFFERS_PROGRAM]- program_homeward_transitions\n- context 9: plan_orrin_valley_community; plan_orrin_valley_community -[OFFERS]- payer_orrin_valley\n- context 10: plan_orrin_valley_community; plan_orrin_valley_community -[OFFERS]- payer_orrin_valley\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "To address the user's request, I will execute the following plan:\n\n1.  **Identify the entity responsible for pharmacy benefits for \"Orrin Valley Community Plan\".** I will look for context that links \"Orrin Valley Community Plan\" to a pharmacy benefits manager.\n2.  **Find the decision timeframe for an \"expedited formulary exception\" (or similar drug exception) decided by that identified entity.** I will search the context for information regarding how quickly this entity makes such decisions.\n3.  **Synthesize the information** to provide the decision timeframe for an expedited drug exception for \"Orrin Valley Community Plan\".",
+            "tokenCounts": {
+              "prompt": 750,
+              "completion": 383,
+              "reasoning": 253
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 750,
+          "completion": 383,
+          "reasoning": 253
+        },
+        "latencyMs": 2320
+      }
+    },
+    "relational-025/without": {
+      "queryId": "relational-025",
+      "condition": "without",
+      "recordedAt": "2026-11-09T13:47:34.428Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "df4cefb00a898f0e5e13ce0f4a9aaa6a3058a7f9969e53c86a87c61217a58c1b",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How fast is an expedited drug exception decided for Orrin Valley Community Plan?\n\nRelevant context:\n- [pgvector] Orrin Valley Community Plan requires claims within 120 days of the date of service.\n- [pgvector] Orrin Valley Premier resolves an urgent appeal within 24 hours.\n- [pgvector] Orrin Valley Community Plan requires members to fill prescriptions at in-network pharmacies.\n- [pgvector] Orrin Valley Community Plan renews eligibility every twelve months.\n- [pgvector] Orrin Valley Community Plan charges a 3 dollar copay for brand-name prescriptions.\n- [pgvector] Orrin Valley Health Plan pays clean claims within 15 days.\n- [pgvector] Pinegate Pharmacy Solutions decides an expedited formulary exception within 24 hours.\n- [pgvector] Orrin Valley Community Plan pharmacy benefits are managed by Pinegate Pharmacy Solutions.\n- [pgvector] Orrin Valley Community Plan covers eyeglasses once every two years.\n- [pgvector] Orrin Valley Community Plan sends renewal packets 45 days before eligibility ends.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "Here's a plan to address the user's request:\n\n1.  Identify that Orrin Valley Community Plan's pharmacy benefits are managed by Pinegate Pharmacy Solutions.\n2.  Locate the decision timeframe for an \"expedited formulary exception\" by \"Pinegate Pharmacy Solutions.\"\n3.  Combine these pieces of information to state how fast an expedited drug exception is decided for Orrin Valley Community Plan.",
+            "tokenCounts": {
+              "prompt": 259,
+              "completion": 492,
+              "reasoning": 405
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 259,
+          "completion": 492,
+          "reasoning": 405
+        },
+        "latencyMs": 2713
+      }
+    },
+    "relational-026/with": {
+      "queryId": "relational-026",
+      "condition": "with",
+      "recordedAt": "2026-11-09T13:47:50.213Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "3fbd742d00a219a0944b99972fdf1bb8a68ca4c964572ad9139837ee4f1b4eba",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How long does an imaging review take for Cedarline Essential?\n\nRelevant context:\n- [pgvector] Cedarline Essential sends imaging prior authorization requests to Sablefield Imaging Benefits.\n- [pgvector] Cedarline Essential members have 90 days after a denial notice to file an appeal.\n- [pgvector] Cedarline Health requires claims within 180 days of the date of service.\n- [pgvector] Cedarline Health processes paper claims within 30 days.\n- [pgvector] Cedarline Member Services resolves a standard grievance within 30 days.\n- [pgvector] Cedarline Gold Access decides standard prior authorization requests within seven calendar days.\n- [pgvector] Sablefield Imaging Benefits decides routine imaging requests within two business days.\n- [pgvector] Cedarline Essential covers a yearly eye exam but not glasses.\n- [pgvector] Cedarline Gold Access gives members 60 days from a denial to file an appeal.\n- [pgvector] Cedarline Essential is sold only in the Inland Valley service area.\n\nConnections in memory:\n- context 1: plan_cedarline_essential; plan_cedarline_essential -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_cedarline_essential -[OFFERS_PROGRAM]- program_mindful_access\n- context 2: plan_cedarline_essential; plan_cedarline_essential -[OFFERS]- payer_cedarline_health\n- context 3: plan_cedarline_essential -[OFFERS]- payer_cedarline_health\n- context 4: plan_cedarline_essential -[OFFERS]- payer_cedarline_health\n- context 5: plan_cedarline_essential -[OFFERS]- payer_cedarline_health; plan_cedarline_essential -[OFFERS]- payer_cedarline_health -[BELONGS_TO]- dept_cedarline_member_services\n- context 6: plan_cedarline_essential -[OFFERS]- payer_cedarline_health; plan_cedarline_essential -[OFFERS]- payer_cedarline_health -[OFFERS]- plan_cedarline_gold_access; plan_cedarline_essential -[USES_NETWORK]- network_summit_crest -[USES_NETWORK]- plan_cedarline_gold_access\n- context 7: plan_cedarline_essential -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging\n- context 8: plan_cedarline_essential; plan_cedarline_essential -[OFFERS]- payer_cedarline_health\n- context 9: plan_cedarline_essential -[OFFERS]- payer_cedarline_health; plan_cedarline_essential -[OFFERS]- payer_cedarline_health -[OFFERS]- plan_cedarline_gold_access; plan_cedarline_essential -[USES_NETWORK]- network_summit_crest -[USES_NETWORK]- plan_cedarline_gold_access\n- context 10: plan_cedarline_essential; plan_cedarline_essential -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_cedarline_essential -[OFFERS_PROGRAM]- program_mindful_access\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "To address the user's request, I will take the following steps:\n\n1.  **Identify the entity responsible for imaging reviews for Cedarline Essential:**\n    *   Review the provided context and connections to find which entity handles imaging requests or reviews for \"Cedarline Essential.\"\n    *   Context 1 and 7 state: \"Cedarline Essential sends imaging prior authorization requests to Sablefield Imaging Benefits.\" and the connections confirm \"plan_cedarline_essential -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging\".\n\n2.  **Determine the timeframe for imaging review by the identified entity:**\n    *   Search the context for information related to \"Sablefield Imaging Benefits\" and the time it takes to decide imaging requests.\n    *   Context: \"Sablefield Imaging Benefits decides routine imaging requests within two business days.\"\n\n3.  **Formulate the answer:** Combine the information to state how long an imaging review takes for Cedarline Essential.",
+            "tokenCounts": {
+              "prompt": 766,
+              "completion": 503,
+              "reasoning": 299
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 766,
+          "completion": 503,
+          "reasoning": 299
+        },
+        "latencyMs": 2630
+      }
+    },
+    "relational-026/without": {
+      "queryId": "relational-026",
+      "condition": "without",
+      "recordedAt": "2026-11-09T13:47:44.579Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "3d59bf5835afb811ac6b44e992675ebe8626752642c3efc4c57a10eb9b882186",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How long does an imaging review take for Cedarline Essential?\n\nRelevant context:\n- [pgvector] Cedarline Essential sends imaging prior authorization requests to Sablefield Imaging Benefits.\n- [pgvector] Cedarline Essential members have 90 days after a denial notice to file an appeal.\n- [pgvector] Cedarline Health requires claims within 180 days of the date of service.\n- [pgvector] Cedarline Health processes paper claims within 30 days.\n- [pgvector] Cedarline Member Services resolves a standard grievance within 30 days.\n- [pgvector] Cedarline Gold Access decides standard prior authorization requests within seven calendar days.\n- [pgvector] Sablefield Imaging Benefits decides routine imaging requests within two business days.\n- [pgvector] Cedarline Essential covers a yearly eye exam but not glasses.\n- [pgvector] Cedarline Gold Access gives members 60 days from a denial to file an appeal.\n- [pgvector] Cedarline Essential is sold only in the Inland Valley service area.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "The imaging review for Cedarline Essential members is handled by Sablefield Imaging Benefits. Sablefield Imaging Benefits decides routine imaging requests within **two business days**.",
+            "tokenCounts": {
+              "prompt": 249,
+              "completion": 284,
+              "reasoning": 254
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 249,
+          "completion": 284,
+          "reasoning": 254
+        },
+        "latencyMs": 1825
+      }
+    },
+    "relational-027/with": {
+      "queryId": "relational-027",
+      "condition": "with",
+      "recordedAt": "2026-11-09T13:48:01.338Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "2aa2ddf9a1bff4e6d1e6d4006a1ff1b593fc2801add571b3a0802ff620f89847",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: What must a Brightwater Basic HMO member try before a lumbar spine MRI is approved?\n\nRelevant context:\n- [pgvector] Sablefield Imaging Benefits requires six weeks of conservative treatment before approving a lumbar spine MRI.\n- [pgvector] Brightwater Basic HMO sends imaging authorizations to Sablefield Imaging Benefits.\n- [pgvector] Brightwater Basic HMO requires a referral from the primary care physician for every specialist visit.\n- [pgvector] Brightwater Basic HMO members use the Bayline Provider Network.\n- [pgvector] Brightwater Basic HMO covers a yearly eye exam.\n- [pgvector] Brightwater Basic HMO charges a 10 dollar primary care copay.\n- [pgvector] Brightwater Basic HMO allows members to change their primary care physician once a quarter.\n- [pgvector] Brightwater Basic HMO does not cover out-of-network care except emergencies and urgent care while traveling.\n- [pgvector] Brightwater Basic HMO has no deductible for in-network services.\n- [pgvector] Brightwater Select PPO sends advanced imaging requests to Sablefield Imaging Benefits.\n\nConnections in memory:\n- context 1: plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging\n- context 2: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n- context 3: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n- context 4: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n- context 5: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[OFFERS]- payer_brightwater\n- context 6: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n- context 7: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[OFFERS]- payer_brightwater\n- context 8: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[OFFERS]- payer_brightwater\n- context 9: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n- context 10: plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS]- payer_brightwater; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging -[IMAGING_REVIEW_BY]- plan_brightwater_select_ppo\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "Here's a plan to address the user's request:\n\n1.  **Identify the entity responsible for imaging authorizations for Brightwater Basic HMO:**\n    *   Context: \"Brightwater Basic HMO sends imaging authorizations to Sablefield Imaging Benefits.\"\n    *   Connection: `plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging`\n\n2.  **Determine Sablefield Imaging Benefits' requirements for lumbar spine MRI approval:**\n    *   Context: \"Sablefield Imaging Benefits requires six weeks of conservative treatment before approving a lumbar spine MRI.\"\n\n3.  **Formulate the answer based on these findings.**",
+            "tokenCounts": {
+              "prompt": 810,
+              "completion": 277,
+              "reasoning": 136
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 810,
+          "completion": 277,
+          "reasoning": 136
+        },
+        "latencyMs": 1824
+      }
+    },
+    "relational-027/without": {
+      "queryId": "relational-027",
+      "condition": "without",
+      "recordedAt": "2026-11-09T13:47:56.512Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "feeb858ee21bc6c7c6531e658072e320412fcaab391004c174232568468cd6ec",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: What must a Brightwater Basic HMO member try before a lumbar spine MRI is approved?\n\nRelevant context:\n- [pgvector] Sablefield Imaging Benefits requires six weeks of conservative treatment before approving a lumbar spine MRI.\n- [pgvector] Brightwater Basic HMO sends imaging authorizations to Sablefield Imaging Benefits.\n- [pgvector] Brightwater Basic HMO requires a referral from the primary care physician for every specialist visit.\n- [pgvector] Brightwater Basic HMO members use the Bayline Provider Network.\n- [pgvector] Brightwater Basic HMO covers a yearly eye exam.\n- [pgvector] Brightwater Basic HMO charges a 10 dollar primary care copay.\n- [pgvector] Brightwater Basic HMO allows members to change their primary care physician once a quarter.\n- [pgvector] Brightwater Basic HMO does not cover out-of-network care except emergencies and urgent care while traveling.\n- [pgvector] Brightwater Basic HMO has no deductible for in-network services.\n- [pgvector] Brightwater Select PPO sends advanced imaging requests to Sablefield Imaging Benefits.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "To get a lumbar spine MRI approved, a Brightwater Basic HMO member must:\n\n1.  **Undergo six weeks of conservative treatment.** Sablefield Imaging Benefits, which handles authorizations for Brightwater Basic HMO, requires this period of conservative treatment before approving a lumbar spine MRI.\n2.  **Obtain a referral from their primary care physician.** While not a \"treatment\" itself, a referral is required for every specialist visit under Brightwater Basic HMO. A specialist (e.g., orthopedic surgeon, neurologist) would typically be the one to order a lumbar spine MRI and initiate the approval process with Sablefield Imaging Benefits.",
+            "tokenCounts": {
+              "prompt": 258,
+              "completion": 601,
+              "reasoning": 474
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 258,
+          "completion": 601,
+          "reasoning": 474
+        },
+        "latencyMs": 3297
+      }
+    },
+    "relational-028/with": {
+      "queryId": "relational-028",
+      "condition": "with",
+      "recordedAt": "2026-11-09T13:48:11.052Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "c35357a46e35b28b203fb0df2eee27f5d9bf7dd89b890888f8708fd9f6d67931",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How long is an imaging approval good for under Brightwater Select PPO?\n\nRelevant context:\n- [pgvector] Brightwater Select PPO sends advanced imaging requests to Sablefield Imaging Benefits.\n- [pgvector] Brightwater Select PPO allows claims up to 365 days after the date of service.\n- [pgvector] Sablefield Imaging Benefits approvals are valid for 60 days.\n- [pgvector] Brightwater Select PPO resolves an urgent appeal within 36 hours.\n- [pgvector] Brightwater Basic HMO sends imaging authorizations to Sablefield Imaging Benefits.\n- [pgvector] Brightwater Select PPO covers chiropractic care for up to 20 visits a year.\n- [pgvector] Sablefield Imaging Benefits decides routine imaging requests within two business days.\n- [pgvector] Brightwater Select PPO delegates prior authorization reviews to Kestrel Review Services.\n- [pgvector] Brightwater Basic HMO resolves a standard appeal within 30 days of receipt.\n- [pgvector] Brightwater Select PPO caps annual out-of-pocket costs at 6,500 dollars.\n\nConnections in memory:\n- context 1: plan_brightwater_select_ppo; plan_brightwater_select_ppo -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_brightwater_select_ppo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging\n- context 2: plan_brightwater_select_ppo; plan_brightwater_select_ppo -[OFFERS]- payer_brightwater; plan_brightwater_select_ppo -[OFFERS]- payer_brightwater -[CLAIMS_ROUTED_THROUGH]- vendor_corvane_claims\n- context 3: plan_brightwater_select_ppo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging\n- context 4: plan_brightwater_select_ppo; plan_brightwater_select_ppo -[OFFERS]- payer_brightwater; plan_brightwater_select_ppo -[OFFERS]- payer_brightwater -[CLAIMS_ROUTED_THROUGH]- vendor_corvane_claims\n- context 5: plan_brightwater_select_ppo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_select_ppo -[OFFERS]- payer_brightwater; plan_brightwater_select_ppo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging -[IMAGING_REVIEW_BY]- plan_brightwater_basic_hmo\n- context 6: plan_brightwater_select_ppo; plan_brightwater_select_ppo -[OFFERS]- payer_brightwater; plan_brightwater_select_ppo -[OFFERS]- payer_brightwater -[CLAIMS_ROUTED_THROUGH]- vendor_corvane_claims\n- context 7: plan_brightwater_select_ppo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging\n- context 8: plan_brightwater_select_ppo; plan_brightwater_select_ppo -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_brightwater_select_ppo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging\n- context 9: plan_brightwater_select_ppo -[OFFERS]- payer_brightwater; plan_brightwater_select_ppo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging -[IMAGING_REVIEW_BY]- plan_brightwater_basic_hmo; plan_brightwater_select_ppo -[OFFERS]- payer_brightwater -[OFFERS]- plan_brightwater_basic_hmo\n- context 10: plan_brightwater_select_ppo; plan_brightwater_select_ppo -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_brightwater_select_ppo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "Plan:\n1. **Identify the entity responsible for advanced imaging approvals for Brightwater Select PPO.**\n    - According to the context, \"Brightwater Select PPO sends advanced imaging requests to Sablefield Imaging Benefits.\" This indicates Sablefield Imaging Benefits handles these approvals.\n2. **Find the validity period for approvals from this identified entity.**\n    - The context states, \"Sablefield Imaging Benefits approvals are valid for 60 days.\"\n3. **Formulate the answer directly stating the validity period for imaging approvals under Brightwater Select PPO.**",
+            "tokenCounts": {
+              "prompt": 924,
+              "completion": 291,
+              "reasoning": 176
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 924,
+          "completion": 291,
+          "reasoning": 176
+        },
+        "latencyMs": 1736
+      }
+    },
+    "relational-028/without": {
+      "queryId": "relational-028",
+      "condition": "without",
+      "recordedAt": "2026-11-09T13:48:06.313Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "0dbd65223c58bc54ab30cb2c500c9d217a0a097a288db90047e2dacdc6b5ad81",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How long is an imaging approval good for under Brightwater Select PPO?\n\nRelevant context:\n- [pgvector] Brightwater Select PPO sends advanced imaging requests to Sablefield Imaging Benefits.\n- [pgvector] Brightwater Select PPO allows claims up to 365 days after the date of service.\n- [pgvector] Sablefield Imaging Benefits approvals are valid for 60 days.\n- [pgvector] Brightwater Select PPO resolves an urgent appeal within 36 hours.\n- [pgvector] Brightwater Basic HMO sends imaging authorizations to Sablefield Imaging Benefits.\n- [pgvector] Brightwater Select PPO covers chiropractic care for up to 20 visits a year.\n- [pgvector] Sablefield Imaging Benefits decides routine imaging requests within two business days.\n- [pgvector] Brightwater Select PPO delegates prior authorization reviews to Kestrel Review Services.\n- [pgvector] Brightwater Basic HMO resolves a standard appeal within 30 days of receipt.\n- [pgvector] Brightwater Select PPO caps annual out-of-pocket costs at 6,500 dollars.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "The user is asking about the duration an imaging approval is valid for under Brightwater Select PPO.\n\nHere's the plan to address the request:\n\n1.  **Identify the entity responsible for imaging approvals under Brightwater Select PPO:**\n    *   The context states: \"Brightwater Select PPO sends advanced imaging requests to Sablefield Imaging Benefits.\"\n\n2.  **Find the validity period for approvals from that entity:**\n    *   The context states: \"Sablefield Imaging Benefits approvals are valid for 60 days.\"\n\n3.  **Formulate the answer:** Combine these two pieces of information to directly answer the user's question.",
+            "tokenCounts": {
+              "prompt": 267,
+              "completion": 325,
+              "reasoning": 188
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 267,
+          "completion": 325,
+          "reasoning": 188
+        },
+        "latencyMs": 1971
+      }
+    },
+    "relational-029/with": {
+      "queryId": "relational-029",
+      "condition": "with",
+      "recordedAt": "2026-11-09T13:48:22.187Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "1ae8dc1b8138fbe54c3aecc6e75e360835e78b7d4844530c460c8d4df33b166f",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: Does a scan done in the emergency room need imaging review for Cedarline Essential members?\n\nRelevant context:\n- [pgvector] Cedarline Essential covers emergency care at any hospital, in network or not.\n- [pgvector] Sablefield Imaging Benefits does not review imaging performed in an emergency department.\n- [pgvector] Cedarline Gold Access requires prior authorization for outpatient MRI and CT scans.\n- [pgvector] Cedarline Essential covers a yearly eye exam but not glasses.\n- [pgvector] Cedarline Essential requires a primary care referral before any specialist visit.\n- [pgvector] Cedarline Essential members have 90 days after a denial notice to file an appeal.\n- [pgvector] Cedarline Essential charges 40 dollars for an urgent care visit.\n- [pgvector] Cedarline Gold Access covers urgent care at a 35 dollar copay.\n- [pgvector] Cedarline Essential sends imaging prior authorization requests to Sablefield Imaging Benefits.\n- [pgvector] Cedarline Essential has an individual deductible of 3,000 dollars per plan year.\n\nConnections in memory:\n- context 1: plan_cedarline_essential; plan_cedarline_essential -[OFFERS]- payer_cedarline_health\n- context 2: plan_cedarline_essential -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging\n- context 3: plan_cedarline_essential -[OFFERS]- payer_cedarline_health; plan_cedarline_essential -[OFFERS]- payer_cedarline_health -[OFFERS]- plan_cedarline_gold_access; plan_cedarline_essential -[USES_NETWORK]- network_summit_crest -[USES_NETWORK]- plan_cedarline_gold_access\n- context 4: plan_cedarline_essential; plan_cedarline_essential -[OFFERS]- payer_cedarline_health\n- context 5: plan_cedarline_essential; plan_cedarline_essential -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_cedarline_essential -[OFFERS_PROGRAM]- program_mindful_access\n- context 6: plan_cedarline_essential; plan_cedarline_essential -[OFFERS]- payer_cedarline_health\n- context 7: plan_cedarline_essential; plan_cedarline_essential -[OFFERS]- payer_cedarline_health\n- context 8: plan_cedarline_essential -[OFFERS]- payer_cedarline_health; plan_cedarline_essential -[OFFERS]- payer_cedarline_health -[OFFERS]- plan_cedarline_gold_access; plan_cedarline_essential -[USES_NETWORK]- network_summit_crest -[USES_NETWORK]- plan_cedarline_gold_access\n- context 9: plan_cedarline_essential; plan_cedarline_essential -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_cedarline_essential -[OFFERS_PROGRAM]- program_mindful_access\n- context 10: plan_cedarline_essential; plan_cedarline_essential -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_cedarline_essential -[OFFERS_PROGRAM]- program_mindful_access\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "1. **Identify the core question:** The user wants to know if an emergency room scan for Cedarline Essential members requires imaging review.\n\n2. **Scan the provided context for keywords:** Look for \"emergency room,\" \"imaging,\" \"review,\" and \"Cedarline Essential.\"\n\n3. **Locate relevant information:**\n    * Context 2 states: \"Sablefield Imaging Benefits does not review imaging performed in an emergency department.\"\n    * Context 9 and 10 state: \"Cedarline Essential sends imaging prior authorization requests to Sablefield Imaging Benefits.\"\n\n4. **Connect the information:** Since Cedarline Essential uses Sablefield Imaging Benefits for imaging review, and Sablefield Imaging Benefits explicitly states they do not review emergency department imaging, it can be concluded that emergency room scans for Cedarline Essential members do not require imaging review.\n\n5. **Formulate the answer:** Combine these pieces of information into a direct response.",
+            "tokenCounts": {
+              "prompt": 787,
+              "completion": 431,
+              "reasoning": 241
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 787,
+          "completion": 431,
+          "reasoning": 241
+        },
+        "latencyMs": 2524
+      }
+    },
+    "relational-029/without": {
+      "queryId": "relational-029",
+      "condition": "without",
+      "recordedAt": "2026-11-09T13:48:16.660Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "93074d1edf200afff28755991f507e33bff25de1817fbc86c73c77fb48aee187",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: Does a scan done in the emergency room need imaging review for Cedarline Essential members?\n\nRelevant context:\n- [pgvector] Cedarline Essential covers emergency care at any hospital, in network or not.\n- [pgvector] Sablefield Imaging Benefits does not review imaging performed in an emergency department.\n- [pgvector] Cedarline Gold Access requires prior authorization for outpatient MRI and CT scans.\n- [pgvector] Cedarline Essential covers a yearly eye exam but not glasses.\n- [pgvector] Cedarline Essential requires a primary care referral before any specialist visit.\n- [pgvector] Cedarline Essential members have 90 days after a denial notice to file an appeal.\n- [pgvector] Cedarline Essential charges 40 dollars for an urgent care visit.\n- [pgvector] Cedarline Gold Access covers urgent care at a 35 dollar copay.\n- [pgvector] Cedarline Essential sends imaging prior authorization requests to Sablefield Imaging Benefits.\n- [pgvector] Cedarline Essential has an individual deductible of 3,000 dollars per plan year.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "Here's a plan to address the user's request:\n\n1.  **Confirm Emergency Coverage:** Acknowledge that Cedarline Essential covers emergency care at any hospital.\n2.  **Identify Imaging Review Entity:** Note that Cedarline Essential typically sends imaging prior authorization requests to Sablefield Imaging Benefits.\n3.  **Address Emergency Department Exception:** Refer to the specific rule stating that Sablefield Imaging Benefits *does not review imaging performed in an emergency department*.\n4.  **Formulate Conclusion:** Based on the above, conclude that a scan done in the emergency room for Cedarline Essential members does not need imaging review.",
+            "tokenCounts": {
+              "prompt": 258,
+              "completion": 482,
+              "reasoning": 353
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 258,
+          "completion": 482,
+          "reasoning": 353
+        },
+        "latencyMs": 2605
+      }
+    },
+    "relational-030/with": {
+      "queryId": "relational-030",
+      "condition": "with",
+      "recordedAt": "2026-11-09T13:48:31.708Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "e02719cad688128a7dba58a0b317a0e2ce5dde5ffcc4d02b00de6e05c5bb3139",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: Is the nurse line for Quillmark Senior Advantage open on holidays?\n\nRelevant context:\n- [pgvector] Quillmark Senior Advantage includes a nurse advice line operated by Tallowood Nurse Advice.\n- [pgvector] Quillmark Senior Advantage issues an expedited appeal decision within 72 hours.\n- [pgvector] Tallowood Nurse Advice answers calls 24 hours a day, including holidays.\n- [pgvector] Quillmark Senior Advantage has no deductible for medical services.\n- [pgvector] Quillmark Health Partners completes an annual health risk assessment for every Senior Advantage member.\n- [pgvector] Quillmark Senior Advantage includes a 500 dollar yearly allowance for dental services.\n- [pgvector] Quillmark Senior Advantage pharmacy benefits run through Pinegate Pharmacy Solutions.\n- [pgvector] Quillmark Senior Advantage members can switch primary care physicians once a month.\n- [pgvector] Quillmark Senior Advantage caps annual out-of-pocket costs at 5,900 dollars.\n- [pgvector] Quillmark Senior Advantage includes a fitness benefit that pays for a gym membership.\n\nConnections in memory:\n- context 1: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[NURSE_LINE_BY]- vendor_tallowood_nurse_line; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n- context 2: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[OFFERS_PROGRAM]- program_homeward_transitions; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n- context 3: plan_quillmark_senior_advantage -[NURSE_LINE_BY]- vendor_tallowood_nurse_line\n- context 4: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[NURSE_LINE_BY]- vendor_tallowood_nurse_line; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n- context 5: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark -[SERVES]- region_coastal_north\n- context 6: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[OFFERS_PROGRAM]- program_homeward_transitions; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n- context 7: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[NURSE_LINE_BY]- vendor_tallowood_nurse_line; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n- context 8: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[OFFERS_PROGRAM]- program_homeward_transitions; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n- context 9: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[NURSE_LINE_BY]- vendor_tallowood_nurse_line; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n- context 10: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[OFFERS_PROGRAM]- program_homeward_transitions; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "The nurse line for Quillmark Senior Advantage, operated by Tallowood Nurse Advice, is open on holidays. Tallowood Nurse Advice answers calls 24 hours a day, including holidays.",
+            "tokenCounts": {
+              "prompt": 855,
+              "completion": 222,
+              "reasoning": 183
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 855,
+          "completion": 222,
+          "reasoning": 183
+        },
+        "latencyMs": 1730
+      }
+    },
+    "relational-030/without": {
+      "queryId": "relational-030",
+      "condition": "without",
+      "recordedAt": "2026-11-09T13:48:26.974Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "f136e0eab99918fe93653e57808106a26384b452d104e733bf44e0075dd4557a",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: Is the nurse line for Quillmark Senior Advantage open on holidays?\n\nRelevant context:\n- [pgvector] Quillmark Senior Advantage includes a nurse advice line operated by Tallowood Nurse Advice.\n- [pgvector] Quillmark Senior Advantage issues an expedited appeal decision within 72 hours.\n- [pgvector] Tallowood Nurse Advice answers calls 24 hours a day, including holidays.\n- [pgvector] Quillmark Senior Advantage has no deductible for medical services.\n- [pgvector] Quillmark Health Partners completes an annual health risk assessment for every Senior Advantage member.\n- [pgvector] Quillmark Senior Advantage includes a 500 dollar yearly allowance for dental services.\n- [pgvector] Quillmark Senior Advantage pharmacy benefits run through Pinegate Pharmacy Solutions.\n- [pgvector] Quillmark Senior Advantage members can switch primary care physicians once a month.\n- [pgvector] Quillmark Senior Advantage caps annual out-of-pocket costs at 5,900 dollars.\n- [pgvector] Quillmark Senior Advantage includes a fitness benefit that pays for a gym membership.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "Here's a plan to address the user's request:\n\n1.  **Identify the relevant information:** Look for statements concerning \"Quillmark Senior Advantage,\" \"nurse line,\" and \"holidays.\"\n2.  **Locate the nurse line operator:** Find the sentence \"[pgvector] Quillmark Senior Advantage includes a nurse advice line operated by Tallowood Nurse Advice.\"\n3.  **Determine operating hours/days:** Find the sentence \"[pgvector] Tallowood Nurse Advice answers calls 24 hours a day, including holidays.\"\n4.  **Formulate the answer:** Combine these facts to directly answer whether the nurse line is open on holidays.\n\n**Answer:** Yes, the nurse line for Quillmark Senior Advantage, operated by Tallowood Nurse Advice, answers calls 24 hours a day, including holidays.",
+            "tokenCounts": {
+              "prompt": 261,
+              "completion": 309,
+              "reasoning": 135
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 261,
+          "completion": 309,
+          "reasoning": 135
+        },
+        "latencyMs": 1782
+      }
+    },
+    "relational-031/with": {
+      "queryId": "relational-031",
+      "condition": "with",
+      "recordedAt": "2026-11-09T13:48:42.158Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "584510fa66f05e3937d8c241b917f724b9ffb48f6f3aab790f9d6c9a353b4c43",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: Will the after-hours nurse for Orrin Valley Community Plan let my doctor know I called?\n\nRelevant context:\n- [pgvector] Orrin Valley Community Plan members call Tallowood Nurse Advice with after-hours questions.\n- [pgvector] Orrin Valley Community Plan charges no copays for primary care.\n- [pgvector] Orrin Valley Community Plan members use the Riverbend Care Alliance network.\n- [pgvector] Tallowood Nurse Advice sends a summary of each call to the member's primary care physician.\n- [pgvector] Orrin Valley Health Plan is a nonprofit governed by a community board.\n- [pgvector] Orrin Valley Community Plan requires members to fill prescriptions at in-network pharmacies.\n- [pgvector] Orrin Valley Health Plan employs community health workers in each county it serves.\n- [pgvector] Orrin Valley Community Plan renews eligibility every twelve months.\n- [pgvector] Orrin Valley Community Plan requires claims within 120 days of the date of service.\n- [pgvector] Orrin Valley Community Plan charges a 3 dollar copay for brand-name prescriptions.\n\nConnections in memory:\n- context 1: plan_orrin_valley_community; plan_orrin_valley_community -[NURSE_LINE_BY]- vendor_tallowood_nurse_line; plan_orrin_valley_community -[OFFERS_PROGRAM]- program_homeward_transitions\n- context 2: plan_orrin_valley_community; plan_orrin_valley_community -[NURSE_LINE_BY]- vendor_tallowood_nurse_line; plan_orrin_valley_community -[OFFERS_PROGRAM]- program_homeward_transitions\n- context 3: plan_orrin_valley_community; plan_orrin_valley_community -[NURSE_LINE_BY]- vendor_tallowood_nurse_line; plan_orrin_valley_community -[OFFERS_PROGRAM]- program_homeward_transitions\n- context 4: plan_orrin_valley_community -[NURSE_LINE_BY]- vendor_tallowood_nurse_line\n- context 5: plan_orrin_valley_community -[OFFERS]- payer_orrin_valley; plan_orrin_valley_community -[OFFERS]- payer_orrin_valley -[SERVES]- region_inland_valley; plan_orrin_valley_community -[USES_NETWORK]- network_riverbend -[COVERS]- region_inland_valley\n- context 6: plan_orrin_valley_community; plan_orrin_valley_community -[OFFERS]- payer_orrin_valley\n- context 7: plan_orrin_valley_community -[OFFERS]- payer_orrin_valley; plan_orrin_valley_community -[OFFERS]- payer_orrin_valley -[SERVES]- region_inland_valley; plan_orrin_valley_community -[USES_NETWORK]- network_riverbend -[COVERS]- region_inland_valley\n- context 8: plan_orrin_valley_community; plan_orrin_valley_community -[OFFERS]- payer_orrin_valley\n- context 9: plan_orrin_valley_community; plan_orrin_valley_community -[OFFERS]- payer_orrin_valley\n- context 10: plan_orrin_valley_community; plan_orrin_valley_community -[OFFERS]- payer_orrin_valley\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "The after-hours nurse service for Orrin Valley Community Plan, which is Tallowood Nurse Advice, **does send a summary of each call to the member's primary care physician.**\n\nTherefore, your doctor will be notified that you called.",
+            "tokenCounts": {
+              "prompt": 809,
+              "completion": 293,
+              "reasoning": 243
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 809,
+          "completion": 293,
+          "reasoning": 243
+        },
+        "latencyMs": 1902
+      }
+    },
+    "relational-031/without": {
+      "queryId": "relational-031",
+      "condition": "without",
+      "recordedAt": "2026-11-09T13:48:37.253Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "6c68ea030e7f7c67c1cbd1de0adfd83318a5d158e9a02b3b8e71ab7b98c290bb",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: Will the after-hours nurse for Orrin Valley Community Plan let my doctor know I called?\n\nRelevant context:\n- [pgvector] Orrin Valley Community Plan members call Tallowood Nurse Advice with after-hours questions.\n- [pgvector] Orrin Valley Community Plan charges no copays for primary care.\n- [pgvector] Orrin Valley Community Plan members use the Riverbend Care Alliance network.\n- [pgvector] Tallowood Nurse Advice sends a summary of each call to the member's primary care physician.\n- [pgvector] Orrin Valley Health Plan is a nonprofit governed by a community board.\n- [pgvector] Orrin Valley Community Plan requires members to fill prescriptions at in-network pharmacies.\n- [pgvector] Orrin Valley Health Plan employs community health workers in each county it serves.\n- [pgvector] Orrin Valley Community Plan renews eligibility every twelve months.\n- [pgvector] Orrin Valley Community Plan requires claims within 120 days of the date of service.\n- [pgvector] Orrin Valley Community Plan charges a 3 dollar copay for brand-name prescriptions.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "Here's a plan to address the user's request:\n\n1.  **Identify the after-hours nurse service:** The context states that Orrin Valley Community Plan members call \"Tallowood Nurse Advice\" for after-hours questions. This is the after-hours nurse service the user is referring to.\n2.  **Locate information about physician notification:** Find any details related to Tallowood Nurse Advice communicating with a member's doctor.\n3.  **Extract the relevant detail:** The context explicitly states: \"Tallowood Nurse Advice sends a summary of each call to the member's primary care physician.\"\n4.  **Formulate the answer:** Confirm to the user that their doctor will be notified, citing that Tallowood Nurse Advice sends a summary of the call to their primary care physician.",
+            "tokenCounts": {
+              "prompt": 270,
+              "completion": 439,
+              "reasoning": 269
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 270,
+          "completion": 439,
+          "reasoning": 269
+        },
+        "latencyMs": 2542
+      }
+    },
+    "relational-032/with": {
+      "queryId": "relational-032",
+      "condition": "with",
+      "recordedAt": "2026-11-09T13:48:51.571Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "738bbd7427b200d15d8dce765bb80e6ed7f7156696bc20c829948d727cbc098e",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How much notice is needed to book a ride to a Quillmark Senior Advantage appointment?\n\nRelevant context:\n- [pgvector] Quillmark Senior Advantage covers up to 24 one-way rides a year to medical appointments through Fennick Ride Services.\n- [pgvector] Fennick Ride Services needs 48 hours notice to schedule a ride.\n- [pgvector] Quillmark Senior Advantage issues an expedited appeal decision within 72 hours.\n- [pgvector] Quillmark Health Partners completes an annual health risk assessment for every Senior Advantage member.\n- [pgvector] Quillmark Senior Advantage covers a yearly hearing exam and one hearing aid every three years.\n- [pgvector] Quillmark Senior Advantage members can switch primary care physicians once a month.\n- [pgvector] Quillmark Senior Advantage gives members a 50 dollar quarterly allowance for over-the-counter items.\n- [pgvector] Quillmark Senior Advantage has no deductible for medical services.\n- [pgvector] Quillmark Senior Advantage charges a 20 dollar specialist copay.\n- [pgvector] Quillmark Senior Advantage members use the Riverbend Care Alliance network.\n\nConnections in memory:\n- context 1: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[NURSE_LINE_BY]- vendor_tallowood_nurse_line; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n- context 2: plan_quillmark_senior_advantage -[TRANSPORTATION_BY]- vendor_fennick_rides\n- context 3: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[OFFERS_PROGRAM]- program_homeward_transitions; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n- context 4: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark -[SERVES]- region_coastal_north\n- context 5: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[OFFERS_PROGRAM]- program_homeward_transitions; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n- context 6: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[OFFERS_PROGRAM]- program_homeward_transitions; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n- context 7: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[OFFERS_PROGRAM]- program_homeward_transitions; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n- context 8: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[NURSE_LINE_BY]- vendor_tallowood_nurse_line; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n- context 9: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[NURSE_LINE_BY]- vendor_tallowood_nurse_line; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n- context 10: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[NURSE_LINE_BY]- vendor_tallowood_nurse_line; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "To book a ride to a Quillmark Senior Advantage appointment through Fennick Ride Services, you need to provide **48 hours notice**.",
+            "tokenCounts": {
+              "prompt": 859,
+              "completion": 209,
+              "reasoning": 182
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 859,
+          "completion": 209,
+          "reasoning": 182
+        },
+        "latencyMs": 1367
+      }
+    },
+    "relational-032/without": {
+      "queryId": "relational-032",
+      "condition": "without",
+      "recordedAt": "2026-11-09T13:48:47.201Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "7add842a9a7bf2e00984063dace2ba4e4122af3956649deb774769a819cdc50d",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How much notice is needed to book a ride to a Quillmark Senior Advantage appointment?\n\nRelevant context:\n- [pgvector] Quillmark Senior Advantage covers up to 24 one-way rides a year to medical appointments through Fennick Ride Services.\n- [pgvector] Fennick Ride Services needs 48 hours notice to schedule a ride.\n- [pgvector] Quillmark Senior Advantage issues an expedited appeal decision within 72 hours.\n- [pgvector] Quillmark Health Partners completes an annual health risk assessment for every Senior Advantage member.\n- [pgvector] Quillmark Senior Advantage covers a yearly hearing exam and one hearing aid every three years.\n- [pgvector] Quillmark Senior Advantage members can switch primary care physicians once a month.\n- [pgvector] Quillmark Senior Advantage gives members a 50 dollar quarterly allowance for over-the-counter items.\n- [pgvector] Quillmark Senior Advantage has no deductible for medical services.\n- [pgvector] Quillmark Senior Advantage charges a 20 dollar specialist copay.\n- [pgvector] Quillmark Senior Advantage members use the Riverbend Care Alliance network.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "Here's the plan to address the user's request:\n\n1. **Identify the core question:** The user wants to know the notice period required to book a ride to a Quillmark Senior Advantage appointment.\n2. **Scan the provided context for keywords:** Look for \"ride,\" \"notice,\" \"schedule,\" \"book,\" and \"Fennick Ride Services.\"\n3. **Locate the relevant information:**\n    * \"Quillmark Senior Advantage covers up to 24 one-way rides a year to medical appointments through Fennick Ride Services.\" (Confirms rides are provided by Fennick)\n    * \"Fennick Ride Services needs 48 hours notice to schedule a ride.\" (Directly answers the notice period question)\n4. **Formulate the answer:** State clearly that Fennick Ride Services, which provides rides for Quillmark Senior Advantage members, requires 48 hours notice to schedule a ride.",
+            "tokenCounts": {
+              "prompt": 270,
+              "completion": 380,
+              "reasoning": 187
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 270,
+          "completion": 380,
+          "reasoning": 187
+        },
+        "latencyMs": 2040
+      }
+    },
+    "relational-033/with": {
+      "queryId": "relational-033",
+      "condition": "with",
+      "recordedAt": "2026-11-09T13:49:00.305Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "a9e1c11d08cf3f38e7542bdc767fd2408444afb0afe0640728f585cfed04e11b",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: Can someone come along with an Orrin Valley Community Plan member on a ride to an appointment?\n\nRelevant context:\n- [pgvector] Orrin Valley Community Plan includes transportation to appointments through Fennick Ride Services.\n- [pgvector] Orrin Valley Community Plan renews eligibility every twelve months.\n- [pgvector] Orrin Valley Community Plan covers two adult dental cleanings a year.\n- [pgvector] Fennick Ride Services allows one companion to ride with the member at no charge.\n- [pgvector] Orrin Valley Health Plan employs community health workers in each county it serves.\n- [pgvector] Orrin Valley Community Plan charges no copays for primary care.\n- [pgvector] Orrin Valley Community Plan covers eyeglasses once every two years.\n- [pgvector] Orrin Valley Community Plan requires members to fill prescriptions at in-network pharmacies.\n- [pgvector] Orrin Valley Community Plan members use the Riverbend Care Alliance network.\n- [pgvector] Orrin Valley Health Plan is a nonprofit governed by a community board.\n\nConnections in memory:\n- context 1: plan_orrin_valley_community; plan_orrin_valley_community -[NURSE_LINE_BY]- vendor_tallowood_nurse_line; plan_orrin_valley_community -[OFFERS_PROGRAM]- program_homeward_transitions\n- context 2: plan_orrin_valley_community; plan_orrin_valley_community -[OFFERS]- payer_orrin_valley\n- context 3: plan_orrin_valley_community; plan_orrin_valley_community -[OFFERS]- payer_orrin_valley\n- context 4: plan_orrin_valley_community -[TRANSPORTATION_BY]- vendor_fennick_rides\n- context 5: plan_orrin_valley_community -[OFFERS]- payer_orrin_valley; plan_orrin_valley_community -[OFFERS]- payer_orrin_valley -[SERVES]- region_inland_valley; plan_orrin_valley_community -[USES_NETWORK]- network_riverbend -[COVERS]- region_inland_valley\n- context 6: plan_orrin_valley_community; plan_orrin_valley_community -[NURSE_LINE_BY]- vendor_tallowood_nurse_line; plan_orrin_valley_community -[OFFERS_PROGRAM]- program_homeward_transitions\n- context 7: plan_orrin_valley_community; plan_orrin_valley_community -[OFFERS]- payer_orrin_valley\n- context 8: plan_orrin_valley_community; plan_orrin_valley_community -[OFFERS]- payer_orrin_valley\n- context 9: plan_orrin_valley_community; plan_orrin_valley_community -[NURSE_LINE_BY]- vendor_tallowood_nurse_line; plan_orrin_valley_community -[OFFERS_PROGRAM]- program_homeward_transitions\n- context 10: plan_orrin_valley_community -[OFFERS]- payer_orrin_valley; plan_orrin_valley_community -[OFFERS]- payer_orrin_valley -[SERVES]- region_inland_valley; plan_orrin_valley_community -[USES_NETWORK]- network_riverbend -[COVERS]- region_inland_valley\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "Yes, a companion can ride with an Orrin Valley Community Plan member to an appointment.\n\nThe Orrin Valley Community Plan includes transportation to appointments through **Fennick Ride Services**, and **Fennick Ride Services allows one companion to ride with the member at no charge.**",
+            "tokenCounts": {
+              "prompt": 786,
+              "completion": 204,
+              "reasoning": 148
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 786,
+          "completion": 204,
+          "reasoning": 148
+        },
+        "latencyMs": 1240
+      }
+    },
+    "relational-033/without": {
+      "queryId": "relational-033",
+      "condition": "without",
+      "recordedAt": "2026-11-09T13:48:56.061Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "7b32a6283b080ce28d90bccbe81adc0cc03516bf6d8558667f674eb295f0c328",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: Can someone come along with an Orrin Valley Community Plan member on a ride to an appointment?\n\nRelevant context:\n- [pgvector] Orrin Valley Community Plan includes transportation to appointments through Fennick Ride Services.\n- [pgvector] Orrin Valley Community Plan renews eligibility every twelve months.\n- [pgvector] Orrin Valley Community Plan covers two adult dental cleanings a year.\n- [pgvector] Fennick Ride Services allows one companion to ride with the member at no charge.\n- [pgvector] Orrin Valley Health Plan employs community health workers in each county it serves.\n- [pgvector] Orrin Valley Community Plan charges no copays for primary care.\n- [pgvector] Orrin Valley Community Plan covers eyeglasses once every two years.\n- [pgvector] Orrin Valley Community Plan requires members to fill prescriptions at in-network pharmacies.\n- [pgvector] Orrin Valley Community Plan members use the Riverbend Care Alliance network.\n- [pgvector] Orrin Valley Health Plan is a nonprofit governed by a community board.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "Yes, a companion can ride with an Orrin Valley Community Plan member to an appointment.\n\nThe **Fennick Ride Services**, which provides transportation for Orrin Valley Community Plan members, **allows one companion to ride with the member at no charge.**",
+            "tokenCounts": {
+              "prompt": 252,
+              "completion": 200,
+              "reasoning": 149
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 252,
+          "completion": 200,
+          "reasoning": 149
+        },
+        "latencyMs": 1486
+      }
+    },
+    "relational-034/with": {
+      "queryId": "relational-034",
+      "condition": "with",
+      "recordedAt": "2026-11-09T13:49:11.161Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "c0a4936172fb7d4116683e95f8efce3a1d758aaffd4a7352c0e59dc44d2b449a",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How quickly are electronic claims acknowledged for Harbor Mutual?\n\nRelevant context:\n- [pgvector] Harbor Mutual pays clean electronic claims within 21 days of receipt.\n- [pgvector] Harbor Mutual sends an explanation of benefits within ten days of processing a claim.\n- [pgvector] Harbor Mutual routes all electronic claims through Corvane Claims Exchange.\n- [pgvector] Harbor Mutual requires in-network providers to file claims within 90 days of the date of service.\n- [pgvector] Harbor Mutual providers check claim status in ClaimsDesk rather than by phone.\n- [pgvector] Harbor Mutual Provider Relations answers provider email within two business days.\n- [pgvector] Harbor Mutual accepts corrected claims for up to 60 days after the original remittance.\n- [pgvector] Harbor Mutual Provider Relations acknowledges a provider appeal in writing within five business days.\n- [pgvector] Corvane Claims Exchange sends an acknowledgment for each electronic claim within 24 hours.\n- [pgvector] Harbor Mutual Silver resolves standard pre-service appeals within 30 calendar days.\n\nConnections in memory:\n- context 1: payer_harbor_mutual; payer_harbor_mutual -[CLAIMS_ROUTED_THROUGH]- vendor_corvane_claims; payer_harbor_mutual -[OFFERS]- plan_harbor_mutual_bronze_flex\n- context 2: payer_harbor_mutual\n- context 3: payer_harbor_mutual; payer_harbor_mutual -[CLAIMS_ROUTED_THROUGH]- vendor_corvane_claims; payer_harbor_mutual -[OFFERS]- plan_harbor_mutual_bronze_flex\n- context 4: payer_harbor_mutual; payer_harbor_mutual -[CLAIMS_ROUTED_THROUGH]- vendor_corvane_claims; payer_harbor_mutual -[OFFERS]- plan_harbor_mutual_bronze_flex\n- context 5: payer_harbor_mutual; payer_harbor_mutual -[CLAIMS_ROUTED_THROUGH]- vendor_corvane_claims; payer_harbor_mutual -[OFFERS]- plan_harbor_mutual_bronze_flex\n- context 6: payer_harbor_mutual; payer_harbor_mutual -[BELONGS_TO]- dept_harbor_provider_relations; payer_harbor_mutual -[HAS_DEPARTMENT]- dept_harbor_provider_relations\n- context 7: payer_harbor_mutual; payer_harbor_mutual -[CLAIMS_ROUTED_THROUGH]- vendor_corvane_claims; payer_harbor_mutual -[OFFERS]- plan_harbor_mutual_bronze_flex\n- context 8: payer_harbor_mutual; payer_harbor_mutual -[BELONGS_TO]- dept_harbor_provider_relations; payer_harbor_mutual -[HAS_DEPARTMENT]- dept_harbor_provider_relations\n- context 9: payer_harbor_mutual -[CLAIMS_ROUTED_THROUGH]- vendor_corvane_claims; payer_harbor_mutual -[USES_PORTAL]- system_claimsdesk\n- context 10: payer_harbor_mutual; payer_harbor_mutual -[BELONGS_TO]- dept_harbor_provider_relations; payer_harbor_mutual -[HAS_DEPARTMENT]- dept_harbor_provider_relations\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "Here's a plan to address the user's request:\n\n1. **Identify keywords:** The key terms are \"electronic claims acknowledged,\" \"how quickly,\" and \"Harbor Mutual.\"\n\n2. **Scan context for direct matches:** Look for phrases related to \"acknowledgment\" of \"electronic claims\" and a specific timeframe.\n\n3. **Locate relevant information:**\n    * \"Corvane Claims Exchange sends an acknowledgment for each electronic claim within 24 hours.\" (Context 9)\n    * \"Harbor Mutual routes all electronic claims through Corvane Claims Exchange.\" (Context 3)\n\n4. **Synthesize the answer:** Combine these two pieces of information to state that because Harbor Mutual routes its electronic claims through Corvane Claims Exchange, acknowledgments are sent within 24 hours.",
+            "tokenCounts": {
+              "prompt": 801,
+              "completion": 594,
+              "reasoning": 427
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 801,
+          "completion": 594,
+          "reasoning": 427
+        },
+        "latencyMs": 3144
+      }
+    },
+    "relational-034/without": {
+      "queryId": "relational-034",
+      "condition": "without",
+      "recordedAt": "2026-11-09T13:49:05.014Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "a9914d1a626fa6f566fe0492dd819c6364746729e7c313b0455365e916db8a64",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How quickly are electronic claims acknowledged for Harbor Mutual?\n\nRelevant context:\n- [pgvector] Harbor Mutual pays clean electronic claims within 21 days of receipt.\n- [pgvector] Harbor Mutual sends an explanation of benefits within ten days of processing a claim.\n- [pgvector] Harbor Mutual routes all electronic claims through Corvane Claims Exchange.\n- [pgvector] Harbor Mutual requires in-network providers to file claims within 90 days of the date of service.\n- [pgvector] Harbor Mutual providers check claim status in ClaimsDesk rather than by phone.\n- [pgvector] Harbor Mutual Provider Relations answers provider email within two business days.\n- [pgvector] Harbor Mutual accepts corrected claims for up to 60 days after the original remittance.\n- [pgvector] Harbor Mutual Provider Relations acknowledges a provider appeal in writing within five business days.\n- [pgvector] Corvane Claims Exchange sends an acknowledgment for each electronic claim within 24 hours.\n- [pgvector] Harbor Mutual Silver resolves standard pre-service appeals within 30 calendar days.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "Based on the provided information, here's the plan to address the user's request:\n\n1.  **Identify the entity responsible for acknowledgment:** The context states, \"Harbor Mutual routes all electronic claims through Corvane Claims Exchange.\"\n2.  **Determine the acknowledgment timeframe:** The context further states, \"Corvane Claims Exchange sends an acknowledgment for each electronic claim within 24 hours.\"\n3.  **Formulate the answer:** Combine these two pieces of information to state that Harbor Mutual's electronic claims are acknowledged within 24 hours via Corvane Claims Exchange.",
+            "tokenCounts": {
+              "prompt": 255,
+              "completion": 251,
+              "reasoning": 130
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 255,
+          "completion": 251,
+          "reasoning": 130
+        },
+        "latencyMs": 1708
+      }
+    },
+    "relational-035/with": {
+      "queryId": "relational-035",
+      "condition": "with",
+      "recordedAt": "2026-11-09T13:49:23.938Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "8872f8cddc5f89964cf2f84e4bb233773f87d28664013ba6ad1e94683a750cc0",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: Why would a Brightwater Assurance claim be rejected before it ever reaches the payer?\n\nRelevant context:\n- [pgvector] Brightwater Assurance pays clean claims within 30 days.\n- [pgvector] Brightwater Assurance routes its claims through Corvane Claims Exchange.\n- [pgvector] Brightwater Assurance reports confirmed fraud cases to the state within 30 days.\n- [pgvector] Brightwater Select PPO allows claims up to 365 days after the date of service.\n- [pgvector] Brightwater Assurance sells plans only to employer groups with at least ten employees.\n- [pgvector] Brightwater Select PPO delegates prior authorization reviews to Kestrel Review Services.\n- [pgvector] Brightwater Select PPO sends advanced imaging requests to Sablefield Imaging Benefits.\n- [pgvector] Brightwater Assurance renews employer contracts every July.\n- [pgvector] Brightwater Assurance sells dental coverage as a separate product.\n- [pgvector] Corvane Claims Exchange rejects a claim at the front end when the member ID does not match the payer's eligibility file.\n\nConnections in memory:\n- context 1: payer_brightwater; payer_brightwater -[OFFERS]- plan_brightwater_basic_hmo; payer_brightwater -[OFFERS]- plan_brightwater_select_ppo\n- context 2: payer_brightwater; payer_brightwater -[CLAIMS_ROUTED_THROUGH]- vendor_corvane_claims; payer_brightwater -[OFFERS]- plan_brightwater_select_ppo\n- context 3: payer_brightwater; payer_brightwater -[BELONGS_TO]- dept_brightwater_siu\n- context 4: payer_brightwater; payer_brightwater -[CLAIMS_ROUTED_THROUGH]- vendor_corvane_claims; payer_brightwater -[OFFERS]- plan_brightwater_select_ppo\n- context 5: payer_brightwater; payer_brightwater -[OFFERS]- plan_brightwater_basic_hmo; payer_brightwater -[OFFERS]- plan_brightwater_select_ppo\n- context 6: payer_brightwater; payer_brightwater -[OFFERS]- plan_brightwater_select_ppo; payer_brightwater -[OFFERS]- plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging\n- context 7: payer_brightwater; payer_brightwater -[OFFERS]- plan_brightwater_select_ppo; payer_brightwater -[OFFERS]- plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging\n- context 8: payer_brightwater; payer_brightwater -[OFFERS]- plan_brightwater_basic_hmo; payer_brightwater -[OFFERS]- plan_brightwater_select_ppo\n- context 9: payer_brightwater; payer_brightwater -[OFFERS]- plan_brightwater_basic_hmo; payer_brightwater -[OFFERS]- plan_brightwater_select_ppo\n- context 10: payer_brightwater -[CLAIMS_ROUTED_THROUGH]- vendor_corvane_claims; payer_brightwater -[CLAIMS_ROUTED_THROUGH]- vendor_corvane_claims -[OPERATED_BY]- system_claimsdesk\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "A Brightwater Assurance claim would be rejected before it ever reaches the payer if the Corvane Claims Exchange, through which Brightwater Assurance routes its claims, identifies that the member ID on the claim does not match the payer's eligibility file. This rejection occurs at the \"front end\" by Corvane Claims Exchange, preventing the claim from proceeding to Brightwater Assurance for processing.",
+            "tokenCounts": {
+              "prompt": 781,
+              "completion": 343,
+              "reasoning": 268
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 781,
+          "completion": 343,
+          "reasoning": 268
+        },
+        "latencyMs": 2186
+      }
+    },
+    "relational-035/without": {
+      "queryId": "relational-035",
+      "condition": "without",
+      "recordedAt": "2026-11-09T13:49:18.748Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "47dea50a30716b1507fc93aba697e3cce336ce917b07b768381b832d6f2a6394",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: Why would a Brightwater Assurance claim be rejected before it ever reaches the payer?\n\nRelevant context:\n- [pgvector] Brightwater Assurance pays clean claims within 30 days.\n- [pgvector] Brightwater Assurance routes its claims through Corvane Claims Exchange.\n- [pgvector] Brightwater Assurance reports confirmed fraud cases to the state within 30 days.\n- [pgvector] Brightwater Select PPO allows claims up to 365 days after the date of service.\n- [pgvector] Brightwater Assurance sells plans only to employer groups with at least ten employees.\n- [pgvector] Brightwater Select PPO delegates prior authorization reviews to Kestrel Review Services.\n- [pgvector] Brightwater Select PPO sends advanced imaging requests to Sablefield Imaging Benefits.\n- [pgvector] Brightwater Assurance renews employer contracts every July.\n- [pgvector] Brightwater Assurance sells dental coverage as a separate product.\n- [pgvector] Corvane Claims Exchange rejects a claim at the front end when the member ID does not match the payer's eligibility file.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "The most direct reason a Brightwater Assurance claim would be rejected before it ever reaches the payer, based on the provided context, is:\n\n1.  **Corvane Claims Exchange rejection:** Brightwater Assurance routes its claims through Corvane Claims Exchange. Corvane Claims Exchange rejects a claim at the front end when the member ID does not match the payer's eligibility file.",
+            "tokenCounts": {
+              "prompt": 259,
+              "completion": 815,
+              "reasoning": 739
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 259,
+          "completion": 815,
+          "reasoning": 739
+        },
+        "latencyMs": 4584
+      }
+    },
+    "relational-036/with": {
+      "queryId": "relational-036",
+      "condition": "with",
+      "recordedAt": "2026-11-09T13:49:37.103Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "bd7c642f9f9c89184ece389918e76b399305667792eabba559156e35303dc534",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How long does a rejected Orrin Valley Health Plan claim stay visible before it is purged?\n\nRelevant context:\n- [pgvector] Orrin Valley Health Plan pays clean claims within 15 days.\n- [pgvector] Corvane Claims Exchange keeps rejected claims visible for 30 days before purging them.\n- [pgvector] Orrin Valley Health Plan sends its claims through Corvane Claims Exchange.\n- [pgvector] Orrin Valley Community Plan requires claims within 120 days of the date of service.\n- [pgvector] Orrin Valley Premier requires claims within 90 days of the date of service.\n- [pgvector] Orrin Valley Community Plan renews eligibility every twelve months.\n- [pgvector] Orrin Valley Health Plan's board meets on the first Monday of every other month.\n- [pgvector] Orrin Valley Community Plan sends renewal packets 45 days before eligibility ends.\n- [pgvector] Orrin Valley Premier sends prior authorization reviews to Kestrel Review Services.\n- [pgvector] Orrin Valley Community Plan covers eyeglasses once every two years.\n\nConnections in memory:\n- context 1: payer_orrin_valley; payer_orrin_valley -[SERVES]- region_inland_valley\n- context 2: payer_orrin_valley -[CLAIMS_ROUTED_THROUGH]- vendor_corvane_claims; payer_orrin_valley -[CLAIMS_ROUTED_THROUGH]- vendor_corvane_claims -[OPERATED_BY]- system_claimsdesk\n- context 3: payer_orrin_valley; payer_orrin_valley -[CLAIMS_ROUTED_THROUGH]- vendor_corvane_claims; payer_orrin_valley -[OFFERS]- plan_orrin_valley_premier\n- context 4: payer_orrin_valley; payer_orrin_valley -[OFFERS]- plan_orrin_valley_community\n- context 5: payer_orrin_valley; payer_orrin_valley -[CLAIMS_ROUTED_THROUGH]- vendor_corvane_claims; payer_orrin_valley -[OFFERS]- plan_orrin_valley_premier\n- context 6: payer_orrin_valley; payer_orrin_valley -[OFFERS]- plan_orrin_valley_community\n- context 7: payer_orrin_valley; payer_orrin_valley -[SERVES]- region_inland_valley\n- context 8: payer_orrin_valley; payer_orrin_valley -[OFFERS]- plan_orrin_valley_community\n- context 9: payer_orrin_valley; payer_orrin_valley -[OFFERS]- plan_orrin_valley_premier; payer_orrin_valley -[OFFERS]- plan_orrin_valley_premier -[DELEGATES_REVIEW_TO]- vendor_kestrel_review\n- context 10: payer_orrin_valley; payer_orrin_valley -[OFFERS]- plan_orrin_valley_community\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "To address the user's request, I will execute the following plan:\n\n1.  **Identify the claims processing vendor for Orrin Valley Health Plan:** Locate the context that specifies how Orrin Valley Health Plan sends its claims.\n2.  **Find the policy for rejected claims at that vendor:** Look for information related to rejected claims, visibility duration, and purging from the identified vendor.\n3.  **Synthesize the information:** Combine these two pieces of information to directly answer how long a rejected Orrin Valley Health Plan claim stays visible before it is purged.\n\nBased on the provided context:\n*   \"Orrin Valley Health Plan sends its claims through Corvane Claims Exchange.\"\n*   \"Corvane Claims Exchange keeps rejected claims visible for 30 days before purging them.\"\n\nTherefore, a rejected Orrin Valley Health Plan claim stays visible for 30 days before it is purged.",
+            "tokenCounts": {
+              "prompt": 713,
+              "completion": 747,
+              "reasoning": 561
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 713,
+          "completion": 747,
+          "reasoning": 561
+        },
+        "latencyMs": 3914
+      }
+    },
+    "relational-036/without": {
+      "queryId": "relational-036",
+      "condition": "without",
+      "recordedAt": "2026-11-09T13:49:30.185Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "52d8f89619cdf84702119c71511a99dd6983732a5cacedc01882eee3772c56ab",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How long does a rejected Orrin Valley Health Plan claim stay visible before it is purged?\n\nRelevant context:\n- [pgvector] Orrin Valley Health Plan pays clean claims within 15 days.\n- [pgvector] Corvane Claims Exchange keeps rejected claims visible for 30 days before purging them.\n- [pgvector] Orrin Valley Health Plan sends its claims through Corvane Claims Exchange.\n- [pgvector] Orrin Valley Community Plan requires claims within 120 days of the date of service.\n- [pgvector] Orrin Valley Premier requires claims within 90 days of the date of service.\n- [pgvector] Orrin Valley Community Plan renews eligibility every twelve months.\n- [pgvector] Orrin Valley Health Plan's board meets on the first Monday of every other month.\n- [pgvector] Orrin Valley Community Plan sends renewal packets 45 days before eligibility ends.\n- [pgvector] Orrin Valley Premier sends prior authorization reviews to Kestrel Review Services.\n- [pgvector] Orrin Valley Community Plan covers eyeglasses once every two years.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "The user is asking for the visibility duration of a rejected Orrin Valley Health Plan claim before it is purged.\n\nHere's the plan to address the request:\n\n1.  **Identify the relevant entities:** \"rejected claims,\" \"Orrin Valley Health Plan,\" \"visibility,\" and \"purged.\"\n2.  **Scan the provided context for information connecting these entities.**\n    *   One piece of context states: \"[pgvector] Corvane Claims Exchange keeps rejected claims visible for 30 days before purging them.\" This directly addresses the visibility and purging of rejected claims.\n    *   Another piece of context states: \"[pgvector] Orrin Valley Health Plan sends its claims through Corvane Claims Exchange.\" This establishes that claims from Orrin Valley Health Plan are processed by Corvane Claims Exchange.\n3.  **Combine the information:** Since Orrin Valley Health Plan sends its claims through Corvane Claims Exchange, and Corvane Claims Exchange purges rejected claims after 30 days, a rejected Orrin Valley Health Plan claim will follow this policy.\n4.  **Formulate the answer:** State the duration based on the combined information.\n\n**Answer:** A rejected Orrin Valley Health Plan claim stays visible for **30 days** before it is purged by Corvane Claims Exchange.",
+            "tokenCounts": {
+              "prompt": 263,
+              "completion": 621,
+              "reasoning": 355
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 263,
+          "completion": 621,
+          "reasoning": 355
+        },
+        "latencyMs": 3242
+      }
+    },
+    "relational-038/with": {
+      "queryId": "relational-038",
+      "condition": "with",
+      "recordedAt": "2026-11-09T13:49:46.776Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "9e32dcd7db7229b45733bcf0b59645e64aca92b8c83c5fe8f868c8db34463007",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: Does the diabetes program for Harbor Mutual Bronze Flex supply a glucose meter?\n\nRelevant context:\n- [pgvector] Harbor Mutual Bronze Flex covers preventive screenings before the deductible.\n- [pgvector] Harbor Mutual Bronze Flex covers two telehealth visits per year at no cost before the deductible.\n- [pgvector] Harbor Mutual Bronze Flex caps annual out-of-pocket costs at 7,500 dollars.\n- [pgvector] Steady Steps is available to Harbor Mutual Silver and Harbor Mutual Bronze Flex members.\n- [pgvector] Harbor Mutual Bronze Flex uses the same Bayline Provider Network as the Silver plan.\n- [pgvector] Harbor Mutual Bronze Flex has an individual deductible of 4,200 dollars per plan year.\n- [pgvector] Harbor Mutual Bronze Flex pairs with a health savings account and applies most copays only after the deductible is met.\n- [pgvector] Harbor Mutual Silver and Harbor Mutual Bronze Flex claims share one payer identifier.\n- [pgvector] Steady Steps ships participants a glucose meter and test strips at no cost.\n- [pgvector] Harbor Mutual Bronze Flex charges a 350 dollar copay for an emergency room visit after the deductible.\n\nConnections in memory:\n- context 1: plan_harbor_mutual_bronze_flex; plan_harbor_mutual_bronze_flex -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_bronze_flex -[OFFERS]- payer_harbor_mutual\n- context 2: plan_harbor_mutual_bronze_flex; plan_harbor_mutual_bronze_flex -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_bronze_flex -[OFFERS]- payer_harbor_mutual\n- context 3: plan_harbor_mutual_bronze_flex; plan_harbor_mutual_bronze_flex -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_bronze_flex -[OFFERS]- payer_harbor_mutual\n- context 4: plan_harbor_mutual_bronze_flex; plan_harbor_mutual_bronze_flex -[OFFERS_PROGRAM]- program_steady_steps; plan_harbor_mutual_bronze_flex -[DELEGATES_REVIEW_TO]- vendor_kestrel_review -[DELEGATES_REVIEW_TO]- plan_harbor_mutual_silver\n- context 5: plan_harbor_mutual_bronze_flex; plan_harbor_mutual_bronze_flex -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_bronze_flex -[OFFERS]- payer_harbor_mutual\n- context 6: plan_harbor_mutual_bronze_flex; plan_harbor_mutual_bronze_flex -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_bronze_flex -[OFFERS]- payer_harbor_mutual\n- context 7: plan_harbor_mutual_bronze_flex; plan_harbor_mutual_bronze_flex -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_bronze_flex -[OFFERS]- payer_harbor_mutual\n- context 8: plan_harbor_mutual_bronze_flex; plan_harbor_mutual_bronze_flex -[OFFERS]- payer_harbor_mutual; plan_harbor_mutual_bronze_flex -[DELEGATES_REVIEW_TO]- vendor_kestrel_review -[DELEGATES_REVIEW_TO]- plan_harbor_mutual_silver\n- context 9: plan_harbor_mutual_bronze_flex; plan_harbor_mutual_bronze_flex -[OFFERS_PROGRAM]- program_steady_steps; plan_harbor_mutual_bronze_flex -[DELEGATES_REVIEW_TO]- vendor_kestrel_review -[DELEGATES_REVIEW_TO]- plan_harbor_mutual_silver\n- context 10: plan_harbor_mutual_bronze_flex; plan_harbor_mutual_bronze_flex -[DELEGATES_REVIEW_TO]- vendor_kestrel_review; plan_harbor_mutual_bronze_flex -[OFFERS]- payer_harbor_mutual\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "*   **Identify the diabetes program:** Look for a diabetes program associated with \"Harbor Mutual Bronze Flex.\" Context 4 states, \"Steady Steps is available to Harbor Mutual Silver and Harbor Mutual Bronze Flex members,\" indicating \"Steady Steps\" is the relevant program.\n*   **Determine if the program supplies a glucose meter:** Check if \"Steady Steps\" provides a glucose meter. Context 9 explicitly says, \"Steady Steps ships participants a glucose meter and test strips at no cost.\"\n*   **Formulate the answer:** Combine these pieces of information to confirm that the diabetes program (Steady Steps) for Harbor Mutual Bronze Flex supplies a glucose meter.",
+            "tokenCounts": {
+              "prompt": 1020,
+              "completion": 326,
+              "reasoning": 194
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 1020,
+          "completion": 326,
+          "reasoning": 194
+        },
+        "latencyMs": 1770
+      }
+    },
+    "relational-038/without": {
+      "queryId": "relational-038",
+      "condition": "without",
+      "recordedAt": "2026-11-09T13:49:42.002Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "d32b222b21d4d7216f49d51a04ffb4155d29937a4a593dc3c65809bb6595bf39",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: Does the diabetes program for Harbor Mutual Bronze Flex supply a glucose meter?\n\nRelevant context:\n- [pgvector] Harbor Mutual Bronze Flex covers preventive screenings before the deductible.\n- [pgvector] Harbor Mutual Bronze Flex covers two telehealth visits per year at no cost before the deductible.\n- [pgvector] Harbor Mutual Bronze Flex caps annual out-of-pocket costs at 7,500 dollars.\n- [pgvector] Steady Steps is available to Harbor Mutual Silver and Harbor Mutual Bronze Flex members.\n- [pgvector] Harbor Mutual Bronze Flex uses the same Bayline Provider Network as the Silver plan.\n- [pgvector] Harbor Mutual Bronze Flex has an individual deductible of 4,200 dollars per plan year.\n- [pgvector] Harbor Mutual Bronze Flex pairs with a health savings account and applies most copays only after the deductible is met.\n- [pgvector] Harbor Mutual Silver and Harbor Mutual Bronze Flex claims share one payer identifier.\n- [pgvector] Steady Steps ships participants a glucose meter and test strips at no cost.\n- [pgvector] Harbor Mutual Bronze Flex charges a 350 dollar copay for an emergency room visit after the deductible.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "1. **Identify the relevant diabetes program:** Look for mentions of a diabetes program or a program that would support individuals with diabetes and is available to Harbor Mutual Bronze Flex members.\n2. **Check program benefits:** Once the program is identified, verify if it supplies a glucose meter.\n3. **Formulate the answer:** Combine the findings to directly answer the user's question.",
+            "tokenCounts": {
+              "prompt": 278,
+              "completion": 304,
+              "reasoning": 226
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 278,
+          "completion": 304,
+          "reasoning": 226
+        },
+        "latencyMs": 1893
+      }
+    },
+    "relational-039/with": {
+      "queryId": "relational-039",
+      "condition": "with",
+      "recordedAt": "2026-11-09T13:49:55.199Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "ea1a57e0438b143ed5075fb69f401ceb7caea5c149d0e92bc1aa498b5a97de38",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How long after delivery does the Quillmark Family Choice maternity program keep calling?\n\nRelevant context:\n- [pgvector] Quillmark Family Choice offers the Clearpath Maternity program to pregnant members.\n- [pgvector] Clearpath Maternity continues follow-up calls for eight weeks after delivery.\n- [pgvector] Quillmark Family Choice members add a newborn by notifying the plan within 60 days of birth.\n- [pgvector] Quillmark Family Choice covers pediatric well visits with no copay.\n- [pgvector] Quillmark Family Choice requires claims within 180 days of the date of service.\n- [pgvector] Quillmark Family Choice mails a new member ID card for each covered dependent.\n- [pgvector] Quillmark Family Choice resolves a standard post-service appeal within 60 days.\n- [pgvector] Quillmark Family Choice has a family deductible of 5,000 dollars.\n- [pgvector] Quillmark Health Partners mails members a welcome kit within ten days of enrollment.\n- [pgvector] Pinegate Pharmacy Solutions administers the Quillmark Family Choice drug formulary.\n\nConnections in memory:\n- context 1: plan_quillmark_family_choice; plan_quillmark_family_choice -[OFFERS_PROGRAM]- program_clearpath_maternity; plan_quillmark_family_choice -[OFFERS]- payer_quillmark\n- context 2: plan_quillmark_family_choice; plan_quillmark_family_choice -[OFFERS_PROGRAM]- program_clearpath_maternity; plan_quillmark_family_choice -[OFFERS_PROGRAM]- program_clearpath_maternity -[TARGETS]- code_o24_410\n- context 3: plan_quillmark_family_choice; plan_quillmark_family_choice -[OFFERS]- payer_quillmark\n- context 4: plan_quillmark_family_choice; plan_quillmark_family_choice -[OFFERS_PROGRAM]- program_clearpath_maternity; plan_quillmark_family_choice -[OFFERS]- payer_quillmark\n- context 5: plan_quillmark_family_choice; plan_quillmark_family_choice -[OFFERS]- payer_quillmark\n- context 6: plan_quillmark_family_choice; plan_quillmark_family_choice -[OFFERS]- payer_quillmark\n- context 7: plan_quillmark_family_choice; plan_quillmark_family_choice -[OFFERS]- payer_quillmark\n- context 8: plan_quillmark_family_choice; plan_quillmark_family_choice -[OFFERS_PROGRAM]- program_clearpath_maternity; plan_quillmark_family_choice -[OFFERS]- payer_quillmark\n- context 9: plan_quillmark_family_choice -[OFFERS]- payer_quillmark; plan_quillmark_family_choice -[OFFERS]- payer_quillmark -[OFFERS]- plan_quillmark_senior_advantage; plan_quillmark_family_choice -[OFFERS]- payer_quillmark -[SERVES]- region_coastal_north\n- context 10: plan_quillmark_family_choice; plan_quillmark_family_choice -[OFFERS_PROGRAM]- program_clearpath_maternity; plan_quillmark_family_choice -[OFFERS]- payer_quillmark\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "The Clearpath Maternity program, offered by Quillmark Family Choice, continues follow-up calls for **eight weeks after delivery**.",
+            "tokenCounts": {
+              "prompt": 813,
+              "completion": 192,
+              "reasoning": 167
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 813,
+          "completion": 192,
+          "reasoning": 167
+        },
+        "latencyMs": 1277
+      }
+    },
+    "relational-039/without": {
+      "queryId": "relational-039",
+      "condition": "without",
+      "recordedAt": "2026-11-09T13:49:50.919Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "ecf2727f24bb96ab327479f9e1d52eab08861e7c1512d0356281e436037ff6e0",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How long after delivery does the Quillmark Family Choice maternity program keep calling?\n\nRelevant context:\n- [pgvector] Quillmark Family Choice offers the Clearpath Maternity program to pregnant members.\n- [pgvector] Clearpath Maternity continues follow-up calls for eight weeks after delivery.\n- [pgvector] Quillmark Family Choice members add a newborn by notifying the plan within 60 days of birth.\n- [pgvector] Quillmark Family Choice covers pediatric well visits with no copay.\n- [pgvector] Quillmark Family Choice requires claims within 180 days of the date of service.\n- [pgvector] Quillmark Family Choice mails a new member ID card for each covered dependent.\n- [pgvector] Quillmark Family Choice resolves a standard post-service appeal within 60 days.\n- [pgvector] Quillmark Family Choice has a family deductible of 5,000 dollars.\n- [pgvector] Quillmark Health Partners mails members a welcome kit within ten days of enrollment.\n- [pgvector] Pinegate Pharmacy Solutions administers the Quillmark Family Choice drug formulary.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "The Quillmark Family Choice maternity program (specifically, the Clearpath Maternity program) continues follow-up calls for **eight weeks after delivery**.",
+            "tokenCounts": {
+              "prompt": 264,
+              "completion": 145,
+              "reasoning": 117
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 264,
+          "completion": 145,
+          "reasoning": 117
+        },
+        "latencyMs": 1140
+      }
+    },
+    "relational-040/with": {
+      "queryId": "relational-040",
+      "condition": "with",
+      "recordedAt": "2026-11-09T13:50:05.135Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "2bb2a5da0e3df910d11e32b468091439cb4e1b07ae45c97689671817db1c765d",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: Is a breast pump covered by the maternity program offered with Quillmark Family Choice?\n\nRelevant context:\n- [pgvector] Quillmark Family Choice offers the Clearpath Maternity program to pregnant members.\n- [pgvector] Clearpath Maternity covers a breast pump and two lactation consultations.\n- [pgvector] Quillmark Family Choice covers pediatric well visits with no copay.\n- [pgvector] Quillmark Family Choice has a family deductible of 5,000 dollars.\n- [pgvector] Quillmark Family Choice members add a newborn by notifying the plan within 60 days of birth.\n- [pgvector] Quillmark Family Choice covers orthodontics for children under 19 at 50 percent.\n- [pgvector] Quillmark Family Choice mails a new member ID card for each covered dependent.\n- [pgvector] Quillmark Family Choice requires claims within 180 days of the date of service.\n- [pgvector] Pinegate Pharmacy Solutions administers the Quillmark Family Choice drug formulary.\n- [pgvector] Quillmark Family Choice covers two routine dental cleanings a year for children.\n\nConnections in memory:\n- context 1: plan_quillmark_family_choice; plan_quillmark_family_choice -[OFFERS_PROGRAM]- program_clearpath_maternity; plan_quillmark_family_choice -[OFFERS]- payer_quillmark\n- context 2: plan_quillmark_family_choice; plan_quillmark_family_choice -[OFFERS_PROGRAM]- program_clearpath_maternity; plan_quillmark_family_choice -[OFFERS_PROGRAM]- program_clearpath_maternity -[TARGETS]- code_o24_410\n- context 3: plan_quillmark_family_choice; plan_quillmark_family_choice -[OFFERS_PROGRAM]- program_clearpath_maternity; plan_quillmark_family_choice -[OFFERS]- payer_quillmark\n- context 4: plan_quillmark_family_choice; plan_quillmark_family_choice -[OFFERS_PROGRAM]- program_clearpath_maternity; plan_quillmark_family_choice -[OFFERS]- payer_quillmark\n- context 5: plan_quillmark_family_choice; plan_quillmark_family_choice -[OFFERS]- payer_quillmark\n- context 6: plan_quillmark_family_choice; plan_quillmark_family_choice -[OFFERS_PROGRAM]- program_clearpath_maternity; plan_quillmark_family_choice -[OFFERS]- payer_quillmark\n- context 7: plan_quillmark_family_choice; plan_quillmark_family_choice -[OFFERS]- payer_quillmark\n- context 8: plan_quillmark_family_choice; plan_quillmark_family_choice -[OFFERS]- payer_quillmark\n- context 9: plan_quillmark_family_choice; plan_quillmark_family_choice -[OFFERS_PROGRAM]- program_clearpath_maternity; plan_quillmark_family_choice -[OFFERS]- payer_quillmark\n- context 10: plan_quillmark_family_choice; plan_quillmark_family_choice -[OFFERS]- payer_quillmark\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "To address the user's request, I will perform the following steps:\n\n1.  **Identify the relevant program:** The user asks about the \"maternity program offered with Quillmark Family Choice.\" The context explicitly states: \"Quillmark Family Choice offers the Clearpath Maternity program to pregnant members.\" This confirms Clearpath Maternity is the program in question.\n2.  **Check coverage for a breast pump within that program:** I will look for information specifically stating what Clearpath Maternity covers. The context states: \"Clearpath Maternity covers a breast pump and two lactation consultations.\"\n3.  **Formulate the answer:** Combine the information to directly answer whether a breast pump is covered by the Clearpath Maternity program offered with Quillmark Family Choice.",
+            "tokenCounts": {
+              "prompt": 783,
+              "completion": 355,
+              "reasoning": 202
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 783,
+          "completion": 355,
+          "reasoning": 202
+        },
+        "latencyMs": 2251
+      }
+    },
+    "relational-040/without": {
+      "queryId": "relational-040",
+      "condition": "without",
+      "recordedAt": "2026-11-09T13:49:59.880Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "70b36da137831dac3a78e4eaea38d3e6490085c792829d844983eea6dc105dfe",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: Is a breast pump covered by the maternity program offered with Quillmark Family Choice?\n\nRelevant context:\n- [pgvector] Quillmark Family Choice offers the Clearpath Maternity program to pregnant members.\n- [pgvector] Clearpath Maternity covers a breast pump and two lactation consultations.\n- [pgvector] Quillmark Family Choice covers pediatric well visits with no copay.\n- [pgvector] Quillmark Family Choice has a family deductible of 5,000 dollars.\n- [pgvector] Quillmark Family Choice members add a newborn by notifying the plan within 60 days of birth.\n- [pgvector] Quillmark Family Choice covers orthodontics for children under 19 at 50 percent.\n- [pgvector] Quillmark Family Choice mails a new member ID card for each covered dependent.\n- [pgvector] Quillmark Family Choice requires claims within 180 days of the date of service.\n- [pgvector] Pinegate Pharmacy Solutions administers the Quillmark Family Choice drug formulary.\n- [pgvector] Quillmark Family Choice covers two routine dental cleanings a year for children.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "Here's a plan to address the user's request:\n\n**1. Identify the relevant program:**\n   - Locate information about the maternity program offered by Quillmark Family Choice.\n\n**2. Check coverage details for the identified program:**\n   - Look for specific mentions of breast pump coverage within the maternity program's benefits.\n\n**3. Formulate the answer:**\n   - Combine the findings to directly answer whether a breast pump is covered.\n\n**Based on the provided context, the answer will be:**\n\"Yes, a breast pump is covered. Quillmark Family Choice offers the Clearpath Maternity program, and Clearpath Maternity covers a breast pump and two lactation consultations.\"",
+            "tokenCounts": {
+              "prompt": 265,
+              "completion": 269,
+              "reasoning": 128
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 265,
+          "completion": 269,
+          "reasoning": 128
+        },
+        "latencyMs": 1678
+      }
+    },
+    "relational-041/with": {
+      "queryId": "relational-041",
+      "condition": "with",
+      "recordedAt": "2026-11-09T13:50:14.216Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "efac3577b1f7d7840a2645a5e50ff7ff102755be7babe38b7982c22a86142d2c",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: Does the Brightwater Basic HMO asthma program include a visit to the home?\n\nRelevant context:\n- [pgvector] Brightwater Basic HMO offers the Breathe Easy asthma program.\n- [pgvector] Brightwater Basic HMO covers a yearly eye exam.\n- [pgvector] Brightwater Basic HMO charges a 10 dollar primary care copay.\n- [pgvector] Brightwater Basic HMO does not cover out-of-network care except emergencies and urgent care while traveling.\n- [pgvector] Brightwater Basic HMO has no deductible for in-network services.\n- [pgvector] Brightwater Basic HMO requires a referral from the primary care physician for every specialist visit.\n- [pgvector] Breathe Easy sends a respiratory therapist for one home visit to look for triggers.\n- [pgvector] Brightwater Basic HMO allows members to change their primary care physician once a quarter.\n- [pgvector] Brightwater Basic HMO covers generic drugs at a 5 dollar copay.\n- [pgvector] Brightwater Basic HMO members use the Bayline Provider Network.\n\nConnections in memory:\n- context 1: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n- context 2: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[OFFERS]- payer_brightwater\n- context 3: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n- context 4: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[OFFERS]- payer_brightwater\n- context 5: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n- context 6: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n- context 7: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy -[TARGETS]- code_j45_40\n- context 8: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[OFFERS]- payer_brightwater\n- context 9: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[OFFERS]- payer_brightwater\n- context 10: plan_brightwater_basic_hmo; plan_brightwater_basic_hmo -[IMAGING_REVIEW_BY]- vendor_sablefield_imaging; plan_brightwater_basic_hmo -[OFFERS_PROGRAM]- program_breathe_easy\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "The Breathe Easy asthma program, offered by Brightwater Basic HMO, includes one home visit by a respiratory therapist to look for triggers.",
+            "tokenCounts": {
+              "prompt": 788,
+              "completion": 189,
+              "reasoning": 163
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 788,
+          "completion": 189,
+          "reasoning": 163
+        },
+        "latencyMs": 1476
+      }
+    },
+    "relational-041/without": {
+      "queryId": "relational-041",
+      "condition": "without",
+      "recordedAt": "2026-11-09T13:50:09.735Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "792919d02d15b46b145e16dc5d542d10e289953d4b43a6cf148895bdfee92225",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: Does the Brightwater Basic HMO asthma program include a visit to the home?\n\nRelevant context:\n- [pgvector] Brightwater Basic HMO offers the Breathe Easy asthma program.\n- [pgvector] Brightwater Basic HMO covers a yearly eye exam.\n- [pgvector] Brightwater Basic HMO charges a 10 dollar primary care copay.\n- [pgvector] Brightwater Basic HMO does not cover out-of-network care except emergencies and urgent care while traveling.\n- [pgvector] Brightwater Basic HMO has no deductible for in-network services.\n- [pgvector] Brightwater Basic HMO requires a referral from the primary care physician for every specialist visit.\n- [pgvector] Breathe Easy sends a respiratory therapist for one home visit to look for triggers.\n- [pgvector] Brightwater Basic HMO allows members to change their primary care physician once a quarter.\n- [pgvector] Brightwater Basic HMO covers generic drugs at a 5 dollar copay.\n- [pgvector] Brightwater Basic HMO members use the Bayline Provider Network.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "1. **Identify the asthma program:** Locate the information specifying the name of the asthma program offered by Brightwater Basic HMO. (Found: \"Brightwater Basic HMO offers the Breathe Easy asthma program.\")\n2. **Check program details for home visits:** Search the context for details about the \"Breathe Easy\" program, specifically looking for mentions of home visits. (Found: \"Breathe Easy sends a respiratory therapist for one home visit to look for triggers.\")\n3. **Formulate the answer:** Combine the information to directly answer whether the program includes a home visit.",
+            "tokenCounts": {
+              "prompt": 252,
+              "completion": 244,
+              "reasoning": 128
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 252,
+          "completion": 244,
+          "reasoning": 128
+        },
+        "latencyMs": 1597
+      }
+    },
+    "relational-042/with": {
+      "queryId": "relational-042",
+      "condition": "with",
+      "recordedAt": "2026-11-09T13:50:25.582Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "2fd981c8a040d92f93d5b7b2a45d6cc31699eef08908fcae6825a16298876293",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How soon after discharge does the Quillmark Senior Advantage heart failure follow-up program call the member?\n\nRelevant context:\n- [pgvector] Quillmark Senior Advantage enrolls members discharged after a heart failure admission in Homeward Transitions.\n- [pgvector] Homeward Transitions calls each member within 48 hours of hospital discharge.\n- [pgvector] Quillmark Health Partners completes an annual health risk assessment for every Senior Advantage member.\n- [pgvector] Quillmark Senior Advantage issues an expedited appeal decision within 72 hours.\n- [pgvector] Quillmark Health Partners mails members a welcome kit within ten days of enrollment.\n- [pgvector] Quillmark Senior Advantage includes a nurse advice line operated by Tallowood Nurse Advice.\n- [pgvector] Quillmark Senior Advantage pharmacy benefits run through Pinegate Pharmacy Solutions.\n- [pgvector] Quillmark Senior Advantage members can switch primary care physicians once a month.\n- [pgvector] Quillmark Senior Advantage gives members a 50 dollar quarterly allowance for over-the-counter items.\n- [pgvector] Quillmark Senior Advantage includes a fitness benefit that pays for a gym membership.\n\nConnections in memory:\n- context 1: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[OFFERS_PROGRAM]- program_homeward_transitions; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n- context 2: plan_quillmark_senior_advantage -[OFFERS_PROGRAM]- program_homeward_transitions; plan_quillmark_senior_advantage -[OFFERS_PROGRAM]- program_homeward_transitions -[SPONSORS]- committee_orrin_valley_quality; plan_quillmark_senior_advantage -[OFFERS_PROGRAM]- program_homeward_transitions -[TARGETS]- code_i50_9\n- context 3: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark -[SERVES]- region_coastal_north\n- context 4: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[OFFERS_PROGRAM]- program_homeward_transitions; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n- context 5: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark -[SERVES]- region_coastal_north\n- context 6: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[NURSE_LINE_BY]- vendor_tallowood_nurse_line; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n- context 7: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[NURSE_LINE_BY]- vendor_tallowood_nurse_line; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n- context 8: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[OFFERS_PROGRAM]- program_homeward_transitions; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n- context 9: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[OFFERS_PROGRAM]- program_homeward_transitions; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n- context 10: plan_quillmark_senior_advantage; plan_quillmark_senior_advantage -[OFFERS_PROGRAM]- program_homeward_transitions; plan_quillmark_senior_advantage -[OFFERS]- payer_quillmark\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "The Quillmark Senior Advantage heart failure follow-up program, identified as Homeward Transitions, calls each member within 48 hours of hospital discharge.",
+            "tokenCounts": {
+              "prompt": 927,
+              "completion": 680,
+              "reasoning": 650
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 927,
+          "completion": 680,
+          "reasoning": 650
+        },
+        "latencyMs": 3493
+      }
+    },
+    "relational-042/without": {
+      "queryId": "relational-042",
+      "condition": "without",
+      "recordedAt": "2026-11-09T13:50:19.083Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "4f99ceb33db36894d1f2a82b370aa6cf1b6aef44c8352021f0e19b945332446d",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How soon after discharge does the Quillmark Senior Advantage heart failure follow-up program call the member?\n\nRelevant context:\n- [pgvector] Quillmark Senior Advantage enrolls members discharged after a heart failure admission in Homeward Transitions.\n- [pgvector] Homeward Transitions calls each member within 48 hours of hospital discharge.\n- [pgvector] Quillmark Health Partners completes an annual health risk assessment for every Senior Advantage member.\n- [pgvector] Quillmark Senior Advantage issues an expedited appeal decision within 72 hours.\n- [pgvector] Quillmark Health Partners mails members a welcome kit within ten days of enrollment.\n- [pgvector] Quillmark Senior Advantage includes a nurse advice line operated by Tallowood Nurse Advice.\n- [pgvector] Quillmark Senior Advantage pharmacy benefits run through Pinegate Pharmacy Solutions.\n- [pgvector] Quillmark Senior Advantage members can switch primary care physicians once a month.\n- [pgvector] Quillmark Senior Advantage gives members a 50 dollar quarterly allowance for over-the-counter items.\n- [pgvector] Quillmark Senior Advantage includes a fitness benefit that pays for a gym membership.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "Here's the plan to address the user's request:\n\n1.  **Identify the relevant program:** The first point states, \"Quillmark Senior Advantage enrolls members discharged after a heart failure admission in Homeward Transitions.\" This indicates that Homeward Transitions is the specific follow-up program for heart failure.\n2.  **Locate the calling timeframe:** The second point directly states, \"Homeward Transitions calls each member within 48 hours of hospital discharge.\"\n\n**Answer:** Based on the provided context, the Quillmark Senior Advantage heart failure follow-up program (Homeward Transitions) calls the member **within 48 hours of hospital discharge.**",
+            "tokenCounts": {
+              "prompt": 271,
+              "completion": 296,
+              "reasoning": 159
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 271,
+          "completion": 296,
+          "reasoning": 159
+        },
+        "latencyMs": 1864
+      }
+    },
+    "relational-046/with": {
+      "queryId": "relational-046",
+      "condition": "with",
+      "recordedAt": "2026-11-09T13:50:35.033Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "6a9226c7e66b7797ff1d928051e01d9ab313ffb31111d8a5ebdf86a0899fdd0b",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: What does the program for members coded E11.9 give people who finish it?\n\nRelevant context:\n- [pgvector] Steady Steps finds eligible members from claims that carry diagnosis code E11.9.\n- [pgvector] E11.9 is the code for type 2 diabetes mellitus without complications.\n- [pgvector] Steady Steps participants who complete the program receive a 100 dollar gift card.\n- [pgvector] Homeward Transitions targets members admitted with diagnosis code I50.9.\n- [pgvector] Breathe Easy enrolls members with diagnosis code J45.40 on two or more claims in a year.\n- [pgvector] Mindful Access identifies members through claims coded F32.1.\n- [pgvector] Form GR-2 asks the member to describe the problem and the outcome they want.\n- [pgvector] Steady Steps provides twelve coaching calls over six months.\n- [pgvector] Homeward Transitions lasts 30 days after discharge.\n- [pgvector] Orrin Valley Community Plan renews eligibility every twelve months.\n\nConnections in memory:\n- context 1: code_e11_9; code_e11_9 -[TARGETS]- program_steady_steps; code_e11_9 -[TARGETS]- program_steady_steps -[OFFERS_PROGRAM]- plan_harbor_mutual_bronze_flex\n- context 2: code_e11_9\n- context 3: code_e11_9; code_e11_9 -[TARGETS]- program_steady_steps; code_e11_9 -[TARGETS]- program_steady_steps -[OFFERS_PROGRAM]- plan_harbor_mutual_bronze_flex\n- context 8: code_e11_9; code_e11_9 -[TARGETS]- program_steady_steps; code_e11_9 -[TARGETS]- program_steady_steps -[OFFERS_PROGRAM]- plan_harbor_mutual_bronze_flex\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "1. **Identify the program associated with diagnosis code E11.9:** Look for a program that targets members with claims carrying E11.9.\n2. **Find the completion benefit for that program:** Locate information about what participants receive upon finishing that specific program.\n3. **Formulate the answer:** State the program name and the benefit for completion based on the identified information.",
+            "tokenCounts": {
+              "prompt": 482,
+              "completion": 239,
+              "reasoning": 159
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 482,
+          "completion": 239,
+          "reasoning": 159
+        },
+        "latencyMs": 1700
+      }
+    },
+    "relational-046/without": {
+      "queryId": "relational-046",
+      "condition": "without",
+      "recordedAt": "2026-11-09T13:50:30.329Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "2b232f003f49cdf40f21d04d0ff4eac2a8886c22cdd96485772617f847708c21",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: What does the program for members coded E11.9 give people who finish it?\n\nRelevant context:\n- [pgvector] Steady Steps finds eligible members from claims that carry diagnosis code E11.9.\n- [pgvector] E11.9 is the code for type 2 diabetes mellitus without complications.\n- [pgvector] Steady Steps participants who complete the program receive a 100 dollar gift card.\n- [pgvector] Homeward Transitions targets members admitted with diagnosis code I50.9.\n- [pgvector] Breathe Easy enrolls members with diagnosis code J45.40 on two or more claims in a year.\n- [pgvector] Mindful Access identifies members through claims coded F32.1.\n- [pgvector] Form GR-2 asks the member to describe the problem and the outcome they want.\n- [pgvector] Steady Steps provides twelve coaching calls over six months.\n- [pgvector] Homeward Transitions lasts 30 days after discharge.\n- [pgvector] Orrin Valley Community Plan renews eligibility every twelve months.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "Here's the plan to address the user's request:\n\n1.  **Identify the program associated with diagnosis code E11.9:** Locate the context that links diagnosis code E11.9 to a specific member program.\n2.  **Determine the outcome for completing that program:** Find the information describing what participants receive upon completion of the identified program.",
+            "tokenCounts": {
+              "prompt": 263,
+              "completion": 281,
+              "reasoning": 205
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 263,
+          "completion": 281,
+          "reasoning": 205
+        },
+        "latencyMs": 1744
+      }
+    },
+    "relational-047/with": {
+      "queryId": "relational-047",
+      "condition": "with",
+      "recordedAt": "2026-11-09T13:50:44.427Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "a77e37de1d0118d62b95feb02a191b3aaaab70bcd2614f3e1af45a1c29ff4b7c",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How often is the asthma action plan reviewed in the program for J45.40 members?\n\nRelevant context:\n- [pgvector] Breathe Easy enrolls members with diagnosis code J45.40 on two or more claims in a year.\n- [pgvector] Breathe Easy reviews each participant's asthma action plan every six months.\n- [pgvector] J45.40 describes moderate persistent asthma without complications.\n- [pgvector] Brightwater Basic HMO offers the Breathe Easy asthma program.\n- [pgvector] Breathe Easy waives the copay for inhaled corticosteroids for enrolled members.\n- [pgvector] Breathe Easy sends a respiratory therapist for one home visit to look for triggers.\n- [pgvector] Breathe Easy provides a spacer and a peak flow meter to each participant.\n- [pgvector] Inhaled corticosteroids sit on the preferred generic tier of the Pinegate formulary.\n- [pgvector] Breathe Easy sends participants a reminder before the start of allergy season.\n- [pgvector] Orrin Valley Community Plan renews eligibility every twelve months.\n\nConnections in memory:\n- context 1: code_j45_40; code_j45_40 -[TARGETS]- program_breathe_easy; code_j45_40 -[TARGETS]- program_breathe_easy -[OFFERS_PROGRAM]- plan_brightwater_basic_hmo\n- context 2: code_j45_40; code_j45_40 -[TARGETS]- program_breathe_easy; code_j45_40 -[TARGETS]- program_breathe_easy -[OFFERS_PROGRAM]- plan_brightwater_basic_hmo\n- context 3: code_j45_40\n- context 4: code_j45_40 -[TARGETS]- program_breathe_easy; code_j45_40 -[TARGETS]- program_breathe_easy -[OFFERS_PROGRAM]- plan_brightwater_basic_hmo\n- context 5: code_j45_40; code_j45_40 -[TARGETS]- program_breathe_easy; code_j45_40 -[TARGETS]- program_breathe_easy -[OFFERS_PROGRAM]- plan_brightwater_basic_hmo\n- context 6: code_j45_40; code_j45_40 -[TARGETS]- program_breathe_easy; code_j45_40 -[TARGETS]- program_breathe_easy -[OFFERS_PROGRAM]- plan_brightwater_basic_hmo\n- context 7: code_j45_40; code_j45_40 -[TARGETS]- program_breathe_easy; code_j45_40 -[TARGETS]- program_breathe_easy -[OFFERS_PROGRAM]- plan_brightwater_basic_hmo\n- context 8: code_j45_40 -[TARGETS]- program_breathe_easy -[WAIVES_COPAY_FOR]- drugclass_inhaled_corticosteroids\n- context 9: code_j45_40; code_j45_40 -[TARGETS]- program_breathe_easy; code_j45_40 -[TARGETS]- program_breathe_easy -[OFFERS_PROGRAM]- plan_brightwater_basic_hmo\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "**Plan:**\n\n1. **Identify the program:** Locate the context that links members with diagnosis code J45.40 to a specific program. The context states, \"Breathe Easy enrolls members with diagnosis code J45.40 on two or more claims in a year.\" This identifies \"Breathe Easy\" as the relevant program.\n2. **Find review frequency:** Search for information about the review frequency of asthma action plans within the \"Breathe Easy\" program. The context states, \"Breathe Easy reviews each participant's asthma action plan every six months.\"\n3. **Formulate the answer:** Combine the information to directly answer how often the asthma action plan is reviewed for J45.40 members in the Breathe Easy program.",
+            "tokenCounts": {
+              "prompt": 803,
+              "completion": 343,
+              "reasoning": 186
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 803,
+          "completion": 343,
+          "reasoning": 186
+        },
+        "latencyMs": 1954
+      }
+    },
+    "relational-047/without": {
+      "queryId": "relational-047",
+      "condition": "without",
+      "recordedAt": "2026-11-09T13:50:39.469Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "ddc6d0ce1b3d9abf6ce5e9f0deefeac1874dad21745124ce37218c718879427f",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How often is the asthma action plan reviewed in the program for J45.40 members?\n\nRelevant context:\n- [pgvector] Breathe Easy enrolls members with diagnosis code J45.40 on two or more claims in a year.\n- [pgvector] Breathe Easy reviews each participant's asthma action plan every six months.\n- [pgvector] J45.40 describes moderate persistent asthma without complications.\n- [pgvector] Brightwater Basic HMO offers the Breathe Easy asthma program.\n- [pgvector] Breathe Easy waives the copay for inhaled corticosteroids for enrolled members.\n- [pgvector] Breathe Easy sends a respiratory therapist for one home visit to look for triggers.\n- [pgvector] Breathe Easy provides a spacer and a peak flow meter to each participant.\n- [pgvector] Inhaled corticosteroids sit on the preferred generic tier of the Pinegate formulary.\n- [pgvector] Breathe Easy sends participants a reminder before the start of allergy season.\n- [pgvector] Orrin Valley Community Plan renews eligibility every twelve months.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "The asthma action plan is reviewed every six months for participants in the Breathe Easy program, which enrolls members with diagnosis code J45.40.",
+            "tokenCounts": {
+              "prompt": 258,
+              "completion": 191,
+              "reasoning": 160
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 258,
+          "completion": 191,
+          "reasoning": 160
+        },
+        "latencyMs": 1433
+      }
+    },
+    "relational-048/with": {
+      "queryId": "relational-048",
+      "condition": "with",
+      "recordedAt": "2026-11-09T13:50:53.625Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "4b02061b18414a4ebf7c21a483cbb27fe6f23b07b3e07a5bd8be0c5f7022275c",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: What does the program for members admitted with I50.9 ask them to track at home?\n\nRelevant context:\n- [pgvector] Homeward Transitions targets members admitted with diagnosis code I50.9.\n- [pgvector] Homeward Transitions provides a scale and asks members to report their weight daily for 30 days.\n- [pgvector] I50.9 is an unspecified heart failure code, and reviewers ask for a more specific code when the record supports one.\n- [pgvector] Steady Steps finds eligible members from claims that carry diagnosis code E11.9.\n- [pgvector] Homeward Transitions calls each member within 48 hours of hospital discharge.\n- [pgvector] Homeward Transitions lasts 30 days after discharge.\n- [pgvector] Clearpath Maternity adds members whose claims show code O24.410 to a gestational diabetes track.\n- [pgvector] Quillmark Senior Advantage enrolls members discharged after a heart failure admission in Homeward Transitions.\n- [pgvector] Breathe Easy enrolls members with diagnosis code J45.40 on two or more claims in a year.\n- [pgvector] Orrin Valley Community Plan refers members leaving the hospital after heart failure to Homeward Transitions.\n\nConnections in memory:\n- context 1: code_i50_9; code_i50_9 -[TARGETS]- program_homeward_transitions; code_i50_9 -[TARGETS]- program_homeward_transitions -[SPONSORS]- committee_orrin_valley_quality\n- context 2: code_i50_9; code_i50_9 -[TARGETS]- program_homeward_transitions; code_i50_9 -[TARGETS]- program_homeward_transitions -[SPONSORS]- committee_orrin_valley_quality\n- context 3: code_i50_9\n- context 5: code_i50_9; code_i50_9 -[TARGETS]- program_homeward_transitions; code_i50_9 -[TARGETS]- program_homeward_transitions -[SPONSORS]- committee_orrin_valley_quality\n- context 6: code_i50_9; code_i50_9 -[TARGETS]- program_homeward_transitions; code_i50_9 -[TARGETS]- program_homeward_transitions -[SPONSORS]- committee_orrin_valley_quality\n- context 8: code_i50_9 -[TARGETS]- program_homeward_transitions; code_i50_9 -[TARGETS]- program_homeward_transitions -[OFFERS_PROGRAM]- plan_quillmark_senior_advantage\n- context 10: code_i50_9 -[TARGETS]- program_homeward_transitions; code_i50_9 -[TARGETS]- program_homeward_transitions -[OFFERS_PROGRAM]- plan_orrin_valley_community\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "The program for members admitted with I50.9 is Homeward Transitions. This program asks members to report their weight daily for 30 days.",
+            "tokenCounts": {
+              "prompt": 693,
+              "completion": 243,
+              "reasoning": 212
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 693,
+          "completion": 243,
+          "reasoning": 212
+        },
+        "latencyMs": 1696
+      }
+    },
+    "relational-048/without": {
+      "queryId": "relational-048",
+      "condition": "without",
+      "recordedAt": "2026-11-09T13:50:48.926Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "3e968e542ec9f5cbdf89aad19a360a087daffdd520f38d9231ea2157790e0d21",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: What does the program for members admitted with I50.9 ask them to track at home?\n\nRelevant context:\n- [pgvector] Homeward Transitions targets members admitted with diagnosis code I50.9.\n- [pgvector] Homeward Transitions provides a scale and asks members to report their weight daily for 30 days.\n- [pgvector] I50.9 is an unspecified heart failure code, and reviewers ask for a more specific code when the record supports one.\n- [pgvector] Steady Steps finds eligible members from claims that carry diagnosis code E11.9.\n- [pgvector] Homeward Transitions calls each member within 48 hours of hospital discharge.\n- [pgvector] Homeward Transitions lasts 30 days after discharge.\n- [pgvector] Clearpath Maternity adds members whose claims show code O24.410 to a gestational diabetes track.\n- [pgvector] Quillmark Senior Advantage enrolls members discharged after a heart failure admission in Homeward Transitions.\n- [pgvector] Breathe Easy enrolls members with diagnosis code J45.40 on two or more claims in a year.\n- [pgvector] Orrin Valley Community Plan refers members leaving the hospital after heart failure to Homeward Transitions.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "The program for members admitted with diagnosis code I50.9, which is **Homeward Transitions**, asks them to:\n\n*   **Report their weight daily for 30 days.** (They are provided with a scale for this purpose.)",
+            "tokenCounts": {
+              "prompt": 297,
+              "completion": 222,
+              "reasoning": 172
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 297,
+          "completion": 222,
+          "reasoning": 172
+        },
+        "latencyMs": 1494
+      }
+    },
+    "relational-049/with": {
+      "queryId": "relational-049",
+      "condition": "with",
+      "recordedAt": "2026-11-09T13:51:04.845Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "9f2f622b37173bd17630512d33b0a990f2789c25ab188851e9276248c0be5039",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How often are participants screened in the program that finds members through F32.1 claims?\n\nRelevant context:\n- [pgvector] Mindful Access identifies members through claims coded F32.1.\n- [pgvector] Mindful Access screens participants with a depression questionnaire every 90 days.\n- [pgvector] F32.1 describes a single episode of moderate major depressive disorder.\n- [pgvector] Steady Steps finds eligible members from claims that carry diagnosis code E11.9.\n- [pgvector] Breathe Easy enrolls members with diagnosis code J45.40 on two or more claims in a year.\n- [pgvector] Cedarline Essential enrolls members with depression diagnoses in the Mindful Access program.\n- [pgvector] Clearpath Maternity adds members whose claims show code O24.410 to a gestational diabetes track.\n- [pgvector] Breathe Easy reviews each participant's asthma action plan every six months.\n- [pgvector] The Cedarline Credentialing Committee recredentials every provider every 36 months.\n- [pgvector] Steady Steps enrolls adults with type 2 diabetes who have had an A1c test in the past year.\n\nConnections in memory:\n- context 1: code_f32_1; code_f32_1 -[TARGETS]- program_mindful_access; code_f32_1 -[TARGETS]- program_mindful_access -[OFFERS_PROGRAM]- plan_cedarline_essential\n- context 2: code_f32_1; code_f32_1 -[TARGETS]- program_mindful_access; code_f32_1 -[TARGETS]- program_mindful_access -[OFFERS_PROGRAM]- plan_cedarline_essential\n- context 3: code_f32_1\n- context 6: code_f32_1 -[TARGETS]- program_mindful_access; code_f32_1 -[TARGETS]- program_mindful_access -[OFFERS_PROGRAM]- plan_cedarline_essential\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "Here's a plan to address the user's request:\n\n1.  **Identify the program** that finds members through F32.1 claims.\n2.  **Locate information** about how often participants are screened *within that specific program*.\n3.  **State the screening frequency** based on the found information.\n\n**Execution:**\n*   **Step 1:** The context states: \"Mindful Access identifies members through claims coded F32.1.\"\n*   **Step 2:** The context states: \"Mindful Access screens participants with a depression questionnaire every 90 days.\"\n*   **Step 3:** Participants in the Mindful Access program are screened every 90 days.",
+            "tokenCounts": {
+              "prompt": 492,
+              "completion": 502,
+              "reasoning": 350
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 492,
+          "completion": 502,
+          "reasoning": 350
+        },
+        "latencyMs": 3105
+      }
+    },
+    "relational-049/without": {
+      "queryId": "relational-049",
+      "condition": "without",
+      "recordedAt": "2026-11-09T13:50:58.736Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "38cab40d45479021452231d9875330d4d7b6168b703fa241ed93c40fbbfdb363",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: How often are participants screened in the program that finds members through F32.1 claims?\n\nRelevant context:\n- [pgvector] Mindful Access identifies members through claims coded F32.1.\n- [pgvector] Mindful Access screens participants with a depression questionnaire every 90 days.\n- [pgvector] F32.1 describes a single episode of moderate major depressive disorder.\n- [pgvector] Steady Steps finds eligible members from claims that carry diagnosis code E11.9.\n- [pgvector] Breathe Easy enrolls members with diagnosis code J45.40 on two or more claims in a year.\n- [pgvector] Cedarline Essential enrolls members with depression diagnoses in the Mindful Access program.\n- [pgvector] Clearpath Maternity adds members whose claims show code O24.410 to a gestational diabetes track.\n- [pgvector] Breathe Easy reviews each participant's asthma action plan every six months.\n- [pgvector] The Cedarline Credentialing Committee recredentials every provider every 36 months.\n- [pgvector] Steady Steps enrolls adults with type 2 diabetes who have had an A1c test in the past year.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "Here's a plan to address the user's request:\n\n1.  **Identify the program:** Look for the program that identifies members through F32.1 claims.\n2.  **Determine screening frequency:** Find the information detailing how often participants in that specific program are screened.\n\n**Executing the plan:**\n\n*   The context states: \"Mindful Access identifies members through claims coded F32.1.\" This identifies \"Mindful Access\" as the program in question.\n*   The context also states: \"Mindful Access screens participants with a depression questionnaire every 90 days.\" This provides the screening frequency for Mindful Access.\n\nTherefore, participants in the program that finds members through F32.1 claims (Mindful Access) are screened with a depression questionnaire **every 90 days**.",
+            "tokenCounts": {
+              "prompt": 287,
+              "completion": 428,
+              "reasoning": 258
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 287,
+          "completion": 428,
+          "reasoning": 258
+        },
+        "latencyMs": 2107
+      }
+    },
+    "relational-050/with": {
+      "queryId": "relational-050",
+      "condition": "with",
+      "recordedAt": "2026-11-09T13:51:14.343Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "77bc292a0cfb7f865b1bbdd1a255e89dc6b6565471c2e94c1aecba0f02a846c0",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: When is a nurse care manager assigned in the program that tracks O24.410?\n\nRelevant context:\n- [pgvector] Clearpath Maternity adds members whose claims show code O24.410 to a gestational diabetes track.\n- [pgvector] O24.410 is used for gestational diabetes that is controlled by diet.\n- [pgvector] Clearpath Maternity assigns each participant a nurse care manager by the twentieth week of pregnancy.\n- [pgvector] Clearpath Maternity continues follow-up calls for eight weeks after delivery.\n- [pgvector] Homeward Transitions targets members admitted with diagnosis code I50.9.\n- [pgvector] Homeward Transitions lasts 30 days after discharge.\n- [pgvector] Steady Steps finds eligible members from claims that carry diagnosis code E11.9.\n- [pgvector] Homeward Transitions calls each member within 48 hours of hospital discharge.\n- [pgvector] Homeward Transitions is staffed by nurses and social workers.\n- [pgvector] Homeward Transitions reconciles the member's medications at a home visit within seven days.\n\nConnections in memory:\n- context 1: code_o24_410; code_o24_410 -[TARGETS]- program_clearpath_maternity; code_o24_410 -[TARGETS]- program_clearpath_maternity -[OFFERS_PROGRAM]- plan_quillmark_family_choice\n- context 2: code_o24_410\n- context 3: code_o24_410; code_o24_410 -[TARGETS]- program_clearpath_maternity; code_o24_410 -[TARGETS]- program_clearpath_maternity -[OFFERS_PROGRAM]- plan_quillmark_family_choice\n- context 4: code_o24_410; code_o24_410 -[TARGETS]- program_clearpath_maternity; code_o24_410 -[TARGETS]- program_clearpath_maternity -[OFFERS_PROGRAM]- plan_quillmark_family_choice\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "The program that tracks O24.410 is Clearpath Maternity. In this program, a nurse care manager is assigned to each participant by the twentieth week of pregnancy.",
+            "tokenCounts": {
+              "prompt": 515,
+              "completion": 184,
+              "reasoning": 148
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 515,
+          "completion": 184,
+          "reasoning": 148
+        },
+        "latencyMs": 1292
+      }
+    },
+    "relational-050/without": {
+      "queryId": "relational-050",
+      "condition": "without",
+      "recordedAt": "2026-11-09T13:51:10.047Z",
+      "gitSha": "e33114aa94dc086d4f1343086e355f35c947ca1e",
+      "invocation": 6,
+      "decision": {
+        "seam": "plan.callLlm",
+        "requestHash": "36ead15b1a80ee462d2ba7c6d5cea98435dbd60df1d33162c2e6936da408e459",
+        "request": {
+          "systemPrompt": "You are a helpful research assistant.",
+          "userPrompt": "user: When is a nurse care manager assigned in the program that tracks O24.410?\n\nRelevant context:\n- [pgvector] Clearpath Maternity adds members whose claims show code O24.410 to a gestational diabetes track.\n- [pgvector] O24.410 is used for gestational diabetes that is controlled by diet.\n- [pgvector] Clearpath Maternity assigns each participant a nurse care manager by the twentieth week of pregnancy.\n- [pgvector] Clearpath Maternity continues follow-up calls for eight weeks after delivery.\n- [pgvector] Homeward Transitions targets members admitted with diagnosis code I50.9.\n- [pgvector] Homeward Transitions lasts 30 days after discharge.\n- [pgvector] Steady Steps finds eligible members from claims that carry diagnosis code E11.9.\n- [pgvector] Homeward Transitions calls each member within 48 hours of hospital discharge.\n- [pgvector] Homeward Transitions is staffed by nurses and social workers.\n- [pgvector] Homeward Transitions reconciles the member's medications at a home visit within seven days.\n\nBased on the above, create a plan to address the user's request."
+        },
+        "response": {
+          "kind": "value",
+          "value": {
+            "content": "Here's the plan to address the user's request:\n\n1.  **Identify the program:** The context states that Clearpath Maternity adds members whose claims show code O24.410. Therefore, the program in question is **Clearpath Maternity**.\n2.  **Locate nurse care manager assignment information:** Search the provided context for \"Clearpath Maternity\" and \"nurse care manager\".\n3.  **Extract the specific timing:** The relevant sentence is: \"Clearpath Maternity assigns each participant a nurse care manager by the twentieth week of pregnancy.\"\n\n**Answer:** A nurse care manager is assigned in the Clearpath Maternity program (which tracks O24.410) **by the twentieth week of pregnancy.**",
+            "tokenCounts": {
+              "prompt": 270,
+              "completion": 395,
+              "reasoning": 243
+            }
+          }
+        },
+        "tokenCounts": {
+          "prompt": 270,
+          "completion": 395,
+          "reasoning": 243
+        },
+        "latencyMs": 2196
       }
     }
   }
