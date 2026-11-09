@@ -545,6 +545,9 @@ referred to a clinician, as labelled.
   `DocumentReference/doc-k0823-home-assessment`, which is not in the bundle. The same
   five-trial check passed it 5 of 5, so the fabricated citation is occasional.
 
+_2026-11-09, later:_ P3-G fixed both. Its re-record at `5b35f94` passes 24 of 24 and the
+prior-auth baseline holds no known failure; see P3-G, "Wording B".
+
 The replay baselines were regenerated with `EVAL_GATE=update` and no key: memory-recall 31
 cells, red-team 7, prior-auth 96 with those 2 failing. Two `EVAL_GATE=replay` runs of each
 suite reported `match` with identical summaries, and the integration tier, which replays

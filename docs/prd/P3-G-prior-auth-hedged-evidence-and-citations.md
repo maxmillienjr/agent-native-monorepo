@@ -2,7 +2,7 @@
 id: P3-G
 title: 'Prior-auth assessment on `gemini-3.5-flash-lite`: hedged evidence and citations'
 tier: 3
-status: in-progress
+status: shipped
 size: S
 depends_on: [P1-I, P3-D]
 blocks: []
@@ -558,28 +558,38 @@ the owner's key, locally, run by the conductor.
       cited `DocumentReference/doc-k0823-home`, which no bundle holds. `no_false_approval`
       15 of 15. The probe holds no approval-labelled task, which is why it did not see what
       the recording found (below).
-- [ ] **Model `live`, paid key:** 24 cassettes recorded in step 4, each with `formatVersion`
+- [x] **Model `live`, paid key:** 24 cassettes recorded in step 4, each with `formatVersion`
       3, `chatModel` `gemini-3.5-flash-lite`, axes `live`/`live`, and a `gitSha` at which
       `ASSESS_PROMPT` is Option A's. **Reviewer:** `jq` over the headers, and the recorded
       `instruction` equals the constant. The date, commit and `generateContent` count are
-      tabled here.
-- [ ] **Blocking, on the recording run:** wrongful approvals 0 of 16 and unnecessary
+      tabled here. **Met with wording B** (Option A plus the owner-approved sentence),
+      2026-11-09: all 24 headers read format 3, `gemini-3.5-flash-lite`, `live`/`live`,
+      `gitSha` `5b35f94`; every recorded `instruction` equals the constant at that commit.
+      20 `generateContent` calls, none errored, $0.025 (`78d4ca0`).
+- [x] **Blocking, on the recording run:** wrongful approvals 0 of 16 and unnecessary
       referrals 0 of 8. **Not met by wording A, 2026-11-09:** wrongful approvals 0 of 16,
       unnecessary referrals 1 of 8 (`pa-k0823-all-met-narrative`). See "Wording A, as run".
-- [ ] **On the recording run:** `pa-e0260-ambiguous` passes all four graders.
-- [ ] **On the recording run:** `pa-k0823-contradicted` passes `citations_resolve`. If it does
+      **Met by wording B, 2026-11-09:** 0 of 16 and 0 of 8.
+- [x] **On the recording run:** `pa-e0260-ambiguous` passes all four graders. Wording B,
+      2026-11-09: it does.
+- [x] **On the recording run:** `pa-k0823-contradicted` passes `citations_resolve`. Wording B,
+      2026-11-09: it does, every citation resolving. If it does
       not, the cassette is committed as recorded, the failure stays a known failure in the
       baseline, and this box stays unchecked with the result written beside it.
-- [ ] **On the recording run:** every task that passed every grader in `8aef2c2`'s baseline
+- [x] **On the recording run:** every task that passed every grader in `8aef2c2`'s baseline
       still does. Any that does not is a regression this PRD names and explains before it
-      ships.
-- [ ] **Model `replay`:** the baseline regenerated from the new set, then two
+      ships. Wording B, 2026-11-09: all 24 pass every grader.
+- [x] **Model `replay`:** the baseline regenerated from the new set, then two
       `EVAL_GATE=replay` runs reporting `match` with identical summaries, timestamps masked,
-      and no request to `generativelanguage.googleapis.com`.
-- [ ] **Model `replay`:** memory-recall and red-team replay to `match` against their
+      and no request to `generativelanguage.googleapis.com`. 2026-11-09 (`31bbb50`): 96
+      cells, none failing; both replays `match`, summaries identical after masking, run with
+      `GOOGLE_API_KEY` unset.
+- [x] **Model `replay`:** memory-recall and red-team replay to `match` against their
       unchanged baselines with every budget `within`; no prior-auth task file gains a
-      `budgets` key.
-- [ ] The recording's sha is tagged `recording/p3g-prior-auth-<date>` and the tag is pushed.
+      `budgets` key. 2026-11-09: both `match`, `budgetBreaches` 0.
+- [x] The recording's sha is tagged `recording/p3g-prior-auth-<date>` and the tag is pushed.
+      `recording/p3g-prior-auth-2026-11-09` → `5b35f94`, pushed. Wording A's set is kept on
+      `recording/p3g-wording-a-2026-11-09`.
 
 **Documentation and gates**
 
