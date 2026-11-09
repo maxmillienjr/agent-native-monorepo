@@ -20,7 +20,11 @@ export type CapturedWrite =
   | { readonly store: 'semantic_facts'; readonly contentHash: string };
 
 /**
- * The three writers `reflect` takes, capturing instead of writing (P3-B).
+ * The writers `reflect` takes, capturing instead of writing (P3-B).
+ *
+ * `reflect` has taken no graph writer since P2-E, so `neo4jWriter` captures
+ * nothing a replay at this commit asks for. It goes with the rest of the
+ * graph code, in P2-E's second pull request.
  *
  * Replay re-executes a run, and `reflect` is a function of its recorded
  * inputs, so what it asks to write is what the run wrote — derived, not read

@@ -30,8 +30,6 @@ function state(messages: AgentState['messages']): AgentState {
 }
 
 const extracted: Extraction = {
-  entities: [{ id: 'northwind', label: 'Northwind Health Plan' }],
-  relationships: [],
   facts: [{ text: 'The user asked how to submit a Northwind Health Plan claim.' }],
 };
 
@@ -94,7 +92,7 @@ describe('distillNode', () => {
     );
 
     expect(contexts).toEqual([]);
-    expect(update.extraction).toEqual({ entities: [], relationships: [], facts: [] });
+    expect(update.extraction).toEqual({ facts: [] });
     expect(update.tokenCounts).toBeUndefined();
   });
 });

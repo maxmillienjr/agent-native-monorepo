@@ -3,11 +3,18 @@ import type { AgentState, Extraction } from '../graph/state.js';
 import { addUsage, type CallUsage } from '../model/usage.js';
 
 export interface DistillNodeDeps {
-  /** The extraction, and what the call that produced it cost (P1-F). */
+  /**
+   * The extraction, and what the call that produced it cost (P1-F).
+   *
+   * Named for the entities it extracted until P2-E narrowed it to facts. The
+   * name stays with the seam id `distill.extractEntities`, which is inside
+   * every recorded distill decision's request hash: renaming that would make
+   * every memory-recall and red-team cassette miss.
+   */
   extractEntities: (context: string) => Promise<{ extraction: Extraction; tokenCounts: CallUsage }>;
 }
 
-const EMPTY_EXTRACTION: Extraction = { entities: [], relationships: [], facts: [] };
+const EMPTY_EXTRACTION: Extraction = { facts: [] };
 
 /**
  * One model call, no I/O against a store. Produces the extraction that
@@ -32,9 +39,8 @@ const EMPTY_EXTRACTION: Extraction = { entities: [], relationships: [], facts: [
  * `reflect` that extracted its own entities was not: attempt 2 would make a
  * second model call and could word a fact differently, which changes its
  * sha256 — so the pgvector upsert would have nothing to collapse onto and the
- * row would land *in addition to* attempt 1's. Same for a `:Concept` id the
- * model renders differently. Idempotency per write is not convergence per
- * node.
+ * row would land *in addition to* attempt 1's. Idempotency per write is not
+ * convergence per node.
  *
  * Split out, `reflect` reads `state.extraction` and attempt n writes exactly
  * what attempt 1 wrote. The checkpoint between the two also means a crash
@@ -57,8 +63,6 @@ export async function distillNode(
     const userContext = userTurns.map((m) => `${m.role}: ${m.content}`).join('\n');
     const { extraction, tokenCounts } = await deps.extractEntities(userContext);
 
-    span.setAttribute('entity_count', extraction.entities.length);
-    span.setAttribute('relationship_count', extraction.relationships.length);
     span.setAttribute('fact_count', extraction.facts.length);
 
     return { extraction, tokenCounts: addUsage(state.tokenCounts, tokenCounts) };

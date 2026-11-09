@@ -1,11 +1,10 @@
 import { createHash } from 'node:crypto';
 import { withNodeSpan } from '@repo/telemetry';
-import type { EpisodicRepository, Neo4jWriter, PgvectorWriter } from '@repo/memory-core';
+import type { EpisodicRepository, PgvectorWriter } from '@repo/memory-core';
 import type { AgentState } from '../graph/state.js';
 
 export interface ReflectNodeDeps {
   episodicRepo: EpisodicRepository;
-  neo4jWriter: Neo4jWriter;
   pgvectorWriter: PgvectorWriter;
   embedText: (text: string) => Promise<number[]>;
 }
@@ -16,13 +15,11 @@ export interface ReflectNodeDeps {
  * — so a retried attempt writes exactly what the first attempt wrote.
  *
  * 1. Write messages to Episodic, keyed on (session_id, turn_index)
- * 2. MERGE entities and relationships into Neo4j
- * 3. Upsert facts into pgvector and the graph, keyed on the same content hash
+ * 2. Embed each fact and upsert it into `semantic_facts`, keyed on its content hash
  *
- * The guarantee is convergence under replay, not atomicity across the two
- * indices. ADR 0001 ruled out the mechanism that would give the latter: a
- * crash between the Neo4j write and the pgvector write leaves them disagreeing
- * until the retry, not permanently.
+ * Semantic memory is `semantic_facts` alone. The graph this node also used to
+ * write was removed by ADR 0012's decision, and P2-E took its writes out of
+ * here first.
  */
 export async function reflectNode(
   state: AgentState,
@@ -55,29 +52,10 @@ export async function reflectNode(
       throw new Error('reflect: state.extraction is missing — distill did not run');
     }
 
-    span.setAttribute('entity_count', extraction.entities.length);
-    span.setAttribute('relationship_count', extraction.relationships.length);
     span.setAttribute('fact_count', extraction.facts.length);
 
-    // Step 2: MERGE entities and relationships into Neo4j (idempotent)
-    for (const entity of extraction.entities) {
-      await deps.neo4jWriter.mergeEntity(entity);
-    }
-
-    for (const rel of extraction.relationships) {
-      await deps.neo4jWriter.mergeRelationship({
-        ...rel,
-        episodeId: state.runId,
-        sessionId: state.sessionId,
-        createdAt: new Date(),
-      });
-    }
-
-    // Step 3: Upsert distilled facts into both indices, keyed on the same
-    // content hash (idempotent). The Neo4j copy is what gives the graph and
-    // vector retrievers one candidate universe to fuse over — see ADR 0004.
-    const entityIds = extraction.entities.map((entity) => entity.id);
-
+    // Step 2: Upsert distilled facts into semantic memory, keyed on the
+    // content hash (idempotent).
     for (const fact of extraction.facts) {
       const contentHash = createHash('sha256').update(fact.text).digest('hex');
       const embedding = await deps.embedText(fact.text);
@@ -88,16 +66,6 @@ export async function reflectNode(
         embedding,
         episodeId: state.runId,
         sessionId: state.sessionId,
-      });
-
-      // The session goes to the graph as it goes to pgvector: a graph read is
-      // scoped to the facts a session owns and the edges it wrote (P2-D's M1).
-      await deps.neo4jWriter.mergeFact({
-        contentHash,
-        text: fact.text,
-        episodeId: state.runId,
-        sessionId: state.sessionId,
-        entityIds,
       });
     }
 

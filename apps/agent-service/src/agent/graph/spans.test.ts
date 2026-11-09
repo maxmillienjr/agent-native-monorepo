@@ -112,11 +112,7 @@ function deps(tool: (input: unknown) => Promise<unknown>): GraphDeps {
       extractEntities: async () => {
         const response = await chat('distill.extractEntities', '{}');
         return {
-          extraction: {
-            entities: [{ id: 'langgraph', label: 'LangGraph' }],
-            relationships: [],
-            facts: [{ text: 'A fact.' }],
-          },
+          extraction: { facts: [{ text: 'A fact.' }] },
           tokenCounts: response.tokenCounts,
         };
       },
@@ -125,17 +121,6 @@ function deps(tool: (input: unknown) => Promise<unknown>): GraphDeps {
       episodicRepo: {
         write: async () => ({ id: '550e8400-e29b-41d4-a716-446655440002' }),
         findBySession: async () => [],
-      },
-      neo4jWriter: {
-        mergeEntity: async () => {
-          await withSpan(
-            'memory.neo4j.mergeEntity',
-            { 'gen_ai.operation.name': 'upsert_memory' },
-            undefined,
-          );
-        },
-        mergeRelationship: async () => {},
-        mergeFact: async () => {},
       },
       pgvectorWriter: {
         upsertFact: async () => {
@@ -339,10 +324,7 @@ describe('trace shape', () => {
     );
   });
 
-  it('nests the write spans under agent.node.reflect', () => {
-    expect(parentOf(spans, find(spans, 'memory.neo4j.mergeEntity'))?.name).toBe(
-      'agent.node.reflect',
-    );
+  it('nests the write span under agent.node.reflect', () => {
     expect(parentOf(spans, find(spans, 'memory.pgvector.upsert'))?.name).toBe('agent.node.reflect');
   });
 

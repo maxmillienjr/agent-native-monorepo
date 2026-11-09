@@ -182,7 +182,7 @@ describe('A2A, when reflect fails on every attempt', () => {
       },
       distill: {
         extractEntities: async () => ({
-          extraction: { entities: [], relationships: [], facts: [] },
+          extraction: { facts: [] },
           tokenCounts: { prompt: 0, completion: 0 },
         }),
       },
@@ -192,11 +192,6 @@ describe('A2A, when reflect fails on every attempt', () => {
             throw new Error(SECRET);
           },
           findBySession: async () => [],
-        },
-        neo4jWriter: {
-          mergeEntity: async () => {},
-          mergeRelationship: async () => {},
-          mergeFact: async () => {},
         },
         pgvectorWriter: { upsertFact: async () => {} },
         embedText: embedding,

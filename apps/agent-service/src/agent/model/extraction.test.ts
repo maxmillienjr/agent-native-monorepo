@@ -2,23 +2,32 @@ import { describe, it, expect } from 'vitest';
 import { parseExtraction, ExtractionFormatError } from './extraction.js';
 import { IO_RETRY } from '../graph/retry.js';
 
-const VALID = JSON.stringify({
-  entities: [{ id: 'postgres', label: 'Postgres' }],
-  relationships: [{ fromId: 'postgres', toId: 'neo4j', type: 'COMPLEMENTS', confidence: 0.9 }],
-  facts: [{ text: 'Postgres stores episodic memory.' }],
-});
+const VALID = JSON.stringify({ facts: [{ text: 'Postgres stores episodic memory.' }] });
 
 describe('parseExtraction', () => {
   it('parses a well-formed extraction', () => {
     const result = parseExtraction(VALID);
-    expect(result.entities).toHaveLength(1);
-    expect(result.facts[0]?.text).toBe('Postgres stores episodic memory.');
+    expect(result).toEqual({ facts: [{ text: 'Postgres stores episodic memory.' }] });
+  });
+
+  it('drops the entities and relationships the extraction no longer asks for (P2-E)', () => {
+    // A model may still volunteer them, and the cassettes recorded before
+    // P2-E carry them. Nothing reads either one, so they are stripped rather
+    // than refused: a response with the facts in it is a usable response.
+    const result = parseExtraction(
+      JSON.stringify({
+        entities: [{ id: 'postgres', label: 'Postgres' }],
+        relationships: [],
+        facts: [{ text: 'Postgres stores episodic memory.' }],
+      }),
+    );
+    expect(result).toEqual({ facts: [{ text: 'Postgres stores episodic memory.' }] });
   });
 
   it('accepts an extraction that is legitimately empty', () => {
     // An empty result is a real answer, which is why it cannot also be the
     // signal for "the model returned something unusable."
-    const empty = parseExtraction('{"entities":[],"relationships":[],"facts":[]}');
+    const empty = parseExtraction('{"facts":[]}');
     expect(empty.facts).toHaveLength(0);
   });
 
@@ -30,10 +39,8 @@ describe('parseExtraction', () => {
   });
 
   it('throws when the JSON parses but does not match the schema', () => {
-    expect(() => parseExtraction('{"entities":[],"facts":[]}')).toThrow(ExtractionFormatError);
-    expect(() => parseExtraction('{"entities":[],"relationships":[],"facts":[{}]}')).toThrow(
-      ExtractionFormatError,
-    );
+    expect(() => parseExtraction('{"entities":[]}')).toThrow(ExtractionFormatError);
+    expect(() => parseExtraction('{"facts":[{}]}')).toThrow(ExtractionFormatError);
   });
 
   it('produces an error the retry policy will retry', () => {

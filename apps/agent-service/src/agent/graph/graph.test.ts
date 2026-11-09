@@ -30,7 +30,7 @@ function makeDeps(): GraphDeps {
     },
     distill: {
       extractEntities: async () => ({
-        extraction: { entities: [], relationships: [], facts: [] },
+        extraction: { facts: [] },
         tokenCounts: NO_USAGE,
       }),
     },
@@ -38,11 +38,6 @@ function makeDeps(): GraphDeps {
       episodicRepo: {
         write: async () => ({ id: '550e8400-e29b-41d4-a716-446655440002' }),
         findBySession: async () => [],
-      },
-      neo4jWriter: {
-        mergeEntity: async () => {},
-        mergeRelationship: async () => {},
-        mergeFact: async () => {},
       },
       pgvectorWriter: { upsertFact: async () => {} },
       embedText: embedding,
@@ -93,20 +88,14 @@ describe('buildAgentGraph', () => {
     const deps = makeDeps();
     deps.distill = {
       extractEntities: async () => ({
-        extraction: {
-          entities: [{ id: 'langgraph', label: 'LangGraph' }],
-          relationships: [],
-          facts: [{ text: 'A fact worth keeping.' }],
-        },
+        extraction: { facts: [{ text: 'A fact worth keeping.' }] },
         tokenCounts: NO_USAGE,
       }),
     };
-    deps.reflect.neo4jWriter = {
-      mergeEntity: async (entity) => {
-        written.push(entity.id);
+    deps.reflect.pgvectorWriter = {
+      upsertFact: async (fact) => {
+        written.push(fact.text);
       },
-      mergeRelationship: async () => {},
-      mergeFact: async () => {},
     };
 
     const compiled = buildAgentGraph(
@@ -119,7 +108,7 @@ describe('buildAgentGraph', () => {
     );
     await compiled.invoke({ runId: '550e8400-e29b-41d4-a716-446655440003' });
 
-    expect(written).toEqual(['langgraph']);
+    expect(written).toEqual(['A fact worth keeping.']);
   });
 
   it('retries an I/O node that fails twice and succeeds on the third attempt', async () => {

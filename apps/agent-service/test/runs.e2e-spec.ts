@@ -185,7 +185,7 @@ describe('POST /runs/stream when a node fails', () => {
       },
       distill: {
         extractEntities: async () => ({
-          extraction: { entities: [], relationships: [], facts: [] },
+          extraction: { facts: [] },
           tokenCounts: { prompt: 0, completion: 0 },
         }),
       },
@@ -193,11 +193,6 @@ describe('POST /runs/stream when a node fails', () => {
         episodicRepo: {
           write: async () => ({ id: '550e8400-e29b-41d4-a716-446655440002' }),
           findBySession: async () => [],
-        },
-        neo4jWriter: {
-          mergeEntity: async () => {},
-          mergeRelationship: async () => {},
-          mergeFact: async () => {},
         },
         pgvectorWriter: { upsertFact: async () => {} },
         embedText: embedding,

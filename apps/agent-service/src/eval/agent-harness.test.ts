@@ -43,11 +43,7 @@ function recordingRuns(log: string[]) {
         },
         nodeSequence: ['ingress', 'egress'],
         toolOutputs: [],
-        extraction: {
-          entities: [{ id: 'northwind', label: 'Northwind Health Plan' }],
-          relationships: [],
-          facts: [{ text: `a fact from ${sessionId}` }],
-        },
+        extraction: { facts: [{ text: `a fact from ${sessionId}` }] },
         traceId: randomUUID(),
       };
     },

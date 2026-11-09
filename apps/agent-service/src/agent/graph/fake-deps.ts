@@ -34,7 +34,7 @@ export function scriptedDeps(
       },
       distill: {
         extractEntities: async () => ({
-          extraction: { entities: [], relationships: [], facts: [] },
+          extraction: { facts: [] },
           tokenCounts: NO_USAGE,
         }),
       },
@@ -42,11 +42,6 @@ export function scriptedDeps(
         episodicRepo: {
           write: async () => ({ id: '550e8400-e29b-41d4-a716-446655440002' }),
           findBySession: async () => [],
-        },
-        neo4jWriter: {
-          mergeEntity: async () => {},
-          mergeRelationship: async () => {},
-          mergeFact: async () => {},
         },
         pgvectorWriter: { upsertFact: async () => {} },
         embedText: embedding,

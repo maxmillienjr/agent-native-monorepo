@@ -212,6 +212,9 @@ export class RunsService {
   // metadata and an implicit parameter arrives as `undefined`.
   constructor(
     @Inject(EPISODIC_REPOSITORY) private readonly episodicRepo: EpisodicRepository | null,
+    // Unread since P2-E took the graph writes out of `reflect`. Kept so every
+    // positional construction stays as it is until the token goes with the
+    // rest of the graph code, in P2-E's second pull request.
     @Inject(NEO4J_WRITER) private readonly neo4jWriter: Neo4jWriter | null,
     @Inject(PGVECTOR_WRITER) private readonly pgvectorWriter: PgvectorWriter | null,
     @Inject(RETRIEVAL_FACADE) private readonly retrievalFacade: RetrievalFacade | null,
@@ -298,7 +301,6 @@ export class RunsService {
       },
       reflect: {
         episodicRepo: this.episodicRepo ?? stubEpisodicRepository,
-        neo4jWriter: this.neo4jWriter ?? stubNeo4jWriter,
         pgvectorWriter: this.pgvectorWriter ?? stubPgvectorWriter,
         embedText: model.embed,
       },
@@ -397,10 +399,6 @@ export class RunsService {
       distill: {
         extractEntities: async () => ({
           extraction: {
-            entities: [
-              { id: 'langgraph', label: 'LangGraph', description: 'Framework for stateful agents' },
-            ],
-            relationships: [],
             facts: [{ text: 'LangGraph is used for building stateful agent workflows.' }],
           },
           tokenCounts: NO_USAGE,
@@ -685,12 +683,6 @@ const stubRetrievalFacade: RetrievalFacade = {
 const stubEpisodicRepository: EpisodicRepository = {
   write: async () => ({ id: randomUUID() }),
   findBySession: async () => [],
-};
-
-const stubNeo4jWriter: Neo4jWriter = {
-  mergeEntity: async () => {},
-  mergeRelationship: async () => {},
-  mergeFact: async () => {},
 };
 
 const stubPgvectorWriter: PgvectorWriter = {

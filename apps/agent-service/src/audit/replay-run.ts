@@ -303,7 +303,6 @@ function compile(
       distill: model.distill,
       reflect: {
         episodicRepo: writes.episodicRepo,
-        neo4jWriter: writes.neo4jWriter,
         pgvectorWriter: writes.pgvectorWriter,
         embedText: model.embed,
       },

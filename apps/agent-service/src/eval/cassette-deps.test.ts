@@ -119,7 +119,7 @@ function fakeLive(calls: string[]): ModelDeps {
       extractEntities: async (context) => {
         calls.push(`extract:${context}`);
         return {
-          extraction: { entities: [], relationships: [], facts: [{ text: 'a fact' }] },
+          extraction: { facts: [{ text: 'a fact' }] },
           tokenCounts: { prompt: 41, completion: 900, reasoning: 850 },
         };
       },
@@ -354,10 +354,10 @@ describe('a compensated run, recorded and replayed', () => {
  * reading five call sites: no recorded request depends on the `runId`.
  *
  * It is what lets a replayed run mint a fresh id, write under it, and still be
- * graded by `episodic_row_written` and `entity_merged`. A node that starts
- * interpolating the run id into a prompt breaks replay silently — every trial
- * after it misses on its first decision — and this is the test that names the
- * cause instead.
+ * graded by `episodic_row_written` and `semantic_fact_written`. A node that
+ * starts interpolating the run id into a prompt breaks replay silently — every
+ * trial after it misses on its first decision — and this is the test that
+ * names the cause instead.
  */
 describe('request hashes across two runs of the same task', () => {
   const key = process.env['GOOGLE_API_KEY'];
@@ -406,7 +406,7 @@ const seamAnswers: Record<string, unknown> = {
   'plan.callLlm': { content: 'a plan', tokenCounts: { prompt: 1, completion: 1 } },
   'act.selectTool': { selection: null, tokenCounts: { prompt: 1, completion: 1 } },
   'distill.extractEntities': {
-    extraction: { entities: [], relationships: [], facts: [] },
+    extraction: { facts: [] },
     tokenCounts: { prompt: 1, completion: 1 },
   },
   embed: new Array(EMBEDDING_DIMENSIONS).fill(0),
@@ -440,7 +440,7 @@ describe('the decorator seam on RunsService', () => {
       },
       distill: {
         extractEntities: async () => ({
-          extraction: { entities: [], relationships: [], facts: [] },
+          extraction: { facts: [] },
           tokenCounts: NO_USAGE,
         }),
       },

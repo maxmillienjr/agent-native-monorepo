@@ -35,11 +35,7 @@ function makeDeps(onDistill: () => void, reflect: { fail: boolean }): GraphDeps 
       extractEntities: async () => {
         onDistill();
         return {
-          extraction: {
-            entities: [{ id: 'langgraph', label: 'LangGraph' }],
-            relationships: [],
-            facts: [{ text: 'A fact worth keeping.' }],
-          },
+          extraction: { facts: [{ text: 'A fact worth keeping.' }] },
           tokenCounts: NO_USAGE,
         };
       },
@@ -51,11 +47,6 @@ function makeDeps(onDistill: () => void, reflect: { fail: boolean }): GraphDeps 
           return { id: '550e8400-e29b-41d4-a716-446655440002' };
         },
         findBySession: async () => [],
-      },
-      neo4jWriter: {
-        mergeEntity: async () => {},
-        mergeRelationship: async () => {},
-        mergeFact: async () => {},
       },
       pgvectorWriter: { upsertFact: async () => {} },
       embedText: embedding,

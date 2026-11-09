@@ -83,9 +83,7 @@ function modelHost() {
     }
     const body = String(init?.body ?? '');
     if (body.includes('You choose the next tool call')) return answer('null');
-    if (body.includes('Extract entities, relationships')) {
-      return answer('{"entities": [], "relationships": [], "facts": []}');
-    }
+    if (body.includes('Extract the facts stated')) return answer('{"facts": []}');
     return answer('a plan');
   });
   return { state, fetch: stub };

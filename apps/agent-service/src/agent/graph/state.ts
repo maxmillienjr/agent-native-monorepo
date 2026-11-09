@@ -56,17 +56,6 @@ export type ApprovalDecision = z.infer<typeof ApprovalDecisionSchema>;
  * retry to replay identical writes. See `distill.node.ts`.
  */
 export const ExtractionSchema = z.object({
-  entities: z.array(
-    z.object({ id: z.string(), label: z.string(), description: z.string().optional() }),
-  ),
-  relationships: z.array(
-    z.object({
-      fromId: z.string(),
-      toId: z.string(),
-      type: z.string(),
-      confidence: z.number().min(0).max(1),
-    }),
-  ),
   facts: z.array(z.object({ text: z.string() })),
 });
 

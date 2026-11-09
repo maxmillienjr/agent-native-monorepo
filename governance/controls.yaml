@@ -321,7 +321,7 @@ controls:
         tier: unit
       - kind: test
         file: apps/agent-service/src/agent/graph/spans.test.ts
-        name: nests the write spans under agent.node.reflect
+        name: nests the write span under agent.node.reflect
         tier: unit
     note: The GOVERN 4.3 mapping is the weakest in the catalogue — spans enable identifying an incident, and GOVERN 4.3 is about organizational practice.
 

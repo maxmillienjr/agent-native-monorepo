@@ -1,7 +1,7 @@
 import { ExtractionSchema, type Extraction } from '../graph/state.js';
 
-export const EXTRACTION_PROMPT = `Extract entities, relationships, and facts from the conversation. Respond with JSON:
-{"entities": [{"id": "...", "label": "...", "description": "..."}], "relationships": [{"fromId": "...", "toId": "...", "type": "...", "confidence": 0.9}], "facts": [{"text": "..."}]}`;
+export const EXTRACTION_PROMPT = `Extract the facts stated in the conversation. Respond with JSON:
+{"facts": [{"text": "..."}]}`;
 
 /**
  * A model response that is not a valid extraction.
