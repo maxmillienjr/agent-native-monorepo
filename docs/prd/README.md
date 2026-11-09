@@ -20,6 +20,14 @@ owns. **Next:** the 2026-11-10 nightly is the first scheduled canary and live ru
 id, and step 1d and phase 3's fresh-clone trial need the owner's new-project key. The
 deadline is 2026-11-30.
 
+**[P3-G](P3-G-prior-auth-hedged-evidence-and-citations.md) is accepted, and owns what
+P1-I's prior-auth recording left failing.** The owner accepted it on 2026-11-09, and no issue
+is open yet. Its code half makes `dispose` refer any `met` that cites a document outside the
+request. It needs no key and replays to `match` against the current baseline. Its prompt
+half moves `ASSESS_PROMPT`, so it re-records prior-auth on the owner's paid key. The
+conductor runs a 15-call probe first, and the 20-call recording only if the probe meets the
+thresholds the PRD fixed before any call.
+
 **[P2-E](P2-E-remove-the-graph.md) is shipped: the graph is gone.** ADR 0012's option C
 landed in two pull requests on 2026-11-09. #152 (`df655c0`) stopped `reflect` writing the
 graph and narrowed the extraction to facts, ahead of P1-I's memory-recall recording. #153
