@@ -15,20 +15,21 @@ still in progress, tracked in
 pins the new id, removes the canary's candidate probe, makes the three JSON seams hash their
 instruction at cassette format 3, and carries all three suites re-recorded on the owner's
 paid key, with their replay baselines, the six budgets and the canary baseline for the new
-id. Prior-auth replays 22 of 24 with two known failures, which P3-G
-owns. **Next:** the 2026-11-10 nightly is the first scheduled canary and live run on the new
+id. Prior-auth's two known failures from that recording are fixed by P3-G, below. **Next:** the 2026-11-10 nightly is the first scheduled canary and live run on the new
 id, and step 1d and phase 3's fresh-clone trial need the owner's new-project key. The
 deadline is 2026-11-30.
 
-**[P3-G](P3-G-prior-auth-hedged-evidence-and-citations.md) is in progress, and owns what
-P1-I's prior-auth recording left failing.** The owner accepted it on 2026-11-09, tracked in
-[#157](https://github.com/maxmillienjr/agent-native-monorepo/issues/157). Its code half makes `dispose` refer any `met` that cites a document outside the
-request. Its prompt half moves `ASSESS_PROMPT`, so it re-records prior-auth on the owner's
-paid key. Steps 1 and 2 are on `feat/p3-g`: the code half replayed to `match` against the
-current baseline with `pa-k0823-contradicted`'s `citations_resolve` still `fail`, CTL-OUT-02
-is implemented, and the prompt is committed, so the prior-auth replay misses from that
-commit until the recording. **Next:** the conductor runs the 15-call probe, and the 20-call
-recording only if the probe meets the thresholds the PRD fixed before any call.
+**[P3-G](P3-G-prior-auth-hedged-evidence-and-citations.md) has shipped: prior-auth passes
+24 of 24 on `gemini-3.5-flash-lite`.** Tracked in
+[#157](https://github.com/maxmillienjr/agent-native-monorepo/issues/157). A `met` that cites
+anything outside the request now refers (`normalizeFindings`, CTL-OUT-02), and `dispose`'s
+span counts the citations that resolve to nothing. `ASSESS_PROMPT` says that `not-met` is a
+stated fact, that a doubt is `insufficient`, and that a time stated relative to a dated
+document is dated. That last sentence is the owner's second wording: the first fixed both
+known failures and referred an approval-labelled task in 3 of 6 live trials, and is kept on
+the tag `recording/p3g-wording-a-2026-11-09`. The prior-auth re-record on the owner's paid
+key at `5b35f94` has 0 wrongful approvals of 16, 0 unnecessary referrals of 8, and no known
+failure in the baseline. It cost 85 paid calls in all, about $0.11.
 
 **[P1-H](P1-H-live-rotation.md) is accepted**, tracked in
 [#159](https://github.com/maxmillienjr/agent-native-monorepo/issues/159). The owner
@@ -48,7 +49,7 @@ at `df655c0` with no key, which is tagged `archive/p2e-graph-measurements`. The 
 contracts are `'pgvector'` alone, the task format refuses a graph seed, and the memory axis
 is `DATABASE_URL` alone. All three suites replay to `match` against unchanged baselines.
 
-**Twenty-seven PRDs are shipped and the system they describe is running.** The service answers
+**Twenty-eight PRDs are shipped and the system they describe is running.** The service answers
 `POST /runs` and `POST /runs/stream`; `memory-core` is constructed by the app rather than
 sitting beside it; the graph compiles with a checkpointer and a retry policy on every node
 that performs I/O; and `packages/eval-harness` measures the result. Verified against live
@@ -563,31 +564,26 @@ OpenTelemetry GenAI conventions.
 Optional vertical. Demonstrates that the chassis holds up under the constraints a payer or
 provider actually operates under. Uses synthetic data only.
 
-| ID                                                       | Title                                                                           | Size | Status      |
-| -------------------------------------------------------- | ------------------------------------------------------------------------------- | ---- | ----------- |
-| [P3-A](P3-A-clinician-gate.md)                           | Clinician-gate invariant enforced in the type system                            | S    | shipped     |
-| [P3-B](P3-B-audit-replay.md)                             | Deterministic replay for audit reconstruction                                   | L    | shipped     |
-| [P3-C](P3-C-decision-ledger.md)                          | Hash-chained, tamper-evident decision ledger                                    | L    | shipped     |
-| [P3-D](P3-D-payer-dataset-fhir-prior-auth.md)            | Synthetic payer dataset and FHIR prior-authorization surface                    | L    | shipped     |
-| [P3-E](P3-E-clinician-review-queue.md)                   | Clinician review queue, `$inquire` and the decision clock                       | M    | shipped     |
-| [P3-F](P3-F-appeals-reconsideration.md)                  | Appeals: reconsideration lifecycle for adverse determinations                   | M    | shipped     |
-| [P3-G](P3-G-prior-auth-hedged-evidence-and-citations.md) | Prior-auth assessment on `gemini-3.5-flash-lite`: hedged evidence and citations | S    | in-progress |
+| ID                                                       | Title                                                                           | Size | Status  |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------- | ---- | ------- |
+| [P3-A](P3-A-clinician-gate.md)                           | Clinician-gate invariant enforced in the type system                            | S    | shipped |
+| [P3-B](P3-B-audit-replay.md)                             | Deterministic replay for audit reconstruction                                   | L    | shipped |
+| [P3-C](P3-C-decision-ledger.md)                          | Hash-chained, tamper-evident decision ledger                                    | L    | shipped |
+| [P3-D](P3-D-payer-dataset-fhir-prior-auth.md)            | Synthetic payer dataset and FHIR prior-authorization surface                    | L    | shipped |
+| [P3-E](P3-E-clinician-review-queue.md)                   | Clinician review queue, `$inquire` and the decision clock                       | M    | shipped |
+| [P3-F](P3-F-appeals-reconsideration.md)                  | Appeals: reconsideration lifecycle for adverse determinations                   | M    | shipped |
+| [P3-G](P3-G-prior-auth-hedged-evidence-and-citations.md) | Prior-auth assessment on `gemini-3.5-flash-lite`: hedged evidence and citations | S    | shipped |
 
-[P3-G](P3-G-prior-auth-hedged-evidence-and-citations.md), accepted on 2026-11-09, owns the
-two known failures P1-I's prior-auth recording on `gemini-3.5-flash-lite` committed into the
-replay baseline. Both tasks still refer, as labelled, so neither is a wrongful approval.
-`pa-e0260-ambiguous` reads hedged evidence as `not-met` where the label says `insufficient`
-(0 of 5 live trials agree), and `pa-k0823-ambiguous` makes the same reading but clears its
-threshold at 4 of 5 criteria. `pa-k0823-contradicted` once cited a document no bundle holds
-(5 of 5 passed after). The PRD does both things the question asked, in different places.
-`ASSESS_PROMPT` says that `not-met` is a stated fact and that a doubt is `insufficient`. The
-citation rule is enforced in `dispose`, not `assess`, so that `citations_resolve` keeps
-grading the model: a `met` that cites anything outside the bundle refers, which can never
-turn a referral into an approval. The prompt change re-records prior-auth on the owner's
-paid key, run by the conductor: a 15-call probe with its thresholds fixed in the PRD, then
-the 20-call recording. It also adds CTL-OUT-02, implemented with the code half. Budgets for
-the prior-auth tasks stay unowned: they have none, and the `assess.criteria` seam records no
-usage to derive one from.
+[P3-G](P3-G-prior-auth-hedged-evidence-and-citations.md), shipped on 2026-11-09, fixed the
+two known failures P1-I's prior-auth recording on `gemini-3.5-flash-lite` left in the replay
+baseline: hedged evidence read as `not-met` (`pa-e0260-ambiguous`, and the same reading on
+`pa-k0823-ambiguous` hidden by its threshold), and an invented citation on
+`pa-k0823-contradicted`. The citation rule is enforced in `dispose`, not `assess`, so that
+`citations_resolve` keeps grading the model: a `met` that cites anything outside the bundle
+refers, which can never turn a referral into an approval. `ASSESS_PROMPT` now says that
+`not-met` is a stated fact, that a doubt is `insufficient`, and that a relative date anchored
+to a dated document is dated. Budgets for the prior-auth tasks stay unowned: they have none,
+and the `assess.criteria` seam records no usage to derive one from.
 
 ## Tier 4 — Governance and agent security as code
 

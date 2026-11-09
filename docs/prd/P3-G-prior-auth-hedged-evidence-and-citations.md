@@ -593,12 +593,15 @@ the owner's key, locally, run by the conductor.
 
 **Documentation and gates**
 
-- [ ] `docs/STATUS.md` row 26 carries the new recording's figures and drops the two known
+- [x] `docs/STATUS.md` row 26 carries the new recording's figures and drops the two known
       failures, or names whichever remain. P1-I's known-failure paragraph gains a dated note
       pointing here. The index row, its paragraph and "Where things stand" say where P3-G
       stands.
-- [ ] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs`, `yarn format:check`,
-      `yarn turbo test:unit` and `yarn turbo test:service` pass.
+      2026-11-09: row 26 names the new recording and no known failure; P1-I's paragraph has
+      the dated note; index row, paragraph and "Where things stand" say shipped.
+- [x] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs`, `yarn format:check`,
+      `yarn turbo test:unit` and `yarn turbo test:service` pass. 2026-11-09, on the
+      merged branch at `bf420ec`: all six pass (service tests against Postgres on a spare port).
 
 ## Wording A, as run (2026-11-09)
 
