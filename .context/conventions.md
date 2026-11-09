@@ -385,8 +385,9 @@ explanation stages, are archived at a tag and run in no tier (below).
   the provider answers with a 5xx (`unavailable`). A 5xx on any other probe aborts with
   cause `provider-unavailable`: re-dispatch later, nothing in the repository is wrong.
   **A pinned id with no baseline entry is `changed`**, so moving the pin is red until the new
-  id's entries are committed: `CANARY_BASELINE=update CANARY_PROBES=metadata,chat-pinned
-  yarn canary` with a key writes them for one `generateContent`. Accepting a change
+  id's entries are committed. With a key,
+  `CANARY_BASELINE=update CANARY_PROBES=metadata,chat-pinned yarn canary` writes them for
+  one `generateContent`. Accepting a change
   is `CANARY_BASELINE=update yarn canary` with a key and a committed baseline diff, never a
   re-run, and a pinned `changed` usually means a re-record as well. `CANARY_PROBES` runs a
   subset (`metadata,embedding` spends no `generateContent`), and the summary names what was
