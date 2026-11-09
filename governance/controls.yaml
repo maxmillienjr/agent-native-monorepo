@@ -245,6 +245,14 @@ controls:
         name: throws when the JSON parses but does not match the schema
         tier: unit
 
+  - id: CTL-OUT-02
+    title: An automated approval rests only on criteria whose every citation names a resource in the request
+    status: planned
+    owner: P3-G
+    maps:
+      - { framework: owasp-llm-2025, ref: 'LLM05:2025' }
+      - { framework: nist-ai-rmf-1.0, ref: MEASURE 2.6 }
+
   - id: CTL-SEC-01
     title: Committed model recordings carry no credential
     status: implemented

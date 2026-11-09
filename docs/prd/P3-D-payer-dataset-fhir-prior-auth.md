@@ -5,7 +5,7 @@ tier: 3
 status: shipped
 size: L
 depends_on: [P1-A, P1-B, P3-A]
-blocks: [P3-E]
+blocks: [P3-E, P3-G]
 issue: 84
 superseded_by: null
 controls: [CTL-DATA-01, CTL-DATA-02]
