@@ -509,7 +509,7 @@ OpenTelemetry GenAI conventions.
 | [P2-B](P2-B-retrieval-ablation.md)           | Hybrid retrieval evaluation and the graph/vector/hybrid ablation         | L    | shipped |
 | [P2-C](P2-C-otel-genai-semantics.md)         | OpenTelemetry GenAI semantics, including evaluation events               | L    | shipped |
 | [P2-D](P2-D-graph-explanation-or-removal.md) | Measure the graph's explanation role, or remove it (ADR 0009's fallback) | M    | shipped |
-| P2-E                                         | Act on P2-D's outcome: remove the graph (option C, ADR 0012)             | M    | draft   |
+| [P2-E](P2-E-remove-the-graph.md)             | Act on P2-D's outcome: remove the graph (option C, ADR 0012)             | M    | draft   |
 
 ## Tier 3 — Regulated-domain credibility
 
@@ -589,9 +589,12 @@ without depending on either PRD, the way P4-C re-records P4-B's.
 P2-D is drawn under P2-B, whose corpus, recorded embeddings, seeding and bootstrap its
 measurement reuses. It also depends on P1-A directly, for the harness, and on P1-B, whose
 `ModelDeps` seam and recording pattern its conditional answer-level stage uses. Its graph
-session filter is the M1 that P4-B handed over, extended to edges. P2-E, a draft with no
-file yet, executes the outcome ADR 0012 records, removing the graph, from the specification
-P2-D wrote under "What P2-E inherits".
+session filter is the M1 that P4-B handed over, extended to edges. P2-E, a draft, executes
+the outcome ADR 0012 records, removing the graph, from the specification P2-D wrote under
+"What P2-E inherits". It is not an edge of P1-I, and neither waits for the other. Its one
+change to a model request, the narrowed extraction, is meant to land before P1-I
+re-records memory-recall and red-team, so those suites are recorded once. P2-E's
+"Sequencing with P1-I" has the rule and its fallback.
 
 P4-B is drawn under P2-B, whose `graphFacts` seed format its cross-session case needs (the
 graph-path task it also used was deleted with ADR 0009); it also depends on P1-A and P1-B directly, for the harness and
