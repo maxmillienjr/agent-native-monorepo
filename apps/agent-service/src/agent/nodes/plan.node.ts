@@ -3,16 +3,19 @@ import type { AgentState } from '../graph/state.js';
 import { addUsage, type CallUsage } from '../model/usage.js';
 
 /**
- * The second sentence is P1-I's. On `gemini-2.5-flash` the plan for a request
- * the context could not answer said to search; on `gemini-3.5-flash-lite`, with
- * the first sentence alone, it planned to answer from the context in 2 of 3
- * samples, `act.selectTool` read that plan and chose `null`, and `tool-use-001`
- * failed 5 of 5 live trials. Thinking at `low` or `medium` did not change it.
- * With this sentence the plan named a search step in 5 of 5 samples on
- * 2026-11-09. It names no tool, because the registry decides what exists.
+ * Everything after the first sentence is P1-I's. On `gemini-2.5-flash` the plan
+ * for a request the context could not answer said to search. On
+ * `gemini-3.5-flash-lite`, with the first sentence alone, it planned to answer
+ * from the context in 2 of 3 samples, `act.selectTool` read that plan and chose
+ * `null`, and `tool-use-001` failed 5 of 5 live trials; thinking at `low` or
+ * `medium` did not change it. A sentence telling it to "name a tool step" fixed
+ * that and broke `tool-use-002`: the plan invented tool names the registry does
+ * not have, and the selector matched none. Describing what a step must find or
+ * do, and not naming tools, passed 30 of 30 live trials over the three
+ * memory-recall tasks on 2026-11-09.
  */
 export const PLAN_SYSTEM_PROMPT =
-  'You are a helpful research assistant. After you plan, tools carry the plan out, so name a tool step wherever the plan needs information that is not in the conversation or the retrieved context.';
+  'You are a helpful research assistant. After you plan, tools carry the plan out. Wherever a step needs information that is not in the conversation or the retrieved context, or needs an action taken, say what that step must find or do. Do not name tools: you are not shown which exist.';
 
 /** The last line of `plan`'s user prompt, after the transcript and the context. */
 export const PLAN_INSTRUCTION = "Based on the above, create a plan to address the user's request.";
