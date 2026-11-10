@@ -1,6 +1,9 @@
 # Capability status
 
-_Verified against `main` on 2026-08-29._
+_First verified row by row against `main` on 2026-08-29. Since then the rule under
+[Keeping this file true](#keeping-this-file-true) carries it: a pull request that moves a row
+moves it here in the same change, so `git log docs/STATUS.md` dates each row, and CI resolves
+every citation with `yarn lint:docs`._
 
 This repository is read before it is run, and for a while it described a system it did not
 implement. This file is the correction: one row per capability the documentation claims,
