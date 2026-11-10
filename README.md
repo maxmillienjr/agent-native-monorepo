@@ -83,7 +83,8 @@ Both lists are wired into the request path. `MemoryModule` constructs the adapte
 `RunsService` injects them, so a run reads from Postgres and pgvector and writes to both
 when `DATABASE_URL` is set, and runs against a stub dependency set when it is not. The agent is measured, too — `yarn eval` runs trials and reports `pass@k` and
 `pass^k`, on every pull request against recorded model decisions and nightly against the
-live model once a key secret exists. A regression gate reads those numbers: on the replay
+live model, which needs a `GOOGLE_API_KEY` repository secret: this repository has had one
+since 2026-10-08, and a fork without one skips the live job. A regression gate reads those numbers: on the replay
 axis any difference from the committed baseline is red, and on the live axis a pooled
 comparison says `regressed`, `held` or — until enough nights exist — `insufficient-evidence`.
 Beside the pass rate, each task file sets per-trial ceilings on input tokens, output tokens
@@ -93,14 +94,16 @@ neither of them asserted. Red blocks a merge: `.github/rulesets/main.json` makes
 `eval-replay` a required check. See [`docs/STATUS.md`](docs/STATUS.md) before quoting this
 section back at the code.
 
-The agent's domain logic is intentionally trivial (a single system prompt: _"You are a helpful research assistant."_). The value is in the chassis — how the pieces connect, how memory is structured, how observability is wired, and how the monorepo scales.
+There are two graphs. The chat graph's domain logic is intentionally thin: `plan` runs under one system prompt that opens _"You are a helpful research assistant."_ The value there is in the chassis — how the pieces connect, how memory is structured, how observability is wired, and how the monorepo scales.
+
+The second graph works a prior-authorization request, and its domain is not trivial. `POST /fhir/Claim/$submit` runs it on synthetic requests. The agent can approve or refer to a clinician and nothing else, and a denial exists only over a clinician's signed attestation. On the configured memory axis a run on either graph leaves a record that `yarn audit:replay` re-executes, and with a ledger configured that record is committed to a hash chain. This README documents the chassis. The case layer is described in [`.context/architecture.md`](.context/architecture.md), and what is wired is rows 20, 26 to 30 and 34 of [`docs/STATUS.md`](docs/STATUS.md).
 
 ---
 
 ## Quickstart
 
 ```bash
-git clone https://github.com/<owner>/agent-native-monorepo
+git clone https://github.com/maxmillienjr/agent-native-monorepo
 cd agent-native-monorepo
 yarn install
 docker compose up -d    # Postgres + pgvector
@@ -289,5 +292,6 @@ its hash, and write an extra row rather than converging on the first attempt's.
    - Adding or changing a control in `governance/controls.yaml`
 5. Use the specialized subagent prompts in `.agents/` if working with AI coding tools.
 6. See `AGENTS.md` for cross-tool compatibility notes (Cursor, Kilo Code, Continue, Aider).
-7. Run `yarn turbo typecheck && yarn turbo lint` before submitting a PR.
+7. Run `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
+   before submitting a PR. All four gate CI.
 8. Use Conventional Commits: `feat:`, `fix:`, `chore:`, `test:`, `docs:`, `ci:`.
