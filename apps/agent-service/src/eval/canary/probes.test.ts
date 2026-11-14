@@ -12,6 +12,7 @@ import {
   testBaseline,
 } from './fake-api.js';
 import {
+  ProbeTimeoutError,
   chatVerdict,
   metadataVerdict,
   probeChatVersion,
@@ -27,6 +28,25 @@ afterEach(() => {
 });
 
 describe('probeChatVersion', () => {
+  it('gives up after its timeout and throws ProbeTimeoutError, not a bare fetch failure', async () => {
+    // A provider that accepted the request and never answered: the fetch
+    // settles only when the probe's own signal aborts it.
+    vi.stubGlobal(
+      'fetch',
+      (_input: unknown, init?: RequestInit) =>
+        new Promise<Response>((_resolve, reject) => {
+          init?.signal?.addEventListener('abort', () => reject(init.signal?.reason));
+        }),
+    );
+
+    const call = probeChatVersion(FLOATING, 'fake-key', 20);
+
+    await expect(call).rejects.toBeInstanceOf(ProbeTimeoutError);
+    await expect(call).rejects.toThrow(
+      `generateContent ${FLOATING} sent no response within 0.02 s`,
+    );
+  });
+
   it('makes exactly one request, to the id it is given, and returns modelVersion', async () => {
     const api = fakeFetch(healthyState());
     vi.stubGlobal('fetch', api.fetch);
@@ -67,6 +87,16 @@ describe('probeChatVersion', () => {
 });
 
 describe('providerUnavailable', () => {
+  it('reads a probe timeout as unavailable, with no status', () => {
+    const unavailable = providerUnavailable(new ProbeTimeoutError(FLOATING, 60_000));
+    expect(unavailable).toEqual({
+      message: `generateContent ${FLOATING} sent no response within 60 s`,
+    });
+    const result = unavailableVerdict(FLOATING, 'gemini-3.5-flash', unavailable!);
+    expect(result.status).toBeUndefined();
+    expect(result.detail).toBe(`generateContent ${FLOATING} sent no response within 60 s`);
+  });
+
   it("reads a 503 from the chat probe as the status and the provider's short message", async () => {
     const state = healthyState();
     state.failWith = { match: /:generateContent$/, status: 503, body: HIGH_DEMAND_BODY };

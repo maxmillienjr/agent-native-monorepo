@@ -658,12 +658,18 @@ gives the reasons.
 
 **After the merge**
 
-- [ ] **Model `live`, in CI:** the first scheduled canary after the merge reports every
+- [x] **Model `live`, in CI:** the first scheduled canary after the merge reports every
       pinned probe `unchanged`, the new id's `modelVersion` included, and no longer probes
-      `gemini-2.5-flash`.
-- [ ] **Model `live` / memory `live`, in CI:** the first scheduled `eval-live` after the
+      `gemini-2.5-flash`. _Run 42801719060, 2026-11-10: metadata, `chat-pinned`
+      (`gemini-3.5-flash-lite`) and embedding (21 of 21 bit-identical) all `unchanged`; the
+      floating alias was `unavailable`, a notice._
+- [x] **Model `live` / memory `live`, in CI:** the first scheduled `eval-live` after the
       merge runs every memory-recall task on the new id. Its report names it, and its tally
-      is the first in a new epoch on `eval-history`.
+      is the first in a new epoch on `eval-history`. _Run 42801719060: chat
+      `gemini-3.5-flash-lite`, 3 of 3 tasks passed, the first run in epoch `75a9f4dbc212`.
+      The 11-11 and 11-12 runs aborted on an empty multi-part reply, and the 11-12 and 11-14
+      canaries on an unanswered floating probe. Both were defects in our code, fixed in
+      #164._
 - [ ] **Model `live` / memory `live`, new-project key:** from a clean clone, `yarn eval`
       with `EVAL_TASKS=memory-recall-001` and one trial completes and passes. This is the
       problem the PRD exists for.

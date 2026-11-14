@@ -2,8 +2,18 @@
 
 ## Where things stand
 
-_Last updated 2026-11-09. If this section is more than a few weeks stale, trust the code
+_Last updated 2026-11-14. If this section is more than a few weeks stale, trust the code
 over it and update it._
+
+**The nightlies since the switch, 2026-11-10 to 11-14: two green, three red, for two causes
+in our code and none in the model's answers.** The 11-10 run (42801719060) met both of
+P1-I's first two after-merge criteria. On 11-11 and 11-12, `eval-live` aborted before its
+first trial: `@langchain/google-genai` returns an array for a reply of more than one part,
+`invokeChat` read every array as `''`, and the empty `plan` turn failed the episodic schema
+in `reflect`. On 11-12 and 11-14 the canary aborted after the floating alias's
+`generateContent` went unanswered for undici's five minutes. #164 joins the text parts, and
+retries a reply with no text through `IO_RETRY` as `EmptyReplyError`. It also times the
+chat probe out at 60 s, so an unanswered floating alias is an `unavailable` notice.
 
 **The chat model shuts down on 2026-12-01, and `main` is already off it.** Google's deprecations
 page routes `gemini-2.5-flash` to `gemini-3.5-flash-lite` from that day under the same id.
@@ -15,8 +25,9 @@ still in progress, tracked in
 pins the new id, removes the canary's candidate probe, makes the three JSON seams hash their
 instruction at cassette format 3, and carries all three suites re-recorded on the owner's
 paid key, with their replay baselines, the six budgets and the canary baseline for the new
-id. Prior-auth's two known failures from that recording are fixed by P3-G, below. **Next:** the 2026-11-10 nightly is the first scheduled canary and live run on the new
-id, and step 1d and phase 3's fresh-clone trial need the owner's new-project key. The
+id. Prior-auth's two known failures from that recording are fixed by P3-G, below. The 2026-11-10 nightly, the first scheduled canary and live run on the new id, was green
+and met both CI after-merge criteria. **Next:** step 1d and phase 3's fresh-clone trial
+need the owner's new-project key. The
 deadline is 2026-11-30.
 
 **[P3-G](P3-G-prior-auth-hedged-evidence-and-citations.md) has shipped: prior-auth passes

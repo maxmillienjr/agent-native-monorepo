@@ -44,6 +44,51 @@ export interface ChatResult {
   readonly tokenCounts: CallUsage;
 }
 
+/**
+ * A reply with no answer text in it: no parts, or only thought parts, or text
+ * parts that are all empty. The nightly of 2026-11-11 and 2026-11-12 met one
+ * on `plan`; it reached `reflect` as an empty assistant turn and the episodic
+ * schema aborted the suite before its first trial finished.
+ *
+ * Deliberately not a `ZodError` and with no `status`, so `IO_RETRY` re-runs
+ * the node and makes the call again, as it does for `ExtractionFormatError`.
+ * An empty answer is never a legitimate reply from any seam that calls this.
+ */
+export class EmptyReplyError extends Error {
+  constructor(
+    readonly seam: ChatRequest['seam'],
+    readonly finishReasons: readonly string[],
+  ) {
+    super(
+      `${seam}: the model replied with no text` +
+        (finishReasons.length > 0 ? ` (finish reason ${finishReasons.join(', ')})` : ''),
+    );
+    this.name = 'EmptyReplyError';
+  }
+}
+
+/**
+ * The answer text of a reply.
+ *
+ * `@langchain/google-genai` returns a string only when the candidate has one
+ * non-thought text part. Two or more parts — a split answer, or a text part
+ * beside a part carrying only a thought signature — arrive as an array of
+ * typed parts, and this used to read every array as `''`. The answer is the
+ * `text` parts joined; `thinking` parts are the model's reasoning, not its
+ * answer, and are left out.
+ */
+export function replyText(content: unknown): string {
+  if (typeof content === 'string') return content;
+  if (!Array.isArray(content)) return '';
+  return content
+    .map((part: unknown) => {
+      if (typeof part !== 'object' || part === null) return '';
+      const { type, text } = part as { type?: unknown; text?: unknown };
+      return type === 'text' && typeof text === 'string' ? text : '';
+    })
+    .join('');
+}
+
 function finishReasonsOf(reply: ChatReply): string[] {
   const reason =
     reply.response_metadata?.['finishReason'] ?? reply.additional_kwargs?.['finishReason'];
@@ -84,10 +129,14 @@ export async function invokeChat(
         // way to check the derivation against a live reply.
         logger.debug({ msg: 'gen_ai.usage.reported', seam: request.seam, usage: meta });
       }
-      span.recordFinishReasons(finishReasonsOf(reply));
+      const finishReasons = finishReasonsOf(reply);
+      span.recordFinishReasons(finishReasons);
+
+      const content = replyText(reply.content);
+      if (content.trim() === '') throw new EmptyReplyError(request.seam, finishReasons);
 
       return {
-        content: typeof reply.content === 'string' ? reply.content : '',
+        content,
         tokenCounts: usageOf(meta),
       };
     },

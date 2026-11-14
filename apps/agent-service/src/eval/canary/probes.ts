@@ -23,8 +23,9 @@ import { GEMINI_MODELS_ENDPOINT, errorDetailsOf } from '../../agent/model/gemini
  *   gone        the id returns 404
  *   moved       the floating alias answers differently — expected, not drift
  *   unobserved  the response lacked the field the probe reads
- *   unavailable the floating alias answered a provider-side 5xx, so nothing
- *               was observed — a notice; on a pinned id a 5xx aborts instead
+ *   unavailable the floating alias answered a provider-side 5xx, or sent
+ *               no response in time, so nothing was observed — a notice; on a
+ *               pinned id either aborts instead
  */
 export type Verdict = 'unchanged' | 'changed' | 'gone' | 'moved' | 'unobserved' | 'unavailable';
 
@@ -48,7 +49,7 @@ export interface ProbeResult {
   readonly observed: string | undefined;
   /** e.g. "3 of 21 vectors differ; min cosine 0.99871" */
   readonly detail?: string;
-  /** The HTTP status the provider answered with, on an `unavailable` result. */
+  /** The HTTP status the provider answered with, on an `unavailable` result that had one. */
   readonly status?: number;
 }
 
@@ -190,19 +191,34 @@ const GenerateContentResponseSchema = z.object({
  * candidate and `usageMetadata` and drops `modelVersion` — the one field this
  * probe exists to read. No retry: a 429 is the caller's to classify, and a
  * per-day one must not be spent twice.
+ *
+ * Bounded by `CHAT_PROBE_TIMEOUT_MS`. Unbounded, a request the provider
+ * accepted and never answered waited out undici's five-minute headers timeout
+ * and surfaced as `TypeError: fetch failed`, which the nightlies of 2026-11-12
+ * and 2026-11-14 met on the floating alias and aborted on.
  */
 export async function probeChatVersion(
   id: string,
   apiKey: string,
+  timeoutMs: number = CHAT_PROBE_TIMEOUT_MS,
 ): Promise<ChatVersionObservation> {
-  const response = await fetch(`${GEMINI_MODELS_ENDPOINT}/${id}:generateContent`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json', 'x-goog-api-key': apiKey },
-    body: JSON.stringify({
-      contents: [{ role: 'user', parts: [{ text: CHAT_PROBE_PROMPT }] }],
-      generationConfig: { maxOutputTokens: CHAT_PROBE_MAX_OUTPUT_TOKENS },
-    }),
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${GEMINI_MODELS_ENDPOINT}/${id}:generateContent`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-goog-api-key': apiKey },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [{ text: CHAT_PROBE_PROMPT }] }],
+        generationConfig: { maxOutputTokens: CHAT_PROBE_MAX_OUTPUT_TOKENS },
+      }),
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+  } catch (error) {
+    if (error instanceof Error && error.name === 'TimeoutError') {
+      throw new ProbeTimeoutError(id, timeoutMs);
+    }
+    throw error;
+  }
   if (response.status === 404) return { id, found: false };
   if (!response.ok) throw await failed(response, 'generateContent', id);
 
@@ -260,9 +276,28 @@ export function chatVerdict(
 
 // --- a provider that cannot serve ------------------------------------------
 
-/** What a provider-side 5xx said, short enough for a table cell and a notice. */
+/**
+ * How long the chat probe waits for a response. The pinned model answers the
+ * probe in a second or two; a minute is far past any answer and well short of
+ * undici's own five.
+ */
+export const CHAT_PROBE_TIMEOUT_MS = 60_000;
+
+/** A chat probe the provider sent no response to within its timeout. */
+export class ProbeTimeoutError extends Error {
+  constructor(
+    readonly id: string,
+    readonly timeoutMs: number,
+  ) {
+    super(`generateContent ${id} sent no response within ${timeoutMs / 1000} s`);
+    this.name = 'ProbeTimeoutError';
+  }
+}
+
+/** What a provider that could not serve said, short enough for a table cell and a notice. */
 export interface ProviderUnavailable {
-  readonly status: number;
+  /** Absent when there was no response at all: a timeout. */
+  readonly status?: number;
   /** e.g. "UNAVAILABLE: This model is currently experiencing high demand. …", redacted. */
   readonly message: string;
 }
@@ -274,8 +309,9 @@ const ProviderErrorBodySchema = z.object({
 });
 
 /**
- * A provider-side 5xx from one of the direct model calls, or `undefined` for
- * anything else — a 429 included, which stays with `classifyRateLimit`.
+ * A provider-side 5xx from one of the direct model calls, a chat probe that
+ * timed out, or `undefined` for anything else — a 429 included, which stays
+ * with `classifyRateLimit`.
  *
  * Both direct-call errors carry the response body after `failed: <status> `
  * (`ModelRequestError` here, `EmbeddingRequestError` in the embedder). The
@@ -283,6 +319,7 @@ const ProviderErrorBodySchema = z.object({
  * response the provider did serve, so it is not read as one.
  */
 export function providerUnavailable(error: unknown): ProviderUnavailable | undefined {
+  if (error instanceof ProbeTimeoutError) return { message: error.message };
   if (!(error instanceof Error)) return undefined;
   const status = (error as { status?: unknown }).status;
   if (typeof status !== 'number' || status < 500 || status > 599) return undefined;
@@ -325,8 +362,12 @@ export function unavailableVerdict(
     verdict: 'unavailable',
     baseline,
     observed: undefined,
-    status: unavailable.status,
-    detail: `generateContent answered ${unavailable.status}: ${unavailable.message}`,
+    ...(unavailable.status === undefined
+      ? { detail: unavailable.message }
+      : {
+          status: unavailable.status,
+          detail: `generateContent answered ${unavailable.status}: ${unavailable.message}`,
+        }),
   };
 }
 
