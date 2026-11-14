@@ -74,6 +74,11 @@ export interface FakeApiState {
   vectors: Record<string, number[]>;
   /** A response to return instead, for a matching path. */
   failWith?: { readonly match: RegExp; readonly status: number; readonly body: unknown };
+  /**
+   * A path the provider never answers: the request rejects as `fetch` does
+   * when the caller's `AbortSignal.timeout` fires, without waiting for it.
+   */
+  timeOut?: RegExp;
 }
 
 export function healthyState(): FakeApiState {
@@ -107,6 +112,10 @@ export function fakeFetch(state: FakeApiState): {
     const method = init?.method ?? 'GET';
     requests.push(`${method} ${url.pathname}`);
     published.publish({ request: { origin: url.origin, path: url.pathname, method } });
+
+    if (state.timeOut?.test(url.pathname) === true) {
+      throw new DOMException('The operation was aborted due to timeout', 'TimeoutError');
+    }
 
     if (state.failWith !== undefined && state.failWith.match.test(url.pathname)) {
       return json(state.failWith.status, state.failWith.body);

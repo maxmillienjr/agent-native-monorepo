@@ -246,6 +246,34 @@ describe('an abort', () => {
     expect(summary()).toContain('**Cause (`provider-unavailable`):**');
   });
 
+  it('chat, floating: a timeout is unavailable, a notice, and the run goes on', async () => {
+    const state = healthyState();
+    state.timeOut = new RegExp(`/${FLOATING}:generateContent$`);
+    const { end } = await run(state);
+
+    expect(end).toBe('passed');
+    expect(existsSync(join(dir, 'canary-abort.json'))).toBe(false);
+    const floating = report().results.find((result) => result.probe === 'chat-floating');
+    expect(floating).toMatchObject({ id: FLOATING, verdict: 'unavailable' });
+    expect(floating?.status).toBeUndefined();
+    expect(floating?.detail).toBe(`generateContent ${FLOATING} sent no response within 60 s`);
+    expect(verdictOf('embedding', EMBEDDING)).toBe('unchanged');
+  });
+
+  it('chat, pinned: a timeout aborts, naming it', async () => {
+    const state = healthyState();
+    state.timeOut = new RegExp(`/${PINNED}:generateContent$`);
+    const { end } = await run(state);
+
+    expect(end).toBe('aborted');
+    const abort = JSON.parse(readFileSync(join(dir, 'canary-abort.json'), 'utf8')) as CanaryAbort;
+    expect(abort.error.name).toBe('ProbeTimeoutError');
+    expect(abort.cause?.code).toBe('provider-unavailable');
+    expect(abort.cause?.summary).toMatch(
+      new RegExp(`^generateContent ${PINNED} sent no response within 60 s\\. The provider`),
+    );
+  });
+
   it('on a 503 from the embedding probe: aborts with the same cause', async () => {
     const state = healthyState();
     state.failWith = { match: /:embedContent$/, status: 503, body: HIGH_DEMAND_BODY };

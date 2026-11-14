@@ -197,13 +197,16 @@ export function explainCanaryAbort(error: unknown): AbortCause | undefined {
       summary: `\`${apiOf(error)}\` answered 429, and the response did not name a per-day quota.`,
     };
   }
-  // Reached only from a probe that must answer: a floating chat 5xx is a result, not an abort.
+  // Reached only from a probe that must answer: a floating chat 5xx or timeout is a
+  // result, not an abort.
   const unavailable = providerUnavailable(error);
   if (unavailable !== undefined) {
     return {
       code: 'provider-unavailable',
       summary:
-        `\`${apiOf(error)}\` answered ${unavailable.status} (${unavailable.message}). The ` +
+        (unavailable.status === undefined
+          ? `${unavailable.message}. The `
+          : `\`${apiOf(error)}\` answered ${unavailable.status} (${unavailable.message}). The `) +
         'provider could not serve a probe the canary needs, so whether anything behind a ' +
         'pinned id changed was not checked. No retry was made.',
       remedy:
