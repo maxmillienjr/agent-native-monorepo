@@ -111,7 +111,9 @@ describe('the verdict table', () => {
     expect(end).toBe('failed');
     expect(verdictOf('chat-pinned', PINNED)).toBe('changed');
     // The cassettes replay the old model's answers, so the summary names the re-record too.
-    expect(summary()).toContain('EVAL_CASSETTE_MODE=record EVAL_TRIALS=1 yarn eval');
+    for (const suite of ['memory-recall', 'red-team', 'prior-auth']) {
+      expect(summary()).toContain(`EVAL_SUITE=${suite} EVAL_CASSETTE_MODE=record EVAL_TRIALS=1`);
+    }
   });
 
   it('chat, pinned: a missing modelVersion is unobserved and exits 1', async () => {

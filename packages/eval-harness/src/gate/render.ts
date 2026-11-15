@@ -69,10 +69,17 @@ export function renderGateJson(result: GateResult): string {
   return `${JSON.stringify(result, null, 2)}\n`;
 }
 
-const ACCEPT_COMMAND = 'EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval';
+/**
+ * The command that accepts a replay difference. It names the suite, because
+ * `yarn eval` without `EVAL_SUITE` runs memory-recall and would rewrite that
+ * suite's baseline instead of the one that differed.
+ */
+function acceptCommand(suite: string): string {
+  return `EVAL_SUITE=${suite} EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval`;
+}
 
-/** The section appended to `eval-summary.md`. */
-export function renderGateSection(result: GateResult): string {
+/** The section appended to `eval-summary.md`, for the suite that ran. */
+export function renderGateSection(result: GateResult, suite: string): string {
   const blocks = gateBlocks(result);
   const heading = `### Gate — ${result.axis}: \`${result.verdict}\`${blocks ? ' — blocks' : ''}`;
 
@@ -96,13 +103,14 @@ export function renderGateSection(result: GateResult): string {
     ].join('\n');
   }
 
-  if (result.axis === 'replay') return renderReplay(heading, result);
+  if (result.axis === 'replay') return renderReplay(heading, result, suite);
   return renderLive(heading, result);
 }
 
 function renderReplay(
   heading: string,
   result: Extract<GateResult, { axis: 'replay'; verdict: 'match' | 'differs' }>,
+  suite: string,
 ): string {
   const { comparison } = result;
   const set = `\`${result.cassetteDigest.slice(0, 12)}\``;
@@ -160,7 +168,7 @@ function renderReplay(
     '',
     'Every difference blocks, an improvement included: a baseline that kept the old `fail` ' +
       'would later match a regression back to it. If the change is intended, accept it with ' +
-      `\`${ACCEPT_COMMAND}\` and commit the baseline diff with it. That needs no key.`,
+      `\`${acceptCommand(suite)}\` and commit the baseline diff with it. That needs no key.`,
     '',
   );
   return lines.join('\n');

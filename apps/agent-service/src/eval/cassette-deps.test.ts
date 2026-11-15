@@ -570,7 +570,9 @@ describe('replay decks and the model ids', () => {
   });
 
   it('names the chat and embedding ids the headers recorded', () => {
-    const decks = replayDecks(dataset, [{ taskId: 'memory-recall-001', trials: 1 }]);
+    const decks = replayDecks('memory-recall', dataset, [
+      { taskId: 'memory-recall-001', trials: 1 },
+    ]);
     expect(decks.models()).toEqual({ chat: CHAT_MODEL, embedding: EMBEDDING_MODEL });
   });
 
@@ -580,7 +582,9 @@ describe('replay decks and the model ids', () => {
     const overridden = await import('./cassette-deps.js');
 
     expect(() =>
-      overridden.replayDecks(dataset, [{ taskId: 'memory-recall-001', trials: 1 }]),
+      overridden.replayDecks('memory-recall', dataset, [
+        { taskId: 'memory-recall-001', trials: 1 },
+      ]),
     ).toThrow(
       /gemini-3\.5-flash-lite[\s\S]*gemini-flash-latest|gemini-flash-latest[\s\S]*gemini-3\.5-flash-lite/,
     );
@@ -731,7 +735,7 @@ describe('loading a set for replay', () => {
 
     const refusal = (() => {
       try {
-        replayDecks(datasetDir, [{ taskId: 'memory-recall-001', trials: 1 }]);
+        replayDecks('memory-recall', datasetDir, [{ taskId: 'memory-recall-001', trials: 1 }]);
         return '';
       } catch (error) {
         return error instanceof Error ? error.message : String(error);
@@ -739,7 +743,7 @@ describe('loading a set for replay', () => {
     })();
 
     expect(refusal).toContain(`${path}: formatVersion is 2, this player reads 3`);
-    expect(refusal).toContain('EVAL_CASSETTE_MODE=record EVAL_TRIALS=1 yarn eval');
+    expect(refusal).toContain('EVAL_SUITE=memory-recall EVAL_CASSETTE_MODE=record EVAL_TRIALS=1');
     expect(refusal).toContain('EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval');
   });
 });

@@ -73,13 +73,15 @@ describe('renderGateSection', () => {
         ],
       },
     };
-    const text = renderGateSection(result);
+    const text = renderGateSection(result, 'red-team');
     expect(text).toContain('### Gate — replay: `differs` — blocks');
     expect(text).toContain('1 `stale-digest`, 1 `missing`');
     expect(text).toContain(
       '| `missing` | `tool-use-001` | 0 | `trajectory_precision` | pass 0.778 | — |',
     );
-    expect(text).toContain('EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval');
+    expect(text).toContain(
+      '`EVAL_SUITE=red-team EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval`',
+    );
   });
 
   it('names the regime and the trials still needed on live, and never says passed', () => {
@@ -89,14 +91,17 @@ describe('renderGateSection', () => {
       cassetteDigest: 'e'.repeat(64),
     };
     const comparison = compareLive(pool, reference);
-    const text = renderGateSection({
-      axis: 'live',
-      verdict: comparison.verdict,
-      reference: 'live.json',
-      tally: 't.json',
-      pool,
-      comparison,
-    });
+    const text = renderGateSection(
+      {
+        axis: 'live',
+        verdict: comparison.verdict,
+        reference: 'live.json',
+        tally: 't.json',
+        pool,
+        comparison,
+      },
+      'memory-recall',
+    );
     expect(comparison.verdict).toBe('insufficient-evidence');
     expect(text).toContain('**Regime `tasks-fixed`** — the interval is about these 2 tasks only');
     expect(text).toContain('| `tool-use-001` | 4/5 | 4/5 | 10 / 10 |');

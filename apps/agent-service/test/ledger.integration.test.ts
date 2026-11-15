@@ -387,7 +387,7 @@ describe.skipIf(SKIP)('decision ledger (integration)', () => {
         (entry) => entry.id === 'memory-recall-001',
       )!;
       const harness = await createAgentServiceHarness(
-        replayDecks(MEMORY_RECALL_DATASET_DIR, [{ taskId: task.id, trials: 1 }]),
+        replayDecks('memory-recall', MEMORY_RECALL_DATASET_DIR, [{ taskId: task.id, trials: 1 }]),
       );
       let runId: string;
       try {

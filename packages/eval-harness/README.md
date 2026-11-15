@@ -151,6 +151,10 @@ EVAL_CASSETTE_MODE=record EVAL_TRIALS=1 yarn eval   # live model axis, writes ca
 EVAL_CASSETTE_MODE=replay yarn eval                 # no model call at all
 ```
 
+Both run memory-recall. `EVAL_SUITE=red-team` or `EVAL_SUITE=prior-auth` selects another
+suite, and its cassettes and baseline; an abort or a gate difference prints its commands
+with the suite already set.
+
 A cassette records the decisions a trial made at the five `ModelDeps` seams — not HTTP
 traffic; ADR 0005 argues the seam choice and names what it stops measuring. They live in
 `datasets/memory-recall/cassettes/`, one file per trial, and the subdirectory matters:

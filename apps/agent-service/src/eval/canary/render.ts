@@ -1,4 +1,5 @@
-import { RE_RECORD_COMMAND, UPDATE_BASELINE_COMMAND } from '../abort-cause.js';
+import { MEMORY_RECALL_SUITE, PRIOR_AUTH_SUITE, RED_TEAM_SUITE } from '@repo/eval-harness';
+import { reRecordCommand, updateBaselineCommand } from '../abort-cause.js';
 import { CANARY_BASELINE_FILE, CANARY_UPDATE_COMMAND, type CanaryBaseline } from './baseline.js';
 import type { ProbeResult } from './probes.js';
 import type { CanaryAbort, CanaryReport, RequestCounts } from './runner.js';
@@ -35,6 +36,9 @@ function table(results: readonly ProbeResult[]): string[] {
  * replayed or recorded number needs — since when the embedding model has
  * returned the same vectors — is on the page whenever it is true.
  */
+/** The suites with a committed cassette set, which a changed pinned model stales. */
+const CASSETTE_SUITES = [MEMORY_RECALL_SUITE, RED_TEAM_SUITE, PRIOR_AUTH_SUITE] as const;
+
 export function renderCanarySummary(report: CanaryReport, baseline: CanaryBaseline): string {
   const failing = report.results.filter(
     (result) =>
@@ -120,9 +124,11 @@ export function renderCanarySummary(report: CanaryReport, baseline: CanaryBaseli
       '',
       `- A change behind a pinned id is acknowledged by a committed baseline update: ` +
         `\`${CANARY_UPDATE_COMMAND}\` with a key, then commit \`${CANARY_BASELINE_FILE}\`.`,
-      '- A changed pinned model also stales the recorded cassettes, which replay its old ' +
-        `answers: re-record with \`${RE_RECORD_COMMAND}\` and regenerate the replay baseline ` +
-        `with \`${UPDATE_BASELINE_COMMAND}\`.`,
+      '- A changed pinned model also stales every recorded cassette set, which replay its old ' +
+        'answers. For each suite, re-record and then regenerate its replay baseline:',
+      ...CASSETTE_SUITES.map(
+        (suite) => `  - \`${reRecordCommand(suite)}\`, then \`${updateBaselineCommand(suite)}\``,
+      ),
       '- `gone` and `unobserved` cannot be accepted by an update. A retired id is a migration; ' +
         'a missing `modelVersion` is a change in the response, and the probe is what to fix.',
     );
