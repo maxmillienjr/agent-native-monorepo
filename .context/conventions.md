@@ -422,7 +422,10 @@ explanation stages, are archived at a tag and run in no tier (below).
   number in the task file, in that pull request, and say why in its description; never
   widen headroom in a pull request that does not need it. The values follow P1-F's rule —
   the recording × 1.5 for input and × 2 for output, rounded up to the next hundred, and
-  `2 + maxSteps` calls — until the nightly's samples calibrate them. Latency and dollars
+  `2 + maxSteps` calls — until the nightly's samples calibrate them. Calibrating applies
+  the same multipliers to the largest nightly sample since the recording, and is done for a
+  task when a trial that passed every grader breached a token budget on a path its
+  `modelCalls` ceiling allows: `memory-recall-001` on 2026-11-15 is the first. Latency and dollars
   are reported and never budgets: the loader refuses a `latencyMs` key with the reason.
 - **A retriever's `ORDER BY` needs a unique secondary key.** The vector reader produces
   ties by construction — the eval harness seeds every fact in a task with one vector — and
