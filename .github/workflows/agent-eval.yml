@@ -16,8 +16,9 @@ name: Agent Eval
 #           service containers. A failed trial here means something changed.
 #   live    nightly and on dispatch, only when a GOOGLE_API_KEY repository
 #           secret exists. It catches what replay cannot: the model getting
-#           worse and the client breaking. About eight generateContent calls
-#           per trial, against a daily free tier of twenty.
+#           worse and the client breaking. About twelve generateContent calls
+#           a night, one trial of each memory-recall task, against the free
+#           tier's 500 a day (.context/conventions.md, "Live model quota").
 #
 # Two more jobs watch the model itself (P1-E), under the same secret gate:
 #

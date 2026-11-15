@@ -137,8 +137,9 @@ request carries every tool's description, tier and schema.
    choice of the tool is checked only on the live and replay axes.
 6. **Re-record the cassettes.** A new tool changes the selection request of every task, so
    every recorded `act.selectTool` decision misses. Record with
-   `EVAL_CASSETTE_MODE=record EVAL_TRIALS=1 yarn eval` on the live model axis, regenerate
-   the replay baseline with `EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval`, and
+   `EVAL_SUITE=<suite> EVAL_CASSETTE_MODE=record EVAL_TRIALS=1 yarn eval` on the live model
+   axis for each suite whose requests changed, regenerate each one's replay baseline with
+   `EVAL_SUITE=<suite> EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval`, and
    re-derive the task budgets by P1-F's rule. Count the calls against the day's quota first
    (`.context/conventions.md`, "Live model quota").
 
