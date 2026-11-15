@@ -211,7 +211,7 @@ async function runSuite<TOutcome>(
   const end = await runAndReport<TOutcome>({
     outputDir,
     suite: definition.name,
-    explain: explainAbort,
+    explain: (error, progress) => explainAbort(error, progress, definition.name),
     onAbort: (error, abort) =>
       logger.error({
         msg: 'eval.aborted',
@@ -500,6 +500,7 @@ function prepare<TOutcome>(
   const capped = capTrialsToCassettes(suite, definition.datasetDir);
   const skipped = new Set(skippedTasks(capped.tasks, axes).map((task) => task.taskId));
   const decks = replayDecks(
+    definition.name,
     definition.datasetDir,
     capped.tasks
       .filter((task) => !skipped.has(task.id))

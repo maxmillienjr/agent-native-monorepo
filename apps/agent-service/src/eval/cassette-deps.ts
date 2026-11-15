@@ -20,7 +20,7 @@ import {
   tokenCountsFor,
 } from '../agent/model/decision-seam.js';
 import { CASE_BOARD_CHANNEL } from '../agent/tools/case-board.js';
-import { RE_RECORD_COMMAND, UPDATE_BASELINE_COMMAND } from './abort-cause.js';
+import { reRecordCommand, updateBaselineCommand } from './abort-cause.js';
 
 /**
  * Cassettes, for evaluation trials.
@@ -172,6 +172,7 @@ export interface ReplayDecks extends TrialDecks {
  * can name the set it is about to replay.
  */
 export function replayDecks(
+  suite: string,
   datasetDir: string,
   plan: readonly { readonly taskId: string; readonly trials: number }[],
 ): ReplayDecks {
@@ -187,14 +188,15 @@ export function replayDecks(
       throw new Error(
         `EVAL_CASSETTE_MODE=replay, and \`${task.taskId}\` has no cassette in ` +
           `${cassettePath(datasetDir, task.taskId, 0)}. Record the set with ` +
-          'EVAL_CASSETTE_MODE=record on the live model axis, or the task is unmeasurable here.',
+          `\`${reRecordCommand(suite)}\` on the live model axis, or the task is unmeasurable ` +
+          'here.',
       );
     }
 
     for (let index = 0; index < task.trials; index += 1) {
       const path = cassettePath(datasetDir, task.taskId, index);
       const raw: unknown = JSON.parse(readFileSync(path, 'utf8'));
-      players.set(key(task.taskId, index), playerFor(path, raw, config));
+      players.set(key(task.taskId, index), playerFor(suite, path, raw, config));
     }
   }
 
@@ -257,7 +259,12 @@ export function replayDecks(
  * makes — an old format, another model, another embedding width — is the same
  * re-record, so the wiring is where the message learns it.
  */
-function playerFor(path: string, raw: unknown, config: ReplayConfig): CassettePlayer {
+function playerFor(
+  suite: string,
+  path: string,
+  raw: unknown,
+  config: ReplayConfig,
+): CassettePlayer {
   try {
     return new CassettePlayer(raw, config, { onServe: recordServedDecision });
   } catch (error) {
@@ -266,8 +273,8 @@ function playerFor(path: string, raw: unknown, config: ReplayConfig): CassettePl
       error.reasons.map((reason) => `${path}: ${reason}`),
     );
     refusal.message +=
-      `\nRe-record the set with \`${RE_RECORD_COMMAND}\` on the live model axis, then ` +
-      `regenerate the replay baseline with \`${UPDATE_BASELINE_COMMAND}\`.`;
+      `\nRe-record the set with \`${reRecordCommand(suite)}\` on the live model axis, then ` +
+      `regenerate the replay baseline with \`${updateBaselineCommand(suite)}\`.`;
     throw refusal;
   }
 }

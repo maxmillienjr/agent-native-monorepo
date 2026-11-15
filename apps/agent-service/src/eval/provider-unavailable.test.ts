@@ -164,7 +164,7 @@ describe('a recording run that meets three consecutive 503s', () => {
     const ended = runAndReport<MemoryOutcome>({
       outputDir,
       suite: suite.name,
-      explain: explainAbort,
+      explain: (error, progress) => explainAbort(error, progress, suite.name),
       body: (progress, onTrial) => {
         progress.axes = axes;
         return new EvalHarness<MemoryOutcome>({

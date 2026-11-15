@@ -181,7 +181,10 @@ export function applyGate(options: ApplyGateOptions): GateResult {
 
   mkdirSync(options.outputDir, { recursive: true });
   writeFileSync(resolve(options.outputDir, 'eval-gate.json'), renderGateJson(result));
-  appendFileSync(resolve(options.outputDir, 'eval-summary.md'), `\n${renderGateSection(result)}`);
+  appendFileSync(
+    resolve(options.outputDir, 'eval-summary.md'),
+    `\n${renderGateSection(result, options.suite)}`,
+  );
   return result;
 }
 

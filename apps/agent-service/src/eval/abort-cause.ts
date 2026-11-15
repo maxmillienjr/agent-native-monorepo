@@ -2,15 +2,23 @@ import type { AbortCause } from '@repo/eval-harness';
 import { classifyRateLimit, dailyQuotaIds } from '../agent/model/rate-limit.js';
 import type { RunProgress } from './run-suite.js';
 
-/** The command that refreshes the committed cassette set, as the README gives it. */
-export const RE_RECORD_COMMAND = 'EVAL_CASSETTE_MODE=record EVAL_TRIALS=1 yarn eval';
+/**
+ * The command that refreshes one suite's committed cassette set. It names the
+ * suite: unset, `yarn eval` runs memory-recall, so a remedy without it would
+ * send a red-team or prior-auth reader to re-record the wrong set.
+ */
+export function reRecordCommand(suite: string): string {
+  return `EVAL_SUITE=${suite} EVAL_CASSETTE_MODE=record EVAL_TRIALS=1 yarn eval`;
+}
 
 /**
- * The command that regenerates the replay baseline from the set on disk. A
- * re-record changes the cassette digest, so the snapshot has to move with it
- * or the gate reports `stale-digest` on the next pull request (P1-D).
+ * The command that regenerates one suite's replay baseline from the set on
+ * disk. A re-record changes the cassette digest, so the snapshot has to move
+ * with it or the gate reports `stale-digest` on the next pull request (P1-D).
  */
-export const UPDATE_BASELINE_COMMAND = 'EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval';
+export function updateBaselineCommand(suite: string): string {
+  return `EVAL_SUITE=${suite} EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval`;
+}
 
 /**
  * Which model API an error came from, for a sentence a reader can act on.
@@ -34,9 +42,14 @@ function trialsDone(progress: RunProgress): string {
  * which is already more than the fatal log line used to leave.
  *
  * Matched by `name` so this file does not reach into the cassette package for
- * a class, the same choice `IO_RETRY` makes.
+ * a class, the same choice `IO_RETRY` makes. `suite` is the one that was
+ * running, so the commands in a remedy refresh that suite's set.
  */
-export function explainAbort(error: unknown, progress: RunProgress): AbortCause | undefined {
+export function explainAbort(
+  error: unknown,
+  progress: RunProgress,
+  suite: string,
+): AbortCause | undefined {
   if (error instanceof Error && error.name === 'CassetteMissError') {
     return {
       code: 'cassette-miss',
@@ -46,10 +59,11 @@ export function explainAbort(error: unknown, progress: RunProgress): AbortCause 
         'says what moved. On a pull request that touches no prompt, suspect the store images, ' +
         'whose floating tags can reorder rows.',
       remedy:
-        `re-record with a key: \`${RE_RECORD_COMMAND}\`, on the live model axis. It costs ` +
-        'about eight `generateContent` calls against a daily free tier of twenty, so it is a ' +
-        'deliberate local command and never a CI step. Then regenerate the replay baseline ' +
-        `with \`${UPDATE_BASELINE_COMMAND}\`, which needs no key, and push both to the branch.`,
+        `re-record with a key: \`${reRecordCommand(suite)}\`, on the live model axis. It ` +
+        'spends one trial of every task in the suite, so it is a deliberate local command on ' +
+        "the owner's paid key (ADR 0018) and never a CI step. Then regenerate the replay " +
+        `baseline with \`${updateBaselineCommand(suite)}\`, which needs no key, and push both ` +
+        'to the branch.',
     };
   }
 
@@ -61,8 +75,8 @@ export function explainAbort(error: unknown, progress: RunProgress): AbortCause 
         'older format, or against a model or embedding width the service no longer runs. The ' +
         'run stopped before any store was reset.',
       remedy:
-        `re-record with a key: \`${RE_RECORD_COMMAND}\`, on the live model axis, then ` +
-        `regenerate the replay baseline with \`${UPDATE_BASELINE_COMMAND}\` and push both.`,
+        `re-record with a key: \`${reRecordCommand(suite)}\`, on the live model axis, then ` +
+        `regenerate the replay baseline with \`${updateBaselineCommand(suite)}\` and push both.`,
     };
   }
 
