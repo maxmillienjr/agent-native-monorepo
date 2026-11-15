@@ -348,7 +348,7 @@ describe.skipIf(SKIP)('audit:replay (integration)', () => {
     const reached = watchForModelRequests(() => {});
     const task = loadMemoryRecallSuite(1).tasks.find((entry) => entry.id === 'memory-recall-001')!;
     const harness = await createAgentServiceHarness(
-      replayDecks(MEMORY_RECALL_DATASET_DIR, [{ taskId: task.id, trials: 1 }]),
+      replayDecks('memory-recall', MEMORY_RECALL_DATASET_DIR, [{ taskId: task.id, trials: 1 }]),
     );
 
     let runId: string;
