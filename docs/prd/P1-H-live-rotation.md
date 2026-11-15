@@ -440,13 +440,17 @@ docs/STATUS.md                             a row for live coverage of prior-auth
 The axis each criterion is checked on is named. **Fakes** means unit tests against a stubbed
 history, report or transport. **CI, model `live`** means scheduled runs on the free secret.
 
-- [ ] The free-tier `generateContent` requests per day for `gemini-3.5-flash-lite` on the
+- [x] The free-tier `generateContent` requests per day for `gemini-3.5-flash-lite` on the
       repository secret's project is recorded in `.context/conventions.md`, "Live model
       quota", with its source and date. The source is AI Studio's rate-limit view for that
       project, or the `quotaValue` of a per-day 429 with its run id. The same number is
       `EVAL_ROTATION_DAILY_LIMIT` in `agent-eval.yml`, whose comment names the source.
       **Reviewer.** Not met on 2026-11-09. `EVAL_ROTATION_DAILY_LIMIT` is `''` and its
       comment says where the figure is read; "Live model quota" says where to record it.
+      **Met 2026-11-15:** 500 a day, read by the owner from AI Studio's rate-limit view for
+      `braided-trees-459313-h8`. The workflow and "Live model quota" both carry it. At
+      that `L` the budget is about 484 after the night's spend, so every slice is every task:
+      32 calls, and the two-trial floor is two clean nights away.
 - [x] **Fakes:** `selectSlice` on an empty epoch takes tasks in suite order up to the budget,
       and always takes the zero-cost tasks. A night with no tally returns the same slice
       again. A new digest starts from the first task. A task added to a suite comes first. A

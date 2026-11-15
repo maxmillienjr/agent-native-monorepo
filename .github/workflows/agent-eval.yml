@@ -514,12 +514,12 @@ jobs:
           --health-retries 10
     env:
       # L: the free-tier generateContent requests per day for the pinned chat
-      # id on the repository secret's project, read from AI Studio's rate-limit
-      # view for that project or from a per-day 429's quotaValue, with its
-      # source and date in .context/conventions.md, "Live model quota". Not
-      # recorded yet. Empty: the job runs nothing and warns; it never falls
-      # back to a guessed number.
-      EVAL_ROTATION_DAILY_LIMIT: ''
+      # id on the repository secret's project. 500 for gemini-3.5-flash-lite,
+      # read by the owner from AI Studio's rate-limit view on 2026-11-15; the
+      # source and date are in .context/conventions.md, "Live model quota",
+      # and the two change together. Empty would run nothing and warn; it
+      # never falls back to a guessed number.
+      EVAL_ROTATION_DAILY_LIMIT: '500'
       # As the live job: a live run that keeps a copy of its decisions.
       EVAL_CASSETTE_MODE: record
       EVAL_EXPECT_AXES: model=live memory=live
