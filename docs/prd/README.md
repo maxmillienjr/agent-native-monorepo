@@ -2,7 +2,7 @@
 
 ## Where things stand
 
-_Last updated 2026-11-14. If this section is more than a few weeks stale, trust the code
+_Last updated 2026-11-15. If this section is more than a few weeks stale, trust the code
 over it and update it._
 
 **The nightlies since the switch, 2026-11-10 to 11-14: two green, three red, for two causes
@@ -19,16 +19,18 @@ chat probe out at 60 s, so an unanswered floating alias is an `unavailable` noti
 page routes `gemini-2.5-flash` to `gemini-3.5-flash-lite` from that day under the same id.
 On 2026-11-09 the owner chose `gemini-3.5-flash-lite` directly: "migrate it to the latest
 flash lite. paid for dev work, free on ci." [ADR 0018](../adr/0018-the-chat-model-is-a-pinned-stable-id.md)
-records it. P1-I's selection rule and seven-night series no longer choose the id. P1-I is
-still in progress, tracked in
+records it. P1-I's selection rule and seven-night series no longer choose the id. **P1-I
+shipped on 2026-11-15**, closing
 [#147](https://github.com/maxmillienjr/agent-native-monorepo/issues/147). #154 (`3baae0d`)
 pins the new id, removes the canary's candidate probe, makes the three JSON seams hash their
 instruction at cassette format 3, and carries all three suites re-recorded on the owner's
 paid key, with their replay baselines, the six budgets and the canary baseline for the new
 id. Prior-auth's two known failures from that recording are fixed by P3-G, below. The 2026-11-10 nightly, the first scheduled canary and live run on the new id, was green
-and met both CI after-merge criteria. **Next:** step 1d and phase 3's fresh-clone trial
-need the owner's new-project key. The
-deadline is 2026-11-30.
+and met both CI after-merge criteria. On 2026-11-15 a key from `agent-native-ci-10153198`,
+a project that never called `gemini-2.5-flash`, got 200 from `gemini-3.5-flash-lite` and
+the expected 404 from the old id. A fresh clone with that key then passed
+`memory-recall-001` live, on both axes. That trial is the problem the PRD existed for.
+The `gemini-flash-latest` dispatch (step 1b) is informational and still to run.
 
 **[P3-G](P3-G-prior-auth-hedged-evidence-and-citations.md) has shipped: prior-auth passes
 24 of 24 on `gemini-3.5-flash-lite`.** Tracked in
@@ -66,7 +68,7 @@ at `df655c0` with no key, which is tagged `archive/p2e-graph-measurements`. The 
 contracts are `'pgvector'` alone, the task format refuses a graph seed, and the memory axis
 is `DATABASE_URL` alone. All three suites replay to `match` against unchanged baselines.
 
-**Twenty-eight PRDs are shipped and the system they describe is running.** The service answers
+**Twenty-nine PRDs are shipped and the system they describe is running.** The service answers
 `POST /runs` and `POST /runs/stream`; `memory-core` is constructed by the app rather than
 sitting beside it; the graph compiles with a checkpointer and a retry policy on every node
 that performs I/O; and `packages/eval-harness` measures the result. Verified against live
@@ -521,7 +523,7 @@ shipped, checks each task's tokens and model calls beside the pass rate.
 | [P1-F](P1-F-cost-and-step-budgets.md)  | Cost, latency, and step budgets as CI assertions              | M    | shipped     |
 | [P1-G](P1-G-task-axis-requirements.md) | Task-level axis requirements for the evaluation suite         | S    | shipped     |
 | [P1-H](P1-H-live-rotation.md)          | Live coverage of the replay-only suites by nightly rotation   | M    | in-progress |
-| [P1-I](P1-I-chat-model-migration.md)   | Migrate off `gemini-2.5-flash`                                | L    | in-progress |
+| [P1-I](P1-I-chat-model-migration.md)   | Migrate off `gemini-2.5-flash`                                | L    | shipped     |
 
 [P1-H](P1-H-live-rotation.md), raised on 2026-10-26, was accepted by the owner on
 2026-11-09, tracked in [#159](https://github.com/maxmillienjr/agent-native-monorepo/issues/159). Prior-auth and the red team run only on replay at night.

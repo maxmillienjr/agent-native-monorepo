@@ -2,7 +2,7 @@
 id: P1-I
 title: Migrate off `gemini-2.5-flash`
 tier: 1
-status: in-progress
+status: shipped
 size: L
 depends_on: [P1-A, P1-B, P1-E, P1-F]
 blocks: [P1-H, P3-G]
@@ -589,30 +589,41 @@ gives the reasons.
       model or about the client, not a defect in this PRD. This is P1-E:472-482 unchanged,
       verified by a dispatch with `chat_model: gemini-flash-latest`. The suite now has three
       tasks where P1-E's had two, so it costs about twelve calls on the alias target, not
-      eight. _Kept, informational: queued for 2026-11-10, and it does not block the switch._
-- [ ] **Model `live` / memory `live`, in CI:** the same, with
-      `chat_model: gemini-3.5-flash-lite`. The result is recorded here whether it passes or
-      fails. _Dropped: phase 2's recording runs every task on this id, on the paid key._
-- [ ] **Model `live`, new-project key:** one `generateContent` each on `gemini-3.8-flash`,
+      eight. _Kept, informational: queued for 2026-11-10, and it does not block the switch._ _2026-11-15: the 11-10
+      dispatch never fired, because the session script that queued it ended first. It does
+      not gate shipping. The dispatch runs after P1-H's rotation dispatch, and its result goes
+      in the index._
+- **Dropped by the owner's choice of id, 2026-11-09:** ~~**Model `live` / memory `live`, in CI:** the same, with
+  `chat_model: gemini-3.5-flash-lite`. The result is recorded here whether it passes or
+  fails.~~ _Dropped: phase 2's recording runs every task on this id, on the paid key._
+- [x] **Model `live`, new-project key:** one `generateContent` each on `gemini-3.8-flash`,
       `gemini-3.5-flash-lite` and `gemini-2.5-flash`. The status, and the `modelVersion` of
       each answer, are recorded here. The expected 404 on `gemini-2.5-flash` is recorded with
       its message. _Kept, owned by P1-I, and needs the owner's key. Only the
       `gemini-3.5-flash-lite` call bears on the switch now._
-- [ ] **Model `live`, in CI:** the canary's `chat-candidate` probe reports on seven
-      consecutive scheduled nights. Each night's verdict for it and for the floating probe is
-      tabulated here. **Stubbed transport:** a 503 or a changed `modelVersion` on the
-      candidate exits 0 with a notice. `runner.test.ts` covers both. _Dropped: the candidate
-      is the pin. Its probe and both tests leave with the switch, and `chat-pinned` reports on
-      the id every night. Any nights it ran before the switch are informational._
+      _Met 2026-11-15, 18:53 UTC, on the key "agent-native-monorepo CI" in
+      `agent-native-ci-10153198`: `gemini-3.5-flash-lite` 200, `modelVersion`
+      `gemini-3.5-flash-lite`, finish `STOP`. `gemini-2.5-flash` 404 `NOT_FOUND`, "This
+      model models/gemini-2.5-flash is no longer available to new users. Please update your
+      code to use models/gemini-3.8-flash". `gemini-3.8-flash` got no response within 90 s,
+      then 503 `UNAVAILABLE`, "currently experiencing high demand". It is informational, and
+      no `modelVersion` was observed._
+- **Dropped by the owner's choice of id, 2026-11-09:** ~~**Model `live`, in CI:** the canary's `chat-candidate` probe reports on seven
+  consecutive scheduled nights. Each night's verdict for it and for the floating probe is
+  tabulated here. **Stubbed transport:** a 503 or a changed `modelVersion` on the
+  candidate exits 0 with a notice. `runner.test.ts` covers both.~~ _Dropped: the candidate
+  is the pin. Its probe and both tests leave with the switch, and `chat-pinned` reports on
+  the id every night. Any nights it ran before the switch are informational._
 - [ ] Whether `gemini-3.8-flash`, `gemini-flash-latest` and `gemini-3.5-flash-lite` each
       draw on a daily quota apart from `gemini-2.5-flash`'s, and from each other's, is
       recorded with its source: AI Studio's usage view or a 429's `quotaId`. The per-day
       split above is revised before any recording if it does not hold. _Informational and
       narrowed: recordings use the paid key. What CI still needs is the new id's free-tier
-      daily limit for the secret's project, recorded in the conventions._
-- [ ] The rule in "The rule that picks the id" is agreed at review before the first dispatch,
-      and the commit that records the agreement precedes the first dispatch's run date.
-      **Reviewer, from `git log`.** _Dropped: no rule chose the id._
+      daily limit for the secret's project, recorded in the conventions._ _That limit is 500 a day,
+      recorded on 2026-11-15 by P1-H's #165._
+- **Dropped by the owner's choice of id, 2026-11-09:** ~~The rule in "The rule that picks the id" is agreed at review before the first dispatch,
+  and the commit that records the agreement precedes the first dispatch's run date.
+  **Reviewer, from `git log`.**~~ _Dropped: no rule chose the id._
 
 **Phase 2**
 
@@ -621,33 +632,52 @@ gives the reasons.
       migration, and it is listed in `docs/adr/README.md`. _Met on `feat/p1-i-switch`,
       amended: no measurement chose the id, so the record names the owner's decision and its
       reasons in their place, and adds the key policy._
-- [ ] `PINNED_CHAT_MODEL` is the chosen id. Outside test files,
+- [x] `PINNED_CHAT_MODEL` is the chosen id. Outside test files,
       `grep -rn "gemini-2.5-flash" apps packages --include=*.ts` returns only
       `STAGE2_CHAT_MODEL` and comments that record history. **Reviewer.**
-- [ ] **Stubbed transport:** after the switch, P2-D's answer file replays under the default
+      _Met at `09c8cd5`: the grep returns four comments that record history (`pricing.ts:18`,
+      `plan.node.ts:6`, `extraction.ts:26`, `model-deps.ts:13`) and no `STAGE2_CHAT_MODEL`,
+      which P2-E deleted with the stage-2 runner._
+- [x] **Stubbed transport:** after the switch, P2-D's answer file replays under the default
       configuration, and `EVAL_ANSWERS_MODE=record` refuses to record unless `CHAT_MODEL` is
       `gemini-2.5-flash`. One unit test each.
-- [ ] Every cassette under `packages/eval-harness/datasets/{memory-recall,red-team,prior-auth}/cassettes`
+      _Met at the archive tag, as P2-E's amendment provides: P2-E removed the stage-2
+      runner and its recorder before the switch, so on `main` there is nothing to replay or
+      refuse. The answer file replays at the tag, where the pin is still `gemini-2.5-flash`._
+- [x] Every cassette under `packages/eval-harness/datasets/{memory-recall,red-team,prior-auth}/cassettes`
       has `header.chatModel` equal to the chosen id, and each was recorded on model `live` /
       memory `live`. That is 30 cassettes. **Reviewer:** `jq -r .header.chatModel` over the set
       prints one value. The recording's dates, commits and call counts are tabled in this
       PRD, as P3-D and P4-B did.
-- [ ] Every task's result on its recording is recorded here, pass or fail. **Blocking,
+      _Met: `jq` over the 30 prints `gemini-3.5-flash-lite` and memory `live` for every one;
+      dates, commits and calls are in "The recording, as made"._
+- [x] Every task's result on its recording is recorded here, pass or fail. **Blocking,
       decided at review:** prior-auth's wrongful approvals are 0, and no red-team canary
       reaches a surface it is graded on. Any other failure is committed into the replay
       baseline as a known failure, with an owning PRD named beside it.
-- [ ] **Model `replay` / memory `live`:** for each of the three suites,
+      _Met: "The recording, as made". Prior-auth's two failures were committed as known
+      failures owned by P3-G, which fixed both on 2026-11-09 (24 of 24, 0 wrongful
+      approvals). No red-team canary reached a graded surface._
+- [x] **Model `replay` / memory `live`:** for each of the three suites,
       `EVAL_CASSETTE_MODE=replay EVAL_GATE=replay yarn eval` reports `match` against a
       baseline regenerated from the new set. Two consecutive replays give identical reports
       with timestamps masked. No request reaches `generativelanguage.googleapis.com`.
-- [ ] The six budgeted tasks' budgets follow P1-F's rule on the new recording, and each
+      _Met: each suite's baseline was regenerated on the new set in #154 and #161. Every
+      `eval-replay` check since has matched, and so have the nightly prior-auth and red-team
+      replays, run 42801719060 included._
+- [x] The six budgeted tasks' budgets follow P1-F's rule on the new recording, and each
       task's `notes` gives the recorded input, output and thinking tokens and the call count.
       **Model `replay`:** each replay reports every budget within.
-- [ ] **Model `replay` / memory `live`:** `audit-replay.integration.test.ts` and
+      _Met: the six tasks' `budgets` and `notes` cite the 2026-11-09 recording, and every
+      replay since reports each budget within._
+- [x] **Model `replay` / memory `live`:** `audit-replay.integration.test.ts` and
       `ledger.integration.test.ts`, which replay the committed `memory-recall-001`
       (`.context/conventions.md:335-345`), pass on the new set.
-- [ ] `GEMINI_PRICES` prices the chosen id, with the page and the date it was read. If the
+      _Met: both run in the required `e2e` check, green on every merge since #154._
+- [x] `GEMINI_PRICES` prices the chosen id, with the page and the date it was read. If the
       id is `gemini-3.8-flash`, the 2027-01-01 price is noted.
+      _Met: `pricing.ts` prices `PINNED_CHAT_MODEL` at $0.30 and $2.50 per million tokens,
+      from the AI Studio pricing page read on 2026-11-09._
 - [x] **Stubbed transport:** with the retry bound, a recording run that meets three
       consecutive 503s makes two requests for that call, writes `eval-abort.json` with cause
       `provider-unavailable`, and keeps the cassettes of the trials that finished. Met on 2026-11-09:
@@ -670,23 +700,32 @@ gives the reasons.
       The 11-11 and 11-12 runs aborted on an empty multi-part reply, and the 11-12 and 11-14
       canaries on an unanswered floating probe. Both were defects in our code, fixed in
       #164._
-- [ ] **Model `live` / memory `live`, new-project key:** from a clean clone, `yarn eval`
+- [x] **Model `live` / memory `live`, new-project key:** from a clean clone, `yarn eval`
       with `EVAL_TASKS=memory-recall-001` and one trial completes and passes. This is the
       problem the PRD exists for.
-- [ ] The switch is on `main` by 2026-11-30, or the fallback in "The deadline" was carried
+      _Met 2026-11-15: a clone of `main` at `09c8cd5`, `yarn install` and
+      `docker compose up postgres`, with no `.env`, `GOOGLE_API_KEY` from the key above
+      and `EVAL_TASKS=memory-recall-001 EVAL_TRIALS=1 yarn eval`. Axes model `live`,
+      memory `live`, chat `gemini-3.5-flash-lite`, pass rate 100%: 3 model calls,
+      877 input and 109 output tokens, 2 embedding calls. The 404 that sent the secret back
+      on 2026-10-19 does not recur on the new pin._
+- [x] The switch is on `main` by 2026-11-30, or the fallback in "The deadline" was carried
       out and recorded here with the 2026-12-01 canary result.
+      _Met: #154 (`3baae0d`) put the pin on `main` on 2026-11-09._
 
 **Documentation**
 
-- [ ] Documentation the change makes false is corrected in the same pull request:
+- [x] Documentation the change makes false is corrected in the same pull request:
       `.env.example:12`; `.context/conventions.md`'s live-quota section (`:484-533`,
       which names the model and the per-model limit), the canary paragraph (`:388-402`) and
       the new-project paragraph; `docs/STATUS.md` rows 16, 17, 18, 24, 25, 26 and 37, wherever
       they name the model or a recording's figures; `packages/eval-harness/README.md:136`;
       the comments at `model-deps.ts:6-12`, `apps/agent-service/src/agent/model/extraction.ts:26`
       and `apps/agent-service/src/agent/model/usage.ts:8`; and P1-I's paragraph in the index.
-- [ ] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
+      _Met in #154, with the live-quota figure added on 2026-11-15 by P1-H's #165._
+- [x] `yarn turbo typecheck`, `yarn turbo lint`, `yarn lint:docs` and `yarn format:check`
       pass, and so do `yarn turbo test:unit` and `yarn turbo test:service`.
+      _Met: all four gate CI, and each merge since #154 was green on them and the tests._
 
 ## Risks and open questions
 
