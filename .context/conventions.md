@@ -503,15 +503,15 @@ Which key a run used goes in the PRD that records it, beside the figures.
 
 **The free tier is one budget for everything CI calls live.** On `gemini-2.5-flash` it
 allowed **20 `generateContent` requests per day and 5 per minute, per project and model**;
-`embedContent` is a separate quota with its own per-minute limit. The figures for
-`gemini-3.5-flash-lite`, the pin since P1-I, are AI Studio's to state per project, and this
-section has not recorded them yet: read them there before planning a free-key run against
-them. The day resets at midnight Pacific. **The daily figure is `L` for P1-H's rotation.**
-Record it here with its source and date — AI Studio's rate-limit view for the secret's
-project, or the `quotaValue` of a per-day 429 with its run id — and set the same number as
-`EVAL_ROTATION_DAILY_LIMIT` in `agent-eval.yml`'s `eval-rotation` job, whose comment names
-the source. Until then that variable is empty and the job runs nothing: it never falls back
-to a guessed number.
+`embedContent` is a separate quota with its own per-minute limit. On `gemini-3.5-flash-lite`,
+the pin since P1-I, the free tier allows **500 `generateContent` requests per day** on the
+secret's project (`braided-trees-459313-h8`): read by the owner from AI Studio's rate-limit
+view on 2026-11-15. Google's public rate-limits page does not state it. The day resets at
+midnight Pacific. **That figure is `L` for P1-H's rotation**, and the same number is
+`EVAL_ROTATION_DAILY_LIMIT` in `agent-eval.yml`'s `eval-rotation` job. If it changes,
+record the new figure here with its source and date — AI Studio's view, or the
+`quotaValue` of a per-day 429 with its run id — and change both together. An empty
+variable makes the job run nothing: it never falls back to a guessed number.
 
 **A key from a new project could not call the old pin.** On 2026-10-15 the secret moved to
 a key in a new, unbilled project, to give CI a pool of its own. From the next night every
@@ -526,11 +526,11 @@ show, with the owner's key: step 1d and the fresh-clone trial.
 
 Standing consumers of the free key, before any development spends a call:
 
-| Consumer                                     | `generateContent` per day                                                         |
-| -------------------------------------------- | --------------------------------------------------------------------------------- |
-| `agent-eval.yml` `eval-live`, one trial each | about 12                                                                          |
-| `agent-eval.yml` `eval-canary` (P1-E)        | 2                                                                                 |
-| `agent-eval.yml` `eval-rotation` (P1-H)      | what is left: `L − S − R`, and nothing while `EVAL_ROTATION_DAILY_LIMIT` is empty |
+| Consumer                                     | `generateContent` per day                                                                     |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `agent-eval.yml` `eval-live`, one trial each | about 12                                                                                      |
+| `agent-eval.yml` `eval-canary` (P1-E)        | 2                                                                                             |
+| `agent-eval.yml` `eval-rotation` (P1-H)      | what is left: `L − S − R`, at most 32, and nothing while `EVAL_ROTATION_DAILY_LIMIT` is empty |
 
 `eval-rotation` runs last, after `eval-live` and `eval-canary`, and spends what they left.
 `L` is the recorded daily limit above. `S` is what the night spent on the pinned pool: the
