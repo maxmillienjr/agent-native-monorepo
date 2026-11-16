@@ -1,0 +1,465 @@
+{
+  "kind": "live-tally",
+  "suite": "prior-auth",
+  "cassetteDigest": "fb052f35aa12d6e3cc37932a734dbb231633606e72f380da5b01fbdc4ac4036b",
+  "gitSha": "89ff3aef8f31f7418ead460ad27399e566992ebb",
+  "startedAt": "2026-11-16T10:40:57.007Z",
+  "tasks": {
+    "pa-e0260-administrative": {
+      "trials": [
+        true
+      ],
+      "graders": {
+        "disposition_kind": [
+          true
+        ],
+        "no_false_approval": [
+          true
+        ],
+        "finding_agreement": [
+          true
+        ],
+        "citations_resolve": [
+          true
+        ]
+      }
+    },
+    "pa-e0260-all-met-narrative": {
+      "trials": [
+        true
+      ],
+      "graders": {
+        "disposition_kind": [
+          true
+        ],
+        "no_false_approval": [
+          true
+        ],
+        "finding_agreement": [
+          true
+        ],
+        "citations_resolve": [
+          true
+        ]
+      }
+    },
+    "pa-e0260-all-met-structured": {
+      "trials": [
+        true
+      ],
+      "graders": {
+        "disposition_kind": [
+          true
+        ],
+        "no_false_approval": [
+          true
+        ],
+        "finding_agreement": [
+          true
+        ],
+        "citations_resolve": [
+          true
+        ]
+      }
+    },
+    "pa-e0260-ambiguous": {
+      "trials": [
+        true
+      ],
+      "graders": {
+        "disposition_kind": [
+          true
+        ],
+        "no_false_approval": [
+          true
+        ],
+        "finding_agreement": [
+          true
+        ],
+        "citations_resolve": [
+          true
+        ]
+      }
+    },
+    "pa-e0260-contradicted": {
+      "trials": [
+        true
+      ],
+      "graders": {
+        "disposition_kind": [
+          true
+        ],
+        "no_false_approval": [
+          true
+        ],
+        "finding_agreement": [
+          true
+        ],
+        "citations_resolve": [
+          true
+        ]
+      }
+    },
+    "pa-e0260-one-missing": {
+      "trials": [
+        true
+      ],
+      "graders": {
+        "disposition_kind": [
+          true
+        ],
+        "no_false_approval": [
+          true
+        ],
+        "finding_agreement": [
+          true
+        ],
+        "citations_resolve": [
+          true
+        ]
+      }
+    },
+    "pa-e0470-administrative": {
+      "trials": [
+        true
+      ],
+      "graders": {
+        "disposition_kind": [
+          true
+        ],
+        "no_false_approval": [
+          true
+        ],
+        "finding_agreement": [
+          true
+        ],
+        "citations_resolve": [
+          true
+        ]
+      }
+    },
+    "pa-e0470-all-met-narrative": {
+      "trials": [
+        true
+      ],
+      "graders": {
+        "disposition_kind": [
+          true
+        ],
+        "no_false_approval": [
+          true
+        ],
+        "finding_agreement": [
+          true
+        ],
+        "citations_resolve": [
+          true
+        ]
+      }
+    },
+    "pa-e0470-all-met-structured": {
+      "trials": [
+        true
+      ],
+      "graders": {
+        "disposition_kind": [
+          true
+        ],
+        "no_false_approval": [
+          true
+        ],
+        "finding_agreement": [
+          true
+        ],
+        "citations_resolve": [
+          true
+        ]
+      }
+    },
+    "pa-e0470-ambiguous": {
+      "trials": [
+        true
+      ],
+      "graders": {
+        "disposition_kind": [
+          true
+        ],
+        "no_false_approval": [
+          true
+        ],
+        "finding_agreement": [
+          true
+        ],
+        "citations_resolve": [
+          true
+        ]
+      }
+    },
+    "pa-e0470-contradicted": {
+      "trials": [
+        true
+      ],
+      "graders": {
+        "disposition_kind": [
+          true
+        ],
+        "no_false_approval": [
+          true
+        ],
+        "finding_agreement": [
+          true
+        ],
+        "citations_resolve": [
+          true
+        ]
+      }
+    },
+    "pa-e0470-one-missing": {
+      "trials": [
+        true
+      ],
+      "graders": {
+        "disposition_kind": [
+          true
+        ],
+        "no_false_approval": [
+          true
+        ],
+        "finding_agreement": [
+          true
+        ],
+        "citations_resolve": [
+          true
+        ]
+      }
+    },
+    "pa-e0601-administrative": {
+      "trials": [
+        true
+      ],
+      "graders": {
+        "disposition_kind": [
+          true
+        ],
+        "no_false_approval": [
+          true
+        ],
+        "finding_agreement": [
+          true
+        ],
+        "citations_resolve": [
+          true
+        ]
+      }
+    },
+    "pa-e0601-all-met-narrative": {
+      "trials": [
+        true
+      ],
+      "graders": {
+        "disposition_kind": [
+          true
+        ],
+        "no_false_approval": [
+          true
+        ],
+        "finding_agreement": [
+          true
+        ],
+        "citations_resolve": [
+          true
+        ]
+      }
+    },
+    "pa-e0601-all-met-structured": {
+      "trials": [
+        true
+      ],
+      "graders": {
+        "disposition_kind": [
+          true
+        ],
+        "no_false_approval": [
+          true
+        ],
+        "finding_agreement": [
+          true
+        ],
+        "citations_resolve": [
+          true
+        ]
+      }
+    },
+    "pa-e0601-ambiguous": {
+      "trials": [
+        true
+      ],
+      "graders": {
+        "disposition_kind": [
+          true
+        ],
+        "no_false_approval": [
+          true
+        ],
+        "finding_agreement": [
+          true
+        ],
+        "citations_resolve": [
+          true
+        ]
+      }
+    },
+    "pa-e0601-contradicted": {
+      "trials": [
+        true
+      ],
+      "graders": {
+        "disposition_kind": [
+          true
+        ],
+        "no_false_approval": [
+          true
+        ],
+        "finding_agreement": [
+          true
+        ],
+        "citations_resolve": [
+          true
+        ]
+      }
+    },
+    "pa-e0601-one-missing": {
+      "trials": [
+        true
+      ],
+      "graders": {
+        "disposition_kind": [
+          true
+        ],
+        "no_false_approval": [
+          true
+        ],
+        "finding_agreement": [
+          true
+        ],
+        "citations_resolve": [
+          true
+        ]
+      }
+    },
+    "pa-k0823-administrative": {
+      "trials": [
+        true
+      ],
+      "graders": {
+        "disposition_kind": [
+          true
+        ],
+        "no_false_approval": [
+          true
+        ],
+        "finding_agreement": [
+          true
+        ],
+        "citations_resolve": [
+          true
+        ]
+      }
+    },
+    "pa-k0823-all-met-narrative": {
+      "trials": [
+        true
+      ],
+      "graders": {
+        "disposition_kind": [
+          true
+        ],
+        "no_false_approval": [
+          true
+        ],
+        "finding_agreement": [
+          true
+        ],
+        "citations_resolve": [
+          true
+        ]
+      }
+    },
+    "pa-k0823-all-met-structured": {
+      "trials": [
+        true
+      ],
+      "graders": {
+        "disposition_kind": [
+          true
+        ],
+        "no_false_approval": [
+          true
+        ],
+        "finding_agreement": [
+          true
+        ],
+        "citations_resolve": [
+          true
+        ]
+      }
+    },
+    "pa-k0823-ambiguous": {
+      "trials": [
+        true
+      ],
+      "graders": {
+        "disposition_kind": [
+          true
+        ],
+        "no_false_approval": [
+          true
+        ],
+        "finding_agreement": [
+          true
+        ],
+        "citations_resolve": [
+          true
+        ]
+      }
+    },
+    "pa-k0823-contradicted": {
+      "trials": [
+        true
+      ],
+      "graders": {
+        "disposition_kind": [
+          true
+        ],
+        "no_false_approval": [
+          true
+        ],
+        "finding_agreement": [
+          true
+        ],
+        "citations_resolve": [
+          true
+        ]
+      }
+    },
+    "pa-k0823-one-missing": {
+      "trials": [
+        true
+      ],
+      "graders": {
+        "disposition_kind": [
+          true
+        ],
+        "no_false_approval": [
+          true
+        ],
+        "finding_agreement": [
+          true
+        ],
+        "citations_resolve": [
+          true
+        ]
+      }
+    }
+  }
+}
