@@ -10,5 +10,10 @@
       "replay"
     ]
   },
-  "findingAgreementMin": 0.75
+  "findingAgreementMin": 0.75,
+  "budgets": {
+    "inputTokens": 1600,
+    "outputTokens": 1000,
+    "modelCalls": 2
+  }
 }

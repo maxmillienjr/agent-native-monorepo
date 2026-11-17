@@ -114,9 +114,10 @@ export function generateContentCalls(cassette: Cassette): number {
 
 /**
  * A task's cost: its `budgets.modelCalls` when it declares one, which covers the
- * red-team and memory-recall tasks, and otherwise the `generateContent` seams in
- * its committed cassettes, the most any trial made. That is 1 for a prior-auth
- * task and 0 for an administrative one, whose cassette holds no decision.
+ * red-team, memory-recall and assessing prior-auth tasks, and otherwise the
+ * `generateContent` seams in its committed cassettes, the most any trial made.
+ * That is 0 for an administrative prior-auth task, whose cassette holds no
+ * decision and which can declare no budget.
  */
 export function taskCost(
   task: { readonly id: string; readonly budgets?: Budgets },
