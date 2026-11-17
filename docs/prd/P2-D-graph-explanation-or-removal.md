@@ -115,7 +115,7 @@ feature. Both outcomes are useful. Keeping the store without a result is not.
   cost stated there. Under C it is moot.
 - **Measuring the extractor.** Building the graph by running `distill` over the corpus would
   measure the model's ids, edges and attribution as well as the store. P2-B declined it at
-  review on 2026-09-26 for cost and stochasticity (`P2-B-retrieval-ablation.md:714-720`), and
+  review on 2026-09-26 for cost and stochasticity (`P2-B-retrieval-ablation.md:719-725`), and
   that reasoning holds. **Declined, not deferred.** The ADR states that the result is under
   an oracle extractor.
 - **Putting the graph back in retrieval.** ADR 0009's "What a positive result would need" is

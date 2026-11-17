@@ -87,8 +87,8 @@ header `chatModel: gemini-2.5-flash`. Counted from the cassettes' decisions on 2
 
 The chat seams are `plan.callLlm`, `act.selectTool`, `distill.extractEntities` and
 `assess.criteria`. `embed` and `act.tool` decisions are not chat calls. The figures agree
-with P4-B's recording table (`docs/prd/P4-B-memory-poisoning-red-team.md:655-679`), P3-D's
-(`docs/prd/P3-D-payer-dataset-fhir-prior-auth.md:821-861`) and the conventions
+with P4-B's recording table (`docs/prd/P4-B-memory-poisoning-red-team.md:657-681`), P3-D's
+(`docs/prd/P3-D-payer-dataset-fhir-prior-auth.md:821-863`) and the conventions
 (`.context/conventions.md:240-253`).
 
 **Six tasks have budgets that follow from the recording, and twenty-four have none.** The
@@ -293,7 +293,7 @@ contrast is on the same key and the same day. It needs a key from a project that
 called `gemini-2.5-flash`. The owner made one on 2026-10-15, and that project has to be kept
 until phase 3's fresh-clone trial. The owner runs both, or supplies the key for them.
 
-Step 1e answers P1-E's unchecked quota fact (`P1-E-model-drift-canary.md:727-731`): whether
+Step 1e answers P1-E's unchecked quota fact (`P1-E-model-drift-canary.md:731-735`): whether
 a model id's free-tier day is its own. The 2026-10-27 dispatch suggests that the alias target
 has a bucket apart from `gemini-2.5-flash`: it ended on a per-model daily 429 while the
 pinned probes answered. Whether `gemini-flash-latest` and `gemini-3.8-flash` share one is not
