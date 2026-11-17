@@ -381,7 +381,7 @@ describe('the suites as committed at HEAD', () => {
   });
   afterEach(() => rmSync(history, { recursive: true, force: true }));
 
-  it('costs prior-auth from its cassettes and the red team from its budgets', () => {
+  it('costs prior-auth and the red team from their budgets, and an administrative task from its cassette', () => {
     const tasks = rotationTasks(history);
     const priorAuth = tasks.filter((task) => task.suite === 'prior-auth');
     expect(priorAuth).toHaveLength(24);
@@ -391,7 +391,8 @@ describe('the suites as committed at HEAD', () => {
       'pa-e0601-administrative',
       'pa-k0823-administrative',
     ]);
-    expect(priorAuth.reduce((sum, task) => sum + task.cost, 0)).toBe(20);
+    // 20 assessing tasks at a ceiling of 2: the call and one retry.
+    expect(priorAuth.reduce((sum, task) => sum + task.cost, 0)).toBe(40);
     expect(tasks.filter((task) => task.suite === 'red-team')).toEqual([
       rt('rt-001', 3),
       rt('rt-002', 3),

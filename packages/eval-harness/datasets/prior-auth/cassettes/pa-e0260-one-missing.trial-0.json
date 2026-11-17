@@ -3,8 +3,8 @@
     "formatVersion": 3,
     "taskId": "pa-e0260-one-missing",
     "trialIndex": 0,
-    "recordedAt": "2026-11-09T22:27:18.447Z",
-    "gitSha": "5b35f9439bfac0fff9cb71211b1cbda39f2689ab",
+    "recordedAt": "2026-11-17T22:25:39.155Z",
+    "gitSha": "3ea25333c656bd62dd51e0f81ae07f42c4d2d3cc",
     "axes": {
       "model": "live",
       "memory": "live"
@@ -49,32 +49,44 @@
       },
       "response": {
         "kind": "value",
-        "value": [
-          {
-            "criterionId": "e0260-positioning-need",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-e0260-one-missing-visit"
-            ],
-            "rationale": "The prescriber documented that the member must sleep with the head raised at 45 degrees, which satisfies the requirement of 35 degrees or more."
-          },
-          {
-            "criterionId": "e0260-linked-diagnosis",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-e0260-one-missing-visit"
-            ],
-            "rationale": "The prescriber noted that the positioning need follows from her heart failure."
-          },
-          {
-            "criterionId": "e0260-frequent-adjustment",
-            "status": "insufficient",
-            "evidence": [],
-            "rationale": "There is no evidence in the provided documents stating that the position must change several times a day or without delay."
+        "value": {
+          "findings": [
+            {
+              "criterionId": "e0260-positioning-need",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-e0260-one-missing-visit"
+              ],
+              "rationale": "The prescriber documented that the member must sleep with the head raised at 45 degrees, which satisfies the requirement for the head raised 35 degrees or more."
+            },
+            {
+              "criterionId": "e0260-linked-diagnosis",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-e0260-one-missing-visit"
+              ],
+              "rationale": "The prescriber explicitly links the positioning need to her heart failure in the clinical note."
+            },
+            {
+              "criterionId": "e0260-frequent-adjustment",
+              "status": "insufficient",
+              "evidence": [],
+              "rationale": "There is no evidence in the provided documents stating that the position must change several times a day or without delay in a way that a manual crank cannot do."
+            }
+          ],
+          "tokenCounts": {
+            "prompt": 668,
+            "completion": 277,
+            "reasoning": 0
           }
-        ]
+        }
       },
-      "latencyMs": 1242
+      "tokenCounts": {
+        "prompt": 668,
+        "completion": 277,
+        "reasoning": 0
+      },
+      "latencyMs": 1035
     }
   ]
 }

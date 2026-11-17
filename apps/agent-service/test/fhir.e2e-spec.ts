@@ -228,13 +228,15 @@ describe('FHIR prior-authorization surface (e2e)', () => {
       moduleFixture.get(RunsService).setModelDecorator((live) => ({
         ...live,
         assess: {
-          assessCriteria: async (criteria, evidence) =>
-            criteria.map((criterion) => ({
+          assessCriteria: async (criteria, evidence) => ({
+            findings: criteria.map((criterion) => ({
               criterionId: criterion.id,
               status: 'met' as const,
               evidence: evidence.slice(0, 1).map((item) => item.reference),
               rationale: `${SENTINEL}: ${criterion.title}`,
             })),
+            tokenCounts: { prompt: 0, completion: 0 },
+          }),
         },
       }));
     });

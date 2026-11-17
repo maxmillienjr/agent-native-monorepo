@@ -301,13 +301,15 @@ describe.each(AXES)('appeals: Medicare Advantage reconsiderations (e2e), memory 
     fixture.get(RunsService).setModelDecorator((live) => ({
       ...live,
       assess: {
-        assessCriteria: async (criteria, evidence) =>
-          criteria.map((criterion) => ({
+        assessCriteria: async (criteria, evidence) => ({
+          findings: criteria.map((criterion) => ({
             criterionId: criterion.id,
             status: 'insufficient' as const,
             evidence: evidence.slice(0, 1).map((item) => item.reference),
             rationale: `${SENTINEL}: ${criterion.title}`,
           })),
+          tokenCounts: { prompt: 0, completion: 0 },
+        }),
       },
     }));
 

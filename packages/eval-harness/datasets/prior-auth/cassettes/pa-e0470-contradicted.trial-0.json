@@ -3,8 +3,8 @@
     "formatVersion": 3,
     "taskId": "pa-e0470-contradicted",
     "trialIndex": 0,
-    "recordedAt": "2026-11-09T22:27:23.777Z",
-    "gitSha": "5b35f9439bfac0fff9cb71211b1cbda39f2689ab",
+    "recordedAt": "2026-11-17T22:25:44.247Z",
+    "gitSha": "3ea25333c656bd62dd51e0f81ae07f42c4d2d3cc",
     "axes": {
       "model": "live",
       "memory": "live"
@@ -62,42 +62,54 @@
       },
       "response": {
         "kind": "value",
-        "value": [
-          {
-            "criterionId": "e0470-osa-diagnosis",
-            "status": "met",
-            "evidence": [
-              "Condition/condition-e0470-contradicted-osa"
-            ],
-            "rationale": "The condition record documents a diagnosis of obstructive sleep apnea."
-          },
-          {
-            "criterionId": "e0470-cpap-failure",
-            "status": "not-met",
-            "evidence": [
-              "DocumentReference/doc-e0470-contradicted-trial"
-            ],
-            "rationale": "The trial of continuous positive airway pressure lasted only 10 days (from 2026-08-06 to 2026-08-16), which fails the requirement of at least 21 days."
-          },
-          {
-            "criterionId": "e0470-ahi-threshold",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-e0470-contradicted-study"
-            ],
-            "rationale": "The sleep study dated 2026-04-15 reports an apnea-hypopnea index of 42 events per hour, which meets the threshold of at least 18."
-          },
-          {
-            "criterionId": "e0470-bilevel-titration",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-e0470-contradicted-titration"
-            ],
-            "rationale": "The bi-level titration study documents that bi-level pressure at inspiratory 16 / expiratory 10 cm H2O controlled the apnea with a residual AHI of 3 events per hour."
+        "value": {
+          "findings": [
+            {
+              "criterionId": "e0470-osa-diagnosis",
+              "status": "met",
+              "evidence": [
+                "Condition/condition-e0470-contradicted-osa"
+              ],
+              "rationale": "The member has a recorded condition of obstructive sleep apnea."
+            },
+            {
+              "criterionId": "e0470-cpap-failure",
+              "status": "not-met",
+              "evidence": [
+                "DocumentReference/doc-e0470-contradicted-trial"
+              ],
+              "rationale": "The trial of continuous positive airway pressure was only 10 days (from 2026-08-06 to 2026-08-16), which does not meet the requirement of at least 21 days."
+            },
+            {
+              "criterionId": "e0470-ahi-threshold",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-e0470-contradicted-study"
+              ],
+              "rationale": "The sleep study dated 2026-04-15 reports an apnea-hypopnea index of 42 events per hour, which is at least 18 events per hour."
+            },
+            {
+              "criterionId": "e0470-bilevel-titration",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-e0470-contradicted-titration"
+              ],
+              "rationale": "The titration study documents that bi-level pressure at the ordered settings (16/10 cm H2O) controlled the apnea (residual AHI 3 events per hour)."
+            }
+          ],
+          "tokenCounts": {
+            "prompt": 1029,
+            "completion": 424,
+            "reasoning": 0
           }
-        ]
+        }
       },
-      "latencyMs": 1688
+      "tokenCounts": {
+        "prompt": 1029,
+        "completion": 424,
+        "reasoning": 0
+      },
+      "latencyMs": 1224
     }
   ]
 }

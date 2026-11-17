@@ -3,8 +3,8 @@
     "formatVersion": 3,
     "taskId": "pa-k0823-all-met-narrative",
     "trialIndex": 0,
-    "recordedAt": "2026-11-09T22:27:33.581Z",
-    "gitSha": "5b35f9439bfac0fff9cb71211b1cbda39f2689ab",
+    "recordedAt": "2026-11-17T22:25:53.686Z",
+    "gitSha": "3ea25333c656bd62dd51e0f81ae07f42c4d2d3cc",
     "axes": {
       "model": "live",
       "memory": "live"
@@ -59,50 +59,62 @@
       },
       "response": {
         "kind": "value",
-        "value": [
-          {
-            "criterionId": "k0823-mobility-limitation",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-k0823-all-met-narrative-exam"
-            ],
-            "rationale": "The mobility examination documents that the member cannot complete daily activities in the home such as reaching the toilet in time and preparing meals due to knee instability."
-          },
-          {
-            "criterionId": "k0823-cane-walker-insufficient",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-k0823-all-met-narrative-exam"
-            ],
-            "rationale": "The examination states that a cane and a walker do not resolve the limitation as he can only get as far as the kitchen door with either before having to sit down."
-          },
-          {
-            "criterionId": "k0823-manual-chair-insufficient",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-k0823-all-met-narrative-exam"
-            ],
-            "rationale": "The examination states that due to previous shoulder replacements he cannot push himself in his manual chair past the end of the bed."
-          },
-          {
-            "criterionId": "k0823-home-access",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-k0823-all-met-narrative-exam"
-            ],
-            "rationale": "The home assessment was performed the same week as the exam dated 2026-09-04T12:00:00Z (within 60 days) and confirms wide doorways, turning space, and appropriate floor surfaces."
-          },
-          {
-            "criterionId": "k0823-safe-operation",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-k0823-all-met-narrative-exam"
-            ],
-            "rationale": "The examination documents that the member reads without glasses, has sound judgement, and successfully drove the demonstration chair, confirming vision, judgement, and hand function for safe operation."
+        "value": {
+          "findings": [
+            {
+              "criterionId": "k0823-mobility-limitation",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-k0823-all-met-narrative-exam"
+              ],
+              "rationale": "The mobility examination documents that the member's knees give way, preventing him from completing daily activities such as getting to the toilet in time and standing at the stove to cook."
+            },
+            {
+              "criterionId": "k0823-cane-walker-insufficient",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-k0823-all-met-narrative-exam"
+              ],
+              "rationale": "The examination explicitly states that neither his cane nor his walker fixes the limitation, as he can only get as far as the kitchen door before having to sit down."
+            },
+            {
+              "criterionId": "k0823-manual-chair-insufficient",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-k0823-all-met-narrative-exam"
+              ],
+              "rationale": "The examination states that due to replaced shoulders, he cannot push himself in his old manual chair past the end of the bed, failing to resolve his daily activity needs."
+            },
+            {
+              "criterionId": "k0823-home-access",
+              "status": "insufficient",
+              "evidence": [
+                "DocumentReference/doc-k0823-all-met-narrative-exam"
+              ],
+              "rationale": "Although a home assessment was conducted, the evidence does not provide a specific date for the home assessment relative to the request to confirm it was within the 60-day window."
+            },
+            {
+              "criterionId": "k0823-safe-operation",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-k0823-all-met-narrative-exam"
+              ],
+              "rationale": "The examination documents that he reads the paper without glasses (vision), his judgement is sound, and he successfully drove the demonstration chair around the living room (hand function/operation)."
+            }
+          ],
+          "tokenCounts": {
+            "prompt": 922,
+            "completion": 541,
+            "reasoning": 0
           }
-        ]
+        }
       },
-      "latencyMs": 1593
+      "tokenCounts": {
+        "prompt": 922,
+        "completion": 541,
+        "reasoning": 0
+      },
+      "latencyMs": 1489
     }
   ]
 }

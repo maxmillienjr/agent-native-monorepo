@@ -365,7 +365,10 @@ export class RunsService {
       assess: {
         assessCriteria: async (criteria, evidence) => {
           const response = await callAssess(ASSESS_PROMPT, assessmentPrompt(criteria, evidence));
-          return parseAssessment(response.content);
+          return {
+            findings: parseAssessment(response.content),
+            tokenCounts: response.tokenCounts,
+          };
         },
       },
     };

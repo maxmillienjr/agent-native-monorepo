@@ -252,6 +252,33 @@ export function replayDecks(
 }
 
 /**
+ * Refuses a cassette whose `assess.criteria` decisions were recorded before the
+ * seam returned its usage (2026-11-17): the served value would be a bare
+ * findings array where the graph now reads `{ findings, tokenCounts }`, and
+ * the trial would have no usage for its budgets. Format 3 is otherwise
+ * unchanged, so the memory-recall and red-team sets, which have no such
+ * decision, replay as they did and keep their live epochs.
+ */
+function refuseUnmeteredAssessments(raw: unknown): void {
+  const decisions = (raw as { decisions?: unknown } | null)?.decisions;
+  if (!Array.isArray(decisions)) return;
+  const unmetered = decisions.some((decision: unknown) => {
+    const d = decision as { seam?: unknown; response?: { kind?: unknown; value?: unknown } };
+    return (
+      d.seam === 'assess.criteria' &&
+      d.response?.kind === 'value' &&
+      Array.isArray(d.response.value)
+    );
+  });
+  if (unmetered) {
+    throw new CassetteIncompatibleError([
+      'an assess.criteria decision holds a bare findings array: it was recorded before the ' +
+        'seam returned its usage, and has to be re-recorded, not replayed',
+    ]);
+  }
+}
+
+/**
  * A player for one cassette, or a refusal that names the file and the command.
  *
  * The package says what is wrong with a cassette and nothing about this
@@ -266,6 +293,7 @@ function playerFor(
   config: ReplayConfig,
 ): CassettePlayer {
   try {
+    refuseUnmeteredAssessments(raw);
     return new CassettePlayer(raw, config, { onServe: recordServedDecision });
   } catch (error) {
     if (!(error instanceof CassetteIncompatibleError)) throw error;

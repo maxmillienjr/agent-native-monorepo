@@ -3,8 +3,8 @@
     "formatVersion": 3,
     "taskId": "pa-k0823-ambiguous",
     "trialIndex": 0,
-    "recordedAt": "2026-11-09T22:27:36.651Z",
-    "gitSha": "5b35f9439bfac0fff9cb71211b1cbda39f2689ab",
+    "recordedAt": "2026-11-17T22:25:56.505Z",
+    "gitSha": "3ea25333c656bd62dd51e0f81ae07f42c4d2d3cc",
     "axes": {
       "model": "live",
       "memory": "live"
@@ -67,50 +67,62 @@
       },
       "response": {
         "kind": "value",
-        "value": [
-          {
-            "criterionId": "k0823-mobility-limitation",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-k0823-ambiguous-exam"
-            ],
-            "rationale": "The mobility examination documents that the member cannot get to the bathroom or prepare a meal without help."
-          },
-          {
-            "criterionId": "k0823-cane-walker-insufficient",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-k0823-ambiguous-exam"
-            ],
-            "rationale": "The examination states that a walker does not resolve the limitation as she stops after 10 feet."
-          },
-          {
-            "criterionId": "k0823-manual-chair-insufficient",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-k0823-ambiguous-exam"
-            ],
-            "rationale": "The examination states that she cannot self-propel a manual wheelchair more than 15 feet."
-          },
-          {
-            "criterionId": "k0823-home-access",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-k0823-ambiguous-home"
-            ],
-            "rationale": "A home assessment dated 2026-08-28 (within 60 days before the request) confirms that doorways, turning space and floor surfaces accommodate a power wheelchair."
-          },
-          {
-            "criterionId": "k0823-safe-operation",
-            "status": "insufficient",
-            "evidence": [
-              "DocumentReference/doc-k0823-ambiguous-exam"
-            ],
-            "rationale": "The examination states that her vision may be deteriorating, she was unsure of the joystick at first, and the clinician is not certain she could stop reliably, making the evidence uncertain and insufficient."
+        "value": {
+          "findings": [
+            {
+              "criterionId": "k0823-mobility-limitation",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-k0823-ambiguous-exam"
+              ],
+              "rationale": "The mobility examination documents that the member cannot get to the bathroom or prepare a meal without help, satisfying the requirement of a limitation preventing completion of a daily activity in the home."
+            },
+            {
+              "criterionId": "k0823-cane-walker-insufficient",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-k0823-ambiguous-exam"
+              ],
+              "rationale": "The examination states that a walker does not resolve the limitation as she stops after 10 feet."
+            },
+            {
+              "criterionId": "k0823-manual-chair-insufficient",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-k0823-ambiguous-exam"
+              ],
+              "rationale": "The examination states that she cannot self-propel a manual wheelchair more than 15 feet, which is insufficient to complete the daily activity."
+            },
+            {
+              "criterionId": "k0823-home-access",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-k0823-ambiguous-home"
+              ],
+              "rationale": "A home assessment dated 2026-08-28 (within 60 days before the request/exam) confirms that doorways, turning space, and floor surfaces accommodate a power wheelchair."
+            },
+            {
+              "criterionId": "k0823-safe-operation",
+              "status": "insufficient",
+              "evidence": [
+                "DocumentReference/doc-k0823-ambiguous-exam"
+              ],
+              "rationale": "The examination states that vision may be deteriorating, she was unsure of the joystick, and the examiner is not certain she could stop reliably, rendering the statement uncertain/insufficient rather than confirmed safe operation."
+            }
+          ],
+          "tokenCounts": {
+            "prompt": 1017,
+            "completion": 516,
+            "reasoning": 0
           }
-        ]
+        }
       },
-      "latencyMs": 1365
+      "tokenCounts": {
+        "prompt": 1017,
+        "completion": 516,
+        "reasoning": 0
+      },
+      "latencyMs": 1358
     }
   ]
 }

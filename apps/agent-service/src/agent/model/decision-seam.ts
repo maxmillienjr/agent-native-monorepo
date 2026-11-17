@@ -117,18 +117,21 @@ export const calls = {
   }),
 } as const;
 
-/** The three seams that are a `generateContent` call, and so carry usage. */
+/** The four seams that are a `generateContent` call, and so carry usage. */
 const CHAT_SEAMS: ReadonlySet<string> = new Set([
   'plan.callLlm',
   'act.selectTool',
   'distill.extractEntities',
+  'assess.criteria',
 ]);
 
 /**
  * The usage a chat seam returned beside its answer.
  *
  * Every chat seam returns `{ ..., tokenCounts }` from format 2 on (P1-F), so
- * the recorder reads it at all three. `embed`, `act.tool`, `act.compensate` and
+ * the recorder reads it at all four. `assess.criteria` joined them on
+ * 2026-11-17; a decision recorded before that holds a bare findings array,
+ * which `assertAssessShape` refuses. `embed`, `act.tool`, `act.compensate` and
  * `memory.retrieve` report none, and none is claimed for them.
  */
 export function tokenCountsFor(
@@ -332,11 +335,28 @@ export function replayModelDeps(deck: Deck): ModelDeps {
       withInferenceSpan(embedding, () => deck.resolve(calls.embed(text), unreachable)),
     assess: {
       assessCriteria: (criteria, evidence) =>
-        withInferenceSpan(chat('assess.criteria', true), () =>
-          deck.resolve(calls.assess(criteria, evidence), unreachable),
+        withInferenceSpan(chat('assess.criteria', true), async () =>
+          assertAssessShape(await deck.resolve(calls.assess(criteria, evidence), unreachable)),
         ),
     },
   };
+}
+
+/**
+ * A served `assess.criteria` value, or a refusal of the shape recorded before
+ * the seam returned its usage: a bare findings array. The cassette loader
+ * refuses such a set before any store is reset (`eval/cassette-deps.ts`); this
+ * catches the same shape on any other path to the deck, such as an audit
+ * replay of an older run record.
+ */
+export function assertAssessShape<T>(value: T): T {
+  if (Array.isArray(value)) {
+    throw new Error(
+      'assess.criteria was recorded before the seam returned its usage (a bare findings ' +
+        'array); re-record it, as `EVAL_SUITE=prior-auth EVAL_CASSETTE_MODE=record` does',
+    );
+  }
+  return value;
 }
 
 /**
