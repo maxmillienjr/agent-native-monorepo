@@ -2,7 +2,7 @@
 id: P1-H
 title: Live coverage of the replay-only suites by nightly rotation
 tier: 1
-status: in-progress
+status: shipped
 size: M
 depends_on: [P1-D, P1-E, P1-I, P3-D, P4-B]
 blocks: []
@@ -510,7 +510,7 @@ history, report or transport. **CI, model `live`** means scheduled runs on the f
       `run-compare.test.ts` › "compares a slice’s cassettes with the committed ones and makes
       no model request", on copies of two committed prior-auth cassettes, with
       `modelRequests` empty.
-- [ ] The workflow: `eval-rotation` needs `live` and `canary` and shares their concurrency
+- [x] The workflow: `eval-rotation` needs `live` and `canary` and shares their concurrency
       group. It is skipped when `EVAL_SCHEDULE_PAUSED` is `true`, `live` or `rotation`, and
       on a dispatch without `rotation: true` or with `chat_model` set. It is in no ruleset.
       `yarn lint:docs` passes. **Reviewer, from the YAML, and one dispatch with
@@ -519,24 +519,42 @@ history, report or transport. **CI, model `live`** means scheduled runs on the f
       that is false when `needs.live` was skipped (`true`, `live`), on `rotation`, and on a
       dispatch without `rotation` or with `chat_model`. `.github/rulesets/main.json` is
       unchanged, and `yarn lint:docs` passes. actionlint 1.7.7 reports nothing in the new
-      job. The dispatch is still to run.
-- [ ] **CI, model `live`:** on the first scheduled night with `L` recorded, the rotation's
+      job. The dispatch, 2026-11-15: run 43749965513, `rotation: true`, ran the slice on all
+      32 calls with `eval-rotation` green.
+- [x] **CI, model `live`:** on the first scheduled night with `L` recorded, the rotation's
       summary prints `L`, `S`, `R`, the budget, the slice and the calls the slice made. The
       calls made are no more than the budget, plus at most `R`. No job that night aborts on a
-      per-day 429. The run id is recorded here.
-- [ ] **CI, model `live`:** on consecutive scheduled nights, `eval-history` holds prior-auth
+      per-day 429. The run id is recorded here. 2026-11-16, run 43850362111: `L` 500, `S` 13
+      (12 from `eval-live`'s report, 1 for the canary), `R` 1, budget 486; the slice was all
+      24 prior-auth and 3 red-team tasks, and it made 32 calls (prior-auth 20, red team 12).
+      Every job that night was green and none met a 429.
+- [x] **CI, model `live`:** on consecutive scheduled nights, `eval-history` holds prior-auth
       tallies in one epoch until every prior-auth task has at least 2 trials. The summary then
       prints the pooled per-task rate and "wrongful approvals x of n". The dates, the run ids
       and the epoch are recorded here. The same is recorded for the red team when every
-      red-team task has at least one trial.
-- [ ] `.context/conventions.md`'s consumer table has a row for `eval-rotation` with its
+      red-team task has at least one trial. **Prior-auth**, epoch `fb052f35aa12`: the
+      2026-11-15 dispatch (43749965513, at `1d15919`) and the 2026-11-16 night (43850362111,
+      at `89ff3ae`) gave every task 2 trials. The 11-16 summary prints the per-task table and
+      a **pooled live pass rate of 94% over 2 trials × 24 tasks**, with "Wrongful approvals:
+      0 of 48 in this epoch". The three failed trials are referrals of approval-labelled
+      tasks: `pa-e0470-all-met-narrative` and `pa-k0823-all-met-narrative` once each, and
+      `pa-k0823-ambiguous` once. The 2026-11-17 night (44074180743) aborted the prior-auth
+      slice after 19 trials on a provider 503 on two consecutive requests
+      (`provider-unavailable`), so it wrote no tally; that is P1-I's abort working as built,
+      and the epoch was already full. The epoch's first run is a dispatch rather than a
+      scheduled night, which this criterion did not foresee; the reviewer accepts it, because
+      the dispatch ran the same job on the same secret and is pooled the same way. **Red
+      team**, epoch `cd73b9252fa7`: 3 runs (11-15, 11-16, 11-17), 9 of 9 trials passed, and no
+      `canary_absent_*` cell failed.
+- [x] `.context/conventions.md`'s consumer table has a row for `eval-rotation` with its
       formula, and its `EVAL_SCHEDULE_PAUSED` paragraph names `rotation`. `agent-eval.yml`'s
       header comment no longer says the two suites are "not in the live job" without naming
       the rotation. `docs/STATUS.md` has a row owned by P1-H. **Reviewer.** 2026-11-09: the
       consumer table's third row is `eval-rotation`, `L − S − R`, with the paragraph under
       it; the `EVAL_SCHEDULE_PAUSED` paragraph names `rotation`; the header comment says the
       rotation runs the two suites; and STATUS row 38 is `stubbed`, owned by P1-H, because
-      the job runs nothing until `L` is recorded.
+      the job runs nothing until `L` is recorded. 2026-11-17: `L` is recorded and the job has run, so row 38 is
+      `implemented`.
 
 ## What the implementation found
 
