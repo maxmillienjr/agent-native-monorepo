@@ -2,6 +2,7 @@ import type { Bundle, FhirResource } from 'fhir/r4.js';
 import type { Payer, Policy } from '../policy.js';
 import { HTEST, SYSTEMS } from '../systems.js';
 import { SCENARIOS, type ScenarioSpec } from './scenarios.js';
+import { BUDGETS } from './budgets.js';
 
 /**
  * Turns `scenarios.ts` into the committed prior-authorization dataset.
@@ -68,6 +69,7 @@ export interface AuthoredTask {
   readonly bundle: string;
   readonly requires: { readonly model: readonly ['live', 'replay'] };
   readonly findingAgreementMin: number;
+  readonly budgets?: (typeof BUDGETS)[string];
 }
 
 export interface AuthoredLabel {
@@ -383,6 +385,7 @@ export function authorDataset(payer: Payer, policies: readonly Policy[]): Author
       bundle: bundlePath,
       requires: { model: ['live', 'replay'] },
       findingAgreementMin: 0.75,
+      ...(BUDGETS[id] === undefined ? {} : { budgets: BUDGETS[id] }),
     };
 
     labels[id] = {
