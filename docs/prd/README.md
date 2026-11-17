@@ -2,7 +2,7 @@
 
 ## Where things stand
 
-_Last updated 2026-11-15. If this section is more than a few weeks stale, trust the code
+_Last updated 2026-11-17. If this section is more than a few weeks stale, trust the code
 over it and update it._
 
 **The nightlies since the switch, 2026-11-10 to 11-14: two green, three red, for two causes
@@ -44,20 +44,20 @@ the tag `recording/p3g-wording-a-2026-11-09`. The prior-auth re-record on the ow
 key at `5b35f94` has 0 wrongful approvals of 16, 0 unnecessary referrals of 8, and no known
 failure in the baseline. It cost 85 paid calls in all, about $0.11.
 
-**[P1-H](P1-H-live-rotation.md) is in progress**, tracked in
-[#159](https://github.com/maxmillienjr/agent-native-monorepo/issues/159). It brings
-prior-auth and the red team onto the live model at night, on the free CI secret, through an
-`eval-rotation` job that runs last and spends what `eval-live` and the canary left. Branch
-`feat/p1-h` builds all of it that fakes or the YAML can check, with no model call: the
-selector (`eval:history slice`), the budget `L − S − R`, tallies pooled under the suite's own
-name, the `tasks-random` floor of 2 trials, the zero-tolerance graders, `promote-live
---suite`, `canary:compare` with `COMPARE_SUITE`, and the job with `EVAL_ROTATION_DAILY_LIMIT`
-empty. All three suites replay to `match`. STATUS row 38 is `stubbed`. **Next, and it costs
-no call:** the owner reads the free-tier `generateContent` requests per day for
-`gemini-3.5-flash-lite` on the secret's project from AI Studio, and records it in
-`.context/conventions.md` and the workflow. Google's rate-limits page does not publish that
-figure, and until it is recorded the job runs nothing and warns. Then one dispatch with
-`rotation: true`, and the scheduled nights.
+**[P1-H](P1-H-live-rotation.md) has shipped: prior-auth and the red team now run on the
+live model at night.** Closed [#159](https://github.com/maxmillienjr/agent-native-monorepo/issues/159).
+`eval-rotation` runs last and spends what `eval-live` and the canary left, on the free CI
+secret. `L` is 500 requests a day, read by the owner from AI Studio on 2026-11-15. The first
+scheduled night with it, 2026-11-16 (run 43850362111), budgeted 486 and spent 32 calls on
+all 24 prior-auth and 3 red-team tasks. With the 11-15 dispatch, every prior-auth task has 2
+live trials in epoch `fb052f35aa12`: a pooled pass rate of 94%, **0 wrongful approvals**,
+and three referrals of approval-labelled tasks, which are safe failures. The red team passed
+9 of 9 over three runs. On 11-17 a provider 503 aborted the prior-auth slice after 19 trials,
+so that night wrote no prior-auth tally and its run is red. No live reference is promoted
+yet, so the live gate reads `incomparable`. **Next, optional:** promote a reference with
+`yarn eval:promote-live --suite prior-auth`, and give the prior-auth tasks budgets, which
+needs `assess.criteria` to record its usage, a cassette format change and a re-record
+(STATUS row 25).
 
 **[P2-E](P2-E-remove-the-graph.md) is shipped: the graph is gone.** ADR 0012's option C
 landed in two pull requests on 2026-11-09. #152 (`df655c0`) stopped `reflect` writing the
@@ -68,7 +68,7 @@ at `df655c0` with no key, which is tagged `archive/p2e-graph-measurements`. The 
 contracts are `'pgvector'` alone, the task format refuses a graph seed, and the memory axis
 is `DATABASE_URL` alone. All three suites replay to `match` against unchanged baselines.
 
-**Twenty-nine PRDs are shipped and the system they describe is running.** The service answers
+**Thirty PRDs are shipped and the system they describe is running.** The service answers
 `POST /runs` and `POST /runs/stream`; `memory-core` is constructed by the app rather than
 sitting beside it; the graph compiles with a checkpointer and a retry policy on every node
 that performs I/O; and `packages/eval-harness` measures the result. Verified against live
@@ -520,17 +520,17 @@ both on committed baselines, and its ruleset makes a red
 P1-E, shipped, watches whether the model behind the pinned ids has changed. P1-F,
 shipped, checks each task's tokens and model calls beside the pass rate.
 
-| ID                                     | Title                                                         | Size | Status      |
-| -------------------------------------- | ------------------------------------------------------------- | ---- | ----------- |
-| [P1-A](P1-A-eval-harness.md)           | `packages/eval-harness` — evaluation as a first-class package | L    | shipped     |
-| [P1-B](P1-B-agent-cassette.md)         | `packages/agent-cassette` — decision-level record and replay  | L    | shipped     |
-| [P1-C](P1-C-tiered-eval-pipeline.md)   | Tiered evaluation pipeline replacing the nightly stub         | M    | shipped     |
-| [P1-D](P1-D-regression-gate.md)        | Statistical regression gate against committed baselines       | L    | shipped     |
-| [P1-E](P1-E-model-drift-canary.md)     | Model-drift canary against pinned and floating model ids      | M    | shipped     |
-| [P1-F](P1-F-cost-and-step-budgets.md)  | Cost, latency, and step budgets as CI assertions              | M    | shipped     |
-| [P1-G](P1-G-task-axis-requirements.md) | Task-level axis requirements for the evaluation suite         | S    | shipped     |
-| [P1-H](P1-H-live-rotation.md)          | Live coverage of the replay-only suites by nightly rotation   | M    | in-progress |
-| [P1-I](P1-I-chat-model-migration.md)   | Migrate off `gemini-2.5-flash`                                | L    | shipped     |
+| ID                                     | Title                                                         | Size | Status  |
+| -------------------------------------- | ------------------------------------------------------------- | ---- | ------- |
+| [P1-A](P1-A-eval-harness.md)           | `packages/eval-harness` — evaluation as a first-class package | L    | shipped |
+| [P1-B](P1-B-agent-cassette.md)         | `packages/agent-cassette` — decision-level record and replay  | L    | shipped |
+| [P1-C](P1-C-tiered-eval-pipeline.md)   | Tiered evaluation pipeline replacing the nightly stub         | M    | shipped |
+| [P1-D](P1-D-regression-gate.md)        | Statistical regression gate against committed baselines       | L    | shipped |
+| [P1-E](P1-E-model-drift-canary.md)     | Model-drift canary against pinned and floating model ids      | M    | shipped |
+| [P1-F](P1-F-cost-and-step-budgets.md)  | Cost, latency, and step budgets as CI assertions              | M    | shipped |
+| [P1-G](P1-G-task-axis-requirements.md) | Task-level axis requirements for the evaluation suite         | S    | shipped |
+| [P1-H](P1-H-live-rotation.md)          | Live coverage of the replay-only suites by nightly rotation   | M    | shipped |
+| [P1-I](P1-I-chat-model-migration.md)   | Migrate off `gemini-2.5-flash`                                | L    | shipped |
 
 [P1-H](P1-H-live-rotation.md), raised on 2026-10-26, was accepted by the owner on
 2026-11-09, tracked in [#159](https://github.com/maxmillienjr/agent-native-monorepo/issues/159). Prior-auth and the red team run only on replay at night.
@@ -547,8 +547,9 @@ page and has not been recorded yet. Recording it is P1-H's first criterion, and 
 the job runs nothing. P1-H also pre-registers P1-D's floor for the `tasks-random` regime at 2
 trials per task, where it was 15. A single live failure of `no_false_approval` or of a red-team
 `canary_absent_*` grader turns the rotation job red. It depends on P1-D, P1-E, P1-I, P3-D and
-P4-B. It has been in progress since 2026-11-09: everything but the recorded limit, the
-dispatch and the nights is built, and the job runs nothing until the limit is recorded.
+P4-B. **It shipped on 2026-11-17**: `L` was recorded as 500 on 2026-11-15, the dispatch and
+the 2026-11-16 night gave every prior-auth task 2 live trials with no wrongful approval, and
+the red team passed every live trial (STATUS row 38).
 
 [P1-I](P1-I-chat-model-migration.md), accepted on 2026-11-09, moves the chat model off `gemini-2.5-flash`.
 This paragraph used to say no shutdown date forces it before 2028-05-14. That is the
