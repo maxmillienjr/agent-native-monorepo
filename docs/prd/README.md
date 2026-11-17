@@ -486,6 +486,13 @@ post-ship correction section that explains both wrong ticks.
   taxonomy and lives here; PRD→task is a work breakdown and lives in GitHub.
 - **Changes arrive as pull requests.** `git log -p docs/prd/<file>` is the record of how the
   thinking changed, which is the whole reason these are files and not issue bodies.
+- **The PRDs are also a static site.** `node scripts/prd-site.mjs` writes it to
+  `dist/prd-site`: the dependency graph from `depends_on` and `blocks`, then one page per
+  PRD with its Problem beside the section on what shipped and where it diverged. It reads
+  the frontmatter fields `id`, `title`, `tier`, `status`, `size`, `depends_on` and `blocks`,
+  and finds that section by a heading of level 2 or 3 containing "diverged". Its tests run
+  in `yarn lint:docs`. `.github/workflows/prd-site.yml` deploys it to GitHub Pages, and
+  does nothing until the repository variable `PRD_SITE_PAGES` is `true`.
 
 Status values: `draft` → `accepted` → `in-progress` → `shipped` → `superseded`.
 Sizes: `S` ≈ 1–2 days, `M` ≈ 3–5 days, `L` ≈ 1–2 weeks.
