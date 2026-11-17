@@ -335,7 +335,12 @@ values come from it:
   reaches for a tool on `memory-recall-001` (a behaviour that task declines to grade). It
   does fail on a change that adds a model call per step or per run. Summed over the suite,
   it bounds the nightly's quota draw at twelve calls a trial round, and P1-C's design
-  depends on that number staying under twenty.
+  depends on that number staying under twenty. _Amended 2026-11-18:_ the rule is now
+  `3 + maxSteps`, the graph's most plus one retried call. `IO_RETRY` re-runs a node whose
+  call failed to parse, and a span counts as a call either way, so the graph's most was not
+  the most a trial can make. Run 44201513534's `tool-use-001` trial passed every grader on
+  the recorded path and made 6 calls, one of them a retry of a truncated selection. The
+  red-team tasks gained the same one call (`rt-003`, two runs a trial, gained one, not two).
 
 ### The price table
 

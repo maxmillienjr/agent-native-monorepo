@@ -422,7 +422,10 @@ explanation stages, are archived at a tag and run in no tier (below).
   number in the task file, in that pull request, and say why in its description; never
   widen headroom in a pull request that does not need it. The values follow P1-F's rule —
   the recording × 1.5 for input and × 2 for output, rounded up to the next hundred, and
-  `2 + maxSteps` calls — until the nightly's samples calibrate them. A prior-auth task
+  `2 + maxSteps` calls plus one, for one retried call — until the nightly's samples calibrate
+  them. The retry was added on 2026-11-18, when a `tool-use-001` trial that passed every grader
+  on the recorded path made a sixth call because `IO_RETRY` retried a truncated selection
+  (run 44201513534). A prior-auth task
   makes one call, so its ceiling is 2, the call and one retry; an administrative task makes
   none and has no budget, because a trial with no model span is unmeasurable. Calibrating applies
   the same multipliers to the largest nightly sample since the recording, and is done for a
@@ -535,19 +538,19 @@ Standing consumers of the free key, before any development spends a call:
 | -------------------------------------------- | --------------------------------------------------------------------------------------------- |
 | `agent-eval.yml` `eval-live`, one trial each | about 12                                                                                      |
 | `agent-eval.yml` `eval-canary` (P1-E)        | 2                                                                                             |
-| `agent-eval.yml` `eval-rotation` (P1-H)      | what is left: `L − S − R`, at most 52, and nothing while `EVAL_ROTATION_DAILY_LIMIT` is empty |
+| `agent-eval.yml` `eval-rotation` (P1-H)      | what is left: `L − S − R`, at most 55, and nothing while `EVAL_ROTATION_DAILY_LIMIT` is empty |
 
 `eval-rotation` runs last, after `eval-live` and `eval-canary`, and spends what they left.
 `L` is the recorded daily limit above. `S` is what the night spent on the pinned pool: the
 sum of `usage.trials[].modelCalls` in `eval-live`'s report, plus one if the canary ran. If
 `eval-live` aborted on a per-day 429 the budget is 0, and for any other abort `S` takes
-memory-recall's `modelCalls` ceilings, 17 a trial, in place of the report. `R` is 1, for the
+memory-recall's `modelCalls` ceilings, 20 a trial, in place of the report. `R` is 1, for the
 one provider-5xx retry `yarn eval` makes. The budget buys the least-covered prior-auth and
 red-team tasks on `eval-history` that fit, one trial each. A task costs its `modelCalls`
 ceiling: 2 for a prior-auth task since 2026-11-17 (the call and one retry), 0 for an
 administrative one, which declares no budget and is costed from its cassette; `rt-001` and
-`rt-002` cost 3 and `rt-003` 6. One trial of every task in both suites is priced at 52, and
-spends 32 when no call is retried. `yarn workspace @repo/agent-service eval:history slice` makes the choice
+`rt-002` cost 4 and `rt-003` 7, each with its one retry. One trial of every task in both
+suites is priced at 55, and spends 32 when no call is retried. `yarn workspace @repo/agent-service eval:history slice` makes the choice
 and writes it to the job summary (`rotation.ts`).
 
 `eval-live` runs every memory-recall task: 3 calls for `memory-recall-001`, 5 for
