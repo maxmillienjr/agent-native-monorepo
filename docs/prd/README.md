@@ -42,7 +42,20 @@ document is dated. That last sentence is the owner's second wording: the first f
 known failures and referred an approval-labelled task in 3 of 6 live trials, and is kept on
 the tag `recording/p3g-wording-a-2026-11-09`. The prior-auth re-record on the owner's paid
 key at `5b35f94` has 0 wrongful approvals of 16, 0 unnecessary referrals of 8, and no known
-failure in the baseline. It cost 85 paid calls in all, about $0.11.
+failure in the baseline. It cost 85 paid calls in all, about $0.11. _Since 2026-11-17 the committed
+set is a later re-record (below), which passes 22 of 24._
+
+**Follow-ups after the roadmap, 2026-11-17.** Prior-auth has a live reference:
+`datasets/prior-auth/baselines/live.json` pools epoch `fb052f35aa12`, 2 trials of each task,
+so the rotation's prior-auth gate now compares rather than reading `incomparable`. The red
+team and memory-recall are not promoted yet: both are in the `tasks-fixed` regime, whose
+floor is 15 trials a task, and they have 3 and 7. `assess.criteria` now returns its usage,
+so the 20 assessing prior-auth tasks carry budgets (STATUS row 25). That needed a prior-auth
+re-record, at `3ea2533` on the owner's paid key, 20 calls: 22 of 24 pass, 0 wrongful
+approvals, and the two unnecessary referrals the live nights also showed, now known failures
+in the replay baseline. Only prior-auth's cassettes moved, so the memory-recall and red-team
+live epochs carry on. The re-record starts a new prior-auth live epoch, compared against the
+reference above.
 
 **[P1-H](P1-H-live-rotation.md) has shipped: prior-auth and the red team now run on the
 live model at night.** Closed [#159](https://github.com/maxmillienjr/agent-native-monorepo/issues/159).
@@ -610,8 +623,8 @@ baseline: hedged evidence read as `not-met` (`pa-e0260-ambiguous`, and the same 
 `citations_resolve` keeps grading the model: a `met` that cites anything outside the bundle
 refers, which can never turn a referral into an approval. `ASSESS_PROMPT` now says that
 `not-met` is a stated fact, that a doubt is `insufficient`, and that a relative date anchored
-to a dated document is dated. Budgets for the prior-auth tasks stay unowned: they have none,
-and the `assess.criteria` seam records no usage to derive one from.
+to a dated document is dated. Since 2026-11-17 `assess.criteria` returns its usage and the 20
+assessing prior-auth tasks carry budgets, from a re-record that passed 22 of 24 (STATUS row 25).
 
 ## Tier 4 — Governance and agent security as code
 
