@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { CriterionFindingSchema, type CriterionFinding } from '@repo/determination';
 import type { EvidenceItem, PolicyCriterion } from '@repo/prior-auth';
+import { NO_USAGE, type CallUsage } from '../model/usage.js';
 
 /**
  * The one model call the prior-authorization graph makes, at the
@@ -10,12 +11,20 @@ import type { EvidenceItem, PolicyCriterion } from '@repo/prior-auth';
  * asked for an outcome: `dispose` derives that from the findings in code, so
  * the rule for when software may approve is something a reviewer reads rather
  * than a prompt.
+ *
+ * It returns its usage beside the findings, as every chat seam does, so a
+ * cassette records what the call cost and a prior-auth task can carry budgets.
  */
+export interface Assessment {
+  readonly findings: CriterionFinding[];
+  readonly tokenCounts: CallUsage;
+}
+
 export interface AssessDeps {
   assessCriteria(
     criteria: readonly PolicyCriterion[],
     evidence: readonly EvidenceItem[],
-  ): Promise<CriterionFinding[]>;
+  ): Promise<Assessment>;
 }
 
 export const ASSESS_PROMPT = `You review a prior-authorization request against a medical policy's criteria.
@@ -87,11 +96,13 @@ export function parseAssessment(content: string): CriterionFinding[] {
  * replayed model.
  */
 export const stubAssessment: AssessDeps = {
-  assessCriteria: async (criteria) =>
-    criteria.map((criterion) => ({
+  assessCriteria: async (criteria) => ({
+    findings: criteria.map((criterion) => ({
       criterionId: criterion.id,
       status: 'insufficient' as const,
       evidence: [],
       rationale: 'stub model: no assessment was made',
     })),
+    tokenCounts: NO_USAGE,
+  }),
 };

@@ -3,7 +3,13 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { z } from 'zod';
 import { EVAL_DATASETS_DIR } from '../dataset.js';
-import { AxisRequirementsSchema, TaskSeedsSchema, type Suite, type Task } from '../types.js';
+import {
+  AxisRequirementsSchema,
+  BudgetsSchema,
+  TaskSeedsSchema,
+  type Suite,
+  type Task,
+} from '../types.js';
 import {
   citationsResolve,
   dispositionKind,
@@ -38,6 +44,8 @@ export const PriorAuthTaskSpecSchema = z
     requires: AxisRequirementsSchema.optional(),
     /** The share of criteria whose status must match the label. */
     findingAgreementMin: z.number().min(0).max(1),
+    /** Per-trial ceilings, by P1-F's rule from the 2026-11-17 recording. */
+    budgets: BudgetsSchema.optional(),
   })
   .strict();
 export type PriorAuthTaskSpec = z.infer<typeof PriorAuthTaskSpecSchema>;
@@ -113,6 +121,7 @@ export function loadPriorAuthSuite(
         citationsResolve(),
       ],
       ...(spec.requires === undefined ? {} : { requires: spec.requires }),
+      ...(spec.budgets === undefined ? {} : { budgets: spec.budgets }),
     };
   });
 

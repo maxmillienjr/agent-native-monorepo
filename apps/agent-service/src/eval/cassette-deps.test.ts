@@ -135,12 +135,15 @@ function fakeLive(calls: string[]): ModelDeps {
     assess: {
       assessCriteria: async (criteria, evidence) => {
         calls.push(`assess:${criteria.length}|${evidence.length}`);
-        return criteria.map((criterion) => ({
-          criterionId: criterion.id,
-          status: 'met' as const,
-          evidence: evidence.map((item) => item.reference),
-          rationale: 'a rationale',
-        }));
+        return {
+          findings: criteria.map((criterion) => ({
+            criterionId: criterion.id,
+            status: 'met' as const,
+            evidence: evidence.map((item) => item.reference),
+            rationale: 'a rationale',
+          })),
+          tokenCounts: { prompt: 640, completion: 120 },
+        };
       },
     },
   };
@@ -208,6 +211,8 @@ describe('the recording and replay directions of the same seam', () => {
     );
     const cassette = await recorder.close();
     expect(cassette.decisions.map((decision) => decision.seam)).toEqual(['assess.criteria']);
+    // A chat seam: the decision carries the call's usage, which budgets read on replay.
+    expect(cassette.decisions[0]?.tokenCounts).toEqual({ prompt: 640, completion: 120 });
 
     const replayed = await replayModelDeps(
       new CassettePlayer(cassette, replayConfig),
@@ -469,7 +474,7 @@ describe('the decorator seam on RunsService', () => {
         seen.push(text);
         return new Array(EMBEDDING_DIMENSIONS).fill(0);
       },
-      assess: { assessCriteria: async () => [] },
+      assess: { assessCriteria: async () => ({ findings: [], tokenCounts: NO_USAGE }) },
     }));
 
     const traced = await service.executeTraced({
@@ -720,6 +725,40 @@ describe('loading a set for replay', () => {
     datasetDir = mkdtempSync(join(tmpdir(), 'replay-decks-'));
   });
   afterEach(() => rmSync(datasetDir, { recursive: true, force: true }));
+
+  it('refuses an assess.criteria decision recorded before the seam returned usage', () => {
+    // The shape every prior-auth cassette had until 2026-11-17: format 3, and
+    // the findings array as the whole value. Refused before any store is reset.
+    const path = cassettePath(datasetDir, 'pa-e0260-ambiguous', 0);
+    mkdirSync(join(datasetDir, 'cassettes'), { recursive: true });
+    writeFileSync(
+      path,
+      JSON.stringify({
+        header: liveHeader,
+        decisions: [
+          {
+            seam: 'assess.criteria',
+            requestHash: 'a'.repeat(64),
+            request: {},
+            response: { kind: 'value', value: [] },
+            latencyMs: 1,
+          },
+        ],
+      }),
+    );
+
+    const refusal = (() => {
+      try {
+        replayDecks('prior-auth', datasetDir, [{ taskId: 'pa-e0260-ambiguous', trials: 1 }]);
+        return '';
+      } catch (error) {
+        return error instanceof Error ? error.message : String(error);
+      }
+    })();
+
+    expect(refusal).toContain(`${path}: an assess.criteria decision holds a bare findings array`);
+    expect(refusal).toContain('EVAL_SUITE=prior-auth EVAL_CASSETTE_MODE=record EVAL_TRIALS=1');
+  });
 
   it('refuses a version-2 cassette by path, naming the re-record and the baseline commands', () => {
     // `replayDecks` runs before the Nest context exists, so a refusal here is a

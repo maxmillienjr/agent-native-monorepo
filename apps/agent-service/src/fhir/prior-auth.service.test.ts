@@ -111,13 +111,15 @@ describe('the prior-authorization graph', () => {
     runs.modelDeps = () => ({
       ...stub,
       assess: {
-        assessCriteria: async (criteria) =>
-          criteria.map((criterion, index) => ({
+        assessCriteria: async (criteria) => ({
+          findings: criteria.map((criterion, index) => ({
             criterionId: criterion.id,
             status: index === 0 ? ('met' as const) : ('not-met' as const),
             evidence: cited[index] ?? [],
             rationale: 'synthetic',
           })),
+          tokenCounts: { prompt: 0, completion: 0 },
+        }),
       },
     });
     const subject = new PriorAuthService(

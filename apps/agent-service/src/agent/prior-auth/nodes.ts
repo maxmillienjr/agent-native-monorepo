@@ -82,7 +82,7 @@ export async function assessNode(state: PriorAuthState, deps: PriorAuthGraphDeps
     const request = required(state.request, 'a request');
     const policy = required(state.policy, 'a policy');
 
-    const findings = await deps.assess.assessCriteria(policy.criteria, evidenceFor(request));
+    const { findings } = await deps.assess.assessCriteria(policy.criteria, evidenceFor(request));
     return { findings };
   });
 }

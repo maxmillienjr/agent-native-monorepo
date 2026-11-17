@@ -64,8 +64,9 @@ describe('assessmentPrompt', () => {
 
 describe('stubAssessment', () => {
   it('finds every criterion insufficient, so the stub axis refers everything', async () => {
-    const findings = await stubAssessment.assessCriteria(criteria, []);
+    const { findings, tokenCounts } = await stubAssessment.assessCriteria(criteria, []);
     expect(findings.map((finding) => finding.status)).toEqual(['insufficient', 'insufficient']);
+    expect(tokenCounts).toEqual({ prompt: 0, completion: 0 });
   });
 });
 
