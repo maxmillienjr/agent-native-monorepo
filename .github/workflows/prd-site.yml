@@ -1,0 +1,58 @@
+name: PRD site
+
+# "Specced vs shipped": scripts/prd-site.mjs renders docs/prd as a static site on GitHub
+# Pages. The script has no dependencies, so the job installs nothing: one checkout, one
+# node call, one upload. The tests that keep the site honest run in CI's `yarn lint:docs`.
+#
+# Off until Pages is on. Every job is skipped unless the repository variable
+# PRD_SITE_PAGES is `true`, so a push to main does not go red while Pages is disabled in
+# the repository's settings. To switch it on: Settings > Pages > Source: GitHub Actions,
+# then Settings > Secrets and variables > Actions > Variables: PRD_SITE_PAGES = true.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/prd/**'
+      - 'scripts/prd-site.mjs'
+      - 'scripts/lib/frontmatter.mjs'
+      - '.github/workflows/prd-site.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    if: vars.PRD_SITE_PAGES == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24.x'
+
+      - run: node scripts/prd-site.mjs --out _site
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    if: vars.PRD_SITE_PAGES == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v5
