@@ -512,7 +512,8 @@ code differs from it, or the design did not say.
 - **`modelCalls` landed before the recording, token budgets after.** The rule-derived call
   ceilings went in first, so the recording run checked them. The token ceilings are
   functions of the recording, so its own report could not show them; the criterion is
-  split and the half it could not meet is P1-E's nightly.
+  split and the half it could not meet is P1-E's nightly. _Amended 2026-11-17:_ that half
+  was met by scheduled run 40292608420 on 2026-10-26, as the criterion above records.
 - **A breach fails beside P1-D's gate, not through it.** The design's
   `run-eval.ts:145` line predates the gate, which replaced the pass-rate exit. The gate
   compares grader cells and cannot see a breach, so `gatedEnd` fails a run that breached

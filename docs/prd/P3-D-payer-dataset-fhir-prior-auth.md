@@ -837,7 +837,9 @@ classes held 48 errors each for `requestType`, `certificationType`, their cardin
 `item.category` and the queued outcome, 24 for the claim-update branch and 48 for the
 unmatched Claim profile. That agrees with the local run in a Java 17 container.
 
-**Open criteria.**
+**Open criteria.** _Amended 2026-11-17:_ both closed with the recording of 2026-10-12 to
+2026-10-19 ("The recording, as made" below). The Acceptance criteria record each, checked
+2026-10-19.
 
 - **The labels commit precedes the first cassette commit.** The labels have a commit of
   their own, "label the prior-authorization requests", but no cassette commit exists yet,

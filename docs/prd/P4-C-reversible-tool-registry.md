@@ -595,7 +595,12 @@ has one `gitSha`. A breach of `tool-use-001`'s budgets on batch 1 is likely and 
 reason to re-run: its budgets were set on the smaller selection request, a trial's cassette
 is written when the trial completes, and step 4 re-derives the budgets from it.
 
-1. Read the recording before accepting it. `tool-use-001` must call `web-search` once. A
+1. Read the recording before accepting it. `tool-use-001` must call `web-search` once.
+   _Amended 2026-11-17:_ it did not; it searched three times ("The recording, as made"
+   below), and the criterion's correction of 2026-10-27 records that. What the task
+   asserts is a `web-search` call that succeeds, `tool_trajectory_recall` 1, with
+   `tool_trajectory_precision` at threshold 0
+   (`packages/eval-harness/datasets/memory-recall/tool-use-001.json:41-47`). A
    `tool.duplicate_suppressed` span means the guard ended the loop rather than the model.
    `tool-use-002` must call `request-records` with schema-valid input.
 2. With no key, run `EVAL_CASSETTE_MODE=replay EVAL_GATE=update yarn eval` to regenerate

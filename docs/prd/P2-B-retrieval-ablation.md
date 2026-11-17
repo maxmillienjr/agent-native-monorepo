@@ -622,14 +622,19 @@ primary row is not "hybrid below vector", because `hybrid` equals `vector` rathe
 falling below it.
 
 The blind adjudication added one label: the fact that Brightwater Select PPO delegates
-review to Kestrel, for a relational query about that plan. Under the adjudicated labels
+review to Kestrel (_Amended 2026-11-17:_ both names are invented, because the corpus's
+domain is fictional payer operations; see "Dataset" above), for a relational query about
+that plan. Under the adjudicated labels
 `vector` and `hybrid` both score 0.943, both intervals are unchanged to three places, and
 the rule selects the same row. **Adjudication would not change the outcome.**
 
 [ADR 0009](../adr/0009-the-second-store-after-the-retrieval-ablation.md) records it,
 `proposed`. It recommends taking the graph out of the fused list and keeping it only for an
 explanation role that a named measurement would test, with removing the graph retrieval
-path as the fallback. The code change waits for acceptance.
+path as the fallback. The code change waits for acceptance. _Amended 2026-11-17:_ the owner
+accepted ADR 0009 on 2026-10-08 (`9bcdc2e`), choosing option B, and the change landed the same
+day in `84b42b5`: retrieval reads pgvector only
+(`packages/memory-core/src/semantic/retrieval-facade.ts:77`).
 
 Where the implementation is not what the Design section describes:
 

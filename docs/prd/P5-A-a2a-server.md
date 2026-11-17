@@ -591,7 +591,10 @@ proxy and list; ADR 0014; three STATUS rows; the CTL-ACC split.
   parses the key instead.
 
 **Residuals, each owned or stated.** Per-session authorization on `POST /runs`, console user
-login and TLS are in ADR 0014 with no owner, as the Non-goals said. Tasks that outlive the
+login and TLS are in ADR 0014 with no owner, as the Non-goals said. _Amended 2026-11-17:_
+P5-D took the first and shipped it on 2026-10-12: both `/runs` routes now derive the session
+from the caller ([ADR 0017](../adr/0017-every-surface-derives-its-session-from-the-caller.md)).
+Tasks that outlive the
 process have no owner either: P3-B shipped a run record a task could be rebuilt from, and
 no PRD claims doing it. P5-B's T5 now has a server to call, on the v0.3 path.
 

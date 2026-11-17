@@ -597,7 +597,8 @@ exists and its CI criteria are met. The secret was added on 2026-10-08, during t
 the first half is now true and the second waits for a run. Every offline and local criterion
 that could be checked without a `generateContent` call is ticked. The open ones are verified
 by the first scheduled run after merge, by a dispatch with `chat_model`, or by five nights of
-the nightly, and one needs the owner to commit two strings.
+the nightly, and one needs the owner to commit two strings. _Amended 2026-11-17:_ P1-E has
+since shipped; the end of this section says how.
 
 **The first scheduled canary run will be red, and that is the design working.** The chat
 baseline is empty, because filling it costs the two `generateContent` calls this work was
@@ -676,7 +677,10 @@ where the pinned model's calls take seconds. The alias has also been `unavailabl
 canary on most nights. Neither is drift, and neither is a defect in the canary, but the
 criterion asks for a report and there is none. The next dispatch should go on a day the
 nightly's floating probe answered, or with `timeout-minutes` raised for a `chat_model` run.
-That is a change to the workflow, which this close-out did not make.
+That is a change to the workflow, which this close-out did not make. _Amended 2026-11-17:_
+P1-E shipped on 2026-11-03 (`ee7b780`). This criterion moved to P1-I unmet, as the
+Acceptance criteria above record, and P1-I owns it as its first measurement
+(`P1-I-chat-model-migration.md:102-103`).
 
 ## Risks and open questions
 

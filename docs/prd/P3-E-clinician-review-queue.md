@@ -737,6 +737,9 @@ _Updated 2026-10-08, by P3-C (#108):_ the ledger half is closed. `$submit` appen
 `run.recorded` and `disposition.recommended` before the case row and stores the
 recommendation's seq; `decide`'s `beforeCommit` appends `determination.attested`; and the
 registry's keys are registered in the ledger at boot. The auth half (P5-A) stays open.
+_Amended 2026-11-17:_ the auth half is closed too. P5-A ticked the criterion on
+2026-10-08 (Acceptance criteria above): the review controller passes the bearer principal,
+and `review-auth.e2e-spec.ts` checks the `403` (`P5-A-a2a-server.md:587-589`).
 
 **Hand-off to P3-F.** Appeals stay out, as Non-goals says. What P3-F inherits: a decided case
 row carries `reviewer_id`, so the non-involvement rule of § 422.590 is one comparison, and

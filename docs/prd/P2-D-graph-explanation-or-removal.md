@@ -562,7 +562,10 @@ the oracle on every pair, and the extractor is the corpus. **The Problem section
 prediction did not hold.** A length-0 path ranked first in 12 of 50 pairs, the program
 episodes. Most answer facts sit in an episode about B alone, so the `reflect` shape never
 linked them to A. Stage 2 is next. Its code exists (the next section), and its 76 calls
-are scheduled against the quota table in `.context/conventions.md`.
+are scheduled against the quota table in `.context/conventions.md`. _Amended 2026-11-17:_
+stage 2 ran from 2026-11-05 to 2026-11-09, 76 of 76 answers, and was `not met`
+("Stage 2, as run" below). The rule selected option C, ADR 0012 accepted it, and
+[P2-E](P2-E-remove-the-graph.md) removed the graph.
 
 Where the implementation is not what the Design section describes:
 
