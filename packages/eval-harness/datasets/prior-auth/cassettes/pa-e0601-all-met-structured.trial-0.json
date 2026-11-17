@@ -3,8 +3,8 @@
     "formatVersion": 3,
     "taskId": "pa-e0601-all-met-structured",
     "trialIndex": 0,
-    "recordedAt": "2026-11-09T22:27:28.337Z",
-    "gitSha": "5b35f9439bfac0fff9cb71211b1cbda39f2689ab",
+    "recordedAt": "2026-11-17T22:25:48.432Z",
+    "gitSha": "3ea25333c656bd62dd51e0f81ae07f42c4d2d3cc",
     "axes": {
       "model": "live",
       "memory": "live"
@@ -58,42 +58,54 @@
       },
       "response": {
         "kind": "value",
-        "value": [
-          {
-            "criterionId": "e0601-osa-diagnosis",
-            "status": "met",
-            "evidence": [
-              "Condition/condition-e0601-all-met-structured-osa"
-            ],
-            "rationale": "The member has a recorded condition of obstructive sleep apnea."
-          },
-          {
-            "criterionId": "e0601-ahi-threshold",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-e0601-all-met-structured-study"
-            ],
-            "rationale": "The sleep study dated 2026-07-01 reports an AHI of 31 events per hour, which is at least 18."
-          },
-          {
-            "criterionId": "e0601-conservative-trial",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-e0601-all-met-structured-visit"
-            ],
-            "rationale": "The record documents positional therapy from 2026-07-10 to 2026-08-14 (35 days), which exceeds 21 days and did not resolve symptoms."
-          },
-          {
-            "criterionId": "e0601-prescriber-order",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-e0601-all-met-structured-visit"
-            ],
-            "rationale": "A signed prescriber order names the CPAP device and its pressure range of 6 to 14 cm H2O."
+        "value": {
+          "findings": [
+            {
+              "criterionId": "e0601-osa-diagnosis",
+              "status": "met",
+              "evidence": [
+                "Condition/condition-e0601-all-met-structured-osa"
+              ],
+              "rationale": "The member has a diagnosis of obstructive sleep apnea."
+            },
+            {
+              "criterionId": "e0601-ahi-threshold",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-e0601-all-met-structured-study"
+              ],
+              "rationale": "The sleep study dated within 12 months before the request reports an AHI of 31 events per hour."
+            },
+            {
+              "criterionId": "e0601-conservative-trial",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-e0601-all-met-structured-visit"
+              ],
+              "rationale": "Positional therapy was tried for 35 days, which is at least 21 days."
+            },
+            {
+              "criterionId": "e0601-prescriber-order",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-e0601-all-met-structured-visit"
+              ],
+              "rationale": "A signed prescriber order names the device and its pressure range."
+            }
+          ],
+          "tokenCounts": {
+            "prompt": 942,
+            "completion": 357,
+            "reasoning": 0
           }
-        ]
+        }
       },
-      "latencyMs": 1264
+      "tokenCounts": {
+        "prompt": 942,
+        "completion": 357,
+        "reasoning": 0
+      },
+      "latencyMs": 1317
     }
   ]
 }

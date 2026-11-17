@@ -3,8 +3,8 @@
     "formatVersion": 3,
     "taskId": "pa-e0601-ambiguous",
     "trialIndex": 0,
-    "recordedAt": "2026-11-09T22:27:29.654Z",
-    "gitSha": "5b35f9439bfac0fff9cb71211b1cbda39f2689ab",
+    "recordedAt": "2026-11-17T22:25:49.804Z",
+    "gitSha": "3ea25333c656bd62dd51e0f81ae07f42c4d2d3cc",
     "axes": {
       "model": "live",
       "memory": "live"
@@ -54,42 +54,54 @@
       },
       "response": {
         "kind": "value",
-        "value": [
-          {
-            "criterionId": "e0601-osa-diagnosis",
-            "status": "met",
-            "evidence": [
-              "Condition/condition-e0601-ambiguous-osa"
-            ],
-            "rationale": "The member has a recorded condition of obstructive sleep apnea."
-          },
-          {
-            "criterionId": "e0601-ahi-threshold",
-            "status": "insufficient",
-            "evidence": [
-              "DocumentReference/doc-e0601-ambiguous-visit"
-            ],
-            "rationale": "The clinical note mentions a sleep study from a few years back that could not be confirmed, and there is no sleep study report dated within the 12 months before the request reporting an AHI of at least 18 events per hour."
-          },
-          {
-            "criterionId": "e0601-conservative-trial",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-e0601-ambiguous-visit"
-            ],
-            "rationale": "The clinical note documents positional therapy for 30 days that did not help."
-          },
-          {
-            "criterionId": "e0601-prescriber-order",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-e0601-ambiguous-visit"
-            ],
-            "rationale": "The order names the CPAP device, specifies a pressure range of 5 to 15 cm H2O, and is signed electronically by the prescriber."
+        "value": {
+          "findings": [
+            {
+              "criterionId": "e0601-osa-diagnosis",
+              "status": "met",
+              "evidence": [
+                "Condition/condition-e0601-ambiguous-osa"
+              ],
+              "rationale": "The member has a recorded condition of obstructive sleep apnea."
+            },
+            {
+              "criterionId": "e0601-ahi-threshold",
+              "status": "insufficient",
+              "evidence": [
+                "DocumentReference/doc-e0601-ambiguous-visit"
+              ],
+              "rationale": "The clinical note mentions a sleep study from a few years back that could not be confirmed and lacks a dated report with an AHI of at least 18 within the 12 months before the request."
+            },
+            {
+              "criterionId": "e0601-conservative-trial",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-e0601-ambiguous-visit"
+              ],
+              "rationale": "The record documents positional therapy with a positional belt for 30 days that did not help."
+            },
+            {
+              "criterionId": "e0601-prescriber-order",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-e0601-ambiguous-visit"
+              ],
+              "rationale": "A signed prescriber order names the CPAP device and its pressure range of 5 to 15 cm H2O."
+            }
+          ],
+          "tokenCounts": {
+            "prompt": 767,
+            "completion": 377,
+            "reasoning": 0
           }
-        ]
+        }
       },
-      "latencyMs": 1312
+      "tokenCounts": {
+        "prompt": 767,
+        "completion": 377,
+        "reasoning": 0
+      },
+      "latencyMs": 1225
     }
   ]
 }

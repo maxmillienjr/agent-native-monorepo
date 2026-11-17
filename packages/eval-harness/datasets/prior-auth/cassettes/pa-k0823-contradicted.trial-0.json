@@ -3,8 +3,8 @@
     "formatVersion": 3,
     "taskId": "pa-k0823-contradicted",
     "trialIndex": 0,
-    "recordedAt": "2026-11-09T22:27:38.051Z",
-    "gitSha": "5b35f9439bfac0fff9cb71211b1cbda39f2689ab",
+    "recordedAt": "2026-11-17T22:25:57.903Z",
+    "gitSha": "3ea25333c656bd62dd51e0f81ae07f42c4d2d3cc",
     "axes": {
       "model": "live",
       "memory": "live"
@@ -67,50 +67,63 @@
       },
       "response": {
         "kind": "value",
-        "value": [
-          {
-            "criterionId": "k0823-mobility-limitation",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-k0823-contradicted-exam"
-            ],
-            "rationale": "The mobility examination documents that the member can no longer toilet or prepare a meal without help."
-          },
-          {
-            "criterionId": "k0823-cane-walker-insufficient",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-k0823-contradicted-exam"
-            ],
-            "rationale": "The examination states that a walker does not resolve the limitation."
-          },
-          {
-            "criterionId": "k0823-manual-chair-insufficient",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-k0823-contradicted-exam"
-            ],
-            "rationale": "The examination states she cannot self-propel a manual wheelchair more than 20 feet."
-          },
-          {
-            "criterionId": "k0823-home-access",
-            "status": "not-met",
-            "evidence": [
-              "DocumentReference/doc-k0823-contradicted-home"
-            ],
-            "rationale": "The home assessment is dated 2026-04-10, which is outside the 60-day window before the request."
-          },
-          {
-            "criterionId": "k0823-safe-operation",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-k0823-contradicted-exam"
-            ],
-            "rationale": "The examination documents vision corrected to 20/30, judgement intact, and that she operated a demonstration joystick safely."
+        "value": {
+          "findings": [
+            {
+              "criterionId": "k0823-mobility-limitation",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-k0823-contradicted-exam"
+              ],
+              "rationale": "The mobility examination documents that she can no longer toilet or prepare a meal without help, which prevents completing at least one daily activity in the home."
+            },
+            {
+              "criterionId": "k0823-cane-walker-insufficient",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-k0823-contradicted-exam"
+              ],
+              "rationale": "The examination states that with a rolling walker she manages 15 feet before stopping and that a walker does not resolve the limitation."
+            },
+            {
+              "criterionId": "k0823-manual-chair-insufficient",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-k0823-contradicted-exam"
+              ],
+              "rationale": "The examination states that she cannot self-propel a manual wheelchair more than 20 feet."
+            },
+            {
+              "criterionId": "k0823-home-access",
+              "status": "not-met",
+              "evidence": [
+                "DocumentReference/doc-k0823-contradicted-home",
+                "DocumentReference/doc-k0823-contradicted-exam"
+              ],
+              "rationale": "The home assessment is dated 2026-04-10, which is outside the 60-day window before the mobility examination dated 2026-09-02."
+            },
+            {
+              "criterionId": "k0823-safe-operation",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-k0823-contradicted-exam"
+              ],
+              "rationale": "The examination documents vision corrected to 20/30, judgement intact, and that she operated a demonstration joystick safely."
+            }
+          ],
+          "tokenCounts": {
+            "prompt": 1037,
+            "completion": 514,
+            "reasoning": 0
           }
-        ]
+        }
       },
-      "latencyMs": 1329
+      "tokenCounts": {
+        "prompt": 1037,
+        "completion": 514,
+        "reasoning": 0
+      },
+      "latencyMs": 1290
     }
   ]
 }

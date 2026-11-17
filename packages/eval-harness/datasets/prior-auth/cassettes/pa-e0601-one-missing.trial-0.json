@@ -3,8 +3,8 @@
     "formatVersion": 3,
     "taskId": "pa-e0601-one-missing",
     "trialIndex": 0,
-    "recordedAt": "2026-11-09T22:27:32.297Z",
-    "gitSha": "5b35f9439bfac0fff9cb71211b1cbda39f2689ab",
+    "recordedAt": "2026-11-17T22:25:52.345Z",
+    "gitSha": "3ea25333c656bd62dd51e0f81ae07f42c4d2d3cc",
     "axes": {
       "model": "live",
       "memory": "live"
@@ -58,40 +58,52 @@
       },
       "response": {
         "kind": "value",
-        "value": [
-          {
-            "criterionId": "e0601-osa-diagnosis",
-            "status": "met",
-            "evidence": [
-              "Condition/condition-e0601-one-missing-osa"
-            ],
-            "rationale": "The member has a recorded condition of obstructive sleep apnea (G47.33)."
-          },
-          {
-            "criterionId": "e0601-ahi-threshold",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-e0601-one-missing-study"
-            ],
-            "rationale": "The sleep study dated 2026-08-04 reports an AHI of 31 events per hour, which is at least 18."
-          },
-          {
-            "criterionId": "e0601-conservative-trial",
-            "status": "insufficient",
-            "evidence": [],
-            "rationale": "There is no documentation in the evidence regarding a 21-day trial of positional therapy or a weight-management program."
-          },
-          {
-            "criterionId": "e0601-prescriber-order",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-e0601-one-missing-visit"
-            ],
-            "rationale": "A signed prescriber order names the CPAP device and a fixed pressure setting of 10 cm H2O."
+        "value": {
+          "findings": [
+            {
+              "criterionId": "e0601-osa-diagnosis",
+              "status": "met",
+              "evidence": [
+                "Condition/condition-e0601-one-missing-osa"
+              ],
+              "rationale": "The member has a diagnosis of obstructive sleep apnea recorded as a condition."
+            },
+            {
+              "criterionId": "e0601-ahi-threshold",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-e0601-one-missing-study"
+              ],
+              "rationale": "The sleep study dated 2026-08-04 reports an apnea-hypopnea index (AHI) of 31 events per hour, which is at least 18."
+            },
+            {
+              "criterionId": "e0601-conservative-trial",
+              "status": "insufficient",
+              "evidence": [],
+              "rationale": "There is no evidence in the record documenting at least 21 days of positional therapy or a weight-management programme."
+            },
+            {
+              "criterionId": "e0601-prescriber-order",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-e0601-one-missing-visit"
+              ],
+              "rationale": "A signed prescriber order names the CPAP device and its fixed pressure of 10 cm H2O."
+            }
+          ],
+          "tokenCounts": {
+            "prompt": 890,
+            "completion": 364,
+            "reasoning": 0
           }
-        ]
+        }
       },
-      "latencyMs": 1226
+      "tokenCounts": {
+        "prompt": 890,
+        "completion": 364,
+        "reasoning": 0
+      },
+      "latencyMs": 1231
     }
   ]
 }

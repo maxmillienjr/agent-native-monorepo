@@ -3,8 +3,8 @@
     "formatVersion": 3,
     "taskId": "pa-k0823-one-missing",
     "trialIndex": 0,
-    "recordedAt": "2026-11-09T22:27:39.433Z",
-    "gitSha": "5b35f9439bfac0fff9cb71211b1cbda39f2689ab",
+    "recordedAt": "2026-11-17T22:25:59.243Z",
+    "gitSha": "3ea25333c656bd62dd51e0f81ae07f42c4d2d3cc",
     "axes": {
       "model": "live",
       "memory": "live"
@@ -63,48 +63,60 @@
       },
       "response": {
         "kind": "value",
-        "value": [
-          {
-            "criterionId": "k0823-mobility-limitation",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-k0823-one-missing-exam"
-            ],
-            "rationale": "The mobility examination documents that the member can no longer toilet or prepare a meal without help."
-          },
-          {
-            "criterionId": "k0823-cane-walker-insufficient",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-k0823-one-missing-exam"
-            ],
-            "rationale": "The examination states that a walker does not resolve the limitation."
-          },
-          {
-            "criterionId": "k0823-manual-chair-insufficient",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-k0823-one-missing-exam"
-            ],
-            "rationale": "The examination states she cannot self-propel a manual wheelchair more than 20 feet."
-          },
-          {
-            "criterionId": "k0823-home-access",
-            "status": "insufficient",
-            "evidence": [],
-            "rationale": "There is no home assessment in the evidence confirming that doorways, turning space, and floor surfaces accommodate a power wheelchair."
-          },
-          {
-            "criterionId": "k0823-safe-operation",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-k0823-one-missing-exam"
-            ],
-            "rationale": "The examination documents that vision is corrected to 20/30, judgement is intact, and she operated a demonstration joystick safely."
+        "value": {
+          "findings": [
+            {
+              "criterionId": "k0823-mobility-limitation",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-k0823-one-missing-exam"
+              ],
+              "rationale": "The mobility examination documents that the member can no longer toilet or prepare a meal without help due to mobility limitations."
+            },
+            {
+              "criterionId": "k0823-cane-walker-insufficient",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-k0823-one-missing-exam"
+              ],
+              "rationale": "The examination states that a walker does not resolve the limitation."
+            },
+            {
+              "criterionId": "k0823-manual-chair-insufficient",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-k0823-one-missing-exam"
+              ],
+              "rationale": "The examination states she cannot self-propel a manual wheelchair more than 20 feet."
+            },
+            {
+              "criterionId": "k0823-home-access",
+              "status": "insufficient",
+              "evidence": [],
+              "rationale": "There is no home assessment document in the evidence to confirm that doorways, turning space, and floor surfaces accommodate a power wheelchair."
+            },
+            {
+              "criterionId": "k0823-safe-operation",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-k0823-one-missing-exam"
+              ],
+              "rationale": "The examination documents vision corrected to 20/30, judgement intact, and that she operated a demonstration joystick safely."
+            }
+          ],
+          "tokenCounts": {
+            "prompt": 926,
+            "completion": 435,
+            "reasoning": 0
           }
-        ]
+        }
       },
-      "latencyMs": 1301
+      "tokenCounts": {
+        "prompt": 926,
+        "completion": 435,
+        "reasoning": 0
+      },
+      "latencyMs": 1194
     }
   ]
 }

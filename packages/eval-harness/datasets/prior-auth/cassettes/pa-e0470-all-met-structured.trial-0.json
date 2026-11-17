@@ -3,8 +3,8 @@
     "formatVersion": 3,
     "taskId": "pa-e0470-all-met-structured",
     "trialIndex": 0,
-    "recordedAt": "2026-11-09T22:27:21.087Z",
-    "gitSha": "5b35f9439bfac0fff9cb71211b1cbda39f2689ab",
+    "recordedAt": "2026-11-17T22:25:41.569Z",
+    "gitSha": "3ea25333c656bd62dd51e0f81ae07f42c4d2d3cc",
     "axes": {
       "model": "live",
       "memory": "live"
@@ -62,42 +62,54 @@
       },
       "response": {
         "kind": "value",
-        "value": [
-          {
-            "criterionId": "e0470-osa-diagnosis",
-            "status": "met",
-            "evidence": [
-              "Condition/condition-e0470-all-met-structured-osa"
-            ],
-            "rationale": "The member has a recorded condition of obstructive sleep apnea."
-          },
-          {
-            "criterionId": "e0470-cpap-failure",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-e0470-all-met-structured-trial"
-            ],
-            "rationale": "The record documents a trial of CPAP for 107 days, and the prescriber states that it was not tolerated and did not control the apnea."
-          },
-          {
-            "criterionId": "e0470-ahi-threshold",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-e0470-all-met-structured-study"
-            ],
-            "rationale": "The sleep study dated 2026-04-15 reports an apnea-hypopnea index of 42 events per hour, which is at least 18."
-          },
-          {
-            "criterionId": "e0470-bilevel-titration",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-e0470-all-met-structured-titration"
-            ],
-            "rationale": "The titration study documents that bi-level pressure at the ordered settings controlled the apnea."
+        "value": {
+          "findings": [
+            {
+              "criterionId": "e0470-osa-diagnosis",
+              "status": "met",
+              "evidence": [
+                "Condition/condition-e0470-all-met-structured-osa"
+              ],
+              "rationale": "The member has a recorded condition of obstructive sleep apnea."
+            },
+            {
+              "criterionId": "e0470-cpap-failure",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-e0470-all-met-structured-trial"
+              ],
+              "rationale": "The record documents a trial of CPAP for 107 days, and the prescriber states that it was not tolerated and did not control the apnea."
+            },
+            {
+              "criterionId": "e0470-ahi-threshold",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-e0470-all-met-structured-study"
+              ],
+              "rationale": "The sleep study dated 2026-04-15 reports an AHI of 42 events per hour, which is at least 18."
+            },
+            {
+              "criterionId": "e0470-bilevel-titration",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-e0470-all-met-structured-titration"
+              ],
+              "rationale": "The bi-level titration study documents that bi-level pressure at the ordered settings controlled the apnea with a residual AHI of 3 events per hour."
+            }
+          ],
+          "tokenCounts": {
+            "prompt": 1064,
+            "completion": 401,
+            "reasoning": 0
           }
-        ]
+        }
       },
-      "latencyMs": 1247
+      "tokenCounts": {
+        "prompt": 1064,
+        "completion": 401,
+        "reasoning": 0
+      },
+      "latencyMs": 1260
     }
   ]
 }

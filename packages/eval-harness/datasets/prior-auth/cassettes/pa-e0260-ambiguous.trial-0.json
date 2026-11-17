@@ -3,8 +3,8 @@
     "formatVersion": 3,
     "taskId": "pa-e0260-ambiguous",
     "trialIndex": 0,
-    "recordedAt": "2026-11-09T22:27:16.012Z",
-    "gitSha": "5b35f9439bfac0fff9cb71211b1cbda39f2689ab",
+    "recordedAt": "2026-11-17T22:25:36.700Z",
+    "gitSha": "3ea25333c656bd62dd51e0f81ae07f42c4d2d3cc",
     "axes": {
       "model": "live",
       "memory": "live"
@@ -49,34 +49,46 @@
       },
       "response": {
         "kind": "value",
-        "value": [
-          {
-            "criterionId": "e0260-positioning-need",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-e0260-ambiguous-visit"
-            ],
-            "rationale": "The prescriber documented that the member must sleep with the head raised at 45 degrees to breathe, which pillows cannot hold."
-          },
-          {
-            "criterionId": "e0260-linked-diagnosis",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-e0260-ambiguous-visit"
-            ],
-            "rationale": "The clinical note states that the positioning need follows from her heart failure."
-          },
-          {
-            "criterionId": "e0260-frequent-adjustment",
-            "status": "insufficient",
-            "evidence": [
-              "DocumentReference/doc-e0260-ambiguous-visit"
-            ],
-            "rationale": "The evidence regarding the frequency of position changes is reported second-hand and uncertain ('Her son thinks she might need to change position at night now and then, possibly; nobody has kept track of how often, and she has not said whether a crank would do')."
+        "value": {
+          "findings": [
+            {
+              "criterionId": "e0260-positioning-need",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-e0260-ambiguous-visit"
+              ],
+              "rationale": "The prescriber documented that the member must sleep with the head raised at 45 degrees to breathe, which pillows cannot hold."
+            },
+            {
+              "criterionId": "e0260-linked-diagnosis",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-e0260-ambiguous-visit"
+              ],
+              "rationale": "The prescriber explicitly links the positioning need to her heart failure."
+            },
+            {
+              "criterionId": "e0260-frequent-adjustment",
+              "status": "insufficient",
+              "evidence": [
+                "DocumentReference/doc-e0260-ambiguous-visit"
+              ],
+              "rationale": "The note regarding position changes is uncertain, reported second-hand ('Her son thinks she might need to change position at night now and then, possibly; nobody has kept track of how often, and she has not said whether a crank would do'), which makes it insufficient."
+            }
+          ],
+          "tokenCounts": {
+            "prompt": 685,
+            "completion": 308,
+            "reasoning": 0
           }
-        ]
+        }
       },
-      "latencyMs": 1111
+      "tokenCounts": {
+        "prompt": 685,
+        "completion": 308,
+        "reasoning": 0
+      },
+      "latencyMs": 1125
     }
   ]
 }

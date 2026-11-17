@@ -3,8 +3,8 @@
     "formatVersion": 3,
     "taskId": "pa-e0470-all-met-narrative",
     "trialIndex": 0,
-    "recordedAt": "2026-11-09T22:27:19.794Z",
-    "gitSha": "5b35f9439bfac0fff9cb71211b1cbda39f2689ab",
+    "recordedAt": "2026-11-17T22:25:40.307Z",
+    "gitSha": "3ea25333c656bd62dd51e0f81ae07f42c4d2d3cc",
     "axes": {
       "model": "live",
       "memory": "live"
@@ -54,42 +54,54 @@
       },
       "response": {
         "kind": "value",
-        "value": [
-          {
-            "criterionId": "e0470-osa-diagnosis",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-e0470-all-met-narrative-visit"
-            ],
-            "rationale": "The prescriber states that the member has obstructive sleep apnea."
-          },
-          {
-            "criterionId": "e0470-cpap-failure",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-e0470-all-met-narrative-visit"
-            ],
-            "rationale": "The record documents a trial of three months of CPAP and the prescriber states that it was not tolerated and did not control the apnea."
-          },
-          {
-            "criterionId": "e0470-ahi-threshold",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-e0470-all-met-narrative-visit"
-            ],
-            "rationale": "A sleep study in March (dated within 12 months before the request of 2026-09-08) reports 37 obstructive events an hour, which is at least 18 events per hour."
-          },
-          {
-            "criterionId": "e0470-bilevel-titration",
-            "status": "met",
-            "evidence": [
-              "DocumentReference/doc-e0470-all-met-narrative-visit"
-            ],
-            "rationale": "The prescriber's note documents that bi-level pressure at 15 over 9 controlled the apnea."
+        "value": {
+          "findings": [
+            {
+              "criterionId": "e0470-osa-diagnosis",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-e0470-all-met-narrative-visit"
+              ],
+              "rationale": "The prescriber states that the member has obstructive sleep apnea."
+            },
+            {
+              "criterionId": "e0470-cpap-failure",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-e0470-all-met-narrative-visit"
+              ],
+              "rationale": "The record documents a trial of three months of CPAP and the prescriber states that it was not tolerated and did not control the apnea."
+            },
+            {
+              "criterionId": "e0470-ahi-threshold",
+              "status": "insufficient",
+              "evidence": [
+                "DocumentReference/doc-e0470-all-met-narrative-visit"
+              ],
+              "rationale": "The narrative mentions a sleep study in March counting thirty-seven events an hour, but there is no specific dated sleep study document provided within the 12 months before the request that reports an AHI of at least 18."
+            },
+            {
+              "criterionId": "e0470-bilevel-titration",
+              "status": "met",
+              "evidence": [
+                "DocumentReference/doc-e0470-all-met-narrative-visit"
+              ],
+              "rationale": "The prescriber's note documents that bi-level pressure at 15 over 9 controlled the apnea."
+            }
+          ],
+          "tokenCounts": {
+            "prompt": 849,
+            "completion": 409,
+            "reasoning": 0
           }
-        ]
+        }
       },
-      "latencyMs": 1242
+      "tokenCounts": {
+        "prompt": 849,
+        "completion": 409,
+        "reasoning": 0
+      },
+      "latencyMs": 1207
     }
   ]
 }
