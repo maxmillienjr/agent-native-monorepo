@@ -115,7 +115,7 @@ feature. Both outcomes are useful. Keeping the store without a result is not.
   cost stated there. Under C it is moot.
 - **Measuring the extractor.** Building the graph by running `distill` over the corpus would
   measure the model's ids, edges and attribution as well as the store. P2-B declined it at
-  review on 2026-09-26 for cost and stochasticity (`P2-B-retrieval-ablation.md:714-720`), and
+  review on 2026-09-26 for cost and stochasticity (`P2-B-retrieval-ablation.md:719-725`), and
   that reasoning holds. **Declined, not deferred.** The ADR states that the result is under
   an oracle extractor.
 - **Putting the graph back in retrieval.** ADR 0009's "What a positive result would need" is
@@ -562,7 +562,10 @@ the oracle on every pair, and the extractor is the corpus. **The Problem section
 prediction did not hold.** A length-0 path ranked first in 12 of 50 pairs, the program
 episodes. Most answer facts sit in an episode about B alone, so the `reflect` shape never
 linked them to A. Stage 2 is next. Its code exists (the next section), and its 76 calls
-are scheduled against the quota table in `.context/conventions.md`.
+are scheduled against the quota table in `.context/conventions.md`. _Amended 2026-11-17:_
+stage 2 ran from 2026-11-05 to 2026-11-09, 76 of 76 answers, and was `not met`
+("Stage 2, as run" below). The rule selected option C, ADR 0012 accepted it, and
+[P2-E](P2-E-remove-the-graph.md) removed the graph.
 
 Where the implementation is not what the Design section describes:
 

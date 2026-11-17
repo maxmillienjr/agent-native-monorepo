@@ -426,7 +426,9 @@ _Recorded 2026-10-08, on the branch for #96._ Every ticked criterion was verifie
 pure axis or on model `stub` / memory `live` against throwaway stores. No `generateContent`
 call was made, because the day's free-tier quota was already spent. Four criteria wait on
 the recording: the live baseline of `rt-002` and `rt-003`, the recording run, the red-team
-replay and the positive controls. "The recording" sets out the plan.
+replay and the positive controls. "The recording" sets out the plan. _Amended 2026-11-17:_
+all four are met, the last on 2026-11-05. The Acceptance criteria record each, and "The
+recording, as made" below has the runs.
 
 **The baseline that could be taken without a model.** On `8a40997`, the parent of M2's
 commit, `EVAL_SUITE=red-team yarn eval` on model `stub` / memory `live` passed `rt-001`

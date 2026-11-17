@@ -537,7 +537,7 @@ This PRD was marked `shipped` with twenty-one of twenty-three criteria met, and 
 the same day. Two of the ticks were wrong, for one shared reason: **acceptance was verified
 on the stub model axis, and the live model axis was never exercised.**
 
-The proximate cause was environmental. `~/.commonrc` on the author's machine exported a
+The proximate cause was environmental. A shell profile on the author's machine exported a
 revoked `GOOGLE_API_KEY`, and nothing on the Node path read `.env` — `yarn dev` is bare
 `tsx src/main.ts` — so the fresh key in the file was never used and every live call returned
 `403 PERMISSION_DENIED`. Criterion 9 was recorded as blocked on a credential and handed to

@@ -39,7 +39,7 @@ facts as of 2026-09-26, read from the release pages and the source:
 | The TypeScript ADK speaks A2A 0.3               | `@google/adk@2.1.0` depends on `@a2a-js/sdk ^0.3.10` (`core/package.json:85`); `RemoteA2AAgent` is at `core/src/a2a/a2a_remote_agent.ts:123`                                                                                                                                                            |
 | The managed runtime was renamed                 | The Agent Engine documentation now sits under "Gemini Enterprise Agent Platform", which Google announced on 2026-04-22 as "the evolution of Vertex AI". It lists ADK, LangGraph, LangChain, AG2 and LlamaIndex, and describes deployment in Python only                                                 |
 
-The "Agentspace" in the role descriptions is now sold as part of Gemini Enterprise,
+The product once named "Agentspace" is now sold as part of Gemini Enterprise,
 launched 2025-10-09. I did not find one primary Google page that states the rename in a
 sentence, and the appendix says so rather than asserting it.
 
