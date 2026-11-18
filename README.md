@@ -278,6 +278,24 @@ its hash, and write an extra row rather than converging on the first attempt's.
 
 ---
 
+## Taken out of this repository
+
+Three pieces started here and now stand on their own:
+
+- **[Specced vs shipped](https://maxmillienjr.github.io/agent-native-monorepo/)**: every PRD in
+  `docs/prd`, its Problem beside the section on what shipped and where it diverged, under the
+  dependency graph. Built by `scripts/prd-site.mjs` on each push that touches `docs/prd`.
+- **[memory-canary](https://github.com/maxmillienjr/memory-canary)**: the cross-session memory
+  test from [P4-B](docs/prd/P4-B-memory-poisoning-red-team.md) as a small kit for any agent's CI.
+  It plants a fake phone number in one session's memory and fails the build if another session's
+  agent retrieves it.
+- **[agent-controls-starter](https://github.com/maxmillienjr/agent-controls-starter)**: the
+  catalogue, linter and renderer behind [`governance/CONTROLS.md`](governance/CONTROLS.md), from
+  [P4-A](docs/prd/P4-A-controls-as-code.md), as a template with a blank catalogue. A green check
+  there means the evidence resolves, not that it is sufficient.
+
+---
+
 ## Contributing
 
 1. Fork the repository and create a feature branch.
