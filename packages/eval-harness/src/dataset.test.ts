@@ -101,7 +101,7 @@ describe('the shipped dataset', () => {
     expect(task.requires).toEqual({ model: ['live', 'replay'] });
   });
 
-  it('budgets every shipped task on all three keys, with modelCalls at 2 + maxSteps', () => {
+  it('budgets every shipped task on all three keys, with modelCalls at 3 + maxSteps', () => {
     for (const task of loadMemoryRecallSuite().tasks) {
       const maxSteps = (task.input as { config: { maxSteps: number } }).config.maxSteps;
       expect(Object.keys(task.budgets ?? {}).sort(), task.id).toEqual([
@@ -109,8 +109,9 @@ describe('the shipped dataset', () => {
         'modelCalls',
         'outputTokens',
       ]);
-      // One plan call, at most maxSteps selections, one distill call.
-      expect(task.budgets?.modelCalls, task.id).toBe(2 + maxSteps);
+      // One plan call, at most maxSteps selections, one distill call, and one
+      // retried call (P1-F, amended 2026-11-18).
+      expect(task.budgets?.modelCalls, task.id).toBe(3 + maxSteps);
     }
   });
 

@@ -253,7 +253,7 @@ export function readNightSpend(options: {
   };
 }
 
-/** Memory-recall's `modelCalls` ceilings for `trials` trials a task: 17 at one trial. */
+/** Memory-recall's `modelCalls` ceilings for `trials` trials a task: 20 at one trial. */
 export function memoryRecallCeiling(trials: number): number {
   return loadMemoryRecallSuite(1).tasks.reduce((sum, task) => sum + trials * taskCost(task, []), 0);
 }

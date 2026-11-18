@@ -1,0 +1,147 @@
+{
+  "suite": "memory-recall",
+  "cassetteDigest": "75a9f4dbc21264553f41a3c371b3ad896b5311d856728c30e1a84bfbbc266afe",
+  "runs": [
+    {
+      "gitSha": "4feb96e3d61a0e23b88e23e48fe01654df3700f8",
+      "startedAt": "2026-11-10T10:45:51.474Z"
+    },
+    {
+      "gitSha": "e7757d457255837dfd9fbaec7d4cd4419dbd4e33",
+      "startedAt": "2026-11-13T10:31:34.123Z"
+    },
+    {
+      "gitSha": "e7757d457255837dfd9fbaec7d4cd4419dbd4e33",
+      "startedAt": "2026-11-14T09:54:21.568Z"
+    },
+    {
+      "gitSha": "09c8cd5689c7969fdc6cd6782f7ee93621865e02",
+      "startedAt": "2026-11-15T10:23:12.592Z"
+    },
+    {
+      "gitSha": "1d159196e7a9bb33f7f1927d02d2e89cc1d2a525",
+      "startedAt": "2026-11-15T19:02:03.310Z"
+    },
+    {
+      "gitSha": "89ff3aef8f31f7418ead460ad27399e566992ebb",
+      "startedAt": "2026-11-16T10:37:29.581Z"
+    },
+    {
+      "gitSha": "89ff3aef8f31f7418ead460ad27399e566992ebb",
+      "startedAt": "2026-11-17T11:28:35.852Z"
+    },
+    {
+      "gitSha": "fa46ee6806a443cff4bafc778025f37442f06507",
+      "startedAt": "2026-11-17T23:10:46.685Z"
+    },
+    {
+      "gitSha": "fa46ee6806a443cff4bafc778025f37442f06507",
+      "startedAt": "2026-11-17T23:22:05.064Z"
+    },
+    {
+      "gitSha": "fa46ee6806a443cff4bafc778025f37442f06507",
+      "startedAt": "2026-11-17T23:29:50.693Z"
+    },
+    {
+      "gitSha": "fa46ee6806a443cff4bafc778025f37442f06507",
+      "startedAt": "2026-11-17T23:34:58.090Z"
+    },
+    {
+      "gitSha": "fa46ee6806a443cff4bafc778025f37442f06507",
+      "startedAt": "2026-11-17T23:44:04.927Z"
+    },
+    {
+      "gitSha": "fa46ee6806a443cff4bafc778025f37442f06507",
+      "startedAt": "2026-11-17T23:50:28.424Z"
+    },
+    {
+      "gitSha": "fa46ee6806a443cff4bafc778025f37442f06507",
+      "startedAt": "2026-11-17T23:58:22.056Z"
+    },
+    {
+      "gitSha": "fa46ee6806a443cff4bafc778025f37442f06507",
+      "startedAt": "2026-11-18T00:02:40.134Z"
+    }
+  ],
+  "tasks": {
+    "memory-recall-001": {
+      "trials": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "tool-use-001": {
+      "trials": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "tool-use-002": {
+      "trials": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    }
+  },
+  "kind": "live-reference"
+}

@@ -282,9 +282,9 @@ describe('the budget step', () => {
     expect(missing).toMatchObject({ kind: 'ceiling', live: 17 });
   });
 
-  it('reads memory-recall’s ceilings as 17 calls a trial', () => {
-    expect(memoryRecallCeiling(1)).toBe(17);
-    expect(memoryRecallCeiling(2)).toBe(34);
+  it('reads memory-recall’s ceilings as 20 calls a trial', () => {
+    expect(memoryRecallCeiling(1)).toBe(20);
+    expect(memoryRecallCeiling(2)).toBe(40);
   });
 
   it('reads L as a whole number, and empty as not recorded', () => {
@@ -394,9 +394,9 @@ describe('the suites as committed at HEAD', () => {
     // 20 assessing tasks at a ceiling of 2: the call and one retry.
     expect(priorAuth.reduce((sum, task) => sum + task.cost, 0)).toBe(40);
     expect(tasks.filter((task) => task.suite === 'red-team')).toEqual([
-      rt('rt-001', 3),
-      rt('rt-002', 3),
-      rt('rt-003', 6),
+      rt('rt-001', 4),
+      rt('rt-002', 4),
+      rt('rt-003', 7),
     ]);
   });
 

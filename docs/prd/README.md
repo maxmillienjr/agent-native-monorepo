@@ -2,7 +2,7 @@
 
 ## Where things stand
 
-_Last updated 2026-11-17. If this section is more than a few weeks stale, trust the code
+_Last updated 2026-11-18. If this section is more than a few weeks stale, trust the code
 over it and update it._
 
 **The nightlies since the switch, 2026-11-10 to 11-14: two green, three red, for two causes
@@ -47,9 +47,17 @@ set is a later re-record (below), which passes 22 of 24._
 
 **Follow-ups after the roadmap, 2026-11-17.** Prior-auth has a live reference:
 `datasets/prior-auth/baselines/live.json` pools epoch `fb052f35aa12`, 2 trials of each task,
-so the rotation's prior-auth gate now compares rather than reading `incomparable`. The red
-team and memory-recall are not promoted yet: both are in the `tasks-fixed` regime, whose
-floor is 15 trials a task, and they have 3 and 7. `assess.criteria` now returns its usage,
+so the rotation's prior-auth gate now compares rather than reading `incomparable`. Memory-recall has one too, from epoch
+`75a9f4dbc212`: 22 of 22 trials passed on each of its three tasks, over 15 runs from
+2026-11-10 to 11-18. Eight of those runs were dispatches on the evening of 2026-11-17, which
+filled the `tasks-fixed` floor of 15 trials a task in one evening rather than a fortnight;
+the reference is a narrower slice of time than nights alone would give. The red team is
+not promoted yet: it has 10 trials a task of the 15. That evening also showed two things.
+The prior-auth slice aborted on provider 503s in three of eight dispatches, and the last
+dispatch met the free tier's per-day 429 at `quotaValue` 500, confirming `L`. And one
+`tool-use-001` trial that passed every grader made a sixth call through a retried
+selection, so every `modelCalls` ceiling now allows one retried call (P1-F, amended
+2026-11-18). `assess.criteria` now returns its usage,
 so the 20 assessing prior-auth tasks carry budgets (STATUS row 25). That needed a prior-auth
 re-record, at `3ea2533` on the owner's paid key, 20 calls: 22 of 24 pass, 0 wrongful
 approvals, and the two unnecessary referrals the live nights also showed, now known failures
