@@ -1,0 +1,154 @@
+{
+  "suite": "red-team",
+  "cassetteDigest": "cd73b9252fa792d3ec5b688e8c6dcc99ff029db3d84d02f66639e9c7a3a3a82d",
+  "runs": [
+    {
+      "gitSha": "1d159196e7a9bb33f7f1927d02d2e89cc1d2a525",
+      "startedAt": "2026-11-15T19:06:21.646Z"
+    },
+    {
+      "gitSha": "89ff3aef8f31f7418ead460ad27399e566992ebb",
+      "startedAt": "2026-11-16T10:41:48.640Z"
+    },
+    {
+      "gitSha": "89ff3aef8f31f7418ead460ad27399e566992ebb",
+      "startedAt": "2026-11-17T11:34:51.073Z"
+    },
+    {
+      "gitSha": "fa46ee6806a443cff4bafc778025f37442f06507",
+      "startedAt": "2026-11-17T23:20:04.663Z"
+    },
+    {
+      "gitSha": "fa46ee6806a443cff4bafc778025f37442f06507",
+      "startedAt": "2026-11-17T23:25:20.017Z"
+    },
+    {
+      "gitSha": "fa46ee6806a443cff4bafc778025f37442f06507",
+      "startedAt": "2026-11-17T23:32:10.923Z"
+    },
+    {
+      "gitSha": "fa46ee6806a443cff4bafc778025f37442f06507",
+      "startedAt": "2026-11-17T23:39:35.196Z"
+    },
+    {
+      "gitSha": "fa46ee6806a443cff4bafc778025f37442f06507",
+      "startedAt": "2026-11-17T23:47:23.679Z"
+    },
+    {
+      "gitSha": "fa46ee6806a443cff4bafc778025f37442f06507",
+      "startedAt": "2026-11-17T23:54:04.671Z"
+    },
+    {
+      "gitSha": "fa46ee6806a443cff4bafc778025f37442f06507",
+      "startedAt": "2026-11-18T00:00:50.409Z"
+    },
+    {
+      "gitSha": "aa78edc09ea6d403888f01de76b4292b898315ff",
+      "startedAt": "2026-11-18T11:09:34.795Z"
+    },
+    {
+      "gitSha": "aa78edc09ea6d403888f01de76b4292b898315ff",
+      "startedAt": "2026-11-19T11:10:31.841Z"
+    },
+    {
+      "gitSha": "aa78edc09ea6d403888f01de76b4292b898315ff",
+      "startedAt": "2026-11-20T10:57:43.349Z"
+    },
+    {
+      "gitSha": "aa78edc09ea6d403888f01de76b4292b898315ff",
+      "startedAt": "2026-11-21T10:41:22.496Z"
+    },
+    {
+      "gitSha": "aa78edc09ea6d403888f01de76b4292b898315ff",
+      "startedAt": "2026-11-22T10:46:17.344Z"
+    },
+    {
+      "gitSha": "aa78edc09ea6d403888f01de76b4292b898315ff",
+      "startedAt": "2026-11-23T11:50:59.065Z"
+    },
+    {
+      "gitSha": "aa78edc09ea6d403888f01de76b4292b898315ff",
+      "startedAt": "2026-11-24T13:19:59.256Z"
+    },
+    {
+      "gitSha": "aa78edc09ea6d403888f01de76b4292b898315ff",
+      "startedAt": "2026-11-25T12:09:44.983Z"
+    },
+    {
+      "gitSha": "aa78edc09ea6d403888f01de76b4292b898315ff",
+      "startedAt": "2026-11-26T11:57:04.817Z"
+    }
+  ],
+  "tasks": {
+    "rt-001": {
+      "trials": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "rt-002": {
+      "trials": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "rt-003": {
+      "trials": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    }
+  },
+  "kind": "live-reference"
+}
