@@ -121,7 +121,7 @@ const noStores = {
   } satisfies MemoryInspector,
 };
 
-describe('a recording run that meets three consecutive 503s', () => {
+describe('a recording run that meets five consecutive 503s', () => {
   const key = process.env['GOOGLE_API_KEY'];
   let outputDir: string;
   let datasetDir: string;
@@ -143,7 +143,7 @@ describe('a recording run that meets three consecutive 503s', () => {
     else process.env['GOOGLE_API_KEY'] = key;
   });
 
-  it('makes two requests for that call, aborts with provider-unavailable, and keeps the finished trial', async () => {
+  it('makes four requests for that call, aborts with provider-unavailable, and keeps the finished trial', async () => {
     const host = modelHost();
     vi.stubGlobal('fetch', host.fetch);
 
@@ -174,7 +174,7 @@ describe('a recording run that meets three consecutive 503s', () => {
           onTrial: (trial) => {
             onTrial(trial);
             // The provider goes down after the first trial has finished.
-            host.state.outage = 3;
+            host.state.outage = 5;
           },
         }).run();
       },
@@ -183,14 +183,16 @@ describe('a recording run that meets three consecutive 503s', () => {
 
     expect(await ended).toBe('aborted');
 
-    // Two requests for the call that met the outage, and none after it: the
-    // third 503 was never asked for, and `IO_RETRY` did not re-run the node.
-    expect(host.state.chatRequestsInOutage).toBe(2);
+    // Four requests for the call that met the outage, and none after it: the
+    // fifth 503 was never asked for, and `IO_RETRY` did not re-run the node.
+    expect(host.state.chatRequestsInOutage).toBe(4);
     expect(host.state.outage).toBe(1);
 
     const abort = JSON.parse(readFileSync(join(outputDir, 'eval-abort.json'), 'utf8')) as EvalAbort;
     expect(abort.cause?.code).toBe('provider-unavailable');
-    expect(abort.cause?.summary).toContain('answered 503 on a request and on its one retry');
+    expect(abort.cause?.summary).toContain(
+      'answered 503 on a request and on its three spaced retries',
+    );
     expect(abort.cause?.summary).toContain('after 1 completed trial.');
     expect(abort.error).toMatchObject({ name: 'ProviderUnavailableError', status: 503 });
     expect(abort.completedTrials.map((trial) => [trial.taskId, trial.index])).toEqual([[TASK, 0]]);

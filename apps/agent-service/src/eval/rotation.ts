@@ -13,6 +13,7 @@ import {
   type LiveTally,
 } from '@repo/eval-harness';
 import { committedCassettes, readEpoch } from './history.js';
+import { SERVER_ERROR_RETRY_DELAYS_MS } from '../agent/model/server-errors.js';
 
 /**
  * The nightly rotation (P1-H): which prior-auth and red-team tasks run on the
@@ -180,11 +181,12 @@ interface SuiteTask {
 // --- What the night has left -------------------------------------------------
 
 /**
- * `R`: one provider-5xx retry inside the slice. `yarn eval` retries a 5xx once
- * on the live axis and then aborts (P1-I), so a slice can make at most one
- * request more than its cost before it stops.
+ * `R`: the provider-5xx retries of the call that aborts a slice. `yarn eval`
+ * retries a 5xx three times on the live axis and then aborts, so the aborting
+ * call makes three requests no report counts. A retry that succeeds is not
+ * counted either; `L` is far enough above a night's spend to absorb those.
  */
-export const ROTATION_RESERVE = 1;
+export const ROTATION_RESERVE = SERVER_ERROR_RETRY_DELAYS_MS.length;
 
 /** What `eval-live` and the canary spent tonight, as far as their files say. */
 export type NightSpend =

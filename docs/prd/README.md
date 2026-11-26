@@ -2,7 +2,7 @@
 
 ## Where things stand
 
-_Last updated 2026-11-18. If this section is more than a few weeks stale, trust the code
+_Last updated 2026-11-26. If this section is more than a few weeks stale, trust the code
 over it and update it._
 
 **The nightlies since the switch, 2026-11-10 to 11-14: two green, three red, for two causes
@@ -45,14 +45,24 @@ key at `5b35f94` has 0 wrongful approvals of 16, 0 unnecessary referrals of 8, a
 failure in the baseline. It cost 85 paid calls in all, about $0.11. _Since 2026-11-17 the committed
 set is a later re-record (below), which passes 22 of 24._
 
+**Every nightly from 2026-11-20 to 11-26 was red, for one cause.** The rotation's prior-auth
+slice aborted on a `gemini-3.5-flash-lite` 503 each night, after 2 to 19 of its 24 trials,
+and an aborted slice writes no tally, so prior-auth had no live coverage that week. Every
+other job was green, and the red-team slice ran each night. `yarn eval` retried a 5xx once,
+2 seconds later, a bound set when the free tier allowed 20 requests a day; the 503s come in
+bursts longer than that. It now retries three times, after 2, 15 and 60 seconds, four
+requests for a call at most, and the rotation's `R` is 3 (`.context/conventions.md`, "A 503
+spends quota").
+
 **Follow-ups after the roadmap, 2026-11-17.** Prior-auth has a live reference:
 `datasets/prior-auth/baselines/live.json` pools epoch `fb052f35aa12`, 2 trials of each task,
 so the rotation's prior-auth gate now compares rather than reading `incomparable`. Memory-recall has one too, from epoch
 `75a9f4dbc212`: 22 of 22 trials passed on each of its three tasks, over 15 runs from
 2026-11-10 to 11-18. Eight of those runs were dispatches on the evening of 2026-11-17, which
 filled the `tasks-fixed` floor of 15 trials a task in one evening rather than a fortnight;
-the reference is a narrower slice of time than nights alone would give. The red team is
-not promoted yet: it has 10 trials a task of the 15. That evening also showed two things.
+the reference is a narrower slice of time than nights alone would give. The red team has one too, from epoch
+`cd73b9252fa7`: 19 of 19 trials passed on each of its three tasks, over 19 runs from
+2026-11-15 to 11-26. That evening also showed two things.
 The prior-auth slice aborted on provider 503s in three of eight dispatches, and the last
 dispatch met the free tier's per-day 429 at `quotaValue` 500, confirming `L`. And one
 `tool-use-001` trial that passed every grader made a sixth call through a retried

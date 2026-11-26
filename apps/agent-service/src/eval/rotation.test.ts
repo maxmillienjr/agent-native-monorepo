@@ -244,8 +244,9 @@ describe('the budget step', () => {
       liveCeiling: () => 17,
     });
     expect(spend).toMatchObject({ kind: 'measured', live: 12, canary: 1 });
-    expect(ROTATION_RESERVE).toBe(1);
-    expect(rotationBudget(20, spend)).toEqual({ spent: 13, budget: 6 });
+    // R is the aborting call's three spaced 5xx retries.
+    expect(ROTATION_RESERVE).toBe(3);
+    expect(rotationBudget(22, spend)).toEqual({ spent: 13, budget: 6 });
     // A canary that did not run spent nothing; a failed one may have.
     expect(
       readNightSpend({
@@ -264,7 +265,7 @@ describe('the budget step', () => {
       liveCeiling: () => 17,
     });
     expect(other).toMatchObject({ kind: 'ceiling', live: 17, canary: 1 });
-    expect(rotationBudget(46, other).budget).toBe(27);
+    expect(rotationBudget(48, other).budget).toBe(27);
 
     const exhausted = readNightSpend({
       liveDir: liveDir({ 'eval-abort.json': { cause: { code: 'daily-quota' } } }),
@@ -328,7 +329,7 @@ describe('the budget step', () => {
     const output = join(root, 'rotation');
     const plan = runSlice(
       {
-        EVAL_ROTATION_DAILY_LIMIT: '20',
+        EVAL_ROTATION_DAILY_LIMIT: '22',
         EVAL_HISTORY_DIR: join(root, 'history'),
         ROTATION_LIVE_DIR: liveDir({ 'eval-report.json': report([3, 5, 4]) }),
         ROTATION_CANARY_RESULT: 'success',
@@ -351,7 +352,7 @@ describe('the budget step', () => {
     const summary = readFileSync(join(output, 'rotation-summary.md'), 'utf8');
     expect(summary).toContain('## Rotation — 6 of 6 calls on the live model');
     expect(summary).toContain(
-      "| 20 | 13 (12 from `eval-live`'s report, 1 for `eval-canary`) | 1 | 6 |",
+      "| 22 | 13 (12 from `eval-live`'s report, 1 for `eval-canary`) | 3 | 6 |",
     );
     expect(summary).toContain('| red-team | `rt-001` | 3 | 0 |');
     expect(summary).toContain('**Did not fit tonight** (0 trial(s) in the epoch): `rt-003` (6).');

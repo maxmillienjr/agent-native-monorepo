@@ -175,7 +175,7 @@ explanation stages, are archived at a tag and run in no tier (below).
 - **A report file exists only if the suite completed.** A graded failure writes
   `eval-report.json`, `eval-report.xml` and `eval-summary.md` and exits 1. Anything that
   stops the run — a stale cassette, an axis refusal, a request that reached the model
-  during replay, an exhausted quota, a 503 on a live call and its one retry, an
+  during replay, an exhausted quota, a 503 on a live call and its three retries, an
   unreachable store — writes `eval-abort.json` and an
   `eval-summary.md` headed `aborted`, names the error and the trials that finished, and
   also exits 1. The runner clears all five files before it starts, so read the directory,
@@ -544,8 +544,8 @@ Standing consumers of the free key, before any development spends a call:
 `L` is the recorded daily limit above. `S` is what the night spent on the pinned pool: the
 sum of `usage.trials[].modelCalls` in `eval-live`'s report, plus one if the canary ran. If
 `eval-live` aborted on a per-day 429 the budget is 0, and for any other abort `S` takes
-memory-recall's `modelCalls` ceilings, 20 a trial, in place of the report. `R` is 1, for the
-one provider-5xx retry `yarn eval` makes. The budget buys the least-covered prior-auth and
+memory-recall's `modelCalls` ceilings, 20 a trial, in place of the report. `R` is 3, for the
+three provider-5xx retries of the call that aborts a slice. The budget buys the least-covered prior-auth and
 red-team tasks on `eval-history` that fit, one trial each. A task costs its `modelCalls`
 ceiling: 2 for a prior-auth task since 2026-11-17 (the call and one retry), 0 for an
 administrative one, which declares no budget and is costed from its cassette; `rt-001` and
@@ -587,15 +587,19 @@ set are nights with no tally on `eval-history`, so the PRD that set it says whic
 output until the task ends, so a cancelled run's log is empty; its recorded cassettes are
 the evidence.
 
-**A 503 spends quota, so `yarn eval` gets one retry for it.** On 2026-11-09 a live recording
-made 20 requests and got 9 answers: LangChain's client retries a 503 up to six times, and
-each retry is a request against the day's 20. Since P1-I, `yarn eval` on the live model
-axis, and so every recording, builds the chat client with `boundServerErrors`: a provider
-5xx is retried once, and a second one aborts the run with cause `provider-unavailable`,
-two requests for that call. `IO_RETRY` does not re-run the node. The trials that finished
-keep their cassettes, and `EVAL_TASKS` re-records the rest another day. The bound is off
-for a request, which is better served by waiting. A daily-quota 429 stays terminal on its first request
-and any other 429 keeps its six retries, bound or not.
+**A 503 spends quota, so `yarn eval` bounds its retries.** On 2026-11-09 a live recording
+made 20 requests and got 9 answers: LangChain's client retries a 503 up to six times, seconds
+apart, and each retry is a request against the day's quota. Since P1-I, `yarn eval` on the
+live model axis, and so every recording, builds the chat client with `boundServerErrors`. A
+provider 5xx is retried three times, after 2, 15 and 60 seconds
+(`server-errors.ts#SERVER_ERROR_RETRY_DELAYS_MS`), and a fourth aborts the run with cause
+`provider-unavailable`: four requests for that call at most. It was one retry after 2
+seconds while the free tier allowed 20 requests a day. At 500 that cost more than it saved:
+from 2026-11-20 to 11-26 the rotation's prior-auth slice aborted on a 503 every night, and
+prior-auth wrote no live tally for a week. `IO_RETRY` does not re-run the node. The trials
+that finished keep their cassettes, and `EVAL_TASKS` re-records the rest another day. The
+bound is off for a request, which is better served by waiting. A daily-quota 429 stays
+terminal on its first request and any other 429 keeps its six retries, bound or not.
 
 ## Documentation
 

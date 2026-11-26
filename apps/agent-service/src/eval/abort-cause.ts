@@ -112,7 +112,7 @@ export function explainAbort(
       code: 'provider-unavailable',
       summary:
         `\`generateContent\` answered ${typeof status === 'number' ? status : '5xx'} on a ` +
-        `request and on its one retry, after ${trialsDone(progress)}. The run stopped there ` +
+        `request and on its three spaced retries, after ${trialsDone(progress)}. The run stopped there ` +
         'rather than spend more of the daily quota on retries; a recording keeps the ' +
         'cassettes of the trials that finished.',
       remedy:
