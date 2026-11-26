@@ -14,12 +14,12 @@ export function serverErrorStatus(error: unknown): number | undefined {
 }
 
 /**
- * A chat call that met a provider 5xx on its request and on its one retry.
+ * A chat call that met a provider 5xx on its request and on every retry.
  *
  * Thrown only by a client built with `boundServerErrors`, which `yarn eval`
  * asks for on the live model axis and when recording (P1-I). Named, so that
- * `IO_RETRY` can refuse to re-run the node — three node attempts of two
- * requests each would be six requests, the spend the bound exists to stop —
+ * `IO_RETRY` can refuse to re-run the node — three node attempts of four
+ * requests each would be twelve requests, the spend the bound exists to stop —
  * and so that `explainAbort` can name the cause without importing this file's
  * class, the same choice it makes for a cassette miss.
  */
@@ -48,9 +48,9 @@ export class ProviderUnavailableError extends Error {
  * decided as `stopOnDailyQuota` decides it.
  *
  * Terminal here because LangChain's `AsyncCaller` would otherwise retry a 503
- * six times, and its handler is given the error and not the attempt number, so
- * it cannot stop after one. `retryServerErrorOnce` makes the one retry instead,
- * around the whole call.
+ * six times with a backoff of seconds, and its handler is given the error and
+ * not the attempt number, so it cannot space them. `retryServerErrors` makes
+ * the retries instead, around the whole call.
  */
 export const stopOnServerError: FailedAttemptHandler = (error: unknown) => {
   if (serverErrorStatus(error) !== undefined) throw error;
@@ -58,34 +58,38 @@ export const stopOnServerError: FailedAttemptHandler = (error: unknown) => {
 };
 
 /**
- * Before the one retry. LangChain's own first retry waits one to two seconds;
- * this is the top of that range.
+ * The waits before each retry of a provider 5xx: three retries, four requests
+ * for one call at most, over about 77 seconds.
+ *
+ * It was one retry after 2 s, when the free tier allowed 20 requests a day and
+ * every retry was a twentieth of it. At 500 a day that bound cost more than it
+ * saved: from 2026-11-20 to 11-26 the rotation's prior-auth slice aborted on a
+ * 503 every night, after 2 to 19 of its 24 trials, so prior-auth wrote no live
+ * tally for a week. `gemini-3.5-flash-lite`'s "high demand" 503 comes in
+ * bursts, which a wait of seconds does not outlast and a minute usually does.
+ * LangChain's default is still not used: seven requests seconds apart.
  */
-export const SERVER_ERROR_RETRY_DELAY_MS = 2_000;
+export const SERVER_ERROR_RETRY_DELAYS_MS: readonly number[] = [2_000, 15_000, 60_000];
 
 /**
- * Runs `call`, retries it once if it fails with a provider 5xx, and throws
- * `ProviderUnavailableError` if the retry fails with one too. Any other error
- * is thrown as it came.
- *
- * Two requests for one call at most, where LangChain's default makes seven.
- * On 2026-11-09 a live recording made 20 requests and got 9 answers, because
- * each 503 retry is a request against the free tier's 20 a day.
+ * Runs `call`, retries it after each of `SERVER_ERROR_RETRY_DELAYS_MS` while it
+ * fails with a provider 5xx, and throws `ProviderUnavailableError` if the last
+ * retry fails with one too. Any other error is thrown as it came.
  */
-export async function retryServerErrorOnce<T>(api: string, call: () => Promise<T>): Promise<T> {
-  try {
-    return await call();
-  } catch (error) {
-    if (serverErrorStatus(error) === undefined) throw error;
-  }
-
-  await new Promise((resolve) => setTimeout(resolve, SERVER_ERROR_RETRY_DELAY_MS));
-
-  try {
-    return await call();
-  } catch (error) {
-    const status = serverErrorStatus(error);
-    if (status === undefined) throw error;
-    throw new ProviderUnavailableError(api, 2, error, status);
+export async function retryServerErrors<T>(
+  api: string,
+  call: () => Promise<T>,
+  delays: readonly number[] = SERVER_ERROR_RETRY_DELAYS_MS,
+): Promise<T> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await call();
+    } catch (error) {
+      const status = serverErrorStatus(error);
+      if (status === undefined) throw error;
+      const delay = delays[attempt];
+      if (delay === undefined) throw new ProviderUnavailableError(api, attempt + 1, error, status);
+    }
+    await new Promise((resolve) => setTimeout(resolve, delays[attempt]));
   }
 }

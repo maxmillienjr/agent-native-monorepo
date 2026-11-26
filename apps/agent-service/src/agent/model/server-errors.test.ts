@@ -84,17 +84,36 @@ describe('a 5xx on the chat path', () => {
     else process.env['GOOGLE_API_KEY'] = key;
   });
 
-  it('makes two requests with the bound, and throws ProviderUnavailableError', async () => {
+  it('makes four requests with the bound, and throws ProviderUnavailableError', async () => {
     fetchStub.mockImplementation(async () => unavailable());
 
     const error = await settle(
       createGeminiChat('fake-key', { boundServerErrors: true }).invoke('hello'),
     );
 
-    expect(fetchStub).toHaveBeenCalledTimes(2);
+    expect(fetchStub).toHaveBeenCalledTimes(4);
     expect(error).toBeInstanceOf(ProviderUnavailableError);
     expect((error as ProviderUnavailableError).status).toBe(503);
-    expect((error as Error).message).toMatch(/^generateContent answered 503 on 2 consecutive/);
+    expect((error as Error).message).toMatch(/^generateContent answered 503 on 4 consecutive/);
+  });
+
+  it('spaces the retries, so a burst of 503s a minute long is waited out', async () => {
+    // Three 503s, then an answer: the shape of the nights of 2026-11-20 to 11-26,
+    // where one retry two seconds later met the same burst.
+    fetchStub
+      .mockResolvedValueOnce(unavailable())
+      .mockResolvedValueOnce(unavailable())
+      .mockResolvedValueOnce(unavailable())
+      .mockResolvedValueOnce(answer('a plan'));
+    const started = Date.now();
+
+    const reply = await settle(
+      createGeminiChat('fake-key', { boundServerErrors: true }).invoke('hello'),
+    );
+
+    expect(fetchStub).toHaveBeenCalledTimes(4);
+    expect((reply as { content: unknown }).content).toBe('a plan');
+    expect(Date.now() - started).toBeGreaterThanOrEqual(2_000 + 15_000 + 60_000);
   });
 
   it('answers with the bound when the retry succeeds', async () => {
@@ -152,7 +171,7 @@ describe('a 5xx on the chat path', () => {
     const { act } = runs.modelDeps();
     const error = await settle(act.selectTool(selectionRequest('a plan', act.registry, [])));
 
-    expect(fetchStub).toHaveBeenCalledTimes(2);
+    expect(fetchStub).toHaveBeenCalledTimes(4);
     expect(error).toBeInstanceOf(ProviderUnavailableError);
   });
 });

@@ -21,7 +21,7 @@ import type { AgentState } from '../agent/graph/state.js';
 import { createGeminiEmbedder } from '../agent/model/gemini-embedder.js';
 import { invokeChat, type ChatRequest } from '../agent/model/gemini-chat.js';
 import { stopOnDailyQuota } from '../agent/model/rate-limit.js';
-import { retryServerErrorOnce, stopOnServerError } from '../agent/model/server-errors.js';
+import { retryServerErrors, stopOnServerError } from '../agent/model/server-errors.js';
 import { EXTRACTION_PROMPT, parseExtraction } from '../agent/model/extraction.js';
 import {
   EPISODIC_REPOSITORY,
@@ -130,15 +130,15 @@ export interface GeminiChatOptions {
 export type ChatClientOptions = Pick<GeminiChatOptions, 'boundServerErrors'>;
 
 /**
- * The bounded client: the same class, with `invoke` making at most one retry
- * on a 5xx. The retry is around the call rather than in `onFailedAttempt`,
+ * The bounded client: the same class, with `invoke` making at most three
+ * spaced retries on a 5xx (`SERVER_ERROR_RETRY_DELAYS_MS`). The retry is around the call rather than in `onFailedAttempt`,
  * because LangChain hands that handler the error and not the attempt number.
  */
 class ServerErrorBoundedChat extends ChatGoogleGenerativeAI {
   override invoke(
     ...args: Parameters<ChatGoogleGenerativeAI['invoke']>
   ): ReturnType<ChatGoogleGenerativeAI['invoke']> {
-    return retryServerErrorOnce('generateContent', () => super.invoke(...args));
+    return retryServerErrors('generateContent', () => super.invoke(...args));
   }
 }
 
@@ -150,8 +150,8 @@ class ServerErrorBoundedChat extends ChatGoogleGenerativeAI {
  * status outside a short list — 429 included — up to six times. A daily-quota
  * 429 cannot succeed on any of them, so `stopOnDailyQuota` makes it terminal
  * and leaves every other failure to the default handler. With
- * `boundServerErrors`, a 5xx is terminal there too, and the one retry it gets
- * is `ServerErrorBoundedChat`'s.
+ * `boundServerErrors`, a 5xx is terminal there too, and the retries it gets
+ * are `ServerErrorBoundedChat`'s.
  */
 export function createGeminiChat(
   apiKey: string,
